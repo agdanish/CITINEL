@@ -6,7 +6,6 @@ exists and what does not, and never prints a credential value.
 
 from __future__ import annotations
 
-import sys
 from pathlib import Path
 
 import typer
@@ -132,6 +131,121 @@ def rails() -> None:
         "No timelines. Danish owns all timelines.",
     ]
     console.print(Panel("\n".join(f"- {r}" for r in rules), title="Claim discipline", border_style="yellow"))
+
+
+telemetry = typer.Typer(help="Demo telemetry: extract and verify BOTS v1 replay data.")
+app.add_typer(telemetry, name="telemetry")
+
+
+@telemetry.command("verify")
+def telemetry_verify(
+    dataset: Path = typer.Option(
+        REPO_ROOT / "data/raw/botsv1_data_set",
+        help="Root of the extracted BOTS v1 dataset.",
+    ),
+) -> None:
+    """Score event extraction against Splunk's own recorded event counts.
+
+    Ground truth comes from each bucket's SourceTypes.data, written by Splunk
+    at index time. Any recovery figure CITINEL quotes has to come from here.
+    """
+    from citinel.ingest.verify import verify as run_verify
+
+    if not dataset.exists():
+        console.print(f"[red]Dataset not found:[/red] {dataset}")
+        raise typer.Exit(1)
+
+    results = run_verify(dataset)
+    total_got = total_want = 0
+
+    for r in results:
+        total_got += r.extracted
+        total_want += r.declared
+        table = Table(title=f"{r.name}", title_justify="left")
+        table.add_column("Sourcetype", max_width=46)
+        table.add_column("Extracted", justify="right")
+        table.add_column("Declared", justify="right")
+        table.add_column("Recovery", justify="right", width=9)
+        for st, got, want in r.per_sourcetype:
+            pct = (got / want * 100) if want else 0.0
+            colour = "green" if pct >= 99 else ("yellow" if pct >= 80 else "red")
+            table.add_row(st, f"{got:,}", f"{want:,}", f"[{colour}]{pct:.1f}%[/{colour}]")
+        console.print(table)
+        # The stream:* subtypes are CITINEL-derived labels, not Splunk's own.
+        # Reporting them individually understates recovery, because an event
+        # filed under a sibling subtype reads as "missing" when it was in fact
+        # extracted. The family aggregate is the honest figure.
+        fam_got = sum(g for st, g, _ in r.per_sourcetype if st.startswith("stream:"))
+        fam_want = sum(w for st, _, w in r.per_sourcetype if st.startswith("stream:"))
+        if fam_want:
+            fam_pct = fam_got / fam_want * 100
+            console.print(
+                f"[dim]  stream:* family aggregate: {fam_got:,} / {fam_want:,} = "
+                f"{fam_pct:.1f}%  (per-subtype rows above are CITINEL-derived "
+                f"labels, not Splunk's; a subtype reading low means mislabelled, "
+                f"not missing)[/dim]"
+            )
+        console.print(
+            f"[dim]bucket total: {r.extracted:,} / {r.declared:,} = "
+            f"{r.recovery:.1f}%[/dim]\n"
+        )
+
+    overall = (total_got / total_want * 100) if total_want else 0.0
+    console.print(
+        Panel.fit(
+            f"[bold]{total_got:,}[/bold] of [bold]{total_want:,}[/bold] declared events "
+            f"recovered = [bold]{overall:.1f}%[/bold]\n"
+            "[dim]Ground truth: Splunk SourceTypes.data, written at index time.[/dim]",
+            title="Telemetry extraction",
+            border_style="cyan",
+        )
+    )
+
+
+@telemetry.command("build")
+def telemetry_build(
+    dataset: Path = typer.Option(
+        REPO_ROOT / "data/raw/botsv1_data_set", help="Root of the BOTS v1 dataset."
+    ),
+    cache: Path = typer.Option(
+        REPO_ROOT / "data/cache/botsv1.jsonl", help="Where to write the replay cache."
+    ),
+) -> None:
+    """Extract, timestamp and chronologically order the replay cache."""
+    from citinel.ingest.replay import build_cache
+
+    if not dataset.exists():
+        console.print(f"[red]Dataset not found:[/red] {dataset}")
+        raise typer.Exit(1)
+    with console.status("extracting and ordering telemetry..."):
+        stats = build_cache(dataset, cache)
+    console.print(f"[green]cache written[/green] {cache}")
+    console.print(f"  {stats.summary()}")
+
+
+@telemetry.command("peek")
+def telemetry_peek(
+    count: int = typer.Option(5, help="How many events to show."),
+    event_class: str = typer.Option("", help="Filter to one derived class."),
+    cache: Path = typer.Option(REPO_ROOT / "data/cache/botsv1.jsonl"),
+) -> None:
+    """Show the head of the replay stream, in chronological order."""
+    from citinel.ingest.replay import stream_cache
+
+    if not cache.exists():
+        console.print("[red]No cache.[/red] Run `citinel telemetry build` first.")
+        raise typer.Exit(1)
+    shown = 0
+    for ev in stream_cache(cache):
+        if event_class and ev["event_class"] != event_class:
+            continue
+        body = ev["body"].replace("\n", " | ")[:110]
+        console.print(
+            f"[dim]{ev['timestamp']}[/dim] [cyan]{ev['event_class']:<20}[/cyan] {body}"
+        )
+        shown += 1
+        if shown >= count:
+            break
 
 
 if __name__ == "__main__":
