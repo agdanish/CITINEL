@@ -37,7 +37,7 @@ LADDER: list[tuple[str, str, str]] = [
     ("7",  "Agent swarm",                  "backend/citinel/agents/sentinel.py"),
     ("8",  "OPA gate + autonomy dial",     "backend/citinel/policy/gate.py"),
     ("9",  "Injection hardening",          "backend/citinel/agents/quarantine.py"),
-    ("10", "Compliance drafter",           "backend/citinel/compliance/certin.py"),
+    ("10", "Compliance drafter",           "backend/citinel/compliance/drafter.py"),
     ("11", "Glass-box dashboard",          "dashboard/app.py"),
     ("12", "Sponsor integrations",         "backend/citinel/connectors/render.py"),
     ("13", "Eval harness",                 "evals/harness/run.py"),
