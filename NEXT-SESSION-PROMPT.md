@@ -1,0 +1,16 @@
+You're picking up work on CITINEL — Autonomous Cyber SOC, a Decode SIH 2026 hackathon project (Team AeroFyta, Chennai Institute of Technology). This repo itself is still 100% documentation/research/brand assets — no application code, no git repository yet — but that is NOT the whole state of the project: a 23-page UI/UX prototype has been under real, active development in a separate Claude Design canvas session, and is mid-way through an unresolved responsive-architecture question. Read HANDOFF-MEMORY.md §8–§9 before assuming "no code exists" means "nothing has been built."
+
+Before doing anything else, read these three files in `/Users/danish/CITINEL/` in this order:
+1. `HANDOFF-MEMORY.md` — orientation: architecture summary, locked brand tokens, the honesty/claims discipline rules (do not violate these), a table of every research pass already run (13 total, §6), hard-won tooling gotchas (§7), the Claude Design UI/UX pass and its one open technical question (§8), a hackathon-timeline reality-check including a likely date-count error and a possibly-live false external claim (§9), and the current open-items list (§10) — this last one is longer and more time-sensitive than it was a few days ago, read it in full.
+2. `CITINEL-SDD.md` — the full 23-section spec-driven-development document: complete architecture, evidence-tagged UVPs, innovation backlog, partner-prize plan, hardening recommendations, demo design, UI/UX recommendations, enterprise/government readiness, patentability assessment, and open questions for Danish.
+3. `CITINEL-PROPOSAL.md` — the narrative pitch version of the same material, written for a human reader rather than an audit trail.
+
+Two live artifacts also exist from the 21 Aug research session (currently private — Danish can make them link-public from the artifact page's own share menu):
+- SDD as HTML: https://claude.ai/code/artifact/3784b725-c161-4cb8-8680-9a30acdd0dab
+- Standalone pitch page: https://claude.ai/code/artifact/77f08d59-d768-4ce9-97e0-f1c124c21761
+
+A separate Claude Design canvas (the UI/UX prototype, HANDOFF-MEMORY §3/§8) and a separate ChatGPT session (badge-asset regeneration, HANDOFF-MEMORY §3/§4a) also exist, outside this repo and outside each other. Their exact links aren't recorded anywhere yet — ask Danish for them if the work continues there.
+
+Do not re-run any deep-research passes or re-derive the architecture from scratch — all of that is done and verified (13 passes now, not 11 — HANDOFF-MEMORY §6). Do not assume you should start writing application code or initializing git — per the repo's own rule, "Danish owns all timelines," and this was explicitly paused mid-conversation with a "Wait" as of the 24 Aug update, not decided either way.
+
+Once you've read the three files, surface the two time-sensitive items from HANDOFF-MEMORY §9 early (the Grand-Finale day-count check, and the submitted deck's possibly-unbacked QR-code claim) — then ask directly what I want to do next. There are two independently-paused threads (the application build, and the UI/UX prototype's responsive-architecture retest — HANDOFF-MEMORY §11 has the detail on both) plus the standing SDD §22 open questions. Don't guess which one I want — ask.
