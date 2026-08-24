@@ -384,5 +384,48 @@ def detect_run(
     )
 
 
+@detect_app.command("anomaly")
+def detect_anomaly(
+    cache: Path = typer.Option(REPO_ROOT / "data/cache/botsv1.jsonl"),
+    out: Path = typer.Option(REPO_ROOT / "data/cache/anomalies.jsonl"),
+    top: int = typer.Option(12, help="How many top escalations to display."),
+) -> None:
+    """Statistical scoring pass: the second deterministic gate before the swarm."""
+    import json as _json
+
+    from citinel.detect.anomaly import build_population, score_stream
+
+    if not cache.exists():
+        console.print("[red]No replay cache.[/red] Run `citinel telemetry build` first.")
+        raise typer.Exit(1)
+
+    with console.status("pass 1: population baselines..."):
+        pop = build_population(cache)
+    with console.status("pass 2: chronological scoring..."):
+        report = score_stream(cache, pop, out)
+
+    rows = [_json.loads(l) for l in out.open()][:top]
+    table = Table(title="Top escalations", title_justify="left")
+    table.add_column("Score", justify="right", width=6)
+    table.add_column("Kind", width=12)
+    table.add_column("Key", max_width=52)
+    table.add_column("Why", max_width=34)
+    for e in rows:
+        table.add_row(
+            f"{e['score']:.2f}", e["kind"], e["key"],
+            ", ".join(sorted({r["feature"] for r in e["reasons"]})),
+        )
+    console.print(table)
+    console.print(
+        Panel.fit(
+            f"{report.summary()}\n"
+            f"[dim]deterministic: counting, set membership and fixed thresholds "
+            f"only; every escalation carries its reasons with real counts[/dim]",
+            title="Anomaly gate",
+            border_style="cyan",
+        )
+    )
+
+
 if __name__ == "__main__":
     app()
