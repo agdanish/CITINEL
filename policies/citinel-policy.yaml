@@ -1,0 +1,109 @@
+# CITINEL response policy -- the rulebook the agents must obey.
+#
+# This file IS the product claim: a per-action-class policy a bank's IT head
+# can read and change, not a threshold hidden inside a vendor's model.
+# Every automated action CITINEL takes must cite the clause that allowed it,
+# and the approval card shows the clause reference to the human deciding.
+#
+# Semantics (enforced by the gate, tested in backend/tests/test_policy.py):
+#
+#   tier          The autonomy dial position for this action class:
+#                   shadow      propose and log only; execute nothing
+#                   assist      execute automatically WITH a rollback token
+#                   autonomous  execute automatically
+#                 The dial is set per action class, never globally.
+#
+#   approval      "always" means a human click is required no matter where
+#                 any dial is set. Raising a dial NEVER lowers this: approval
+#                 requirements are structural, not tunable. (SDD Section 17
+#                 finding 1: autonomy up must never quietly mean safeguards
+#                 down.)
+#
+#   max_assets_auto   Blast-radius ring: the most assets one automatic
+#                 execution may touch. Exceeding it forces the approval path
+#                 regardless of tier. (SAFE-F07, the CrowdStrike 8.5M-device
+#                 lesson: automation must not move too wide, too fast.)
+#
+#   reversible    Whether a rollback token can genuinely undo the action.
+#                 Irreversible actions can never run above assist.
+#
+# All response actions execute against SIMULATED endpoints only (PIPE-F09).
+
+policy:
+  name: CITINEL response policy
+  version: 1
+
+clauses:
+
+  # --- section 1: enrichment (read-only lookups) ---------------------------
+  "1.1":
+    action_class: enrich_ioc
+    description: Look up an indicator (hash, IP, domain) in threat intel
+    tier: autonomous
+    approval: never
+    max_assets_auto: 0        # touches no bank asset at all
+    reversible: true
+
+  "1.2":
+    action_class: query_logs
+    description: Run an additional scoped log query for evidence
+    tier: autonomous
+    approval: never
+    max_assets_auto: 0
+    reversible: true
+
+  # --- section 2: notification ---------------------------------------------
+  "2.1":
+    action_class: notify
+    description: Send an alert or escalation notification to staff
+    tier: autonomous
+    approval: never
+    max_assets_auto: 0
+    reversible: false          # a sent message cannot be unsent; it is
+                               # allowed anyway because it changes no system
+                               # state -- the exception that proves the rule
+                               # is written down here, not hidden in code
+
+  # --- section 3: containment ----------------------------------------------
+  "3.1":
+    action_class: isolate_host
+    description: Network-isolate a host at the firewall (simulated endpoint)
+    tier: assist               # auto-executes WITH a rollback token
+    approval: never
+    max_assets_auto: 1         # one host per automatic action, ever
+    reversible: true
+
+  "3.2":
+    action_class: block_ip
+    description: Block an external IP at the perimeter (simulated endpoint)
+    tier: assist
+    approval: never
+    max_assets_auto: 3
+    reversible: true
+
+  "3.3":
+    action_class: quarantine_file
+    description: Quarantine a file by hash on matching hosts (simulated)
+    tier: assist
+    approval: never
+    max_assets_auto: 5
+    reversible: true
+
+  # --- section 4: identity (consequential; the human line) -----------------
+  "4.1":
+    action_class: revoke_sessions
+    description: Revoke a user's active sessions and tokens (simulated)
+    tier: assist
+    approval: never
+    max_assets_auto: 1
+    reversible: false          # sessions cannot be un-revoked; capped hard
+                               # at one account and never above assist
+
+  "4.2":
+    action_class: disable_account
+    description: Disable a production account (simulated endpoint)
+    tier: shadow               # proposes only, by default
+    approval: always           # one-click human approval, at EVERY dial
+                               # position -- structural, not tunable
+    max_assets_auto: 0
+    reversible: true

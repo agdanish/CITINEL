@@ -501,5 +501,61 @@ def incidents_audit(
     console.print(f"\nchain: [{'green' if ok else 'red'}]{msg}[/{'green' if ok else 'red'}]")
 
 
+policy_app = typer.Typer(help="The readable response policy and its gate.")
+app.add_typer(policy_app, name="policy")
+
+
+@policy_app.command("show")
+def policy_show(
+    policy: Path = typer.Option(REPO_ROOT / "policies/citinel-policy.yaml"),
+) -> None:
+    """Render the rulebook the agents must obey -- the readable artifact itself."""
+    from citinel.policy.gate import PolicyGate
+
+    gate = PolicyGate(policy)
+    table = Table(title=f"{gate.name} v{gate.version}", title_justify="left")
+    table.add_column("Clause", width=7)
+    table.add_column("Action class")
+    table.add_column("Tier")
+    table.add_column("Approval")
+    table.add_column("Auto cap", justify="right")
+    table.add_column("Reversible")
+    for row in gate.table():
+        tier_colour = {"shadow": "yellow", "assist": "cyan", "autonomous": "green"}[row["tier"]]
+        table.add_row(
+            row["clause"], row["action_class"],
+            f"[{tier_colour}]{row['tier']}[/{tier_colour}]",
+            "[bold red]always[/bold red]" if row["approval"] == "always" else "never",
+            str(row["max_assets_auto"]),
+            "yes" if row["reversible"] else "no",
+        )
+    console.print(table)
+    console.print(f"[dim]policy sha256: {gate.policy_sha256}  "
+                  f"(engine: yaml-inprocess; OPA/Rego twin ships in policies/citinel.rego)[/dim]")
+
+
+@policy_app.command("check")
+def policy_check(
+    action_class: str = typer.Argument(help="e.g. isolate_host, disable_account"),
+    assets: int = typer.Option(1, help="Assets the action would touch."),
+    target: str = typer.Option("demo-target", help="Human-readable target."),
+    policy: Path = typer.Option(REPO_ROOT / "policies/citinel-policy.yaml"),
+) -> None:
+    """Dry-run one proposal through the gate and show the full decision."""
+    from citinel.policy.gate import PolicyGate
+
+    d = PolicyGate(policy).check(action_class, assets, target)
+    colour = {"allow": "green", "allow_with_rollback": "cyan",
+              "require_approval": "yellow", "shadow": "yellow", "deny": "red"}[d.verdict.value]
+    console.print(Panel.fit(
+        f"verdict: [{colour}]{d.verdict.value}[/{colour}]   clause: {d.clause_ref}\n"
+        f"{d.intent_preview}\n"
+        + "\n".join(f"[dim]- {r}[/dim]" for r in d.reasons)
+        + (f"\nrollback token: {d.rollback_token}" if d.rollback_token else ""),
+        title=f"policy gate: {action_class}",
+        border_style=colour,
+    ))
+
+
 if __name__ == "__main__":
     app()
