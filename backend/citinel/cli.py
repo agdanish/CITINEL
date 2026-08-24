@@ -340,5 +340,49 @@ def ocsf_verify(
     )
 
 
+detect_app = typer.Typer(help="Deterministic detection: Sigma rules before any model.")
+app.add_typer(detect_app, name="detect")
+
+
+@detect_app.command("run")
+def detect_run(
+    rules: Path = typer.Option(REPO_ROOT / "data/raw/sigma/rules"),
+    cache: Path = typer.Option(REPO_ROOT / "data/cache/botsv1.jsonl"),
+    out: Path = typer.Option(REPO_ROOT / "data/cache/detections.jsonl"),
+    limit: int = typer.Option(0, help="0 = full corpus."),
+) -> None:
+    """Run the pinned Sigma corpus over the replay stream and persist hits."""
+    from citinel.detect.run import run_detection
+
+    for path, hint in ((rules, "download the pinned SigmaHQ release"),
+                       (cache, "run `citinel telemetry build`")):
+        if not path.exists():
+            console.print(f"[red]missing:[/red] {path}  ({hint})")
+            raise typer.Exit(1)
+
+    with console.status("matching (full corpus takes ~8 minutes)..."):
+        report = run_detection(rules, cache, out, limit=limit or None)
+
+    table = Table(title="Rules fired", title_justify="left")
+    table.add_column("Rule", max_width=58)
+    table.add_column("Level", width=9)
+    table.add_column("Hits", justify="right")
+    level_of = {}
+    # by_rule holds counts; recover levels from the output for display order.
+    for title, n in sorted(report.by_rule.items(), key=lambda kv: -kv[1])[:30]:
+        table.add_row(title, "", f"{n:,}")
+    console.print(table)
+    console.print(
+        Panel.fit(
+            f"{report.summary()}\n"
+            f"by level: {dict(sorted(report.by_level.items()))}\n"
+            f"[dim]corpus: SigmaHQ pinned release; every hit stores the exact "
+            f"raw log line as evidence[/dim]",
+            title="Deterministic detection",
+            border_style="cyan",
+        )
+    )
+
+
 if __name__ == "__main__":
     app()
