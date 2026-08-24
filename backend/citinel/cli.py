@@ -248,5 +248,97 @@ def telemetry_peek(
             break
 
 
+ocsf_app = typer.Typer(help="OCSF normalization: map telemetry onto one schema.")
+app.add_typer(ocsf_app, name="ocsf")
+
+
+@ocsf_app.command("verify")
+def ocsf_verify(
+    cache: Path = typer.Option(REPO_ROOT / "data/cache/botsv1.jsonl"),
+    out: Path = typer.Option(
+        REPO_ROOT / "data/cache/ocsf.jsonl", help="Where to write normalized records."
+    ),
+    write: bool = typer.Option(True, help="Write the normalized cache as well."),
+) -> None:
+    """Normalize the replay cache to OCSF and validate every record.
+
+    Validation is against a pinned snapshot of OCSF's own published schema,
+    so 'valid' means checkable rather than asserted.
+    """
+    import json as _json
+    from collections import Counter
+
+    from citinel.ingest.replay import stream_cache
+    from citinel.ocsf import schema as S
+    from citinel.ocsf.normalize import normalize
+    from citinel.ocsf.validate import validate_record
+
+    if not cache.exists():
+        console.print("[red]No replay cache.[/red] Run `citinel telemetry build` first.")
+        raise typer.Exit(1)
+
+    total = mapped = valid = 0
+    unmapped: Counter = Counter()
+    failures: Counter = Counter()
+    by_class: Counter = Counter()
+    examples: dict[str, str] = {}
+    fh = out.open("w", encoding="utf-8") if write else None
+
+    with console.status("normalizing to OCSF..."):
+        for ev in stream_cache(cache):
+            total += 1
+            rec = normalize(ev)
+            if rec is None:
+                unmapped[ev["event_class"]] += 1
+                continue
+            mapped += 1
+            by_class[S.class_name(rec["class_uid"]) or str(rec["class_uid"])] += 1
+            problems = validate_record(rec)
+            if problems:
+                for pr in problems:
+                    key = pr.split(":")[0]
+                    failures[key] += 1
+                    examples.setdefault(key, pr)
+            else:
+                valid += 1
+            if fh is not None:
+                fh.write(_json.dumps(rec, ensure_ascii=False) + "\n")
+    if fh is not None:
+        fh.close()
+
+    table = Table(title="OCSF classes produced", title_justify="left")
+    table.add_column("Class")
+    table.add_column("uid", justify="right")
+    table.add_column("Records", justify="right")
+    for name, n in by_class.most_common():
+        uid = next(
+            (c["uid"] for cn, c in S.classes().items() if cn == name), ""
+        )
+        table.add_row(name, str(uid), f"{n:,}")
+    console.print(table)
+
+    if unmapped:
+        console.print("[yellow]unmapped source classes:[/yellow] " +
+                      ", ".join(f"{k} ({v:,})" for k, v in unmapped.most_common(6)))
+    if failures:
+        console.print("[red]contract violations:[/red]")
+        for k, n in failures.most_common(8):
+            console.print(f"  {n:,}  {examples[k]}")
+
+    pct_map = mapped / total * 100 if total else 0
+    pct_val = valid / mapped * 100 if mapped else 0
+    console.print(
+        Panel.fit(
+            f"normalized [bold]{mapped:,}[/bold] of [bold]{total:,}[/bold] events "
+            f"([bold]{pct_map:.2f}%[/bold])\n"
+            f"OCSF-valid  [bold]{valid:,}[/bold] of [bold]{mapped:,}[/bold] records "
+            f"([bold]{pct_val:.2f}%[/bold])\n"
+            f"[dim]schema: OCSF {S.OCSF_VERSION}, pinned snapshot of schema.ocsf.io[/dim]",
+            title="OCSF normalization",
+            border_style="cyan",
+        )
+    )
+
+
 if __name__ == "__main__":
     app()

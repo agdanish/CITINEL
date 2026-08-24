@@ -1,0 +1,332 @@
+{
+ "_provenance": {
+  "source": "https://schema.ocsf.io/api",
+  "schema_version": "1.9.0",
+  "fetched": "2026-08-24",
+  "note": "Fetched from the OCSF project's own schema server, not transcribed from memory. Regenerate with: citinel ocsf refresh-schema. type_uid must be computed as class_uid * 100 + activity_id (stated as a MUST in the schema's own type_uid description).",
+  "base_event_required": [
+   "activity_id",
+   "category_uid",
+   "class_uid",
+   "metadata",
+   "severity_id",
+   "time",
+   "type_uid"
+  ],
+  "metadata_required": [
+   "product",
+   "version"
+  ],
+  "severity_id": {
+   "0": "Unknown",
+   "1": "Informational",
+   "2": "Low",
+   "3": "Medium",
+   "4": "High",
+   "5": "Critical",
+   "6": "Fatal",
+   "99": "Other"
+  }
+ },
+ "classes": {
+  "authentication": {
+   "uid": 3002,
+   "category_uid": 3,
+   "extension": null,
+   "activities": {
+    "3": "Authentication Ticket",
+    "6": "Preauth",
+    "0": "Unknown",
+    "1": "Logon",
+    "2": "Logoff",
+    "99": "Other",
+    "4": "Service Ticket Request",
+    "5": "Service Ticket Renew",
+    "7": "Account Switch"
+   }
+  },
+  "authorize_session": {
+   "uid": 3003,
+   "category_uid": 3,
+   "extension": null,
+   "activities": {
+    "3": "Assign Roles",
+    "0": "Unknown",
+    "1": "Assign Privileges",
+    "2": "Assign Groups",
+    "99": "Other"
+   }
+  },
+  "detection_finding": {
+   "uid": 2004,
+   "category_uid": 2,
+   "extension": null,
+   "activities": {
+    "3": "Close",
+    "0": "Unknown",
+    "1": "Create",
+    "2": "Update",
+    "99": "Other"
+   }
+  },
+  "dns_activity": {
+   "uid": 4003,
+   "category_uid": 4,
+   "extension": null,
+   "activities": {
+    "6": "Traffic",
+    "0": "Unknown",
+    "1": "Query",
+    "2": "Response",
+    "99": "Other"
+   }
+  },
+  "event_log_actvity": {
+   "uid": 1008,
+   "category_uid": 1,
+   "extension": null,
+   "activities": {
+    "3": "Export",
+    "6": "Start",
+    "0": "Unknown",
+    "1": "Clear",
+    "2": "Delete",
+    "99": "Other",
+    "4": "Archive",
+    "5": "Rotate",
+    "7": "Stop",
+    "8": "Restart",
+    "9": "Enable",
+    "10": "Disable"
+   }
+  },
+  "file_activity": {
+   "uid": 1001,
+   "category_uid": 1,
+   "extension": null,
+   "activities": {
+    "3": "Update",
+    "6": "Set Attributes",
+    "0": "Unknown",
+    "1": "Create",
+    "2": "Read",
+    "99": "Other",
+    "4": "Delete",
+    "5": "Rename",
+    "7": "Set Security",
+    "8": "Get Attributes",
+    "9": "Get Security",
+    "10": "Encrypt",
+    "11": "Decrypt",
+    "12": "Mount",
+    "14": "Open",
+    "13": "Unmount"
+   }
+  },
+  "http_activity": {
+   "uid": 4002,
+   "category_uid": 4,
+   "extension": null,
+   "activities": {
+    "25": "Move",
+    "31": "Rebind",
+    "39": "Update Redirect Reference",
+    "38": "Update",
+    "24": "Make Workspace",
+    "18": "Lock",
+    "5": "Options",
+    "30": "Query",
+    "15": "Copy",
+    "27": "PRI",
+    "21": "Make Calendar",
+    "99": "Other",
+    "36": "Unlink",
+    "10": "ACL",
+    "22": "Make Collection",
+    "17": "Link",
+    "1": "Connect",
+    "13": "Check In",
+    "32": "Report",
+    "37": "Unlock",
+    "16": "Label",
+    "11": "Baseline Control",
+    "12": "Bind",
+    "40": "Version Control",
+    "4": "Head",
+    "8": "Trace",
+    "33": "Search",
+    "6": "Post",
+    "28": "Property Find",
+    "35": "Un-Check Out",
+    "3": "Get",
+    "20": "Make Activity",
+    "23": "Make Redirect Reference",
+    "19": "Merge",
+    "0": "Unknown",
+    "29": "Property Patch",
+    "2": "Delete",
+    "34": "Unbind",
+    "14": "Check Out",
+    "9": "Patch",
+    "7": "Put",
+    "26": "Order Patch"
+   }
+  },
+  "memory_activity": {
+   "uid": 1004,
+   "category_uid": 1,
+   "extension": null,
+   "activities": {
+    "3": "Delete Page",
+    "6": "Enable DEP",
+    "0": "Unknown",
+    "1": "Allocate Page",
+    "2": "Modify Page",
+    "99": "Other",
+    "4": "Buffer Overflow",
+    "5": "Disable DEP",
+    "7": "Read",
+    "8": "Write",
+    "9": "Map View"
+   }
+  },
+  "module_activity": {
+   "uid": 1005,
+   "category_uid": 1,
+   "extension": null,
+   "activities": {
+    "3": "Invoke",
+    "0": "Unknown",
+    "1": "Load",
+    "2": "Unload",
+    "99": "Other"
+   }
+  },
+  "network_activity": {
+   "uid": 4001,
+   "category_uid": 4,
+   "extension": null,
+   "activities": {
+    "3": "Reset",
+    "6": "Traffic",
+    "0": "Unknown",
+    "1": "Open",
+    "2": "Close",
+    "99": "Other",
+    "4": "Fail",
+    "5": "Refuse",
+    "7": "Listen"
+   }
+  },
+  "process_activity": {
+   "uid": 1007,
+   "category_uid": 1,
+   "extension": null,
+   "activities": {
+    "3": "Open",
+    "0": "Unknown",
+    "1": "Launch",
+    "2": "Terminate",
+    "99": "Other",
+    "4": "Inject",
+    "5": "Set User ID"
+   }
+  },
+  "registry_key_activity": {
+   "uid": 201001,
+   "category_uid": 1,
+   "extension": "win",
+   "activities": {
+    "3": "Modify",
+    "6": "Set Security",
+    "0": "Unknown",
+    "1": "Create",
+    "2": "Read",
+    "99": "Other",
+    "4": "Delete",
+    "5": "Rename",
+    "7": "Restore",
+    "8": "Import",
+    "9": "Export"
+   }
+  },
+  "registry_value_activity": {
+   "uid": 201002,
+   "category_uid": 1,
+   "extension": "win",
+   "activities": {
+    "3": "Modify",
+    "0": "Unknown",
+    "1": "Get",
+    "2": "Set",
+    "99": "Other",
+    "4": "Delete"
+   }
+  },
+  "smb_activity": {
+   "uid": 4006,
+   "category_uid": 4,
+   "extension": null,
+   "activities": {
+    "3": "File Create",
+    "6": "File Overwrite If",
+    "0": "Unknown",
+    "1": "File Supersede",
+    "2": "File Open",
+    "99": "Other",
+    "4": "File Open If",
+    "5": "File Overwrite"
+   }
+  },
+  "user_management": {
+   "uid": 3007,
+   "category_uid": 3,
+   "extension": null,
+   "activities": {
+    "3": "Delete",
+    "6": "Lock",
+    "0": "Unknown",
+    "1": "Create",
+    "2": "Update",
+    "99": "Other",
+    "4": "Enable",
+    "5": "Disable",
+    "7": "Unlock",
+    "8": "Password Change",
+    "9": "Password Reset",
+    "10": "Attach Policies",
+    "11": "Detach Policies",
+    "12": "Enable MFA Factors",
+    "14": "Assign Privileges",
+    "15": "Remove Privileges",
+    "16": "Assign Roles",
+    "17": "Remove Roles",
+    "18": "Add Programmatic Credentials",
+    "13": "Disable MFA Factors",
+    "19": "Remove Programmatic Credentials"
+   }
+  },
+  "vulnerability_finding": {
+   "uid": 2002,
+   "category_uid": 2,
+   "extension": null,
+   "activities": {
+    "3": "Close",
+    "0": "Unknown",
+    "1": "Create",
+    "2": "Update",
+    "99": "Other"
+   }
+  },
+  "windows_resource_activity": {
+   "uid": 201003,
+   "category_uid": 1,
+   "extension": "win",
+   "activities": {
+    "0": "Unknown",
+    "1": "Access",
+    "99": "Other"
+   }
+  }
+ }
+}
