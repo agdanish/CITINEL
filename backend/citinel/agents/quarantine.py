@@ -51,7 +51,12 @@ _PATTERNS: tuple[tuple[str, re.Pattern], ...] = tuple(
         ("INJ-002", r"disregard\s+(all\s+|your\s+)?(previous|prior|safety)?\s*(instructions?|guidelines?|rules?)"),
         ("INJ-003", r"you\s+are\s+now\s+(a|an|in)\b"),
         ("INJ-004", r"(new|updated|revised)\s+(system\s+)?(prompt|instructions?)\s*:"),
-        ("INJ-005", r"system\s*prompt|<\s*/?system\s*>|\[\s*system\s*\]"),
+        # INJ-005 targets actual LLM chat-template control tokens (the real
+        # injection vectors), NOT generic "<system>" -- an earlier version of
+        # this pattern matched the <System> element in every Windows Event XML
+        # document, flagging all benign Sysmon telemetry. Confirmed and fixed
+        # by running the drafter over real BOTS data.
+        ("INJ-005", r"<\|\s*(system|im_start|im_end)\s*\|>|<<\s*sys\s*>>|\[/?INST\]|#{2,}\s*system\s*:|\bsystem\s*prompt\b"),
         ("INJ-006", r"mark\s+(this\s+|it\s+)?(as\s+)?(benign|safe|clean|false\s+positive)"),
         ("INJ-007", r"(disable|turn\s+off|stop|suppress)\s+(all\s+)?(logging|logs|alerts?|detection|monitoring)"),
         ("INJ-008", r"do\s+not\s+(report|alert|escalate|log|flag)"),

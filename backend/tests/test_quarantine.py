@@ -88,3 +88,17 @@ def test_html_rendering_escapes_payload():
     assert "&lt;script&gt;" in out
     assert "quarantine-block" in out
     assert "INJ-001" in out                    # flag surfaced in the UI
+
+
+def test_inj005_does_not_flag_benign_windows_xml():
+    """Regression: INJ-005 once matched the <System> element in every Windows
+    Event XML document, flagging all benign Sysmon telemetry. It must catch
+    real chat-template control tokens only."""
+    benign = "<Event xmlns='x'><System><Provider Name='Microsoft-Windows-Sysmon'/>" \
+             "</System></Event>"
+    assert scan(benign) == []
+    assert scan("<SystemTime>2016-08-24</SystemTime>") == []
+    # but the real ChatML / Llama / instruction markers still trip it
+    for marker in ("<|system|>", "<|im_start|>system", "<<SYS>>", "[INST]",
+                   "### System:", "system prompt"):
+        assert any(f.pattern_id == "INJ-005" for f in scan(marker + " override")), marker
