@@ -427,5 +427,79 @@ def detect_anomaly(
     )
 
 
+incidents_app = typer.Typer(help="Incidents: one record, five states, under the audit ledger.")
+app.add_typer(incidents_app, name="incidents")
+
+
+@incidents_app.command("build")
+def incidents_build(
+    detections: Path = typer.Option(REPO_ROOT / "data/cache/detections.jsonl"),
+    anomalies: Path = typer.Option(REPO_ROOT / "data/cache/anomalies.jsonl"),
+    out_dir: Path = typer.Option(REPO_ROOT / "data/incidents"),
+    start: int = typer.Option(416, help="First incident number (0417 = the deck's demo id)."),
+    fresh: bool = typer.Option(True, help="Rebuild from scratch (clears prior derived output)."),
+) -> None:
+    """Fuse detections + escalations into incidents; every step hits the ledger."""
+    import shutil
+
+    from citinel.audit.ledger import AuditLedger
+    from citinel.incidents.builder import build_incidents
+
+    if fresh and out_dir.exists():
+        shutil.rmtree(out_dir)
+    ledger = AuditLedger(out_dir / "ledger.jsonl")
+    report = build_incidents(detections, anomalies, out_dir / "incidents.jsonl",
+                             ledger, start=start)
+
+    table = Table(title="Incidents", title_justify="left")
+    table.add_column("ID")
+    table.add_column("State")
+    table.add_column("Severity")
+    table.add_column("Findings", justify="right")
+    table.add_column("Span (UTC)")
+    table.add_column("Hosts", justify="right")
+    for i in report.by_incident:
+        table.add_row(i["id"], i["state"], i["severity"], f"{i['findings']:,}",
+                      i["span"], str(len(i["hosts"])))
+    console.print(table)
+
+    ok, msg = ledger.verify_chain()
+    colour = "green" if ok else "red"
+    console.print(
+        Panel.fit(
+            f"{report.summary()}\n"
+            f"ledger: [{colour}]{msg}[/{colour}]",
+            title="Incident build",
+            border_style="cyan",
+        )
+    )
+
+
+@incidents_app.command("audit")
+def incidents_audit(
+    case_id: str = typer.Argument(help="e.g. INC-0417"),
+    out_dir: Path = typer.Option(REPO_ROOT / "data/incidents"),
+    tail: int = typer.Option(12, help="Show only the last N entries (0 = all)."),
+) -> None:
+    """Reconstruct one incident's full audit chain from its case id alone."""
+    from citinel.audit.ledger import AuditLedger
+
+    ledger = AuditLedger(out_dir / "ledger.jsonl")
+    chain = ledger.entries_for(case_id)
+    if not chain:
+        console.print(f"[yellow]no entries for {case_id}[/yellow]")
+        raise typer.Exit(1)
+    shown = chain[-tail:] if tail else chain
+    if len(shown) < len(chain):
+        console.print(f"[dim]... {len(chain) - len(shown)} earlier entries elided ...[/dim]")
+    for e in shown:
+        console.print(
+            f"[dim]{e.ts[:19]}[/dim] seq={e.seq:<6} [cyan]{e.actor:<18}[/cyan] "
+            f"{e.kind:<18} {str(e.payload)[:80]}"
+        )
+    ok, msg = ledger.verify_chain()
+    console.print(f"\nchain: [{'green' if ok else 'red'}]{msg}[/{'green' if ok else 'red'}]")
+
+
 if __name__ == "__main__":
     app()

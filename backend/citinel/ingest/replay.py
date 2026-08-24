@@ -15,7 +15,7 @@ from __future__ import annotations
 import json
 import re
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Iterator
 
@@ -32,6 +32,16 @@ _TS_WINCLASSIC = re.compile(r"(\d{2}/\d{2}/\d{4} \d{1,2}:\d{2}:\d{2} [AP]M)")
 _TS_WINREG = re.compile(r"(\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2})\.\d+")
 _TS_FORTINET = re.compile(r"\bdate=(\d{4}-\d{2}-\d{2})\s+time=(\d{2}:\d{2}:\d{2})")
 _TS_IIS = re.compile(r"^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})")
+
+#: Windows classic event logs, the registry feed and Fortinet syslog record
+#: LOCAL time with no offset, while Sysmon (SystemTime) and Suricata record
+#: UTC. Stamping the local sources as UTC split one attack into two incidents
+#: six hours apart. The corpus's local offset is derived from the data itself,
+#: not assumed: Cerber's registry persistence (08/24/2016 10:48:41.707) and
+#: Sysmon's view of the same install (2016-08-24T16:48:41Z) are the same
+#: moment, exactly six hours apart, and Suricata's timestamps carry an
+#: explicit -0600. IIS is W3C format, which is UTC by specification.
+BOTS_LOCAL_TZ = timezone(timedelta(hours=-6))
 
 
 def _parse_iso(value: str) -> datetime | None:
@@ -61,7 +71,7 @@ def event_timestamp(ev: RawEvent) -> datetime | None:
             return None
         try:
             return datetime.strptime(m.group(1), "%m/%d/%Y %I:%M:%S %p").replace(
-                tzinfo=timezone.utc
+                tzinfo=BOTS_LOCAL_TZ
             )
         except ValueError:
             return None
@@ -69,7 +79,7 @@ def event_timestamp(ev: RawEvent) -> datetime | None:
         m = _TS_FORTINET.search(body)
         if not m:
             return None
-        return _parse_iso(f"{m.group(1)}T{m.group(2)}+00:00")
+        return _parse_iso(f"{m.group(1)}T{m.group(2)}-06:00")
     if ev.fmt == "w3c":
         m = _TS_IIS.match(body.strip())
         return _parse_iso(m.group(1).replace(" ", "T") + "+00:00") if m else None
@@ -78,7 +88,7 @@ def event_timestamp(ev: RawEvent) -> datetime | None:
         if m:
             try:
                 return datetime.strptime(m.group(1), "%m/%d/%Y %H:%M:%S").replace(
-                    tzinfo=timezone.utc
+                    tzinfo=BOTS_LOCAL_TZ
                 )
             except ValueError:
                 return None
@@ -86,7 +96,7 @@ def event_timestamp(ev: RawEvent) -> datetime | None:
         if m:
             try:
                 return datetime.strptime(m.group(1), "%m/%d/%Y %I:%M:%S %p").replace(
-                    tzinfo=timezone.utc
+                    tzinfo=BOTS_LOCAL_TZ
                 )
             except ValueError:
                 return None
