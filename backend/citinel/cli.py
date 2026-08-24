@@ -557,5 +557,40 @@ def policy_check(
     ))
 
 
+safety_app = typer.Typer(help="The untrusted-content plane: logs are data, never instructions.")
+app.add_typer(safety_app, name="safety")
+
+
+@safety_app.command("scan")
+def safety_scan(
+    text: str = typer.Argument(help="A log line to scan for injection patterns."),
+) -> None:
+    """Scan one line through the injection detector and show it quarantined."""
+    from citinel.agents.quarantine import Provenance, quarantine, render_untrusted_text
+
+    t = quarantine(text, Provenance("cli input", "manual", "-"))
+    if t.flagged:
+        console.print("[bold red]injection patterns flagged:[/bold red]")
+        for f in t.flags:
+            console.print(f"  [red]{f.pattern_id}[/red]  {f.matched!r}")
+    else:
+        console.print("[green]no injection patterns matched[/green] "
+                      "[dim](absence of a flag is not proof of safety; "
+                      "the plane mitigates, it never solves)[/dim]")
+    console.print("\n[dim]how it renders inside a draft (escaped, quarantined):[/dim]")
+    console.print(render_untrusted_text(t, width=72))
+
+
+@safety_app.command("egress")
+def safety_egress(url: str = typer.Argument(help="A URL to test against the allow-list.")) -> None:
+    """Test one destination against the deterministic egress allow-list."""
+    from citinel.agents.quarantine import EGRESS_ALLOW, check_egress
+
+    d = check_egress(url)
+    colour = "green" if d.allowed else "red"
+    console.print(f"[{colour}]{'ALLOW' if d.allowed else 'BLOCK'}[/{colour}]  {d.reason}")
+    console.print(f"[dim]allow-list: {', '.join(sorted(EGRESS_ALLOW))}[/dim]")
+
+
 if __name__ == "__main__":
     app()
