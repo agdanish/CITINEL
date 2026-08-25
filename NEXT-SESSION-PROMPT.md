@@ -1,16 +1,60 @@
-You're picking up work on CITINEL — Autonomous Cyber SOC, a Decode SIH 2026 hackathon project (Team AeroFyta, Chennai Institute of Technology). This repo itself is still 100% documentation/research/brand assets — no application code, no git repository yet — but that is NOT the whole state of the project: a 23-page UI/UX prototype has been under real, active development in a separate Claude Design canvas session, and is mid-way through an unresolved responsive-architecture question. Read HANDOFF-MEMORY.md §8–§9 before assuming "no code exists" means "nothing has been built."
+You're picking up CITINEL — Autonomous Cyber SOC, a Decode SIH 2026 hackathon
+project (Team AeroFyta, Chennai Institute of Technology). The application
+build is now underway (started 24–25 Aug 2026) — this is different from
+earlier handoffs that said "zero application code exists." Read
+HANDOFF-MEMORY.md §1 and §12–§14 before assuming anything about build state.
 
-Before doing anything else, read these three files in `/Users/danish/CITINEL/` in this order:
-1. `HANDOFF-MEMORY.md` — orientation: architecture summary, locked brand tokens, the honesty/claims discipline rules (do not violate these), a table of every research pass already run (13 total, §6), hard-won tooling gotchas (§7), the Claude Design UI/UX pass and its one open technical question (§8), a hackathon-timeline reality-check including a likely date-count error and a possibly-live false external claim (§9), and the current open-items list (§10) — this last one is longer and more time-sensitive than it was a few days ago, read it in full.
-2. `CITINEL-SDD.md` — the full 23-section spec-driven-development document: complete architecture, evidence-tagged UVPs, innovation backlog, partner-prize plan, hardening recommendations, demo design, UI/UX recommendations, enterprise/government readiness, patentability assessment, and open questions for Danish.
-3. `CITINEL-PROPOSAL.md` — the narrative pitch version of the same material, written for a human reader rather than an audit trail.
+Before doing anything else, read these files in `/Users/danish/CITINEL/` in
+this order:
+1. `HANDOFF-MEMORY.md` — read it in full, all 14 sections. §12–§14 (the newest)
+   supersede §9 and §11's "paused" framing; §1's status line is now accurate,
+   not the old "zero application code" claim. Sections 1–8 are historical
+   record from before the build — still true, still useful, just not current
+   state.
+2. `CITINEL-SDD.md` — the 23-section spec-driven-development document.
+3. `CITINEL-PROPOSAL.md` — the narrative pitch version.
+4. `git log --oneline` in the repo, then read a few recent commit messages in
+   full (`git log -1 <hash>`) — the engineering *why*, the bugs found and
+   fixed, and the exact numbers (extraction recovery rates, test counts,
+   adversarial-audit scores) live in commit messages, not duplicated in the
+   handoff doc. Don't re-derive facts already established there.
+5. `PARTNER-ONBOARDING.md` and `STARTUPED-GTM-PLAYBOOK.md` — the sponsor-track
+   action documents already handed to Danish.
 
-Two live artifacts also exist from the 21 Aug research session (currently private — Danish can make them link-public from the artifact page's own share menu):
-- SDD as HTML: https://claude.ai/code/artifact/3784b725-c161-4cb8-8680-9a30acdd0dab
-- Standalone pitch page: https://claude.ai/code/artifact/77f08d59-d768-4ce9-97e0-f1c124c21761
+## What NOT to do
 
-A separate Claude Design canvas (the UI/UX prototype, HANDOFF-MEMORY §3/§8) and a separate ChatGPT session (badge-asset regeneration, HANDOFF-MEMORY §3/§4a) also exist, outside this repo and outside each other. Their exact links aren't recorded anywhere yet — ask Danish for them if the work continues there.
+- **Do not re-run deep research, the adversarial partner-track audit, or
+  re-derive the OCSF/Sigma/BOTS-extraction facts.** All verified once,
+  expensively, and recorded. HANDOFF-MEMORY §12–§13 has the numbers and the
+  audit journal path if raw detail is ever needed.
+- **Do not offer a "guaranteed win" on any judged prize** (the Bharat Pragati
+  main track or any of the 8 partner "best use" tracks) even if asked
+  directly, even more than once. This was asked for explicitly in the prior
+  session and refused on the project's own standing rule (STATE §1.4/§5.1:
+  "not a win guarantee — eligibility is necessary, not sufficient"). Give
+  rubric-completeness honesty instead: what's built, what's genuinely tested,
+  what a skeptical judge would still deny and why.
+- **Do not re-litigate whether the "Best Use of Gemini" / "Best Use of
+  CodeMate" tracks exist.** Danish stated both are real, from private
+  organizer channels this assistant cannot access. Two live fetches of the
+  public event page don't show either — that's already been surfaced to him
+  once (HANDOFF-MEMORY §13). Proceed on his word; don't ask again.
+- **Do not start Step 7 (the agent swarm) without confirming a valid
+  `CITINEL_ANTHROPIC_API_KEY` is actually in `.env` first** — check, don't
+  assume. It is the single blocking dependency for the rest of the build and,
+  per the adversarial audit, for most of the 8 partner-prize tracks too.
 
-Do not re-run any deep-research passes or re-derive the architecture from scratch — all of that is done and verified (13 passes now, not 11 — HANDOFF-MEMORY §6). Do not assume you should start writing application code or initializing git — per the repo's own rule, "Danish owns all timelines," and this was explicitly paused mid-conversation with a "Wait" as of the 24 Aug update, not decided either way.
+## What to actually do
 
-Once you've read the three files, surface the two time-sensitive items from HANDOFF-MEMORY §9 early (the Grand-Finale day-count check, and the submitted deck's possibly-unbacked QR-code claim) — then ask directly what I want to do next. There are two independently-paused threads (the application build, and the UI/UX prototype's responsive-architecture retest — HANDOFF-MEMORY §11 has the detail on both) plus the standing SDD §22 open questions. Don't guess which one I want — ask.
+Run `cd /Users/danish/CITINEL/backend && ./.venv/bin/citinel status` first —
+it reads real files on disk, so it's the ground truth for build progress, more
+current than this prompt will be by the time you read it. Check whether `.env`
+now has a real Anthropic key (`grep ANTHROPIC_API_KEY .env` — never print the
+value). If it does, Step 7 is very likely the highest-leverage next build
+step — confirm with Danish, don't just start.
+
+Then surface, early and plainly, whatever in HANDOFF-MEMORY §10's open-items
+list is still genuinely unresolved and time-sensitive as of today's date —
+particularly the shortlist outcome (item 1) and Preethi's enrollment status
+(item 7), both still open as of the last update and both able to invalidate
+the whole finale plan if wrong. Don't guess at their status; ask.

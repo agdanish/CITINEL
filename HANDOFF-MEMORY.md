@@ -1,6 +1,6 @@
 # CITINEL — Handoff Memory
 
-*Prepared 21 August 2026, end of a long research/documentation session; updated 24 August 2026 after a separate, long Claude Design UI/UX session (§8) and a hackathon-reality check (§9), for continuity into a fresh Claude Code session — possibly on a different account than either of the above. This is a map + must-know-facts document, not a duplicate of the full detail — the full detail lives in `CITINEL-SDD.md` (23 sections) and `CITINEL-PROPOSAL.md`. Read this first, then pull the specific section you need from those two files rather than re-reading everything.*
+*Prepared 21 August 2026, end of a long research/documentation session; updated 24 August 2026 after a separate, long Claude Design UI/UX session (§8) and a hackathon-reality check (§9); updated again 25 August 2026 after Danish authorized the application build and a full build session ran (§12–§13 — read these last, they supersede §9's "paused" framing and §11's old next-step guidance). This is a map + must-know-facts document, not a duplicate of the full detail — the full detail lives in `CITINEL-SDD.md` (23 sections), `CITINEL-PROPOSAL.md`, and now the git log / commit messages in this repo itself (16 commits as of 25 Aug — read `git log` for the by-step engineering detail; this file has the *why*, not the diff). Read this first, then pull the specific section you need rather than re-reading everything.*
 
 ---
 
@@ -10,7 +10,7 @@
 
 Tagline (brand hook, updated 24 Aug 2026 — was "Caught. Cited. Closed."): **"Caught. Cited. Gated. Actioned. Closed."** Not yet propagated to the submitted deck PDF (13 occurrences, unrevised) or the two locked badge-tagline PNGs — see §4a.
 
-**Status: this repo is still fully specified, zero lines of application code, no git.** That remains true and is still a deliberate choice per §5. But it is no longer the whole picture: a screen-by-screen UI/UX prototype (23 pages) has been under real, active development in a **separate Claude Design canvas session**, outside this repo, since before this update — see §8. Don't conflate "this repo has no code" with "nothing has been built" when orienting a fresh session.
+**Status as of 25 Aug 2026 — THIS HAS CHANGED, read carefully.** Git is now initialized (branch `build/stage-1`, 16 commits) and the application build is underway: **11 of a 15-step build ladder are built**, 108 tests passing, `citinel status` in `backend/` shows live progress. Stage 1 (the fully-offline deterministic pipeline — telemetry replay, OCSF normalization, Sigma detection, anomaly scoring) is complete and verified against the real Splunk BOTS v1 corpus (945,472 events). The policy gate, injection quarantine plane, compliance drafter, and six sponsor connectors are also built. **The one thing NOT built is Step 7, the 7-agent Claude swarm — it is blocked on an Anthropic API key that has not yet been added to `.env`.** Full detail, the exact build order, and why it matters for the partner-prize plan: §12–§13. The separate 23-page UI/UX prototype (Claude Design canvas, §8) is unchanged since 24 Aug and still exists in parallel, outside this repo — don't conflate the two build threads.
 
 ## 2. The architecture, one paragraph
 
@@ -32,6 +32,10 @@ Logs normalize to **OCSF**. A deterministic **Sigma engine (3,000+ community rul
 | The 23-page UI/UX prototype (real, active, not tracked here) | A separate **Claude Design** canvas session — exact URL not recorded anywhere in this repo; get it from Danish and add it here. Pages include Overview, Queue, Replay, Confidence, Evidence, Approvals, Corpus, Eval, Policy, Compliance, Audit, Handover, Settings, Demo, Narrow, Executive, Shell, Entry, plus a design-system reference. See §8. |
 | That prototype's in-canvas QA tooling | `_audit/matrix.html` (responsive-sweep runner, persists partial results to `localStorage`) and `_audit/read.html` (results reader) — live inside the Claude Design canvas, not this repo's filesystem. |
 | Badge-tagline asset regeneration (in progress, external) | A separate **ChatGPT** session ("CITINEL logo redesign" / "Logo Design Request" threads) — regenerating `citinel-badge-tagline-light.png`/`-dark.png` with the new five-word tagline. Not this repo, not Claude Design. See §8. |
+| **Application build (new, 25 Aug)** | `backend/citinel/` — the real pipeline (ingest, ocsf, detect, incidents, audit, policy, agents, compliance, connectors, web, worker). Run `backend/.venv/bin/citinel status` for live build-ladder progress, `backend/.venv/bin/citinel --help` for every command. Tests: `backend/tests/` (108 passing). See §12. |
+| Sponsor onboarding checklist (new, 25 Aug) | [`PARTNER-ONBOARDING.md`](PARTNER-ONBOARDING.md) — signup URLs, free-tier vs. shortlist-gated credits, `.env` mapping, per-partner steps for all 8 tracks. See §13. |
+| Startuped GTM playbook (new, 25 Aug) | [`STARTUPED-GTM-PLAYBOOK.md`](STARTUPED-GTM-PLAYBOOK.md) — curated module inputs + click-by-click path for the "Best GTM/Launch Strategy" award. The platform run itself is still Danish's to do. |
+| Deploy config (new, 25 Aug) | `deploy/render.yaml` (5-service Blueprint, not yet deployed live) + Dockerfiles. `connectors/n8n/citinel-beat5b.json` — importable n8n workflow. `policies/citinel-policy.yaml` + `.rego` twin — the readable response policy. |
 
 ## 4. Locked brand tokens — do not deviate
 
@@ -137,32 +141,86 @@ All of this happened in the separate Claude Design canvas noted in §3, driven f
 
 **The full responsive matrix has not had a clean, complete run.** `_audit/matrix.html`/`read.html` exist and persist partial progress via `localStorage`, but every attempted run so far has been blocked (renderer hangs), partial, or deliberately deferred rather than reported as complete-when-it-wasn't. It should run once, across all 23 screens, at a widened checkpoint set (add 1200, 1024, 900, 768, 721, 720, 600, 480, 375 to the original 1920/1440/1366) so a gap like the orphaned zone can't hide between checkpoints again — and it should run *after*, not before, the reflow-vs-routing decision above is settled, since that decision changes what "correct" looks like at every width in that range.
 
-## 9. Hackathon reality-check (24 Aug 2026) — read before planning anything time-sensitive
+## 9. Hackathon reality-check (24 Aug 2026) — largely superseded, see the strikethrough-style notes
 
-- **The Grand Finale is 5 September 2026** (SDD §15, sourced from a live fetch of the event page on 21 Aug — treat as fact per §5's own rule on official public dates). As of this update (24 Aug) that is **12 days**, not 20 — a "20 days" figure surfaced once in the conversation that produced this update and did not reconcile with the sourced date. Confirm where that number came from before planning around it; this project has already logged one unresolved date/count discrepancy (SDD §15.4, §22 item 14) and this may be a second instance of the same failure mode.
-- **A live, external, currently-unverified claim may exist.** The submitted, "final form" pitch deck's Thank-You slide has a real QR code with the copy "scan the code, the prototype is already running." No prototype URL is recorded anywhere in this repo (SDD §22 item 2, unresolved). If nothing real is behind that QR code yet, that is not a future risk — it is a false claim already sitting in front of evaluators.
-- **Team eligibility has an unconfirmed hard-disqualifier risk.** The event's eligibility rule requires at least one female member on a 3–6 person team from the same institute (SDD §15.4). Preethi's current enrollment status needs confirming — if it's ever been in question, this gates the team's eligibility entirely, not just one prize track.
-- **The application-build decision is explicitly paused, not decided.** Offered three options (start the build now / resolve open SDD §22 questions first / chase the QR-code exposure first) in the conversation that produced this update, Danish answered "Wait." Zero application code exists, no git repository exists, and nothing here authorizes starting either without him picking this back up explicitly.
-- **The partner-prize plan (SDD §15) is fully designed but entirely unbuilt.** All 7 sponsor tracks are "closed by spec" — each mapped to its exact published rubric line — but eligibility is necessary, not sufficient (§15.4's own words): none of it exists as working code.
+- **The Grand Finale is 5 September 2026** (SDD §15, sourced from a live fetch of the event page on 21 Aug). ~~As of this update (24 Aug) that is 12 days, not 20~~ — **confirmed correct on 25 Aug via a second independent live fetch of the event page** (§12). Recompute the day count from today's date against 5 Sep; do not reuse a hardcoded number from either handoff update, they go stale immediately.
+- ~~A live, external, currently-unverified claim may exist~~ — **RESOLVED, and it is worse than "may."** The QR code was decoded on 24–25 Aug: it points to `https://dub.sh/citinel`, which redirects to `https://xzashr.com` — Danish's personal portfolio site, **not** a CITINEL prototype. This is a **confirmed live false claim** on the submitted deck's Thank-You slide, sitting in front of evaluators right now, not a hypothetical. Because it's a redirect, it's fixable by repointing the destination without resubmitting the deck. Full detail: §12.
+- **Team eligibility hard-disqualifier risk — still unconfirmed, still unresolved.** Preethi's current enrollment status has not been confirmed as of 25 Aug. This still gates the team's eligibility entirely, not just one prize track. Highest-priority unresolved item in the whole handoff.
+- ~~The application-build decision is explicitly paused~~ — **RESOLVED: Danish authorized the build on 25 Aug.** It is now underway; see §12. Do not re-ask whether to start it.
+- **The partner-prize plan is now 8 tracks, not 7, and partially built, not entirely unbuilt.** Lyzr confirmed in-stack; two more tracks (Gemini, CodeMate) added via private organizer channels Danish has access to and this assistant does not. Genuine build progress exists (§12) but is capped by the swarm not existing yet, per an adversarial rubric audit (§13). Eligibility is still necessary, not sufficient — none of this is a guaranteed win, see §13's honesty framing.
 
 ## 10. Open items — Danish's calls, not decided by Claude
 
-Full list with context: SDD §22 (23 items). Highest-priority ones, folding in what §9 above surfaced:
-1. Did CITINEL make the Top 60/80 shortlist? (Deadline/count discrepancy itself unresolved — 11 Aug/Top 60 vs. 13 Aug/Top 80 per different sources.)
-2. Where does the deck's Thank-You-slide QR code actually point, and does anything real exist behind it yet? (§9 — may be actively misleading evaluators right now.)
-3. Initialize git — the campaign's single biggest point of failure right now (no version control at all, for either this repo or the separate UI prototype).
-4. Patentability strategy (§21): pursue a provisional filing, defensive publication, both, or neither — genuinely undecided, and the research found no cost/timeline data for India-specific student filings to plan against.
-5. Two research gaps from the 21 Aug pass (gamification/skill-building features, community/network-effect features) — worth a dedicated follow-up or not?
-6. Lyzr AI integration (added to the partner-prize plan, §15.3) — confirmed for the actual build or not?
-7. Confirm Preethi's current enrollment status (§9 — team-eligibility hard disqualifier if wrong).
-8. Application build: start now, or keep waiting? (§9 — currently paused on Danish's own "Wait.")
-9. The submitted deck's 13 tagline occurrences, and the two badge PNGs (§4a) — revise the deck (a resubmission question), and finish + install the badge regeneration already underway in ChatGPT.
-10. The responsive "orphaned zone" retest (§8) — genuinely blocking further UI/UX polish until it's resolved one way or the other, since it decides whether 23 screens get one architecture or two.
+Full list with context: SDD §22 (23 items). Status as of 25 Aug, highest-priority first:
+1. **Did CITINEL make the Top 60/80 shortlist?** Still unresolved as of 25 Aug — the single most important unanswered fact in the project. Gates every sponsor prize credit and whether there is a finale to build toward. Deadline/count discrepancy itself also still unresolved (11 Aug/Top 60 vs. 13 Aug/Top 80).
+2. ~~Where does the deck's QR code point~~ — **RESOLVED 24–25 Aug: it points to Danish's personal portfolio, not a prototype.** See §9/§12. Open action: repoint the `dub.sh/citinel` redirect at something real before the finale.
+3. ~~Initialize git~~ — **DONE 25 Aug.** Branch `build/stage-1`, 16 commits. Still open: the separate Claude Design UI prototype has no version control of its own.
+4. Patentability strategy (§21) — still genuinely undecided.
+5. Two research gaps (gamification, community/network-effect features) — still open, low priority.
+6. ~~Lyzr AI integration confirmed?~~ — **RESOLVED 25 Aug: yes, confirmed in-stack** by Danish. Built (§12).
+7. **Confirm Preethi's current enrollment status** — still unconfirmed, still the team-eligibility hard-disqualifier risk.
+8. ~~Application build: start now or wait?~~ — **RESOLVED 25 Aug: started.** See §12.
+9. The submitted deck's 13 tagline occurrences and the two badge PNGs (§4a) — still unresolved, unchanged since 24 Aug.
+10. The responsive "orphaned zone" retest (§8) — still unresolved, unchanged since 24 Aug; this thread was not picked up this session (Danish chose the application build instead, §12).
+11. **NEW (25 Aug): get the Anthropic API key into `.env`.** The single blocking dependency for the rest of the build — see §12/§13.
+12. **NEW (25 Aug): the "Best Use of Gemini" and "Best Use of CodeMate" tracks.** Danish stated both exist per private organizer channels (a Google Meet and a separate private meet) this assistant cannot access or verify. CITINEL's own prior research and two live fetches of the public event page show neither track publicly. Proceeding as instructed, but get the organizers' written criteria if at all possible before the finale — building against a remembered verbal description is real risk if the wording differs from what's built. See §13.
+13. **NEW (25 Aug): get the Swytchcode Decode-SIH referral link** from event channels (WhatsApp/Discord) — needed to claim the $100 participant credit and required for the CLI-scaffolding criterion.
+14. **NEW (25 Aug): run the Startuped platform for real.** `STARTUPED-GTM-PLAYBOOK.md` has the curated inputs and click-by-click path; the actual tool usage (the thing the award judges) is still Danish's to do.
 
-## 11. Suggested immediate next step
+## 11. Suggested next step as of 24 Aug — SUPERSEDED, kept as history
 
-There are now two independently-paused threads, not one — ask Danish which he wants picked up, don't assume:
-- **The application build** (backend/dashboard/policies/connectors per §2.2), paused mid-conversation on his own "Wait." Do not restart this without him saying so explicitly.
-- **The Claude Design UI/UX prototype**, mid-way through the orphaned-zone retest in §8 — this one has a concrete, specific next technical action already queued (retest reflow now that the dial's `aspect-ratio` fix is in) rather than an open strategic question, so it's the more mechanically ready of the two if he wants something to resume immediately.
+*(This section's guidance is stale — Danish already chose the application-build thread on 25 Aug, and it is now well underway. Preserved for continuity, not as current instructions. Read §13 for the actual current next step.)*
 
-Either way, also flag §9's timeline correction and the QR-code question early in the conversation — both are time-sensitive enough that surfacing them late would be a real failure, not just a missed nicety.
+There were two independently-paused threads: the application build, and the Claude Design UI/UX prototype's orphaned-zone retest (§8). Danish chose the application build. **The UI/UX prototype thread was not picked up this session and its state in §8 is unchanged and still accurate** — it remains available to resume whenever Danish wants it.
+
+## 12. This session's work — the application build begins (24–25 Aug 2026)
+
+Danish authorized the application build (previously paused on "Wait," §9/§10). Full engineering detail lives in the git log — read `git log --oneline` and individual commit messages for the by-step reasoning, bugs found, and fixes; this section is the map, not the diff.
+
+**Repo state:** git initialized (`2351cd3` — closes open item 3), branch `build/stage-1`, **16 commits**, **11 of 15 build-ladder steps built**, **108 tests passing**. Run `cd backend && ./.venv/bin/citinel status` for live progress at any time — it reads real files on disk, so it cannot drift ahead of the code.
+
+**Build ladder status:**
+| Step | Component | State |
+|---|---|---|
+| 1–6 | Skeleton, telemetry replay, OCSF normalizer, Sigma engine, anomaly scorer, incident record + audit ledger | ✅ built |
+| 7 | **Agent swarm (7-agent Claude pipeline)** | ❌ **blocked — needs `CITINEL_ANTHROPIC_API_KEY` in `.env`, not yet added** |
+| 8–10 | OPA-equivalent policy gate, injection quarantine plane, compliance drafter | ✅ built (built out of order, key-free, while waiting for Step 7's key) |
+| 11 | Glass-box dashboard | ❌ not started |
+| 12 | Sponsor integrations | ⚠️ partial — connectors built and tested for Render/Tavily/VirusTotal/AbuseIPDB/n8n/Swytchcode/Lyzr, all stubbed pending keys; Render's fatal deploy bug (dead `web/app.py`/`worker/run.py` entry points, invalid `worker: plan: free`) found and fixed; **not yet deployed live** |
+| 13 | Eval harness | ❌ not started |
+| 14 | Demo fallback capture | ❌ not started |
+
+**Stage 1 (the fully offline deterministic pipeline) is genuinely done and verified against real data**, not just written: Splunk BOTS v1 (CC0) was extracted without Splunk by validating each candidate payload rather than trusting a proprietary binary framing format — 945,472 of 955,807 declared events recovered (98.9%), and the two sourcetypes Sigma actually targets (Sysmon, WinEventLog:Security) recovered at **100.0%**. OCSF normalization is **100.00% schema-valid** against a pinned snapshot of the real OCSF 1.9.0 schema (fetched live, not recalled from memory — this caught three real errors: registry activity is class `201001`/`201002` in the `win` extension namespace not `1008`; two classes CITINEL would have used are deprecated as of 1.9.0). Sigma runs the real SigmaHQ `r2026-07-01` pinned release (3,302 rules, 0 parse errors). The demo's hero incident is real: **INC-0417 is the Cerber ransomware chain** (2,487 findings, matches the incident ID already printed on the submitted deck's slide 6), INC-0416 is the P01s0n1vy web-attack chain.
+
+**A pattern held across essentially every step, worth repeating to a fresh session:** run new logic against the real BOTS corpus before calling it done, not just code review. This caught real bugs every single time — a timezone bug that split one incident into two six hours apart (local-time sources vs. UTC sources mixed), a case-sensitivity miss on a Windows SID regex, 19 false-positive PII flags on bare digit runs (fixed by requiring a corroborating label), an injection-detector pattern that would have flagged all ~270,000 benign Sysmon events as attacks, and a worker-polling bug that would have duplicated audit-ledger entries forever. None of these announce themselves in a code read.
+
+**Two structural things worth knowing before touching this code:**
+- **No OPA binary or Docker exists on this machine.** The policy gate runs the fallback ladder's own pre-committed rung 2 (signed YAML, in-process) — `policies/citinel-policy.yaml` is canonical, `policies/citinel.rego` is the twin for real OPA at deploy time, and every `Decision` records which engine produced it.
+- **Model IDs are never hardcoded** (ledger rule L9). As of a live check on 25 Aug 2026, the current Claude family is `claude-fable-5`, `claude-opus-5` (docs-recommended default), `claude-sonnet-5`, `claude-haiku-4-5` — all pinned snapshots, not evergreen aliases. Verify against `GET /v1/models` at the point of use in Step 7, don't trust this list by the time you read it.
+
+## 13. Partner-prize plan — now 8 tracks, adversarially audited, honestly scored
+
+**The plan grew from 7 tracks to 8 partners during this session**, and two of the additions rest on information this assistant cannot independently verify: **Danish informed the assistant, via private organizer channels (a Google Meet and a separate private meet, not the public event page) that "Best Use of Gemini" and "Best Use of CodeMate" tracks exist and will be awarded.** Two live fetches of the public `oscode.co.in` event page, both before and after being told this, show neither track — CodeMate's own page wording says its Pro benefit is "contingent on the main track win," not a judged track, and Gemini/Google for Developers/MLH are listed as partners with no award specified. **This is not a contradiction to resolve by re-arguing it — it is accepted on Danish's authority and built for accordingly.** But it is real, load-bearing risk that should be named plainly to Danish again if a fresh session inherits this: get the organizers' criteria in writing before the finale if at all possible, since building against a remembered verbal description carries real risk if the actual wording differs.
+
+**Danish also asked, explicitly and more than once, for a "100% guaranteed" win on all 8 partner prizes plus the Bharat Pragati main track.** The honest answer given, and the one any fresh session should hold to: **no judged, competitive prize can be guaranteed by engineering** — the outcome depends on human judges and on what other shortlisted teams build, neither of which code controls. This is not hedging; it is the project's own standing rule (STATE §1.4/§5.1, SDD §15.4: "not a win guarantee — eligibility is necessary, not sufficient"). What *is* controllable, and what this session drove hard on instead, is **rubric completeness**: does the build genuinely meet every stated criterion, with real depth, adversarially stress-tested. Never present rubric completeness as a win guarantee to Danish or in any artifact — the gap between "meets every criterion" and "wins the judged prize" is real and must stay visible.
+
+**An adversarial audit (10 hostile "skeptical judge" agents, one per track + main track + cross-track coherence) was run on 25 Aug and found real, brutal, honest gaps — not inflated scores.** Full results are in that workflow's journal (`~/.claude/projects/-Users-danish-CITINEL/.../subagents/workflows/wf_dd8f5ec8-ce5/journal.jsonl` — may not survive indefinitely; re-run only if truly needed, it cost ~594K tokens). The scores (0–100, rubric completeness, as of 25 Aug before this session's fixes): Render 30, Tavily 24, n8n 55, Swytchcode 20, Lyzr 15, Gemini 6, CodeMate 5, Startuped 30, Bharat Pragati main track 46, cross-track coherence 57.
+
+**The critical finding, independently reached by 8 of the 10 judges: almost every gap traces to ONE root cause, not eight separate ones.** Tavily has no agent to consume its results. Swytchcode has no gate-approved Decision to execute. Lyzr has no verdict to guard. Gemini has nothing to cross-check. n8n's sign-off trigger has no caller outside its own unit test. **Because Step 7 (the swarm) does not exist yet, nothing downstream has anything real to call.** The main-track judge said it in plain words; the coherence judge said "build Step 7 first, then re-sequence." This session fixed the one FATAL, key-independent bug it found (Render's dead entry points and invalid worker plan — §12) directly, without spending further audit budget, and then stopped rather than keep polishing individual connectors that the audit itself said wouldn't move the needle. **Do not re-run the audit or re-derive these scores from scratch** — read the journal if the detail is needed, and don't re-litigate the Gemini/CodeMate verification question with Danish, he has already stated his source.
+
+**The concrete recommended architectural change for Gemini specifically (not yet built):** an independent cross-model verifier — Gemini audits the per-claim citations the Claude Verdict Narrator produces (does each cited log span actually support the claim?), not a second vote on the verdict. This is a genuine, non-decorative fit (it implements SDD §17 findings 4 and 7 on external/cross-model checks beating single-model self-consistency) rather than a forced bolt-on to a Claude-based product. Needs the Verdict Narrator (part of Step 7) to exist first.
+
+**Sponsor-track deliverables already handed to Danish, both committed:** `PARTNER-ONBOARDING.md` (signup priority order, free-tier-vs-shortlist-gated status per partner, exact `.env` mapping) and `STARTUPED-GTM-PLAYBOOK.md` (curated GTM module inputs + the click-by-click path on the Startuped website — the actual platform run is still his to do, since the award is judged on demonstrated tool use).
+
+## 14. Suggested immediate next step (25 Aug 2026, current)
+
+**The single highest-leverage action is getting `CITINEL_ANTHROPIC_API_KEY` into `.env`.** Everything else — the swarm itself (Step 7), and per §13's audit, most of the 8 partner-prize tracks — is gated on it. Copy `.env.example` to `.env` and fill it in; nothing else in the build is currently blocking.
+
+While waiting on that, still open and independently actionable:
+- **Confirm the shortlist outcome** (§10 item 1) — the single most important unresolved fact in the whole project.
+- **Confirm Preethi's enrollment status** (§10 item 7) — the team-eligibility hard-disqualifier.
+- **Get the Gemini/CodeMate track criteria in writing** (§10 item 12, §13) if at all possible.
+- **Repoint the QR redirect** (§10 item 2) at something real, or plan the deck-revision conversation.
+- **The separate UI/UX prototype thread (§8, §11)** remains available and untouched — Danish may still want it picked up in parallel or after.
+
+Do not restart the adversarial audit, do not re-derive Splunk/OCSF/Sigma facts already verified in §12, and do not offer a win guarantee on any judged prize — hold the line §13 describes.
