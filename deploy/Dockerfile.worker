@@ -1,0 +1,15 @@
+# CITINEL background worker: the detection + agent pipeline (Best Use of Render).
+FROM python:3.11-slim
+
+WORKDIR /app
+ENV PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1
+
+COPY backend/pyproject.toml /app/backend/pyproject.toml
+RUN pip install --upgrade pip && pip install "/app/backend[swarm,api,detect]" || true
+
+COPY backend /app/backend
+COPY policies /app/policies
+RUN pip install /app/backend[swarm,detect]
+
+ENV CITINEL_ROLE=worker
+CMD ["python", "-m", "citinel.worker.run"]

@@ -36,3 +36,4 @@ data/cache/
 .coverage
 htmlcov/
 data/incidents/
+data/cache/enrichment/

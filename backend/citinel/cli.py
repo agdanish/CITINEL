@@ -39,7 +39,7 @@ LADDER: list[tuple[str, str, str]] = [
     ("9",  "Injection hardening",          "backend/citinel/agents/quarantine.py"),
     ("10", "Compliance drafter",           "backend/citinel/compliance/drafter.py"),
     ("11", "Glass-box dashboard",          "dashboard/app.py"),
-    ("12", "Sponsor integrations",         "backend/citinel/connectors/render.py"),
+    ("12", "Sponsor integrations",         "backend/citinel/connectors/enrichment.py"),
     ("13", "Eval harness",                 "evals/harness/run.py"),
     ("14", "Demo fallback capture",        "scripts/record_demo.py"),
 ]

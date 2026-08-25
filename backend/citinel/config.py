@@ -64,6 +64,11 @@ class Settings(BaseSettings):
     triage_model: str | None = Field(default=None)
     reasoning_model: str | None = Field(default=None)
 
+    # --- sponsor integrations (Step 12; names only, values from env) -------
+    n8n_webhook_url: str | None = Field(default=None)
+    swytchcode_api_key: str | None = Field(default=None)
+    lyzr_api_key: str | None = Field(default=None)
+
     @property
     def has_swarm_credentials(self) -> bool:
         return bool(self.anthropic_api_key)

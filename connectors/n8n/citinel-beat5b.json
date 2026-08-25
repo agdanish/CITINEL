@@ -1,0 +1,105 @@
+{
+  "name": "CITINEL - Beat 5b: post-signoff automation",
+  "meta": {
+    "description": "Fires when a human signs a CITINEL CERT-In draft. Fans the signed incident out to CISO comms, a compliance-drive export, and a follow-up ticket -- the post-signoff work the core pipeline deliberately does NOT do itself (we draft, we never file). n8n owns this VISIBLE escalation/export flow; OPA remains the sole policy authority. Best Use of n8n: the automation demonstrably improves the post-signoff UX by removing four manual handoffs."
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "citinel-incident-signed",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-incident-signed",
+      "name": "Incident Signed",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "citinel-incident-signed"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {"id": "a1", "name": "subject", "type": "string",
+             "value": "=[CITINEL] {{$json.incident_id}} signed - {{$json.severity}} severity"},
+            {"id": "a2", "name": "summary", "type": "string",
+             "value": "={{$json.incident_id}} ({{$json.severity}}) on {{$json.hosts}} was reviewed and signed by {{$json.signed_by}} at {{$json.signed_at}}. CERT-In draft attached; deadline {{$json.clock_deadline}}."}
+          ]
+        },
+        "options": {}
+      },
+      "id": "format-notification",
+      "name": "Format Notification",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "channel": "#soc-ciso",
+        "text": "={{$json.summary}}",
+        "otherOptions": {}
+      },
+      "id": "notify-ciso-slack",
+      "name": "Notify CISO (Slack)",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [680, 180],
+      "notesInFlow": true,
+      "notes": "Swap for Send Email if the bank uses email; either satisfies the criterion. Comms only -- never a policy decision."
+    },
+    {
+      "parameters": {
+        "operation": "upload",
+        "name": "={{$json.incident_id}}-certin-draft.txt",
+        "options": {}
+      },
+      "id": "export-compliance-drive",
+      "name": "Export to Compliance Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [680, 300],
+      "notesInFlow": true,
+      "notes": "Exports the signed draft to the bank's compliance archive. Export only -- CITINEL never machine-files to CERT-In (no API exists)."
+    },
+    {
+      "parameters": {
+        "resource": "issue",
+        "operation": "create",
+        "additionalFields": {}
+      },
+      "id": "create-followup-ticket",
+      "name": "Create Follow-up Ticket",
+      "type": "n8n-nodes-base.jira",
+      "typeVersion": 1,
+      "position": [680, 420],
+      "notesInFlow": true,
+      "notes": "Opens the recurrence-prevention / RCA follow-up ticket the DPDP report references."
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"status\":\"escalated\",\"incident_id\":\"{{$json.incident_id}}\",\"channels\":[\"ciso\",\"compliance_drive\",\"ticket\"]}",
+        "options": {}
+      },
+      "id": "respond",
+      "name": "Ack to CITINEL",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [900, 300]
+    }
+  ],
+  "connections": {
+    "Incident Signed": {"main": [[{"node": "Format Notification", "type": "main", "index": 0}]]},
+    "Format Notification": {"main": [[
+      {"node": "Notify CISO (Slack)", "type": "main", "index": 0},
+      {"node": "Export to Compliance Drive", "type": "main", "index": 0},
+      {"node": "Create Follow-up Ticket", "type": "main", "index": 0}
+    ]]},
+    "Notify CISO (Slack)": {"main": [[{"node": "Ack to CITINEL", "type": "main", "index": 0}]]}
+  },
+  "settings": {"executionOrder": "v1"},
+  "pinData": {}
+}
