@@ -620,5 +620,50 @@ def compliance_draft(
     console.print(render_text(drafter(inc), poisoned_evidence=poison))
 
 
+@compliance_app.command("guard")
+def compliance_guard(
+    incident_id: str = typer.Argument(help="e.g. INC-0417"),
+    kind: str = typer.Option("dpdp", help="certin | dpdp"),
+    incidents_dir: Path = typer.Option(REPO_ROOT / "data/incidents"),
+) -> None:
+    """Screen a draft for inadvertent PII before sign-off (Lyzr governance layer).
+
+    CITINEL's own deterministic guard always runs; Lyzr adds an independent
+    second opinion when configured. This mitigates, it never solves -- human
+    review stays mandatory.
+    """
+    from citinel.compliance.drafter import draft_certin, draft_dpdp
+    from citinel.connectors.lyzr import LyzrGuard
+    from citinel.incidents.builder import load_incidents
+
+    incs = {i.incident_id: i for i in load_incidents(incidents_dir / "incidents.jsonl")}
+    inc = incs.get(incident_id)
+    if inc is None:
+        console.print(f"[red]no incident {incident_id}[/red]")
+        raise typer.Exit(1)
+
+    draft = (draft_certin if kind == "certin" else draft_dpdp)(inc)
+    # include the evidence a reviewer would read alongside the fields
+    evidence = "\n".join(f.evidence_raw for f in inc.findings if f.evidence_raw)
+    result = LyzrGuard().screen(draft, extra_evidence=evidence)
+
+    colour = "green" if result.clean else "yellow"
+    if result.findings:
+        table = Table(title="PII flagged for redaction decision", title_justify="left")
+        table.add_column("Type")
+        table.add_column("Confidence")
+        table.add_column("Masked value")
+        table.add_column("Where", style="dim")
+        for f in result.findings:
+            table.add_row(f.pii_type, f.confidence, f.masked, f.context_field)
+        console.print(table)
+    console.print(Panel.fit(
+        f"[{colour}]{result.summary()}[/{colour}]\n[dim]{result.note}[/dim]\n"
+        f"[dim]checked by: {result.checked_by}[/dim]",
+        title=f"governance guard: {incident_id} {kind} draft",
+        border_style=colour,
+    ))
+
+
 if __name__ == "__main__":
     app()

@@ -68,6 +68,12 @@ class Settings(BaseSettings):
     n8n_webhook_url: str | None = Field(default=None)
     swytchcode_api_key: str | None = Field(default=None)
     lyzr_api_key: str | None = Field(default=None)
+    # Lyzr Agent API endpoint. The exact host must be taken from the operator's
+    # Lyzr Studio (it is set per deployment), so it is configured rather than
+    # hardcoded; the connector adds this host to the egress allow-list only
+    # when it is explicitly set.
+    lyzr_guard_url: str | None = Field(default=None)
+    lyzr_agent_id: str | None = Field(default=None)
 
     @property
     def has_swarm_credentials(self) -> bool:
