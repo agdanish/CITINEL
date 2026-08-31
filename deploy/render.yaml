@@ -17,11 +17,18 @@
 
 services:
   # --- web: glass-box dashboard + API ---------------------------------------
+  # Plan note: `starter`, not `free`. Free web services spin down after 15
+  # minutes idle and cold-start in 30-60s -- unacceptable for the surface the
+  # deck's QR code points at, where a judge scanning it gets one impression.
+  # The original design paid for a keep-warm cron to poke a free service;
+  # Render rejects `plan: free` for cron too, so that cost the same money to
+  # get a worse result. Paying it here instead means the service simply never
+  # sleeps, and the cron is gone.
   - type: web
     name: citinel-web
     runtime: docker
     dockerfilePath: ./deploy/Dockerfile.web
-    plan: free
+    plan: starter
     healthCheckPath: /healthz
     envVars:
       - key: CITINEL_ROLE
@@ -132,20 +139,13 @@ services:
       - key: GENERIC_TIMEZONE
         value: Asia/Kolkata
 
-  # --- cron: keep the free web service warm before/through judging ----------
-  - type: cron
-    name: citinel-keepwarm
-    runtime: docker
-    dockerfilePath: ./deploy/Dockerfile.web
-    plan: free
-    schedule: "*/10 * * * *"
-    dockerCommand: "python -m citinel.deploy.keepwarm"
-    envVars:
-      - key: CITINEL_WEB_URL
-        fromService:
-          name: citinel-web
-          type: web
-          property: host
+  # (Removed: the citinel-keepwarm cron. It existed only to poll a free web
+  # service so it would not cold-start. Render rejects `plan: free` for cron
+  # services, so keeping it meant paying for a cron to compensate for a free
+  # web service -- the same spend as simply running the web service on a plan
+  # that never sleeps, but with a 10-minute window where it still could.
+  # citinel.deploy.keepwarm remains in the source tree, unused, in case a
+  # future free-tier deployment wants it.)
 
 databases:
   # --- managed postgres: incidents, audit ledger, verdicts ------------------
