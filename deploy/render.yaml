@@ -56,6 +56,27 @@ services:
         sync: false
       - key: CITINEL_ABUSEIPDB_API_KEY
         sync: false
+      # Model ids are chosen deliberately and verified live against
+      # GET /v1/models before use (ledger rule L9) -- never defaulted in code,
+      # so they must be set here or the swarm refuses to start.
+      - key: CITINEL_TRIAGE_MODEL
+        sync: false
+      - key: CITINEL_REASONING_MODEL
+        sync: false
+      # Sponsor integrations. Every one degrades gracefully when unset
+      # (connector reports not_configured), so leaving them blank is safe --
+      # but they are declared here so Render prompts for them rather than
+      # leaving an operator to discover the names from source.
+      - key: CITINEL_N8N_WEBHOOK_URL
+        sync: false
+      - key: CITINEL_SWYTCHCODE_API_KEY
+        sync: false
+      - key: CITINEL_LYZR_API_KEY
+        sync: false
+      - key: CITINEL_LYZR_GUARD_URL
+        sync: false
+      - key: CITINEL_LYZR_AGENT_ID
+        sync: false
       - key: CITINEL_DATABASE_URL
         fromDatabase:
           name: citinel-postgres
@@ -84,6 +105,27 @@ services:
       - key: CITINEL_VIRUSTOTAL_API_KEY
         sync: false
       - key: CITINEL_ABUSEIPDB_API_KEY
+        sync: false
+      # Model ids are chosen deliberately and verified live against
+      # GET /v1/models before use (ledger rule L9) -- never defaulted in code,
+      # so they must be set here or the swarm refuses to start.
+      - key: CITINEL_TRIAGE_MODEL
+        sync: false
+      - key: CITINEL_REASONING_MODEL
+        sync: false
+      # Sponsor integrations. Every one degrades gracefully when unset
+      # (connector reports not_configured), so leaving them blank is safe --
+      # but they are declared here so Render prompts for them rather than
+      # leaving an operator to discover the names from source.
+      - key: CITINEL_N8N_WEBHOOK_URL
+        sync: false
+      - key: CITINEL_SWYTCHCODE_API_KEY
+        sync: false
+      - key: CITINEL_LYZR_API_KEY
+        sync: false
+      - key: CITINEL_LYZR_GUARD_URL
+        sync: false
+      - key: CITINEL_LYZR_AGENT_ID
         sync: false
       - key: CITINEL_DATABASE_URL
         fromDatabase:
