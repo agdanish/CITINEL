@@ -60,3 +60,42 @@ def test_ledger_verify_endpoint():
     r = client.get("/api/ledger/verify")
     assert r.status_code == 200
     assert r.json()["intact"] is True
+
+
+# --- role-adaptive projection (two roles, one record) ------------------------
+
+def test_incident_defaults_to_analyst_full_depth_with_no_role_header():
+    r = client.get("/api/incidents/INC-0417")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["_projection"]["role"] == "analyst"
+    assert body["_projection"]["depth"] == "full"
+    assert "findings" in body
+
+
+def test_ciso_gets_the_position_view_with_findings_folded_and_disclosed():
+    r = client.get("/api/incidents/INC-0417", headers={"X-Citinel-Role": "ciso"})
+    assert r.status_code == 200
+    body = r.json()
+    assert body["_projection"]["depth"] == "position"
+    assert "findings" not in body
+    # folded, and SAID to be folded -- never a thinner record that looks whole
+    assert body["_projection"]["omitted"] == ["findings"]
+    assert body["finding_count"] > 0
+
+
+def test_ciso_expand_returns_full_depth_nothing_is_withheld():
+    """The 'one click deeper' promise: this is depth adaptation, not access
+    control, so expand must return everything to a CISO too."""
+    r = client.get("/api/incidents/INC-0417?expand=true",
+                   headers={"X-Citinel-Role": "ciso"})
+    assert r.status_code == 200
+    body = r.json()
+    assert body["_projection"]["depth"] == "full"
+    assert "findings" in body
+
+
+def test_unknown_role_defaults_to_more_detail_not_less():
+    r = client.get("/api/incidents/INC-0417", headers={"X-Citinel-Role": "wat"})
+    assert r.json()["_projection"]["role"] == "analyst"
+    assert "findings" in r.json()

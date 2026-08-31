@@ -1,0 +1,28 @@
+/* Tier 0 — primitives. Raw values, zero meaning. Never referenced by product code. */
+:root{
+--ctn-color-navy-900:#0B1F3A;
+--ctn-color-charcoal-950:#0E1116;
+--ctn-color-white:#FFFFFF;
+--ctn-color-gold-500:#E7B10A;
+--ctn-color-red-600:#D01F17; /* oklch(0.55 0.21 29) — solid fill, white text 5.40:1 */
+--ctn-color-red-400:#E8594A; /* oklch(0.65 0.18 29) — text/icon/border on charcoal 5.37:1, navy 4.69:1 */
+/* OKLCH elevation ramp — taken to near-neutral. Charcoal itself measures oklch(0.177 0.012 261):
+   261 is still technically a blue hue, so unifying the ramp to charcoal's hue (as done previously)
+   kept it on that axis. Chroma now goes to the 0.000–0.003 floor instead — true graphite, with
+   navy's full 0.058 chroma left as the only saturated color family in the dark UI. Same L steps
+   as always, so no contrast ratio moves. */
+--ctn-color-ink-980:oklch(0.145 0.001 260);
+--ctn-color-ink-900:oklch(0.21 0.002 260);
+--ctn-color-ink-850:oklch(0.245 0.002 260);
+--ctn-color-ink-700:oklch(0.32 0.002 260);
+--ctn-color-ink-600:oklch(0.42 0.003 260);
+--ctn-color-ink-500:oklch(0.50 0.002 260);
+--ctn-color-ink-400:oklch(0.58 0.002 260);
+--ctn-color-ink-300:oklch(0.72 0.002 260);
+--ctn-color-ink-100:oklch(0.93 0.001 260);
+--ctn-color-gray-500:#5A6472; /* quarantine neutral */
+--ctn-color-orange-500:oklch(0.70 0.14 55);
+--ctn-color-steel-400:oklch(0.72 0.06 250);
+--ctn-color-steel-600:oklch(0.72 0.10 250);
+--ctn-color-green-500:oklch(0.68 0.12 150);
+}

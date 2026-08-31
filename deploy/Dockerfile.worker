@@ -4,12 +4,18 @@ FROM python:3.11-slim
 WORKDIR /app
 ENV PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1
 
-COPY backend/pyproject.toml /app/backend/pyproject.toml
-RUN pip install --upgrade pip && pip install "/app/backend[swarm,api,detect]" || true
-
+# One honest install from source -- see Dockerfile.web for why the previous
+# `|| true` caching layer was removed rather than kept.
 COPY backend /app/backend
+RUN pip install --upgrade pip && pip install "/app/backend[swarm,detect]"
+
 COPY policies /app/policies
-RUN pip install /app/backend[swarm,detect]
+
+# The worker re-runs the deterministic pipeline on a schedule and appends to
+# the ledger, so it needs the same corpus the web service reads. Note it does
+# NOT get the raw 2.8GB BOTS source (data/raw/, gitignored) -- regenerating
+# from raw is a local operation, not something a Render worker does.
+COPY data/seed /app/data/seed
 
 ENV CITINEL_ROLE=worker
 CMD ["python", "-m", "citinel.worker.run"]

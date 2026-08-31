@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="vendor/resources.js"></script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/fonts.css">
+<link rel="stylesheet" href="vendor/fonts.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/colors.primitive.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/colors.semantic.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/typography.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/component.css">
+<link rel="stylesheet" href="a11y.css">
+<link rel="stylesheet" href="motion.css">
+<script src="motion.js"></script>
+<script src="reveal.js"></script>
+</helmet>
+<div style="display:flex;align-items:flex-start;gap:14px;padding:13px 16px;border:1px {{ edgeStyle }} {{ edge }};border-left:3px solid {{ edge }};border-radius:6px;background:var(--ctn-color-surface-panel);min-width:0">
+  <svg width="26" height="26" viewBox="0 0 26 26" style="flex:none;margin-top:1px">{{ glyph }}</svg>
+  <div style="flex:1;min-width:0">
+    <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;min-width:0">
+      <span style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;color:var(--ctn-color-text-primary);flex:none">{{ title }}</span>
+      <span data-token style="font-family:var(--ctn-font-mono);font-size:10.5px;color:var(--ctn-color-text-muted);flex:none">{{ meta }}</span>
+    </div>
+    <div style="font-size:12.5px;color:var(--ctn-color-text-secondary);margin-top:6px;line-height:1.5;max-width:104ch;text-wrap:pretty">{{ body }}</div>
+    <div style="font-size:11.5px;color:var(--ctn-color-text-muted);margin-top:6px;line-height:1.45;max-width:104ch;text-wrap:pretty">{{ consequence }}</div>
+  </div>
+  <a href="{{ href }}" style="flex:none;font-family:var(--ctn-font-display);font-size:8.5px;letter-spacing:0.1em;padding:8px 12px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;color:var(--ctn-color-text-primary);text-decoration:none;white-space:nowrap">{{ action }}</a>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:760,&quot;height&quot;:128},&quot;kind&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;degraded&quot;,&quot;fallback&quot;,&quot;offline&quot;,&quot;breached&quot;,&quot;quiet&quot;],&quot;default&quot;:&quot;degraded&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;title&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;CORRELATOR UNSTABLE · COPILOT SHAPE&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;meta&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;since 21:14 IST&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;body&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;consequence&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;action&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;DETAIL&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;href&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;#&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  renderVals(){
+    const p = this.props, R = React;
+    const kind = p.kind ?? 'degraded';
+    const g = {
+      degraded: {edge:'var(--ctn-color-severity-high)', style:'solid',
+        glyph: R.createElement('polygon',{points:'13,3 24,22 2,22',fill:'none',stroke:'var(--ctn-color-severity-high)',strokeWidth:2})},
+      fallback: {edge:'var(--ctn-color-border-strong)', style:'dashed',
+        glyph: [R.createElement('rect',{key:'a',x:6,y:12,width:14,height:10,rx:1.5,fill:'none',stroke:'var(--ctn-color-text-secondary)',strokeWidth:1.8}),
+                R.createElement('path',{key:'b',d:'M 9 12 V 8.6 a 4 4 0 0 1 8 0 V 12',fill:'none',stroke:'var(--ctn-color-text-secondary)',strokeWidth:1.8})]},
+      offline: {edge:'var(--ctn-color-border-strong)', style:'solid',
+        glyph: [R.createElement('path',{key:'a',d:'M 4 13 H 10',stroke:'var(--ctn-color-text-secondary)',strokeWidth:2}),
+                R.createElement('path',{key:'b',d:'M 16 13 H 22',stroke:'var(--ctn-color-text-secondary)',strokeWidth:2}),
+                R.createElement('path',{key:'c',d:'M 11 8 L 15 18',stroke:'var(--ctn-color-text-disabled)',strokeWidth:2})]},
+      breached: {edge:'var(--ctn-color-text-primary)', style:'solid',
+        glyph: [R.createElement('circle',{key:'a',cx:13,cy:13,r:9,fill:'none',stroke:'var(--ctn-color-text-primary)',strokeWidth:2}),
+                R.createElement('path',{key:'b',d:'M 6 20 L 20 6',stroke:'var(--ctn-color-text-primary)',strokeWidth:2})]},
+      quiet: {edge:'var(--ctn-color-border-strong)', style:'dashed',
+        glyph: R.createElement('circle',{cx:13,cy:13,r:9,fill:'none',stroke:'var(--ctn-color-text-muted)',strokeWidth:1.8,strokeDasharray:'3.5 3.5'})}
+    }[kind] || {edge:'var(--ctn-color-border-strong)', style:'solid', glyph:null};
+    return {
+      edge:g.edge, edgeStyle:g.style, glyph:g.glyph,
+      title: p.title ?? '', meta: p.meta ?? '', body: p.body ?? '',
+      consequence: p.consequence ?? '',
+      action: p.action ?? 'DETAIL', href: p.href ?? '#'
+    };
+  }
+}
+</script>
+</body>
+</html>

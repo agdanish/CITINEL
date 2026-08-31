@@ -35,5 +35,9 @@ data/raw/
 data/cache/
 .coverage
 htmlcov/
+# Live pipeline output. Regenerated from the raw corpus by the worker; never
+# committed. data/seed/ below is the committed counterpart that ships in the
+# deployed image -- see backend/citinel/web/app.py's source resolution.
 data/incidents/
 data/cache/enrichment/
+!data/seed/

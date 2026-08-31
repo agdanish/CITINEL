@@ -1,0 +1,5 @@
+/* Tier 1.5 — skin override point. A skin/partner file may declare ONLY:
+   --ctn-brand-accent, --ctn-logo-lockup, --ctn-partner-name-text. Nothing else. */
+:root{
+--ctn-brand-accent:var(--ctn-color-steel-600); /* primary CTA, active-nav, small icon tint — nothing else */
+}

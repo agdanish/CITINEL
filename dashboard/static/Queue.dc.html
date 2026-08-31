@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="vendor/resources.js"></script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/fonts.css">
+<link rel="stylesheet" href="vendor/fonts.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/colors.primitive.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/colors.semantic.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/typography.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/spacing.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/brand.flagship.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/component.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/base.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/styles.css">
+<link rel="stylesheet" href="a11y.css">
+<link rel="stylesheet" href="motion.css">
+<script src="motion.js"></script>
+<script src="reveal.js"></script>
+<script src="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/_ds_bundle.js"></script>
+<script src="role.js"></script>
+<script src="route.js"></script>
+<style>html,body{height:100%;overflow-y:hidden;overflow-x:auto}</style>
+<script src="api.js"></script>
+</helmet>
+<div data-screen-label="Alert queue" data-citinel-page="queue" style="display:flex;flex-direction:column;height:100vh;min-width:1280px;background:var(--ctn-color-surface-shell)">
+
+  <header style="display:flex;align-items:center;gap:18px;padding:0 18px;height:52px;flex:none;border-bottom:1px solid var(--ctn-color-border-strong);background:var(--ctn-color-surface-panel);min-width:0">
+    <img src="assets/mark-white.png" alt="CITINEL · caught, cited, gated, actioned, closed" style="height:34px;width:90px;display:block;flex:none">
+    <nav style="display:flex;gap:2px;min-width:0;overflow-x:auto;scrollbar-width:thin;flex:1">
+      <a href="Overview.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">OVERVIEW</a>
+      <a href="Queue.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-primary);background:var(--ctn-color-surface-raised);border-radius:6px;white-space:nowrap">QUEUE</a>
+      <a href="Replay.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">REPLAY</a>
+      <a href="Confidence.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">CONFIDENCE</a>
+      <a href="Evidence.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">EVIDENCE</a>
+      <a href="Approvals.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">APPROVALS</a>
+      <a href="Compliance.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">COMPLIANCE</a>
+      <a href="Audit.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">AUDIT</a>
+      <a href="Corpus.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">CORPUS</a>
+      <a href="Eval.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">EVAL</a>
+      <a href="Policy.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">POLICY</a>
+      <a href="Handover.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">HANDOVER</a>
+      <a href="Executive.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">EXEC</a>
+      <a href="Settings.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">CONNECTORS</a>
+      <a href="Demo.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">DEMO</a>
+      <a href="Shell.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">SHELL</a>
+      <a href="Entry.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">ENTRY</a>
+          <a href="Narrow.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">NARROW</a>
+</nav>
+    <span style="flex:none;font-size:11.5px;color:var(--ctn-color-text-muted);font-variant-caps:all-small-caps;white-space:nowrap">sorting line · watch 14:00–02:00 IST</span>
+    <span style="flex:none;font-family:var(--ctn-font-display);font-size:13px;color:var(--ctn-color-text-primary);font-variant-numeric:tabular-nums slashed-zero">{{ utc }} UTC</span>
+  </header>
+
+  <div data-reflow-band style="flex:none;display:flex;align-items:stretch;border-bottom:1px solid var(--ctn-color-border-strong);background:var(--ctn-color-surface-panel);min-width:0">
+    <div data-reflow-rail style="flex:none;display:flex;align-items:center;gap:16px;padding:12px 22px;border-right:1px solid var(--ctn-color-border-hairline)">
+      <div>
+        <div style="font-family:var(--ctn-font-display);font-size:8.5px;letter-spacing:0.13em;color:var(--ctn-color-text-muted)">INTAKE THIS WATCH</div>
+        <div style="font-family:var(--ctn-font-display);font-size:30px;line-height:1.1;color:var(--ctn-color-text-primary);font-variant-numeric:tabular-nums slashed-zero">{{ totalCaught }}</div>
+      </div>
+    </div>
+    <div style="flex:1;min-width:0;display:flex;align-items:center;padding:8px 22px;gap:18px">
+      <svg width="560" height="84" viewBox="0 0 560 84" style="flex:none;display:block">
+        <line x1="0" y1="30" x2="238" y2="30" stroke="var(--ctn-color-border-strong)" stroke-width="2"></line>
+        <line x1="0" y1="46" x2="238" y2="46" stroke="var(--ctn-color-border-strong)" stroke-width="2"></line>
+        <g>{{ beltDots }}</g>
+        <line x1="238" y1="38" x2="300" y2="14" stroke="var(--ctn-color-text-primary)" stroke-width="3" stroke-linecap="round"></line>
+        <circle cx="238" cy="38" r="5" fill="var(--ctn-color-surface-navy)" stroke="var(--ctn-color-text-secondary)" stroke-width="1.6"></circle>
+        <text x="238" y="66" text-anchor="middle" font-family="var(--ctn-font-display)" font-size="8" letter-spacing="1.2" fill="var(--ctn-color-text-muted)">SIGMA DIVERTER · 3,000 @ 7f31c0d</text>
+        <line x1="300" y1="14" x2="560" y2="14" stroke="var(--ctn-color-border-strong)" stroke-width="2"></line>
+        {{ heldLabel }}
+        <line x1="300" y1="46" x2="440" y2="76" stroke="var(--ctn-color-border-hairline)" stroke-width="2"></line>
+        {{ postedLabel }}
+      </svg>
+      <div style="flex:none;font-size:11.5px;color:var(--ctn-color-text-muted);line-height:1.5;max-width:38ch;text-wrap:pretty">the diverter is deterministic: a rule either explains a package or it stays on the belt. {{ postedPctLine }}</div>
+    </div>
+  </div>
+
+  <section style="flex:none;display:flex;flex-direction:column;min-width:0;border-bottom:2px solid var(--ctn-color-border-strong);background:var(--ctn-color-surface-shell)">
+    <div style="flex:none;display:flex;align-items:baseline;gap:8px 14px;flex-wrap:wrap;padding:12px 22px 8px;min-width:0">
+      <span style="font-family:var(--ctn-font-display);font-size:11.5px;letter-spacing:0.14em;color:var(--ctn-color-text-primary);flex:none">THE BELT · HELD FOR THE SWARM</span>
+      <span style="font-family:var(--ctn-font-display);font-size:26px;color:var(--ctn-color-text-primary);font-variant-numeric:tabular-nums slashed-zero;flex:none;margin-right:auto">{{ escCount }}</span>
+      <span data-token style="font-family:var(--ctn-font-mono);font-size:11px;color:var(--ctn-color-text-muted);flex:none">discharge end at the left · oldest first</span>
+    </div>
+
+    <sc-if value="{{ isQuiet }}" hint-placeholder-val="{{ false }}">
+      <div style="margin:0 22px 16px;border:1px dashed var(--ctn-color-border-strong);border-radius:6px;padding:18px 20px;min-width:0">
+        <div style="font-family:var(--ctn-font-display);font-size:10px;letter-spacing:0.12em;color:var(--ctn-color-text-primary)">THE BELT IS EMPTY AND STILL TURNING</div>
+        <div style="font-size:13px;color:var(--ctn-color-text-secondary);margin-top:8px;line-height:1.55;max-width:88ch;text-wrap:pretty">{{ quietBody }}</div>
+        <div style="display:flex;gap:26px;margin-top:12px;flex-wrap:wrap">
+          <sc-for list="{{ quietProof }}" as="x" hint-placeholder-count="4">
+            <div><div style="font-family:var(--ctn-font-display);font-size:19px;color:var(--ctn-color-text-primary);font-variant-numeric:tabular-nums slashed-zero">{{ x.v }}</div><div style="font-size:10.5px;color:var(--ctn-color-text-muted);font-variant-caps:all-small-caps;white-space:nowrap">{{ x.k }}</div></div>
+          </sc-for>
+        </div>
+        <div style="font-size:11.5px;color:var(--ctn-color-text-muted);margin-top:12px;line-height:1.5;max-width:88ch;text-wrap:pretty">{{ quietCaveat }}</div>
+      </div>
+    </sc-if>
+
+    <div style="display:flex;gap:12px;padding:0 22px 6px;overflow-x:auto;min-width:0;align-items:stretch" data-keys="1" tabindex="0">
+      <sc-for list="{{ escalated }}" as="e" hint-placeholder-count="7">
+        <a href="Replay.dc.html" style="flex:none;width:242px;display:flex;flex-direction:column;text-decoration:none;color:inherit;background:var(--ctn-color-surface-panel);border:1px solid var(--ctn-color-border-hairline);border-top:3px solid {{ e.edge }};border-radius:6px;min-width:0" style-hover="background:var(--ctn-color-surface-raised)">
+          <div style="display:flex;align-items:center;gap:8px;padding:10px 12px 0;min-width:0;overflow:hidden">
+            <x-import component-from-global-scope="CITINELDesignSystem_fdfd66.SeverityBadge" level="{{ e.sev }}" size="sm" hint-size="80px,20px"></x-import>
+            <span data-token style="font-family:var(--ctn-font-mono);font-size:11.5px;color:var(--ctn-color-text-primary);margin-left:auto;flex:none">{{ e.id }}</span>
+          </div>
+          <div style="font-size:13px;color:var(--ctn-color-text-primary);line-height:1.4;padding:8px 12px 0;text-wrap:pretty">{{ e.what }}</div>
+          <div style="font-family:var(--ctn-font-mono);font-size:10.5px;color:var(--ctn-color-text-muted);padding:5px 12px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ e.rule }} · {{ e.host }}</div>
+          <div style="display:flex;align-items:center;gap:7px;padding:8px 12px 0;min-width:0">
+            <span style="width:6px;height:6px;border-radius:50%;background:{{ e.holderDot }};flex:none"></span>
+            <span style="font-family:var(--ctn-font-display);font-size:7.5px;letter-spacing:0.09em;color:var(--ctn-color-text-primary);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ e.holder }}</span>
+          </div>
+          <div style="font-size:10.5px;color:var(--ctn-color-text-muted);padding:3px 12px 0;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ e.holderNote }}</div>
+          <div style="margin-top:auto;display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px;padding:10px 12px 11px;border-top:1px solid var(--ctn-color-border-hairline);min-width:0">
+            <span style="font-family:var(--ctn-font-display);font-size:17px;color:{{ e.ageColor }};font-variant-numeric:tabular-nums slashed-zero;flex:none">{{ e.age }}</span>
+            <span style="font-family:var(--ctn-font-display);font-size:7px;letter-spacing:0.1em;color:{{ e.ageColor }};flex:none">{{ e.ageMark }}</span>
+            <span style="font-family:var(--ctn-font-display);font-size:7px;letter-spacing:0.1em;color:var(--ctn-color-text-muted);margin-left:auto;flex:none">{{ e.pos }}</span>
+          </div>
+        </a>
+      </sc-for>
+    </div>
+    <div style="flex:none;height:10px;margin:0 22px 12px;border-top:2px solid var(--ctn-color-border-strong);border-bottom:1px dashed var(--ctn-color-border-hairline)"></div>
+  </section>
+
+  <section style="flex:1;min-height:0;display:flex;flex-direction:column;min-width:0">
+    <div style="flex:none;display:flex;align-items:baseline;gap:12px;padding:11px 22px 7px;min-width:0">
+      <span style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.14em;color:var(--ctn-color-text-muted);flex:none">THE BIN · POSTED BY SIGMA, NO MODEL INVOLVED</span>
+      <span style="font-family:var(--ctn-font-display);font-size:17px;color:var(--ctn-color-text-primary);font-variant-numeric:tabular-nums slashed-zero;flex:none">{{ postedCount }}</span>
+      <span data-reveal style="font-family:var(--ctn-font-mono);font-size:11px;color:var(--ctn-color-text-muted);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">deterministic rule + citation · falls out of the diverter and settles here in columns, newest on top of each pile</span>
+    </div>
+    <div style="flex:1;min-height:0;overflow-y:auto;padding:0 22px 16px;min-width:0">
+      <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 26px;align-items:start">
+        <sc-for list="{{ postedGroups }}" as="g" hint-placeholder-count="4">
+          <div style="padding-bottom:14px;min-width:0">
+            <div style="font-family:var(--ctn-font-display);font-size:8.5px;letter-spacing:0.13em;color:var(--ctn-color-text-muted);border-bottom:1px solid var(--ctn-color-border-strong);padding-bottom:4px">{{ g.hour }} · {{ g.n }} POSTED</div>
+            <sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="8">
+              <a href="Replay.dc.html" style="display:flex;align-items:baseline;gap:8px;padding:5px 0;border-bottom:1px solid var(--ctn-color-border-hairline);text-decoration:none;font-family:var(--ctn-font-mono);font-size:11px;line-height:15px;letter-spacing:0;min-width:0" style-hover="background:var(--ctn-color-surface-panel)">
+                <span style="color:var(--ctn-color-text-muted);font-variant-numeric:tabular-nums;flex:none">{{ r.t }}</span>
+                <span style="font-family:var(--ctn-font-display);font-size:7.5px;letter-spacing:0.08em;color:{{ r.sevFg }};flex:none;width:28px">{{ r.sev }}</span>
+                <span style="color:var(--ctn-color-text-secondary);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.what }}</span>
+                <svg width="11" height="11" viewBox="0 0 14 14" style="flex:none"><circle cx="7" cy="7" r="5.4" fill="none" stroke="var(--ctn-color-state-cited)" stroke-width="1.3"></circle><circle cx="7" cy="7" r="2.4" fill="var(--ctn-color-state-node)" stroke="var(--ctn-color-state-stroke)" stroke-width="0.9"></circle></svg>
+              </a>
+            </sc-for>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1600,&quot;height&quot;:900}}">
+class Component extends DCLogic {
+  constructor(p){
+    super(p);
+    const t = Date.now();
+    const E = (id,sev,what,rule,host,holder,holderNote,ageS)=>({id,sev,what,rule,host,holder,holderNote,born:t-ageS*1000});
+    this.state = {
+      now:t, posted: 371,
+      escalated: [
+        E('INC-0417','critical','UPI mule cashout chain · ₹18.4L staged across 14 beneficiaries','upi_beneficiary_burst','upi-sw-01','AT THE GATE','freeze + egress block await approval',761),
+        E('INC-0846','high','lateral movement from branch jump host toward CBS segment','rdp_lateral_cbs','br-jump-02','AT THE GATE','isolation drafted, undecided',1523),
+        E('ALR-99141','high','lsass memory read after failed su burst, no benign parent','lsass_access','cbs-app-04','CORRELATOR','joining to INC-0846 auth trail',347),
+        E('ALR-99138','medium','oauth consent to unverified app · grant pattern unseen before','oauth_consent_anom','m365-tenant','ENRICHMENT SQUAD','publisher reputation lookups running',912),
+        E('ALR-99133','medium','encoded powershell on teller ws, decodes to a download cradle','ps_encoded_cmd','ws-teller-19','VERDICT NARRATOR','drafting cited verdict',1204),
+        E('ALR-99129','medium','dns volume anomaly single host, tunnel hypothesis open','dns_vol_anom','br-dns-01','CORRELATOR','no matching egress found yet',1688),
+        E('ALR-99144','low','new local admin on non-server asset outside change window','local_admin_add','ws-ops-07','ENRICHMENT SQUAD','change-ticket cross-check',150)
+      ]
+    };
+    this.postedPool = [
+      ['LOW','failed logon burst locked by policy'],
+      ['LOW','port scan from printer vlan'],
+      ['MED','impossible travel resolved to vpn egress'],
+      ['LOW','dns tunnel candidate, zoom telemetry domain'],
+      ['MED','sigma proc_creation benign parent MsMpEng.exe'],
+      ['LOW','tls cert mismatch · expired internal cert']
+    ];
+  }
+  componentDidMount(){
+    this.t = setInterval(()=>{
+      this.setState(s=>{
+        const st = {now: Date.now()};
+        if(Math.random()<0.3) st.posted = s.posted+1;
+        return st;
+      });
+    },1000);
+  }
+  componentWillUnmount(){ clearInterval(this.t); }
+  baseVals(){
+    const s = this.state, R = React;
+    const holderDots = {'AT THE GATE':'var(--ctn-color-clock)','CORRELATOR':'var(--ctn-color-ok)','ENRICHMENT SQUAD':'var(--ctn-color-severity-high)','VERDICT NARRATOR':'var(--ctn-color-ok)'};
+    const sevEdge = {critical:'var(--ctn-color-severity-critical)',high:'var(--ctn-color-severity-high)',medium:'var(--ctn-color-border-strong)',low:'var(--ctn-color-border-hairline)'};
+    const esc = s.escalated.map(e=>{
+      const ageS = Math.max(0, Math.floor((s.now-e.born)/1000));
+      return {...e, ageS,
+        edge: sevEdge[e.sev],
+        holderDot: holderDots[e.holder] || 'var(--ctn-color-text-muted)',
+        age: String(Math.floor(ageS/60)).padStart(2,'0')+':'+String(ageS%60).padStart(2,'0'),
+        ageMark: ageS>1200 ? 'AGED' : ageS>600 ? 'WATCH' : 'IN TIME',
+        ageColor: ageS>1200 ? 'var(--ctn-color-severity-critical-text)' : ageS>600 ? 'var(--ctn-color-clock)' : 'var(--ctn-color-text-primary)'
+      };
+    }).sort((a,b)=> b.ageS - a.ageS).map((e,i,arr)=>({...e, pos: i===0 ? 'DISCHARGE · WORK THIS' : 'POSITION '+String(i+1).padStart(2,'0')}));
+    const sevFg = {CRIT:'var(--ctn-color-severity-critical-text)', HIGH:'var(--ctn-color-severity-high)', MED:'var(--ctn-color-text-secondary)', LOW:'var(--ctn-color-text-muted)'};
+    const mkRow = (t,i)=>{
+      const p = this.postedPool[i % this.postedPool.length];
+      return {t, sev:p[0], sevFg: sevFg[p[0]], what:p[1]};
+    };
+    const groups = [
+      {hour:'21:00 IST', n:'38', count:13},
+      {hour:'20:00 IST', n:'52', count:13},
+      {hour:'19:00 IST', n:'47', count:12},
+      {hour:'18:00 IST', n:'61', count:12},
+      {hour:'17:00 IST', n:'44', count:11},
+      {hour:'16:00 IST', n:'58', count:11}
+    ].map((g,gi)=>({hour:g.hour, n:g.n, rows: Array.from({length:g.count},(_,i)=>mkRow(
+      String(21-gi).padStart(2,'0')+':'+String(57-i*4).padStart(2,'0'), gi*20+i))}));
+    const total = s.posted + esc.length;
+    const beltDots = [];
+    for(let i=0;i<9;i++) beltDots.push(R.createElement('circle',{key:i,cx:14+i*26,cy:38,r:4,fill:'var(--ctn-color-surface-raised)',stroke:'var(--ctn-color-border-hairline)',strokeWidth:1}));
+    return {
+      utc: new Date(s.now).toISOString().slice(11,19),
+      totalCaught: total.toLocaleString('en-IN'),
+      postedPctLine: Math.round(s.posted/total*100)+'% of the watch fell straight through to the bin with a citation attached.',
+      beltDots,
+      escCount: String(esc.length).padStart(2,'0'),
+      openNow: String(esc.length).padStart(2,'0'),
+      escalated: esc,
+      postedCount: s.posted.toLocaleString('en-IN'),
+      postedGroups: groups
+    };
+  }
+  stateVals(b){
+    let m = 'normal';
+    try{ m = new URLSearchParams(window.location.search).get('state') || 'normal'; }catch(e){}
+    if(m === 'firstrun') return {
+      isQuiet: true, escalated: [], escCount: '00', openNow: '00', postedCount: '0', totalCaught: '0',
+      postedPctLine: 'nothing has crossed the diverter yet.',
+      quietBody: 'This line has no history. Ingest was connected 41 minutes ago and the first watch has not been opened. Nothing has been caught, cited or closed on this install.',
+      quietProof: [{v:'00:41', k:'since first inlet'},{v:'6 / 6', k:'sources reporting'},{v:'14 d', k:'baseline before lane a opens'},{v:'0', k:'alerts seen'}],
+      quietCaveat: 'The diverter stays shut for the first fourteen days regardless of what arrives. Auto-posting on a citation requires knowing what normal looks like here, and this install does not know yet. Everything caught in that window rides the belt to a human.'
+    };
+    if(m !== 'quiet') return {isQuiet:false};
+    return {
+      isQuiet: true, escalated: [], escCount: '00', openNow: '00',
+      quietBody: 'No package on this watch needed the swarm. Sigma explained everything it saw, each with a citation, and the belt is genuinely clear. All 318 caught this watch are accounted for.',
+      quietProof: [{v:'318', k:'caught this watch'},{v:'318', k:'closed on citation'},{v:'00', k:'escalated'},{v:'06:12', k:'since last escalation'}],
+      quietCaveat: 'An empty belt is only as trustworthy as the intake behind it. Six of six sources were reporting for the whole watch and the intake meter never fell below 1,600 eps; if a source had gone silent this panel would say so instead of showing you calm.'
+    };
+  }
+  svgLabels(b){
+    return {
+      heldLabel: this.svgText(308, 8, b.escCount+' held for the swarm · the belt below', {anchor:'start', mono:true, fill:'var(--ctn-color-text-primary)'}),
+      postedLabel: this.svgText(330, 80, b.postedCount+' closed on citation → the bin', {anchor:'start', mono:true})
+    };
+  }
+  renderVals(){ const b = this.baseVals(); return Object.assign({}, b, this.stateVals(b), this.svgLabels(b)); }
+
+  svgText(x,y,str,opts){
+    const o = opts || {};
+    return React.createElement('text', {x, y, textAnchor:o.anchor||'middle',
+      fontFamily:o.mono ? 'var(--ctn-font-mono)' : 'var(--ctn-font-display)',
+      fontSize:o.size||10, letterSpacing:o.track, fill:o.fill||'var(--ctn-color-text-muted)',
+      style:o.tab ? {fontVariantNumeric:'tabular-nums slashed-zero'} : undefined}, str);
+  }
+}
+</script>
+</body>
+</html>

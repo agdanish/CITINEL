@@ -1,0 +1,19 @@
+:root{
+/* Display: locked. Placards only — wordmark, eyebrows, status tags, clock digits, button caps. ≤24 chars. Never a heading tag, never a sentence. */
+--ctn-font-display:'Michroma','Orbitron',sans-serif;
+/* Body: IBM Plex Sans — grotesque with instrumentation heritage and a distinct numeral set. Deliberate pairing; not Inter/Geist/Space Grotesk/Instrument Serif. */
+--ctn-font-body:'IBM Plex Sans',system-ui,sans-serif;
+/* Mono: zero-payload OS stack — log text must never block on font load. letter-spacing always 0. */
+--ctn-font-mono:ui-monospace,'SFMono-Regular','SF Mono',Menlo,Consolas,'Liberation Mono',monospace;
+--ctn-text-body:14px;
+--ctn-text-body-lh:1.55;
+--ctn-text-small:12.5px;
+--ctn-text-log:13px; /* citation chips, raw log lines / lh 1.5 / 400 */
+--ctn-text-log-dense:12px; /* audit-log max density / lh 16px / 400 / ls 0 */
+--ctn-text-eyebrow:11px; /* display face, tracked */
+--ctn-text-eyebrow-track:0.14em;
+--ctn-text-clock:28px; /* tabular-nums slashed-zero, flat gold or white only */
+--ctn-weight-regular:400; /* weight floor: nothing below 400 */
+--ctn-weight-medium:500;
+--ctn-weight-semibold:600;
+}

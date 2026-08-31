@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="vendor/resources.js"></script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/fonts.css">
+<link rel="stylesheet" href="vendor/fonts.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/colors.primitive.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/colors.semantic.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/typography.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/spacing.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/brand.flagship.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/component.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/base.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/styles.css">
+<link rel="stylesheet" href="a11y.css">
+<link rel="stylesheet" href="motion.css">
+<script src="motion.js"></script>
+<script src="reveal.js"></script>
+<script src="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/_ds_bundle.js"></script>
+<script src="role.js"></script>
+<script src="route.js"></script>
+<style>html,body{height:100%;overflow-y:hidden;overflow-x:auto}</style>
+<script src="api.js"></script>
+</helmet>
+<div data-screen-label="Shift handover" data-citinel-page="handover" style="display:flex;flex-direction:column;height:100vh;min-width:1280px;background:var(--ctn-color-surface-shell)">
+
+  <header style="display:flex;align-items:center;gap:18px;padding:0 18px;height:52px;flex:none;border-bottom:1px solid var(--ctn-color-border-strong);background:var(--ctn-color-surface-panel);min-width:0">
+    <img src="assets/mark-white.png" alt="CITINEL · caught, cited, gated, actioned, closed" style="height:34px;width:90px;display:block;flex:none">
+    <nav style="display:flex;gap:2px;min-width:0;overflow-x:auto;scrollbar-width:thin;flex:1">
+      <a href="Overview.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">OVERVIEW</a>
+      <a href="Queue.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">QUEUE</a>
+      <a href="Replay.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">REPLAY</a>
+      <a href="Confidence.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">CONFIDENCE</a>
+      <a href="Evidence.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">EVIDENCE</a>
+      <a href="Approvals.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">APPROVALS</a>
+      <a href="Compliance.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">COMPLIANCE</a>
+      <a href="Audit.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">AUDIT</a>
+      <a href="Corpus.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">CORPUS</a>
+      <a href="Eval.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">EVAL</a>
+      <a href="Policy.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">POLICY</a>
+      <a href="Handover.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-primary);background:var(--ctn-color-surface-raised);border-radius:6px;white-space:nowrap">HANDOVER</a>
+      <a href="Executive.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">EXEC</a>
+      <a href="Settings.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">CONNECTORS</a>
+      <a href="Demo.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">DEMO</a>
+      <a href="Shell.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">SHELL</a>
+      <a href="Entry.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">ENTRY</a>
+          <a href="Narrow.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">NARROW</a>
+</nav>
+    <div style="flex:none;display:flex;align-items:center;gap:1px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;padding:2px">
+      <button onClick="{{ setAnalyst }}" style="font-family:var(--ctn-font-display);font-size:8.5px;letter-spacing:0.1em;padding:6px 11px;border:none;border-radius:4px;cursor:pointer;background:{{ analystBg }};color:{{ analystFg }}">ANALYST</button>
+      <button onClick="{{ setCiso }}" style="font-family:var(--ctn-font-display);font-size:8.5px;letter-spacing:0.1em;padding:6px 11px;border:none;border-radius:4px;cursor:pointer;background:{{ cisoBg }};color:{{ cisoFg }}">CISO</button>
+    </div>
+    <span style="flex:none;font-size:11.5px;color:var(--ctn-color-text-muted);font-variant-caps:all-small-caps;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:290px">{{ genNote }}</span>
+    <span style="flex:none;font-family:var(--ctn-font-display);font-size:13px;color:var(--ctn-color-text-primary);font-variant-numeric:tabular-nums slashed-zero">{{ toBell }}</span>
+    <span style="flex:none;font-size:11px;color:var(--ctn-color-text-muted);font-variant-caps:all-small-caps">to relief</span>
+  </header>
+
+  <div style="flex:none;display:flex;align-items:stretch;border-bottom:1px solid var(--ctn-color-border-strong);background:var(--ctn-color-surface-panel);min-width:0">
+    <div style="flex:1;min-width:0;display:flex;align-items:center;gap:12px 22px;padding:11px 22px;flex-wrap:wrap">
+      <div style="flex:none;min-width:0;overflow:hidden">
+        <div style="font-family:var(--ctn-font-display);font-size:8.5px;letter-spacing:0.12em;color:var(--ctn-color-text-muted)">RELIEVED BY</div>
+        <div style="display:flex;align-items:baseline;gap:9px;margin-top:3px">
+          <span data-token style="font-family:var(--ctn-font-mono);font-size:13.5px;color:var(--ctn-color-text-primary)">a. deshmukh</span>
+          <span style="font-family:var(--ctn-font-display);font-size:11px;color:var(--ctn-color-text-muted)">▸</span>
+          <span data-token style="font-family:var(--ctn-font-mono);font-size:13.5px;color:var(--ctn-color-text-primary)">r. iyer</span>
+        </div>
+      </div>
+      <div style="flex:none;min-width:0">
+        <div style="font-family:var(--ctn-font-display);font-size:8.5px;letter-spacing:0.12em;color:var(--ctn-color-text-muted)">REGISTER PAGE</div>
+        <div style="font-family:var(--ctn-font-mono);font-size:13.5px;color:var(--ctn-color-text-primary);margin-top:3px">2026-08-23 · watch 14:00–22:00 IST</div>
+      </div>
+      <div style="flex:1 1 100%;order:3;min-width:0;max-width:110ch;font-size:12px;color:var(--ctn-color-text-muted);line-height:1.45;text-wrap:pretty">{{ registerNote }}</div>
+      <div style="flex:none;margin-left:auto;display:flex;gap:20px">
+        <sc-for list="{{ tally }}" as="t" hint-placeholder-count="5">
+          <div style="text-align:right"><div style="font-family:var(--ctn-font-display);font-size:17px;color:var(--ctn-color-text-primary);font-variant-numeric:tabular-nums slashed-zero">{{ t.v }}</div><div style="font-size:10px;color:var(--ctn-color-text-muted);font-variant-caps:all-small-caps;white-space:nowrap">{{ t.k }}</div></div>
+        </sc-for>
+      </div>
+    </div>
+    <div style="flex:none;display:flex;align-items:center;gap:14px;padding:11px 22px;border-left:1px solid var(--ctn-color-border-hairline);background:var(--ctn-color-surface-raised)">
+      <svg width="52" height="52" viewBox="0 0 52 52" style="flex:none">
+        <circle cx="26" cy="26" r="20" fill="none" stroke="var(--ctn-color-border-strong)" stroke-width="1.5"></circle>
+        <path d="{{ signArc }}" fill="none" stroke="var(--ctn-color-state-cited)" stroke-width="3.2"></path>
+        <g>{{ signNodes }}</g>
+      </svg>
+      <div style="min-width:0">
+        <div style="font-family:var(--ctn-font-display);font-size:10px;letter-spacing:0.1em;color:{{ signFg }}">{{ signState }}</div>
+        <div style="font-size:11px;color:var(--ctn-color-text-muted);margin-top:2px;max-width:200px;line-height:1.4">{{ signNote }}</div>
+      </div>
+      <sc-if value="{{ notSigned }}" hint-placeholder-val="{{ true }}">
+        <x-import component-from-global-scope="CITINELDesignSystem_fdfd66.Button" variant="primary" size="md" disabled="{{ signDisabled }}" on-click="{{ sign }}" hint-size="170px,38px">{{ signLabel }}</x-import>
+      </sc-if>
+      <sc-if value="{{ signed }}" hint-placeholder-val="{{ false }}">
+        <a href="Audit.dc.html" style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:10px 14px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;color:var(--ctn-color-text-primary);text-decoration:none;white-space:nowrap">ENTRY #{{ signSeq }}</a>
+      </sc-if>
+    </div>
+  </div>
+
+  <div style="flex:1;min-height:0;min-width:0;display:flex" data-reflow-band>
+
+    <section style="flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;border-right:1px solid var(--ctn-color-border-strong);overflow:hidden">
+      <div style="flex:none;display:flex;align-items:baseline;gap:8px 14px;flex-wrap:wrap;padding:14px 22px 9px;min-width:0">
+        <span style="font-family:var(--ctn-font-display);font-size:11.5px;letter-spacing:0.14em;color:var(--ctn-color-text-primary);flex:none">STILL IN SECTION · TRANSFERS WITH THE WATCH</span>
+        <span style="font-family:var(--ctn-font-display);font-size:26px;color:var(--ctn-color-text-primary);font-variant-numeric:tabular-nums slashed-zero;flex:none;margin-right:auto">{{ inSectionCount }}</span>
+        <span style="flex:1 1 100%;font-size:12.5px;color:var(--ctn-color-text-secondary);min-width:0;max-width:110ch;line-height:1.5;text-wrap:pretty">nothing here is finished. the statutory clocks do not pause for the relief, and the incoming analyst owns them from the moment the register is signed.</span>
+      </div>
+      <div style="flex:1;min-height:0;overflow-y:auto;padding:0 22px 18px;display:flex;flex-direction:column;gap:10px">
+        <sc-for list="{{ inSection }}" as="i" hint-placeholder-count="3">
+          <div style="display:flex;align-items:stretch;gap:16px;padding:14px 16px;background:var(--ctn-color-surface-panel);border:1px solid {{ i.cardBorder }};border-left:3px solid {{ i.edge }};border-radius:6px;min-width:0;flex:none">
+              <div style="flex:none;display:flex;flex-direction:column;align-items:center;gap:7px;width:66px">
+                <svg width="58" height="58" viewBox="0 0 58 58">
+                  <circle cx="29" cy="29" r="23" fill="none" stroke="var(--ctn-color-border-strong)" stroke-width="1.5"></circle>
+                  <path d="{{ i.arc }}" fill="none" stroke="var(--ctn-color-state-cited)" stroke-width="3.4"></path>
+                  <g>{{ i.nodes }}</g>
+                </svg>
+                <span style="font-family:var(--ctn-font-display);font-size:7.5px;letter-spacing:0.1em;color:var(--ctn-color-text-muted);white-space:nowrap">{{ i.stateName }}</span>
+              </div>
+              <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:6px">
+                <div style="display:flex;align-items:center;gap:11px;min-width:0">
+                  <x-import component-from-global-scope="CITINELDesignSystem_fdfd66.SeverityBadge" level="{{ i.sev }}" size="sm" hint-size="84px,20px"></x-import>
+                  <span data-token style="font-family:var(--ctn-font-mono);font-size:14px;color:var(--ctn-color-text-primary);flex:none">{{ i.id }}</span>
+                  <span style="font-size:14px;color:var(--ctn-color-text-primary);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ i.title }}</span>
+                </div>
+                <div style="font-size:12.5px;color:var(--ctn-color-text-secondary);line-height:1.45;text-wrap:pretty">{{ i.position }}</div>
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-width:0">
+                  <x-import component-from-global-scope="CITINELDesignSystem_fdfd66.CitationChip" locator="{{ i.locator }}" size="sm" hint-size="230px,22px"></x-import>
+                  <span data-token style="font-family:var(--ctn-font-mono);font-size:11px;color:var(--ctn-color-text-muted);flex:1;min-width:0">{{ i.holder }}</span>
+                  <a href="{{ i.href }}" style="font-family:var(--ctn-font-display);font-size:8.5px;letter-spacing:0.1em;padding:6px 10px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;color:var(--ctn-color-text-primary);text-decoration:none;flex:none">OPEN</a>
+                  <button onClick="{{ i.sight }}" style="font-family:var(--ctn-font-display);font-size:8.5px;letter-spacing:0.1em;padding:6px 10px;border:1px {{ i.sightBorder }} var(--ctn-color-border-strong);border-radius:6px;background:{{ i.sightBg }};color:{{ i.sightFg }};cursor:pointer;flex:none">{{ i.sightLabel }}</button>
+                </div>
+                <sc-if value="{{ analyst }}" hint-placeholder-val="{{ true }}">
+                  <div style="font-size:12px;color:var(--ctn-color-text-primary);line-height:1.4;text-wrap:pretty"><span style="font-family:var(--ctn-font-display);font-size:8px;letter-spacing:0.1em;color:var(--ctn-color-text-muted);margin-right:7px">NEXT MOVE</span>{{ i.next }}</div>
+                </sc-if>
+                <sc-if value="{{ ciso }}" hint-placeholder-val="{{ false }}">
+                  <div style="font-size:12px;color:var(--ctn-color-text-primary);line-height:1.4;text-wrap:pretty"><span style="font-family:var(--ctn-font-display);font-size:8px;letter-spacing:0.1em;color:var(--ctn-color-text-muted);margin-right:7px">EXPOSURE</span>{{ i.exposure }}</div>
+                </sc-if>
+              </div>
+              <div style="flex:none;width:150px;display:flex;flex-direction:column;justify-content:center;gap:7px">
+                <sc-for list="{{ i.clocks }}" as="c" hint-placeholder-count="2">
+                  <div style="min-width:0">
+                    <div style="display:flex;align-items:baseline;gap:8px;min-width:0">
+                      <span style="font-family:var(--ctn-font-display);font-size:15px;color:{{ c.fg }};font-variant-numeric:tabular-nums slashed-zero;flex:none">{{ c.left }}</span>
+                      <span style="font-size:10px;color:var(--ctn-color-text-muted);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.reg }}</span>
+                    </div>
+                    <div style="height:3px;background:var(--ctn-color-surface-well);border-radius:2px;margin-top:3px;overflow:hidden"><div style="height:100%;width:{{ c.pct }};background:var(--ctn-color-clock)"></div></div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <aside data-reflow-rail style="width:clamp(260px, 11.67rem + 12.87vw, 372px);flex:none;box-sizing:border-box;display:flex;flex-direction:column;min-height:0;min-width:0;overflow:hidden">
+
+      <div style="flex:none;display:flex;flex-direction:column;border-bottom:1px solid var(--ctn-color-border-hairline);padding:13px 18px 12px;min-width:0">
+        <div style="display:flex;align-items:baseline;gap:10px;min-width:0">
+          <span style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.14em;color:var(--ctn-color-text-primary);flex:none">BLOCKED AT THE GATE</span>
+          <span style="font-size:11px;color:var(--ctn-color-text-muted);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">drafted · needs a name</span>
+          <span style="font-family:var(--ctn-font-display);font-size:17px;color:var(--ctn-color-text-primary);font-variant-numeric:tabular-nums slashed-zero;flex:none">{{ gateCount }}</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:7px;margin-top:9px">
+          <sc-for list="{{ gate }}" as="g" hint-placeholder-count="3">
+            <a href="Approvals.dc.html?action={{ g.aid }}" style="display:flex;align-items:center;gap:11px;padding:9px 11px;background:var(--ctn-color-surface-panel);border:1px {{ g.borderStyle }} var(--ctn-color-border-hairline);border-radius:6px;text-decoration:none;min-width:0" style-hover="background:var(--ctn-color-surface-raised)">
+              <span style="flex:none;width:14px;height:14px;display:flex;align-items:center;justify-content:center">{{ g.glyph }}</span>
+              <span data-token style="font-family:var(--ctn-font-mono);font-size:11px;color:var(--ctn-color-text-muted);flex:none">{{ g.inc }}</span>
+              <span data-reveal style="font-family:var(--ctn-font-mono);font-size:11.5px;color:var(--ctn-color-text-primary);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ g.name }}</span>
+              <span style="font-family:var(--ctn-font-display);font-size:7.5px;letter-spacing:0.1em;color:var(--ctn-color-text-muted);border:1px {{ g.borderStyle }} var(--ctn-color-border-strong);padding:2px 5px;border-radius:3px;flex:none">{{ g.nodes }}N</span>
+              <span style="font-family:var(--ctn-font-display);font-size:12px;color:{{ g.waitFg }};font-variant-numeric:tabular-nums slashed-zero;flex:none">{{ g.wait }}</span>
+            </a>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="flex:1;min-height:0;display:flex;flex-direction:column;padding:13px 18px 12px;min-width:0">
+        <div style="display:flex;align-items:baseline;gap:10px;flex:none;min-width:0">
+          <span style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.14em;color:var(--ctn-color-text-primary);flex:none">WATCH LIST · TIME SENSITIVE</span>
+          <span style="font-size:11px;color:var(--ctn-color-text-muted);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">soonest first</span>
+          <span style="font-family:var(--ctn-font-display);font-size:17px;color:var(--ctn-color-text-primary);font-variant-numeric:tabular-nums slashed-zero;flex:none">{{ watchCount }}</span>
+        </div>
+        <div style="flex:1;min-height:0;overflow-y:auto;margin-top:9px;display:flex;flex-direction:column">
+          <sc-for list="{{ watch }}" as="w" hint-placeholder-count="6">
+            <div style="padding:9px 0;border-bottom:1px solid var(--ctn-color-border-hairline);min-width:0">
+              <div style="display:flex;align-items:baseline;gap:9px;min-width:0">
+                <span style="font-family:var(--ctn-font-display);font-size:13.5px;color:{{ w.clockFg }};font-variant-numeric:tabular-nums slashed-zero;flex:none;width:62px">{{ w.left }}</span>
+                <span style="font-size:12.5px;color:var(--ctn-color-text-primary);flex:1;min-width:0;line-height:1.4">{{ w.what }}</span>
+                <span style="font-family:var(--ctn-font-display);font-size:7.5px;letter-spacing:0.1em;color:var(--ctn-color-text-muted);border:1px solid var(--ctn-color-border-strong);padding:2px 6px;border-radius:3px;flex:none">{{ w.kind }}</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:9px;margin-top:5px;min-width:0">
+                <div style="flex:1;min-width:0;height:4px;background:var(--ctn-color-surface-well);border:1px solid var(--ctn-color-border-hairline);border-radius:2px;overflow:hidden;position:relative">
+                  <div style="height:100%;width:{{ w.pct }};background:{{ w.barFill }}"></div>
+                </div>
+                <span data-reveal style="font-family:var(--ctn-font-mono);font-size:10.5px;color:var(--ctn-color-text-muted);flex:none;white-space:nowrap">{{ w.due }}</span>
+              </div>
+              <div style="font-size:11.5px;color:var(--ctn-color-text-muted);margin-top:4px;line-height:1.4;text-wrap:pretty">{{ w.action }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <sc-if value="{{ ciso }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:none;border-top:1px solid var(--ctn-color-border-hairline);padding:13px 18px 16px;min-width:0">
+          <div style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.14em;color:var(--ctn-color-text-primary)">EXCEPTIONS THIS WATCH</div>
+          <div style="display:flex;flex-direction:column;margin-top:8px">
+            <sc-for list="{{ exceptions }}" as="e" hint-placeholder-count="4">
+              <div style="display:flex;align-items:baseline;gap:10px;padding:7px 0;border-bottom:1px solid var(--ctn-color-border-hairline);min-width:0">
+                <span style="font-family:var(--ctn-font-display);font-size:13px;color:{{ e.fg }};font-variant-numeric:tabular-nums slashed-zero;flex:none;width:58px">{{ e.v }}</span>
+                <span style="font-size:12px;color:var(--ctn-color-text-secondary);flex:1;min-width:0;line-height:1.4">{{ e.k }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+    </aside>
+  </div>
+
+  <div style="flex:none;border-top:1px solid var(--ctn-color-border-strong);background:var(--ctn-color-surface-panel);display:flex;flex-direction:column;min-width:0">
+    <div style="display:flex;align-items:baseline;gap:12px;padding:10px 22px 6px;min-width:0">
+      <span style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.14em;color:var(--ctn-color-text-muted);flex:none">PASSED THIS WATCH · ACTIONS TAKEN, IN ORDER</span>
+      <span data-reveal style="font-family:var(--ctn-font-mono);font-size:11.5px;color:var(--ctn-color-text-muted);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">every row is a ledger entry; the register cannot be amended after relief</span>
+      <span style="font-family:var(--ctn-font-display);font-size:15px;color:var(--ctn-color-text-primary);font-variant-numeric:tabular-nums slashed-zero;flex:none">{{ passedCount }}</span>
+    </div>
+    <div style="display:flex;gap:0;overflow-x:auto;padding:0 22px 12px;scrollbar-width:thin">
+      <sc-for list="{{ passed }}" as="p" hint-placeholder-count="7">
+        <div style="flex:none;width:238px;padding:9px 13px 9px 0;margin-right:13px;border-right:1px solid var(--ctn-color-border-hairline);min-width:0">
+          <div style="display:flex;align-items:center;gap:8px;min-width:0">
+            <span style="flex:none;width:14px;height:14px;display:flex;align-items:center;justify-content:center">{{ p.glyph }}</span>
+            <span data-token style="font-family:var(--ctn-font-mono);font-size:11px;color:var(--ctn-color-text-muted);font-variant-numeric:tabular-nums;flex:none">{{ p.t }}</span>
+            <span data-token style="font-family:var(--ctn-font-mono);font-size:11px;color:var(--ctn-color-text-secondary);flex:none">{{ p.inc }}</span>
+            <span data-token style="font-family:var(--ctn-font-mono);font-size:10px;color:var(--ctn-color-text-muted);margin-left:auto;flex:none">#{{ p.seq }}</span>
+          </div>
+          <div style="font-size:12px;color:var(--ctn-color-text-primary);margin-top:4px;line-height:1.4">{{ p.what }}</div>
+          <div style="font-size:11px;color:var(--ctn-color-text-muted);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.by }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1600,&quot;height&quot;:900}}">
+class Component extends DCLogic {
+  state = {role: this.roleInit(), now: Date.now(), read:{}, signed:false, signedAt:''};
+  componentDidMount(){ this.roleMount(); this.base = Date.now(); this.t = setInterval(()=>this.setState({now:Date.now()}),1000); }
+  componentWillUnmount(){ clearInterval(this.t); }
+  fmt(x){ x=Math.max(0,x); const h=Math.floor(x/3600); return String(h).padStart(2,'0')+':'+String(Math.floor(x/60)%60).padStart(2,'0')+':'+String(x%60).padStart(2,'0'); }
+  short(x){ x=Math.max(0,x); const h=Math.floor(x/3600); return h>0 ? h+'h '+String(Math.floor(x/60)%60).padStart(2,'0')+'m' : String(Math.floor(x/60)).padStart(2,'0')+'m '+String(x%60).padStart(2,'0')+'s'; }
+  arcPath(cx,cy,r,frac){
+    if(frac<=0) return '';
+    const a = Math.min(frac,0.9999)*2*Math.PI - Math.PI/2;
+    return `M ${cx} ${cy-r} A ${r} ${r} 0 ${frac>0.5?1:0} 1 ${(cx+r*Math.cos(a)).toFixed(1)} ${(cy+r*Math.sin(a)).toFixed(1)}`;
+  }
+  stateNodes(cx,cy,r,reached, denied){
+    const R = React, seq = ['caught','cited','gated','actioned','closed'];
+    return seq.map((k,i)=>{
+      const a = (i/4)*2*Math.PI - Math.PI/2, x = cx+r*Math.cos(a), y = cy+r*Math.sin(a);
+      const on = i <= reached;
+      const stroke = on ? 'var(--ctn-color-state-stroke)' : 'var(--ctn-color-text-disabled)';
+      const fill = on ? 'var(--ctn-color-state-node)' : 'var(--ctn-color-surface-panel)';
+      if(k==='gated' && denied) return R.createElement('rect',{key:i,x:x-4,y:y-4,width:8,height:8,fill:'var(--ctn-color-state-deny)'});
+      if(k==='gated' && i > reached) return R.createElement('circle',{key:i,cx:x,cy:y,r:4.4,fill:'var(--ctn-color-surface-panel)',stroke,strokeWidth:1.8,strokeDasharray:'3 3'});
+      if(k==='gated') return R.createElement('circle',{key:i,cx:x,cy:y,r:4.4,fill:'var(--ctn-color-surface-panel)',stroke:'var(--ctn-color-state-stroke)',strokeWidth:1.9,strokeDasharray:'3 3'});
+      if(k==='actioned') return R.createElement('rect',{key:i,x:x-4,y:y-4,width:8,height:8,transform:`rotate(45 ${x} ${y})`,fill,stroke,strokeWidth:2.3});
+      if(k==='closed') return R.createElement('circle',{key:i,cx:x,cy:y,r:5,fill,stroke,strokeWidth:2.3});
+      return R.createElement('circle',{key:i,cx:x,cy:y,r:4,fill,stroke,strokeWidth:1.7});
+    });
+  }
+  glyph(kind){
+    const R = React;
+    if(kind==='closed') return R.createElement('svg',{width:13,height:13,viewBox:'0 0 16 16'},[
+      R.createElement('circle',{key:'o',cx:8,cy:8,r:6.2,fill:'none',stroke:'var(--ctn-color-state-cited)',strokeWidth:1.7}),
+      R.createElement('circle',{key:'i',cx:8,cy:8,r:2.6,fill:'var(--ctn-color-state-node)',stroke:'var(--ctn-color-state-stroke)',strokeWidth:1})]);
+    if(kind==='actioned') return R.createElement('svg',{width:13,height:13,viewBox:'0 0 16 16'},
+      R.createElement('rect',{x:4,y:4,width:8,height:8,transform:'rotate(45 8 8)',fill:'var(--ctn-color-state-node)',stroke:'var(--ctn-color-state-stroke)',strokeWidth:2.3}));
+    if(kind==='denied') return R.createElement('svg',{width:12,height:12,viewBox:'0 0 12 12'},
+      R.createElement('rect',{x:2.5,y:2.5,width:7,height:7,fill:'var(--ctn-color-state-deny)'}));
+    return R.createElement('svg',{width:13,height:13,viewBox:'0 0 16 16'},
+      R.createElement('circle',{cx:8,cy:8,r:6,fill:'none',stroke:'var(--ctn-color-state-stroke)',strokeWidth:1.9,strokeDasharray:'3.5 3.5'}));
+  }
+  baseVals(){
+    const s = this.state, R = React;
+    const el = Math.floor((s.now - (this.base||s.now))/1000);
+    const certin = 3*3600+45*60 - el;
+    const rbi24 = 17*3600+40*60 - el;
+    const npci = 42*60 - el;
+    const bell = 17*60+42 - el;
+
+    const inSection = [
+      {id:'INC-0417', sev:'critical', reached:3, denied:false, stateName:'ACTIONED', arcFrac:0.75,
+       title:'UPI mule cashout chain · ₹18.4L held at staging',
+       position:'Freeze and egress block executed 21:52 by a. deshmukh. Fourteen payouts are held, not reversed; the money is still in the bank and still frozen.',
+       locator:'finacle/audit_trail:88412', holder:'Response Marshal · execution receipts posted',
+       next:'NPCI must confirm the mule VPA list before close-out. Do not lift the egress block until fraud team confirms. The block is what is keeping the kiosk segment quiet.',
+       href:'Replay.dc.html?at=92',
+       clocks:[{reg:'CERT-In filing', left:this.fmt(certin), pct:Math.round((1-certin/(6*3600))*100)+'%'},
+               {reg:'NPCI flag confirm', left:this.fmt(npci), pct:Math.round((1-npci/(3*3600))*100)+'%'}]},
+      {id:'INC-0846', sev:'high', reached:2, denied:false, stateName:'GATED', arcFrac:0.5,
+       title:'Lateral movement toward the CBS segment',
+       position:'Contained to br-jump-02 by observation only. Nothing has been executed. The isolation draft has sat at the gate for the last twenty-five minutes of my watch and I did not take it.',
+       locator:'auth/secure.log:7742', holder:'at the gate · undecided',
+       next:'Disabling svc_rdp_relay drops eleven live RDP sessions across four jump hosts. I judged that too costly at 21:00 with branches open; after 22:00 the cost is lower. Your call.',
+       href:'Approvals.dc.html?action=a3',
+       clocks:[{reg:'RBI 24h report', left:this.fmt(rbi24), pct:Math.round((1-rbi24/(24*3600))*100)+'%'}]},
+      {id:'ALR-99138', sev:'medium', reached:1, denied:false, stateName:'CITED', arcFrac:0.28,
+       title:'OAuth consent grant to an unverified publisher',
+       position:'Cited but not escalated. The Enrichment Squad is still resolving publisher reputation; the grant is live and the app currently reads mail for one user.',
+       locator:'m365/audit:7781', holder:'Enrichment Squad · lookups running',
+       next:'If reputation comes back unverified, revoke is a reversible action and fires on its own. Nothing for you to do unless it stalls past 23:00.',
+       href:'Queue.dc.html',
+       clocks:[{reg:'internal SLA', left:this.fmt(58*60-el), pct:Math.round((1-(58*60-el)/(4*3600))*100)+'%'}]}
+    ];
+
+    const watchDefs = [
+      {left:npci, span:3*3600, kind:'REGULATOR', what:'NPCI fraud-registry confirmation for 14 beneficiary VPAs', due:'due 22:30 IST',
+       action:'if no confirmation by 22:30, escalate to the fraud desk directly. The automated retry is not worth waiting for.'},
+      {left:70*60-el, span:6*3600, kind:'EXPIRY', what:'Rollback token rbk_88213 for the mailbox quarantine lapses', due:'expires 23:12 IST',
+       action:'after this, restoring those eleven messages becomes a fresh drafted action needing approval.'},
+      {left:2*3600+8*60-el, span:8*3600, kind:'WINDOW', what:'Branch firewall maintenance window opens on br-fw-01', due:'00:08 IST',
+       action:'config pushes will look like T1562 defence evasion. Do not raise an incident; the change ticket is CHG-88097.'},
+      {left:certin, span:6*3600, kind:'STATUTORY', what:'CERT-In 6-hour report for INC-0417 must be filed by the bank', due:'due 03:03 IST',
+       action:'the draft is ready and attested. CITINEL does not file. Call the compliance officer at 02:00 if it is still unfiled.'},
+      {left:5*3600+12*60-el, span:12*3600, kind:'EXPIRY', what:'Egress block on 10.4.7.0/24 auto-lapses unless renewed', due:'lapses 03:10 IST',
+       action:'renew it if NPCI has not confirmed. Letting it lapse silently is the failure mode here.'},
+      {left:rbi24, span:24*3600, kind:'STATUTORY', what:'RBI 24-hour detailed annexure for INC-0846', due:'due 21:03 +1d',
+       action:'annexure is drafting; nothing needed on this watch unless the incident escalates.'}
+    ].sort((a,b)=>a.left-b.left);
+
+    const passedDefs = [
+      {t:'14:22', inc:'ALR-98871', seq:'88322', kind:'closed', what:'impossible-travel FP closed on VPN egress citation', by:'Verdict Narrator · auto, lane A'},
+      {t:'15:41', inc:'INC-0842', seq:'88347', kind:'actioned', what:'VPN credential reset batch, 240 accounts', by:'a. deshmukh · approved'},
+      {t:'16:21', inc:'ALR-98914', seq:'88361', kind:'denied', what:'host isolate denied · change window, FP suspected', by:'a. deshmukh · denied with reason'},
+      {t:'17:48', inc:'INC-0844', seq:'88379', kind:'actioned', what:'mule payout reversal, ₹6.1L recovered', by:'a. deshmukh · approved'},
+      {t:'18:02', inc:'INC-0844', seq:'88381', kind:'closed', what:'close-out receipt filed, CERT-In draft handed to bank', by:'Scribe · ring complete'},
+      {t:'19:12', inc:'INC-0845', seq:'88394', kind:'actioned', what:'sender block + mailbox purge, 11 messages', by:'a. deshmukh · approved'},
+      {t:'19:13', inc:'INC-0845', seq:'88396', kind:'closed', what:'phishing incident closed, 4 citations attached', by:'Scribe · ring complete'},
+      {t:'21:52', inc:'INC-0417', seq:'88421', kind:'actioned', what:'payout freeze + egress block, 69 nodes', by:'a. deshmukh · approved at the gate'}
+    ];
+
+    const allRead = inSection.every(i=>s.read[i.id]);
+    const signFrac = s.signed ? 1 : (Object.keys(s.read).filter(k=>s.read[k]).length/inSection.length)*0.75;
+
+    return {
+      genNote: 'generated automatically at 21:42 IST · regenerates on any change until signed',
+      toBell: this.fmt(bell),
+      registerNote: 'This page was written by the system, not by me. I can add position notes and I can sign it; I cannot remove a row from it.',
+      tally: [{v:'412',k:'caught'},{v:'61',k:'cited'},{v:'08',k:'gated'},{v:'06',k:'actioned'},{v:'59',k:'closed'},{v:'01',k:'denied'}],
+
+      inSectionCount: String(inSection.length).padStart(2,'0'),
+      inSection: inSection.map(i=>{
+        const seen = !!s.read[i.id];
+        return {...i,
+          edge: i.sev==='critical' ? 'var(--ctn-color-severity-critical)' : i.sev==='high' ? 'var(--ctn-color-severity-high)' : 'var(--ctn-color-border-strong)',
+          arc: this.arcPath(29,29,23,i.arcFrac),
+          nodes: this.stateNodes(29,29,23,i.reached,i.denied),
+          cardBorder: seen ? 'var(--ctn-color-border-strong)' : 'var(--ctn-color-border-hairline)',
+          sight: ()=>this.setState(x=>({read:{...x.read, [i.id]: !x.read[i.id]}})),
+          sightLabel: seen ? 'SIGHTED' : 'SIGHT',
+          sightBorder: seen ? 'solid' : 'dashed',
+          sightBg: seen ? 'var(--ctn-color-surface-raised)' : 'transparent',
+          sightFg: seen ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-text-muted)'
+        };
+      }),
+
+      gateCount: '02',
+      gate: [
+        {aid:'a3', inc:'INC-0846', name:'DISABLE_ACCOUNT:svc_rdp_relay', nodes:'39', borderStyle:'solid', glyph:this.glyph('gated'), wait:this.short(1523+el), waitFg:'var(--ctn-color-severity-critical-text)'},
+        {aid:'a1', inc:'INC-0417', name:'RENEW:EGRESS_BLOCK 10.4.7.0/24', nodes:'45', borderStyle:'solid', glyph:this.glyph('gated'), wait:this.short(180+el), waitFg:'var(--ctn-color-clock)'}
+      ],
+
+      watchCount: String(watchDefs.length).padStart(2,'0'),
+      watch: watchDefs.map(w=>({
+        left: this.short(w.left), what:w.what, kind:w.kind, action:w.action,
+        due: (w.left < 45*60 ? 'DUE SOON · ' : '') + w.due,
+        pct: Math.max(2, Math.min(100, Math.round((1-w.left/w.span)*100)))+'%',
+        clockFg: w.left < 45*60 ? 'var(--ctn-color-severity-critical-text)' : 'var(--ctn-color-clock)',
+        barFill: w.left < 45*60 ? 'var(--ctn-color-severity-critical)' : 'var(--ctn-color-clock)'
+      })),
+
+      passedCount: String(passedDefs.length).padStart(2,'0'),
+      passed: passedDefs.map(p=>({...p, glyph:this.glyph(p.kind)})),
+
+      signArc: this.arcPath(26,26,20, signFrac),
+      signNodes: this.stateNodes(26,26,20, s.signed ? 4 : 2, false),
+      signState: s.signed ? 'REGISTER SIGNED' : allRead ? 'READY FOR RELIEF' : 'AWAITING SIGHT',
+      signFg: s.signed ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-text-muted)',
+      signNote: s.signed
+        ? 'r. iyer holds all three in-section incidents from '+s.signedAt+' IST'
+        : allRead ? 'all three in-section incidents sighted. the ring closes on signature'
+                  : 'open each in-section incident to sight it; '+(inSection.length-Object.keys(s.read).filter(k=>s.read[k]).length)+' left',
+      notSigned: !s.signed, signed: s.signed, signSeq: '88423',
+      signDisabled: !allRead,
+      // Both labels must fit the button on one line at the reflow width; the 21-character
+      // variant wrapped and its second line was clipped by the button box.
+      signLabel: allRead ? 'SIGN AND HAND OVER' : 'SIGHT ALL THREE',
+      sign: ()=>{ if(allRead) this.setState({signed:true, signedAt:new Date(Date.now()+330*60000).toISOString().slice(11,16)}); }
+    };
+  }
+
+  roleInit(){ try{ return (window.CitinelRole && window.CitinelRole.get()) || 'analyst'; }catch(e){ return 'analyst'; } }
+  roleMount(){ if(window.CitinelRole) this.unsubRole = window.CitinelRole.subscribe(r=>{ if(r !== this.state.role) this.setState({role:r}); }); }
+  componentWillUnmount_role(){ if(this.unsubRole) this.unsubRole(); }
+  roleVals(){
+    const ciso = this.state.role === 'ciso';
+    return { ciso, analyst: !ciso,
+      setAnalyst: ()=>{ this.setState({role:'analyst'}); if(window.CitinelRole) window.CitinelRole.set('analyst'); },
+      setCiso: ()=>{ this.setState({role:'ciso'}); if(window.CitinelRole) window.CitinelRole.set('ciso'); },
+      analystBg: ciso ? 'transparent' : 'var(--ctn-color-surface-navy)',
+      analystFg: ciso ? 'var(--ctn-color-text-muted)' : 'var(--ctn-color-text-on-navy)',
+      cisoBg: ciso ? 'var(--ctn-color-surface-navy)' : 'transparent',
+      cisoFg: ciso ? 'var(--ctn-color-text-on-navy)' : 'var(--ctn-color-text-muted)' };
+  }
+  renderVals(){ const b = this.baseVals(); return Object.assign({}, b, this.roleVals(), this.depthVals ? this.depthVals(b) : {}, this.stateVals(b)); }
+
+  depthVals(b){
+    if(this.state.role !== 'ciso') return {};
+    const exposures = {
+      'INC-0417':'₹18,40,000 held. Regulatory exposure is the 03:03 filing, which is drafted and unfiled.',
+      'INC-0846':'No financial exposure. The open question is whether we accept eleven dropped RDP sessions to close it.',
+      'ALR-99138':'One mailbox readable by an unverified app. Low, but it is the class we put in shadow eleven days ago.'
+    };
+    return {
+      inSection: b.inSection.map(i=>({...i, exposure: exposures[i.id] || '—'})),
+      registerNote: 'You are not taking this watch. This is the review copy: what crossed the shift boundary unresolved, how long each gate held, and where the operator used judgement rather than policy.',
+      signLabel: 'ACKNOWLEDGE AS SIGN-OFF AUTHORITY',
+      signState: this.state.signed ? 'ACKNOWLEDGED' : 'AWAITING ACKNOWLEDGEMENT',
+      signNote: this.state.signed
+        ? 'countersigned; the relief between the two operators stands separately on the ledger'
+        : 'your acknowledgement does not transfer the watch. it records that an authority read it',
+      exceptions: [
+        {v:'44m', k:'longest gate hold · INC-0417 freeze, 21:08 to 21:52', fg:'var(--ctn-color-clock)'},
+        {v:'25m', k:'INC-0846 isolation left undecided at relief, by operator judgement', fg:'var(--ctn-color-clock)'},
+        {v:'01', k:'action denied with reason this watch · ALR-98914 host isolate', fg:'var(--ctn-color-text-primary)'},
+        {v:'00', k:'statutory windows missed', fg:'var(--ctn-color-text-primary)'},
+        {v:'07', k:'evidence lines retired by the swarm and recorded as cut', fg:'var(--ctn-color-text-primary)'}
+      ]
+    };
+  }
+
+  stateVals(b){
+    let m = 'normal';
+    try{ m = new URLSearchParams(window.location.search).get('state') || 'normal'; }catch(e){}
+    const gold = 'var(--ctn-color-clock)', white = 'var(--ctn-color-text-primary)';
+    if(m !== 'breached') return {inSection: b.inSection.map(i=>({...i, clocks: i.clocks.map(c=>({...c, fg:gold}))}))};
+    return {
+      registerNote: 'A statutory window closed on this watch. That fact transfers with the incident and cannot be closed out by the incoming analyst. It is reportable in its own right.',
+      inSection: b.inSection.map((i,ix)=>({...i,
+        clocks: i.clocks.map((c,ci)=> (ix===0 && ci===0)
+          ? {reg:'CERT-In filing · CLOSED', left:'+00:41:12', pct:'100%', fg:white}
+          : {...c, fg:gold}),
+        position: ix===0
+          ? 'Freeze and egress block executed 21:52. The CERT-In window closed at 03:03 with the draft sealed but unfiled. I could not raise the compliance officer. This is a breach and it is on the ledger; do not treat it as still pending.'
+          : i.position
+      })),
+      exceptions: (b.exceptions || []).map(e=> e.k.indexOf('statutory') >= 0
+        ? {v:'01', k:'statutory window missed · CERT-In, INC-0417, 03:03', fg:white} : e)
+    };
+  }
+}
+</script>
+</body>
+</html>

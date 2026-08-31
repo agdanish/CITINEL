@@ -1,0 +1,53 @@
+# Build context hygiene. Without this, every `docker build` uploads the whole
+# repo -- including data/raw/ (2.8GB of BOTS v1 source) and the deck PDFs --
+# before the first COPY runs. On Render that is build minutes spent shipping
+# bytes no image layer ever uses.
+
+# The raw corpus: regenerating from it is a local operation. data/seed/ is the
+# committed slice the images actually ship (see deploy/Dockerfile.web).
+data/raw/
+data/incidents/
+data/cache/
+data/samples/
+
+# Secrets, never in an image layer.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+
+# Local dev
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+.coverage
+htmlcov/
+
+# VCS + editor
+.git/
+.gitignore
+.DS_Store
+._*
+
+# Campaign material: documentation and brand assets, not runtime inputs.
+*.pdf
+slide-deck-images/
+ppt-template/
+partners-logo/
+webinar/
+citinel-brand/
+docs/
+*.md
+!PARTNER-ONBOARDING.md
+
+# Design-process artifacts inside the exported console
+dashboard/static/_audit/
+dashboard/static/screenshots/
+dashboard/static/uploads/

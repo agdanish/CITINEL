@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="vendor/resources.js"></script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/fonts.css">
+<link rel="stylesheet" href="vendor/fonts.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/colors.primitive.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/colors.semantic.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/typography.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/spacing.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/brand.flagship.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/component.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/base.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/styles.css">
+<link rel="stylesheet" href="a11y.css">
+<link rel="stylesheet" href="motion.css">
+<script src="motion.js"></script>
+<script src="reveal.js"></script>
+<script src="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/_ds_bundle.js"></script>
+<script src="route.js"></script>
+<style>html,body{height:100%;overflow-y:hidden;overflow-x:auto}</style>
+<script src="api.js"></script>
+</helmet>
+<div data-screen-label="Overview" data-citinel-page="overview" style="display:flex;flex-direction:column;height:100vh;min-width:1280px;background:var(--ctn-color-surface-shell)">
+
+  <header style="display:flex;align-items:center;gap:18px;padding:0 18px;height:52px;flex:none;border-bottom:1px solid var(--ctn-color-border-strong);background:var(--ctn-color-surface-panel);min-width:0">
+    <img src="assets/mark-white.png" alt="CITINEL · caught, cited, gated, actioned, closed" style="height:34px;width:90px;display:block;flex:none">
+    <nav style="display:flex;gap:2px;min-width:0;overflow-x:auto;scrollbar-width:thin;flex:1">
+      <a href="Overview.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-primary);background:var(--ctn-color-surface-raised);border-radius:6px;white-space:nowrap">OVERVIEW</a>
+      <a href="Queue.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">QUEUE</a>
+      <a href="Replay.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">REPLAY</a>
+      <a href="Confidence.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">CONFIDENCE</a>
+      <a href="Evidence.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">EVIDENCE</a>
+      <a href="Approvals.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">APPROVALS</a>
+      <a href="Compliance.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">COMPLIANCE</a>
+      <a href="Audit.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">AUDIT</a>
+      <a href="Corpus.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">CORPUS</a>
+      <a href="Eval.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">EVAL</a>
+      <a href="Policy.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">POLICY</a>
+      <a href="Handover.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">HANDOVER</a>
+      <a href="Executive.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">EXEC</a>
+      <a href="Settings.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">CONNECTORS</a>
+      <a href="Demo.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">DEMO</a>
+      <a href="Shell.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">SHELL</a>
+      <a href="Entry.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">ENTRY</a>
+          <a href="Narrow.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">NARROW</a>
+</nav>
+    <span style="flex:none;font-size:11.5px;color:var(--ctn-color-text-muted);font-variant-caps:all-small-caps;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:300px">sahyadri district cooperative bank · pune dc</span>
+    <span style="flex:none;font-family:var(--ctn-font-display);font-size:13px;color:var(--ctn-color-text-primary);font-variant-numeric:tabular-nums slashed-zero">{{ utc }} UTC</span>
+  </header>
+
+  <sc-if value="{{ noticeOn }}" hint-placeholder-val="{{ false }}">
+    <div style="flex:none;padding:12px 18px;border-bottom:1px solid var(--ctn-color-border-hairline);min-width:0">
+      <dc-import name="StateNotice" kind="{{ noticeKind }}" title="{{ noticeTitle }}" meta="{{ noticeMeta }}" body="{{ noticeBody }}" consequence="{{ noticeConsequence }}" action="{{ noticeAction }}" href="{{ noticeHref }}" hint-size="100%,120px"></dc-import>
+    </div>
+  </sc-if>
+  <div style="display:flex;flex:1;min-height:0;min-width:0" data-reflow-band>
+
+    <section data-reflow-rail data-primary-instrument style="width:clamp(274px, 12.29rem + 13.56vw, 392px);flex:none;box-sizing:border-box;border-right:1px solid var(--ctn-color-border-strong);background:var(--ctn-color-surface-panel);display:flex;flex-direction:column;min-height:0;overflow:hidden">
+      <div style="flex:none;padding:16px 22px 0;font-family:var(--ctn-font-display);font-size:10px;letter-spacing:0.14em;color:var(--ctn-color-text-muted)">MASTER STATUTORY COUNTDOWN · INC-0417</div>
+      <div style="flex:1;min-height:0;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:8px 0;position:relative;box-sizing:border-box;width:100%;max-width:min(100%, 360px);margin-inline:auto;container-type:inline-size">
+        <svg data-radial-svg viewBox="0 0 360 360" style="width:100%;max-width:min(100%, 360px);max-height:100%;height:auto;aspect-ratio:1;min-width:0;display:block;flex:0 1 auto;margin-inline:auto">
+          <circle cx="180" cy="180" r="158" fill="none" stroke="var(--ctn-color-border-hairline)" stroke-width="1"></circle>
+          <circle cx="180" cy="180" r="138" fill="none" stroke="var(--ctn-color-border-strong)" stroke-width="2"></circle>
+          <g>{{ masterTicks }}</g>
+          <path data-sweep d="{{ masterArc }}" fill="none" stroke="var(--ctn-color-clock)" stroke-width="11"></path>
+        </svg>
+      <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;gap:2px">
+        <div style="font-family:var(--ctn-font-display);font-size:clamp(7px, 3cqw, 11px);letter-spacing:0.16em;color:var(--ctn-color-text-muted);text-align:center;width:64%">{{ masterLabel }}</div>
+        <div style="font-family:var(--ctn-font-display);font-size:clamp(18px, 10.4cqw, 40px);line-height:1;color:{{ masterFg }};font-variant-numeric:tabular-nums slashed-zero;white-space:nowrap;text-align:center;width:100%">{{ masterDigits2 }}</div>
+        <div style="font-family:var(--ctn-font-mono);font-size:clamp(7px, 3.3cqw, 12px);color:var(--ctn-color-text-muted);text-align:center;width:72%">{{ masterSub }}</div>
+      </div>
+      </div>
+      <div style="flex:none;padding:0 22px 8px;font-family:var(--ctn-font-display);font-size:10px;letter-spacing:0.14em;color:var(--ctn-color-text-muted)">EVERY RUNNING CLOCK</div>
+      <div style="flex:none;max-height:210px;overflow-y:auto;padding:0 22px 14px;display:flex;flex-direction:column">
+        <sc-for list="{{ clocks }}" as="c" hint-placeholder-count="4">
+          <a href="Compliance.dc.html" style="display:flex;align-items:center;gap:12px;padding:9px 0;border-top:1px solid var(--ctn-color-border-hairline);text-decoration:none;min-width:0">
+            <svg width="26" height="26" viewBox="0 0 26 26" style="flex:none"><circle cx="13" cy="13" r="10" fill="none" stroke="var(--ctn-color-border-strong)" stroke-width="1.5"></circle><path d="{{ c.arc }}" fill="none" stroke="var(--ctn-color-clock)" stroke-width="3"></path></svg>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:12.5px;color:var(--ctn-color-text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.reg }}</div>
+              <div style="font-family:var(--ctn-font-mono);font-size:11px;color:var(--ctn-color-text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.inc }} · {{ c.due }}</div>
+            </div>
+            <span style="font-family:var(--ctn-font-display);font-size:14px;color:var(--ctn-color-clock);font-variant-numeric:tabular-nums slashed-zero;flex:none">{{ c.left }}</span>
+          </a>
+        </sc-for>
+      </div>
+    </section>
+
+    <section style="flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;overflow:hidden">
+      <div style="flex:none;display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;padding:14px 22px 10px;min-width:0">
+        <span style="font-family:var(--ctn-font-display);font-size:10px;letter-spacing:0.14em;color:var(--ctn-color-text-muted);flex:none">AGENT FLEET</span>
+        <span style="font-family:var(--ctn-font-display);font-size:11px;color:var(--ctn-color-text-primary);flex:none;margin-left:auto;white-space:nowrap">{{ fleetSummary }}</span>
+        <span data-token style="font-family:var(--ctn-font-mono);font-size:12px;color:var(--ctn-color-text-muted);flex:1 1 100%;min-width:0;max-width:110ch;line-height:1.4;text-wrap:pretty">trace amplitude is throughput this minute. flat trace: idle.</span>
+      </div>
+      <div style="flex:1;min-height:0;overflow-y:auto;padding:0 22px 14px;display:flex;flex-direction:column;gap:8px">
+        <sc-for list="{{ agents }}" as="a" hint-placeholder-count="7">
+          <div data-row style="display:flex;align-items:center;gap:14px;padding:10px 14px;background:var(--ctn-color-surface-panel);border:1px solid var(--ctn-color-border-hairline);border-left:2px solid {{ a.edge }};border-radius:6px;min-width:0">
+            <div style="width:26px;flex:none;display:flex;align-items:center;justify-content:center">{{ a.lamp }}</div>
+            <div style="width:150px;flex:none;min-width:0">
+              <div style="font-size:13.5px;color:var(--ctn-color-text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ a.name }}</div>
+              <div style="font-family:var(--ctn-font-display);font-size:8.5px;letter-spacing:0.08em;color:{{ a.stateFg }};margin-top:2px">{{ a.state }}</div>
+            </div>
+            <svg viewBox="0 0 300 40" preserveAspectRatio="none" style="flex:1;min-width:0;height:40px;display:block">
+              <line x1="0" y1="20" x2="300" y2="20" stroke="var(--ctn-color-border-hairline)" stroke-width="1"></line>
+              <polyline data-trace points="{{ a.trace }}" fill="none" stroke="{{ a.traceColor }}" stroke-width="1.4"></polyline>
+            </svg>
+            <div style="width:clamp(189px, 8.44rem + 9.38vw, 270px);flex:none;min-width:0">
+              <div style="font-family:var(--ctn-font-mono);font-size:11.5px;color:var(--ctn-color-text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ a.doing }}</div>
+              <div style="font-size:11px;color:var(--ctn-color-text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ a.detail }}</div>
+            </div>
+            <div style="width:86px;flex:none;text-align:right">
+              <div style="font-family:var(--ctn-font-display);font-size:15px;color:var(--ctn-color-text-primary);font-variant-numeric:tabular-nums slashed-zero">{{ a.rate }}</div>
+              <div style="font-size:10.5px;color:var(--ctn-color-text-muted);font-variant-caps:all-small-caps;white-space:nowrap">{{ a.unit }}</div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="flex:none;border-top:1px solid var(--ctn-color-border-hairline);padding:12px 22px;display:flex;gap:10px 22px;align-items:center;flex-wrap:wrap;min-width:0">
+        <span style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;color:var(--ctn-color-text-muted);flex:none">GO TO</span>
+        <sc-for list="{{ shortcuts }}" as="s" hint-placeholder-count="6">
+          <a href="{{ s.href }}" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:8px 13px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;color:var(--ctn-color-text-primary);text-decoration:none;white-space:nowrap">{{ s.label }}</a>
+        </sc-for>
+      </div>
+    </section>
+
+    <section data-reflow-rail style="width:clamp(280px, 12.54rem + 13.84vw, 400px);flex:none;box-sizing:border-box;border-left:1px solid var(--ctn-color-border-strong);background:var(--ctn-color-surface-panel);display:flex;flex-direction:column;min-height:0;overflow-y:auto">
+      <div style="padding:16px 20px 12px;border-bottom:1px solid var(--ctn-color-border-hairline)">
+        <div style="font-family:var(--ctn-font-display);font-size:10px;letter-spacing:0.14em;color:var(--ctn-color-text-muted)">TRIAGE LANES</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">
+          <sc-for list="{{ lanes }}" as="l" hint-placeholder-count="2">
+            <a href="{{ l.href }}" style="display:block;text-decoration:none;padding:13px 14px;background:var(--ctn-color-surface-raised);border:1px solid {{ l.border }};border-radius:6px;min-width:0">
+              <div style="font-family:var(--ctn-font-display);font-size:8.5px;letter-spacing:0.12em;color:var(--ctn-color-text-muted)">{{ l.tag }}</div>
+              <div style="font-family:var(--ctn-font-display);font-size:40px;line-height:1.1;color:var(--ctn-color-text-primary);font-variant-numeric:tabular-nums slashed-zero;margin-top:4px">{{ l.count }}</div>
+              <div style="font-size:12px;color:var(--ctn-color-text-secondary);margin-top:2px">{{ l.name }}</div>
+              <div style="font-size:11px;color:var(--ctn-color-text-muted);margin-top:5px;line-height:1.4">{{ l.sub }}</div>
+            </a>
+          </sc-for>
+        </div>
+        <div style="display:flex;gap:16px;margin-top:12px;flex-wrap:wrap">
+          <sc-for list="{{ laneStats }}" as="t" hint-placeholder-count="4">
+            <div><div style="font-family:var(--ctn-font-display);font-size:16px;font-variant-numeric:tabular-nums slashed-zero;color:var(--ctn-color-text-primary)">{{ t.v }}</div><div style="font-size:10.5px;color:var(--ctn-color-text-muted);font-variant-caps:all-small-caps;white-space:nowrap">{{ t.k }}</div></div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="padding:16px 20px;border-bottom:1px solid var(--ctn-color-border-hairline)">
+        <div style="font-family:var(--ctn-font-display);font-size:10px;letter-spacing:0.14em;color:var(--ctn-color-text-muted)">AUTONOMY DIAL · DETENT {{ autonomyIdx }} OF 5</div>
+        <div style="display:flex;align-items:center;gap:16px;margin-top:12px;min-width:0">
+          <div style="flex:none;display:flex;flex-direction:column;align-items:center;gap:5px">
+            <svg width="118" height="118" viewBox="-7 -7 118 118" style="display:block">
+              <circle cx="52" cy="52" r="40" fill="var(--ctn-color-surface-raised)" stroke="var(--ctn-color-border-strong)" stroke-width="1.5"></circle>
+              <g>{{ autonomyDetents }}</g>
+              <path d="{{ mandateArc }}" fill="none" stroke="{{ mandateFg }}" stroke-width="3.5"></path>
+              <circle cx="52" cy="52" r="47" fill="none" stroke="var(--ctn-color-border-hairline)" stroke-width="1"></circle>
+              <line data-needle x1="52" y1="52" x2="52" y2="18" stroke="var(--ctn-color-text-primary)" stroke-width="3" stroke-linecap="round" transform="rotate({{ autonomyAngle }} 52 52)"></line>
+              <circle cx="52" cy="52" r="7" fill="var(--ctn-color-surface-navy)" stroke="var(--ctn-color-text-secondary)" stroke-width="1.5"></circle>
+            </svg>
+            <div style="display:flex;gap:5px;align-items:baseline">
+              <sc-for list="{{ detentScale }}" as="d" hint-placeholder-count="5">
+                <span style="font-family:var(--ctn-font-display);font-size:8.5px;letter-spacing:0.06em;color:{{ d.fg }};border-bottom:{{ d.rule }};padding-bottom:1px;white-space:nowrap">{{ d.label }}</span>
+              </sc-for>
+            </div>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div style="font-family:var(--ctn-font-display);font-size:11px;letter-spacing:0.1em;color:var(--ctn-color-text-primary)">{{ autonomyName }}</div>
+            <div style="font-size:12px;color:var(--ctn-color-text-muted);margin-top:5px;line-height:1.45">{{ autonomyDesc }}</div>
+            <div style="display:flex;align-items:baseline;gap:9px;margin-top:9px;flex-wrap:wrap;min-width:0">
+              <span style="font-family:var(--ctn-font-display);font-size:8px;letter-spacing:0.1em;color:var(--ctn-color-text-muted);flex:none">{{ mandateLabel }}</span>
+              <span style="font-family:var(--ctn-font-display);font-size:15px;color:{{ mandateFg }};font-variant-numeric:tabular-nums slashed-zero;flex:none">{{ mandateLeft }}</span>
+            </div>
+            <div style="font-size:11px;color:var(--ctn-color-text-muted);margin-top:4px;line-height:1.4;text-wrap:pretty">{{ mandateNote }}</div>
+            <sc-if value="{{ raising }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:9px;border:1px dashed var(--ctn-color-border-strong);border-radius:6px;padding:9px 10px;min-width:0">
+                <div style="font-family:var(--ctn-font-display);font-size:8px;letter-spacing:0.1em;color:var(--ctn-color-text-primary)">{{ raiseTitle }}</div>
+                <div style="display:flex;flex-direction:column;gap:4px;margin-top:7px">
+                  <sc-for list="{{ raiseReasons }}" as="r" hint-placeholder-count="3">
+                    <button onClick="{{ r.pick }}" style="text-align:left;font-size:11.5px;line-height:1.4;padding:7px 9px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;background:none;color:var(--ctn-color-text-primary);cursor:pointer">{{ r.label }}</button>
+                  </sc-for>
+                </div>
+                <button onClick="{{ cancelRaise }}" style="font-family:var(--ctn-font-display);font-size:8px;letter-spacing:0.1em;margin-top:7px;padding:5px 9px;border:none;background:none;color:var(--ctn-color-text-muted);cursor:pointer">CANCEL</button>
+              </div>
+            </sc-if>
+            <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap">
+              <a href="Policy.dc.html" style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:6px 11px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;color:var(--ctn-color-text-primary);text-decoration:none">RULEBOOK</a>
+              <button onClick="{{ reJustify }}" style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:6px 11px;border:1px {{ reJustifyStyle }} var(--ctn-color-border-strong);border-radius:6px;background:{{ reJustifyBg }};color:var(--ctn-color-text-primary);cursor:pointer">RE-JUSTIFY</button>
+              <button onClick="{{ autonomyDown }}" style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:6px 11px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;background:none;color:var(--ctn-color-text-primary);cursor:pointer">LOWER</button>
+              <button onClick="{{ autonomyUp }}" style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:6px 11px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;background:none;color:var(--ctn-color-text-primary);cursor:pointer">RAISE</button>
+            </div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--ctn-color-text-muted);margin-top:10px;line-height:1.45">every detent change is a ledger entry with the operator's name. a lapsed mandate steps the dial down on its own and records that too. filings need a separate signature.</div>
+      </div>
+
+      <div style="padding:16px 20px;display:flex;flex-direction:column;min-height:0">
+        <div style="font-family:var(--ctn-font-display);font-size:10px;letter-spacing:0.14em;color:var(--ctn-color-text-muted)">DISPOSITION FEED</div>
+        <div style="flex:1;min-height:0;overflow-y:auto;margin-top:8px">
+          <sc-for list="{{ feed }}" as="e" hint-placeholder-count="8">
+            <div style="display:flex;align-items:center;gap:4px 9px;flex-wrap:wrap;padding:6px 0;border-bottom:1px solid var(--ctn-color-border-hairline);font-family:var(--ctn-font-mono);font-size:11.5px;line-height:15px;letter-spacing:0;min-width:0">
+              <span style="color:var(--ctn-color-text-muted);font-variant-numeric:tabular-nums;flex:none">{{ e.t }}</span>
+              <span style="flex:none;width:14px;height:14px;display:flex;align-items:center;justify-content:center">{{ e.glyph }}</span>
+              <span style="color:var(--ctn-color-text-secondary);flex:none">{{ e.id }}</span>
+              <span style="color:var(--ctn-color-text-muted);flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="{{ e.msg }}">{{ e.msg }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div data-on-navy style="display:flex;align-items:stretch;height:42px;flex:none;background:var(--ctn-color-surface-navy);border-top:1px solid var(--ctn-color-border-strong);min-width:0">
+    <div style="display:flex;align-items:center;flex:1;min-width:0;overflow-x:auto;scrollbar-width:thin">
+      <sc-for list="{{ strip }}" as="s" hint-placeholder-count="7">
+        <div style="display:flex;align-items:center;gap:9px;padding:0 16px;height:100%;border-right:1px solid var(--ctn-color-border-strong);flex:none">
+          <span style="font-family:var(--ctn-font-display);font-size:8.5px;letter-spacing:0.12em;color:var(--ctn-color-text-on-navy);opacity:0.66;white-space:nowrap">{{ s.k }}</span>
+          <span style="font-family:var(--ctn-font-display);font-size:16px;color:{{ s.color }};font-variant-numeric:tabular-nums slashed-zero;line-height:1">{{ s.v }}</span>
+        </div>
+      </sc-for>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px;padding:0 16px;border-left:1px solid var(--ctn-color-border-strong);flex:none">
+      <span data-motion-signal style="font-family:var(--ctn-font-mono);font-size:12px;color:var(--ctn-color-text-on-navy);white-space:nowrap">ingest {{ eps }} eps</span>
+      <span data-reveal style="font-family:var(--ctn-font-mono);font-size:12px;color:var(--ctn-color-text-on-navy);opacity:0.72;white-space:nowrap">OCSF 1.4.0 · sigma 3,000 @ 7f31c0d · ATT&amp;CK v16.1 · 214/823 mapped</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1600,&quot;height&quot;:900},&quot;autonomyStart&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:2,&quot;min&quot;:0,&quot;max&quot;:4,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Behavior&quot;}}">
+class Component extends DCLogic {
+  constructor(p){
+    super(p);
+    // Seed each channel from its OWN amplitude, not from zero. A zero seed plots
+    // exactly onto the drawn axis line, so for the first minute all seven traces
+    // read as flat — visually "no signal" — while the rows say RUNNING and the
+    // caption says a flat trace means idle. The instrument was contradicting its
+    // own legend on the landing screen.
+    const A = (id,name,state,doing,detail,rate,unit,amp)=>({
+      id,name,state,doing,detail,rate,unit,amp,
+      hist: Array.from({length:60}, ()=>
+        state==='running'  ? amp*(0.55+Math.random()*0.45) :
+        state==='degraded' ? amp*(Math.random()<0.35?0.9:0.12) :
+        state==='idle'     ? amp*0.35*Math.random() : 0)
+    });
+    this.state = {
+      now: Date.now(), eps: 2380, autonomy: 2, tick: 0,
+      // Anti-complacency: a detent is a mandate with an expiry, not a setting. Seeded so
+      // detent 3's 14-day mandate has ~2d 04h left — close enough to read as a live leash.
+      mandateAt: Date.now() - (14*24 - 52)*3600*1000,
+      raising: false, mandateReason: 'ransomware campaign active in the district cooperative sector',
+      agents: [
+        A('sentinel','Sentinel','running','tailing 14 sources','upi switch, finacle cbs, ad, edr, 10 more',2380,'events/s',1),
+        A('router','Triage Router','running','lane split on 41 open','lane A auto-close, lane B human-gated',41,'in flight',0.8),
+        A('enrich','Enrichment Squad','degraded','3 of 4 workers up','whois worker timing out, retries queued',18,'lookups/min',0.45),
+        A('corr','Correlator','running','stitching INC-0417','joining upi payouts to cbs template modify',6,'chains/min',0.7),
+        A('narrator','Verdict Narrator','running','drafting INC-0846 verdict','every sentence bound to a §locator',4,'verdicts/min',0.6),
+        A('marshal','Response Marshal','idle','waiting at the gate','2 drafted actions, no human decision yet',0,'actions/min',0.05),
+        A('scribe','Scribe','running','appending receipts','ledger head #88418, 3 nodes in agreement',11,'entries/min',0.55)
+      ],
+      feed: [
+        {t:'21:42:07', kind:'gated', id:'INC-0846', msg:'isolation drafted · marshal holding at the gate'},
+        {t:'21:41:52', kind:'closed', id:'ALR-99120', msg:'benign parent MsMpEng.exe cited, lane A closed'},
+        {t:'21:40:11', kind:'closed', id:'ALR-99117', msg:'impossible travel FP · vpn egress cited'},
+        {t:'21:38:46', kind:'closed', id:'INC-0845', msg:'sender blocked, mailbox purged · ring complete'},
+        {t:'21:37:02', kind:'closed', id:'ALR-99101', msg:'printer vlan port scan cited and closed'},
+        {t:'21:35:40', kind:'actioned', id:'INC-0844', msg:'payout reversal executed by r. iyer'}
+      ]
+    };
+  }
+  componentDidMount(){
+    this.base = Date.now();
+    this.t = setInterval(()=>{
+      this.setState(s=>{
+        const agents = s.agents.map(a=>{
+          let v = 0;
+          if(a.state==='running') v = a.amp*(0.55+Math.random()*0.45);
+          else if(a.state==='degraded') v = a.amp*(Math.random()<0.35?0.9:0.12);
+          else if(a.state==='idle') v = a.amp*0.35*Math.random();
+          const hist = a.hist.slice(1).concat(v);
+          const jitter = a.state==='failed'?0:Math.round((Math.random()-0.5)*(a.rate*0.12));
+          return {...a, hist, live: Math.max(0, (a.id==='sentinel'? s.eps : a.rate + jitter))};
+        });
+        // the lapse is real: when the mandate runs out the dial steps itself down
+        const per = this.mandateH(s.autonomy) * 3600 * 1000;
+        if(per && Date.now() - s.mandateAt > per){
+          window.__ledgerSafe && window.__ledgerSafe({tag:'dial-lapse-'+Date.now(), kind:'DECISION', actor:'Scribe',
+            record:'action=AUTONOMY_LAPSED from_detent='+(s.autonomy+1)+' to_detent='+s.autonomy+' reason=mandate_expired_unrenewed'});
+          return {now: Date.now(), agents, autonomy: Math.max(0, s.autonomy-1), mandateAt: Date.now()};
+        }
+        const st = {now: Date.now(), agents, eps: Math.max(1600,Math.min(3600, s.eps + Math.round((Math.random()-0.48)*220))), tick: s.tick+1};
+        if(Math.random()<0.16){
+          const msgs = [['closed','sigma match benign, parent process cited'],['closed','oauth grant revoked by policy, lane A'],['closed','dns telemetry domain cited, closed']];
+          const m = msgs[Math.floor(Math.random()*msgs.length)];
+          st.feed = [{t:new Date().toISOString().slice(11,19), kind:m[0], id:'ALR-'+(99150+Math.floor(Math.random()*700)), msg:m[1]}].concat(s.feed).slice(0,40);
+        }
+        return st;
+      });
+    }, 1000);
+  }
+  componentWillUnmount(){ clearInterval(this.t); }
+  arc(cx,cy,r,frac){
+    if(frac<=0) return '';
+    const a = Math.min(frac,0.9999)*2*Math.PI - Math.PI/2;
+    return `M ${cx} ${cy-r} A ${r} ${r} 0 ${frac>0.5?1:0} 1 ${(cx+r*Math.cos(a)).toFixed(1)} ${(cy+r*Math.sin(a)).toFixed(1)}`;
+  }
+  glyph(kind, size){
+    const R = React, s = size||14, S = p=>R.createElement('svg',{width:s,height:s,viewBox:'0 0 20 20'},p);
+    if(kind==='closed') return S([R.createElement('circle',{key:'i',cx:10,cy:10,r:4,fill:'var(--ctn-color-state-node)',stroke:'var(--ctn-color-state-stroke)',strokeWidth:1.4}), R.createElement('circle',{key:'o',cx:10,cy:10,r:8,fill:'none',stroke:'var(--ctn-color-state-cited)',strokeWidth:1.8})]);
+    if(kind==='gated') return S(R.createElement('circle',{cx:10,cy:10,r:7,fill:'none',stroke:'var(--ctn-color-state-stroke)',strokeWidth:1.8,strokeDasharray:'3.5 3.5'}));
+    if(kind==='actioned') return S(R.createElement('rect',{x:5,y:5,width:10,height:10,transform:'rotate(45 10 10)',fill:'var(--ctn-color-state-node)',stroke:'var(--ctn-color-state-stroke)',strokeWidth:2.2}));
+    return S(R.createElement('circle',{cx:10,cy:10,r:6,fill:'var(--ctn-color-state-node)',stroke:'var(--ctn-color-state-stroke)',strokeWidth:1.4}));
+  }
+  lamp(state){
+    const R = React;
+    const spec = {
+      running: {shape:'circle', fill:'var(--ctn-color-ok)', stroke:'var(--ctn-color-ok)'},
+      idle: {shape:'circle', fill:'none', stroke:'var(--ctn-color-text-muted)'},
+      degraded: {shape:'triangle', fill:'var(--ctn-color-severity-high)', stroke:'var(--ctn-color-severity-high)'},
+      failed: {shape:'square', fill:'var(--ctn-color-severity-critical)', stroke:'var(--ctn-color-severity-critical)'}
+    }[state];
+    const body = spec.shape==='circle'
+      ? R.createElement('circle',{cx:9,cy:9,r:5.5,fill:spec.fill,stroke:spec.stroke,strokeWidth:1.6})
+      : spec.shape==='triangle'
+        ? R.createElement('polygon',{points:'9,2.5 16,15 2,15',fill:spec.fill,stroke:spec.stroke,strokeWidth:1.2})
+        : R.createElement('rect',{x:3,y:3,width:12,height:12,fill:spec.fill});
+    return R.createElement('svg',{width:18,height:18,viewBox:'0 0 18 18'}, body);
+  }
+  baseVals(){
+    const s = this.state, base = this.base || s.now;
+    const f = x=>{x=Math.max(0,x);return [3600,60,1].map(u=>String(Math.floor(x/u)%60).padStart(2,'0')).join(':');};
+    const remainS = (3*3600+45*60) - Math.floor((s.now-base)/1000);
+    const R = React, ticks = [];
+    for(let i=0;i<24;i++){
+      const a = i/24*2*Math.PI - Math.PI/2, big = i%4===0;
+      ticks.push(R.createElement('line',{key:i,x1:180+(big?126:132)*Math.cos(a),y1:180+(big?126:132)*Math.sin(a),x2:180+138*Math.cos(a),y2:180+138*Math.sin(a),stroke:'var(--ctn-color-text-muted)',strokeWidth:big?2:1}));
+      if(big) ticks.push(R.createElement('text',{key:'t'+i,x:180+153*Math.cos(a),y:180+153*Math.sin(a)+4,textAnchor:'middle',fontFamily:'var(--ctn-font-mono)',fontSize:10,fill:'var(--ctn-color-text-muted)'},(i/4)+'h'));
+    }
+    const stateFg = {running:'var(--ctn-color-ok)', idle:'var(--ctn-color-text-muted)', degraded:'var(--ctn-color-severity-high)', failed:'var(--ctn-color-severity-critical-text)'};
+    const agents = s.agents.map(a=>{
+      const max = Math.max(0.001, ...a.hist);
+      const pts = a.hist.map((v,i)=>`${(i/(a.hist.length-1)*300).toFixed(1)},${(20 - (v/max)*17).toFixed(1)}`).join(' ');
+      return {
+        name:a.name, state:a.state.toUpperCase(), stateFg: stateFg[a.state], lamp:this.lamp(a.state),
+        edge: a.state==='running' ? 'var(--ctn-color-ok)' : a.state==='degraded' ? 'var(--ctn-color-severity-high)' : a.state==='failed' ? 'var(--ctn-color-severity-critical)' : 'var(--ctn-color-border-strong)',
+        trace: pts, traceColor: a.state==='degraded' ? 'var(--ctn-color-severity-high)' : a.state==='idle' ? 'var(--ctn-color-text-disabled)' : 'var(--ctn-color-text-secondary)',
+        doing:a.doing, detail:a.detail,
+        rate: a.id==='sentinel' ? String(s.eps) : String(Math.max(0, a.live!=null ? Math.round(a.live) : a.rate)),
+        unit:a.unit
+      };
+    });
+    const running = s.agents.filter(a=>a.state==='running').length;
+    const detents = [];
+    for(let i=0;i<5;i++){
+      const ang = (-100 + i*50)*Math.PI/180 - Math.PI/2 + Math.PI/2;
+      const th = (-100 + i*50)*Math.PI/180;
+      const x1 = 52 + 34*Math.sin(th), y1 = 52 - 34*Math.cos(th), x2 = 52 + 40*Math.sin(th), y2 = 52 - 40*Math.cos(th);
+      detents.push(R.createElement('line',{key:i,x1,y1,x2,y2,stroke: i<=s.autonomy?'var(--ctn-color-text-primary)':'var(--ctn-color-text-muted)',strokeWidth:i===s.autonomy?2.5:1.5}));
+    }
+    // Detent names live in DOM type, not in the SVG. Inside the viewBox their size is
+    // in user units, so legibility was locked to the dial's rail-derived render width —
+    // 6 units at 118px is 6.00px, and no numeric value fixes that class of bug. These
+    // labels replaced five explanatory paragraphs, so they are load-bearing and have to
+    // be readable at the type ramp's own scale.
+    const detentScale = ['OBS','FP','LOW','MED','HIGH'].map((label,i)=>({
+      label,
+      fg: i === s.autonomy ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-text-muted)',
+      rule: i === s.autonomy ? '1.5px solid var(--ctn-color-text-primary)' : '1px solid transparent'
+    }));
+    // the scale on the dial carries the positions; each line states its ceiling
+    const modes = [
+      ['OBSERVE ONLY','contains nothing. every disposition is a human keystroke.'],
+      ['CITE AND CLOSE FP','closes on a benign citation. contains nothing.'],
+      ['CONTAIN LOW','auto-contains low. medium and above stop at the gate.'],
+      ['CONTAIN MEDIUM','auto-contains through medium. high and critical need a name.'],
+      ['CONTAIN HIGH','the ceiling. critical needs a human at every detent.']
+    ];
+    return {
+      utc: new Date(s.now).toISOString().slice(11,19), eps: String(s.eps),
+      masterDigits: f(remainS), masterArc: this.arc(180,180,138, 1 - remainS/(6*3600)),
+      masterHand: ((1 - remainS/(6*3600))*360).toFixed(2), masterTicks: ticks,
+      clocks: [
+        {reg:'RBI · 2–6h advisory', inc:'INC-0417', due:'due 01:03 IST', left:f(remainS-3*3600), arc:this.arc(13,13,10, 1-(remainS-3*3600)/(6*3600))},
+        {reg:'NPCI · UPI fraud flag', inc:'INC-0417', due:'due 22:30 IST', left:f(42*60+(remainS%60)), arc:this.arc(13,13,10, 1-(42*60)/(6*3600))},
+        {reg:'RBI · 24h detailed report', inc:'INC-0846', due:'due 21:03 +1d', left:f(remainS+14*3600), arc:this.arc(13,13,10, 0.28)},
+        {reg:'CERT-In · 6h report', inc:'INC-0417', due:'due 03:03 IST', left:f(remainS), arc:this.arc(13,13,10, 1-remainS/(6*3600))}
+      ],
+      fleetSummary: running+' running · 1 degraded · 1 idle',
+      agents,
+      shortcuts: [
+        {label:'ALERT QUEUE', href:'Queue.dc.html'},{label:'GLASS-BOX REPLAY', href:'Replay.dc.html'},
+        {label:'THE GATE', href:'Approvals.dc.html'},{label:'REGULATORY CLOCKS', href:'Compliance.dc.html'},
+        {label:'AUDIT LEDGER', href:'Audit.dc.html'},{label:'SHIFT HANDOVER', href:'Handover.dc.html'},
+        {label:'BOARD COPY', href:'Executive.dc.html'},{label:'APP SHELL', href:'Shell.dc.html'}
+      ],
+      lanes: [
+        {tag:'LANE A · AUTONOMOUS', count:'39', name:'closing on citation alone', sub:'', border:'var(--ctn-color-border-hairline)', href:'Queue.dc.html'},
+        {tag:'LANE B · HUMAN-GATED', count:'02', name:'waiting for a named human', sub:'', border:'var(--ctn-color-text-primary)', href:'Approvals.dc.html'}
+      ],
+      laneStats: [
+        {v:'412', k:'caught · 24h'},{v:'61', k:'cited · 24h'},{v:'06', k:'actioned · 24h'},{v:'59', k:'closed · 24h'},{v:'41s', k:'median catch to gate'}
+      ],
+      autonomyIdx: String(s.autonomy+1), autonomyAngle: (-100 + s.autonomy*50).toFixed(1),
+      autonomyDetents: detents, detentScale, autonomyName: modes[s.autonomy][0], autonomyDesc: modes[s.autonomy][1],
+      autonomyDown: ()=>this.setState(x=>({autonomy: Math.max(0, x.autonomy-1), mandateAt: Date.now(), raising:false})),
+      ...this.mandateVals(),
+      feed: s.feed.map(e=>({...e, glyph:this.glyph(e.kind)})),
+      strip: [
+        {k:'CRITICAL', v:'02', color:'var(--ctn-color-severity-critical-text)'},
+        {k:'HIGH', v:'07', color:'var(--ctn-color-text-on-navy)'},
+        {k:'MEDIUM', v:'23', color:'var(--ctn-color-text-on-navy)'},
+        {k:'LOW', v:'61', color:'rgba(255,255,255,0.72)'},
+        {k:'LANE A OPEN', v:'39', color:'var(--ctn-color-text-on-navy)'},
+        {k:'LANE B AT GATE', v:'02', color:'var(--ctn-color-text-on-navy)'},
+        {k:'AGENTS DEGRADED', v:'01', color:'var(--ctn-color-text-on-navy)'},
+        {k:'WINDOWS BREACHED', v:'00', color:'rgba(255,255,255,0.72)'}
+      ]
+    };
+  }
+
+  stateVals(b){
+    let m = 'normal';
+    try{ m = new URLSearchParams(window.location.search).get('state') || 'normal'; }catch(e){}
+    const f = x=>[3600,60,1].map(u=>String(Math.floor(x/u)%60).padStart(2,'0')).join(':');
+    const base = {noticeOn:false, masterLabel:'CERT-IN · REMAINING', masterFg:'var(--ctn-color-clock)',
+      masterDigits2: b.masterDigits, masterSub:'of 06:00:00 · filing due 03:03 IST'};
+    if(m === 'offline') return Object.assign(base, {
+      noticeOn:true, noticeKind:'offline',
+      noticeTitle:'INGEST OFFLINE · THIS BOARD IS STALE',
+      noticeMeta:'last packet 00:04:18 ago · all 6 inlets',
+      noticeBody:'Every inlet stopped at the same instant, which points at the collector host rather than at six sources failing together. The counts, the fleet traces and the lane totals below are the last values received and are no longer live. They are shown rather than blanked so you can see what the floor looked like when the feed died.',
+      noticeConsequence:'Statutory clocks keep running while ingest is down; they are driven by the incident record, not the feed. Treat anything on this board as of 00:04 ago and work from the queue, not from these gauges.',
+      noticeAction:'OPEN CONNECTORS', noticeHref:'Settings.dc.html'
+    });
+    if(m === 'degraded') return Object.assign(base, {
+      noticeOn:true, noticeKind:'degraded',
+      noticeTitle:'CORRELATOR UNSTABLE · RUNNING IN COPILOT SHAPE',
+      noticeMeta:'since 21:14 IST · 3 of 7 agents affected',
+      noticeBody:'The swarm has dropped to copilot shape. Agents still catch and still cite, but they no longer hand findings to one another, so nothing is being stitched into a chain without a human doing the stitching.',
+      noticeConsequence:'Lane A auto-close is suspended while this holds. Without cross-agent corroboration, an alert that looks benign in isolation proves nothing. Expect lane B to grow.',
+      noticeAction:'OPEN THE FLEET', noticeHref:'Settings.dc.html'
+    });
+    if(m === 'breached') return Object.assign(base, {
+      noticeOn:true, noticeKind:'breached',
+      noticeTitle:'CERT-IN WINDOW CLOSED · INC-0417 UNFILED',
+      noticeMeta:'closed 03:03 IST · 00:41 overdue',
+      noticeBody:'The six-hour window expired with the draft sealed but unfiled. This is no longer a countdown and the gold has been withdrawn from the dial. Nothing is left to run out.',
+      noticeConsequence:'The breach is itself reportable and is already on the ledger. The compliance officer must file late with a covering note; the quarter\'s statutory record moves from 31/31 to 31/32.',
+      noticeAction:'OPEN THE DESK', noticeHref:'Compliance.dc.html?state=breached',
+      masterLabel:'CERT-IN · WINDOW CLOSED',
+      masterFg:'var(--ctn-color-text-primary)',
+      masterDigits2:'+'+f(41*60+12),
+      masterSub:'overdue since 03:03 IST · filing is now late, not pending'
+    });
+    return base;
+  }
+  // Mandate decay. A dial that holds its position indefinitely trains an operator to stop
+  // looking at it. This one is a vigilance control: every detent above OBSERVE carries a
+  // review period that shortens as autonomy rises, and when it lapses the dial steps itself
+  // down and records the lapse. Autonomy has to be re-argued, not merely once granted.
+  mandateH(i){ return [0, 720, 336, 168, 72][i]; }   // observe · 30d · 14d · 7d · 3d
+  mandateVals(){
+    const s = this.state, per = this.mandateH(s.autonomy) * 3600 * 1000;
+    if(!per) return {
+      mandateArc: '', mandateFg: 'var(--ctn-color-text-muted)', mandateLabel: 'NO MANDATE REQUIRED',
+      mandateLeft: '—', mandateNote: 'Observe only is the resting state. It never expires because it grants nothing.',
+      raising: s.raising, reJustifyStyle: 'dashed', reJustifyBg: 'transparent',
+      reJustify: ()=>{}, cancelRaise: ()=>this.setState({raising:false}),
+      raiseTitle: '', raiseReasons: [],
+      autonomyUp: ()=>this.setState({raising:true})
+    };
+    const left = Math.max(0, per - (s.now - s.mandateAt));
+    const d = Math.floor(left/86400000), h = Math.floor(left/3600000)%24;
+    const m = Math.floor(left/60000)%60, sec = Math.floor(left/1000)%60;
+    const lapsed = left <= 0;
+    const frac = 1 - left/per;
+    const near = left < 24*3600*1000;
+    const fg = lapsed ? 'var(--ctn-color-severity-critical-text)' : near ? 'var(--ctn-color-clock)' : 'var(--ctn-color-text-primary)';
+    const reasons = [
+      'ransomware campaign active in the district cooperative sector',
+      'NPCI advisory in force for UPI mule patterns this quarter',
+      'reduced night-shift cover, 22:00–06:00, approved by the CISO'
+    ].map(label=>({label, pick: ()=>{
+      window.__ledgerSafe && window.__ledgerSafe({tag:'dial-'+Date.now(), kind:'HUMAN', actor:'a.deshmukh · L2',
+        record:'action=RAISE_AUTONOMY to_detent='+Math.min(5, this.state.autonomy+2)+' mandate_h='+this.mandateH(Math.min(4, this.state.autonomy+1))+' justification="'+label+'"'});
+      this.setState(x=>({autonomy: Math.min(4, x.autonomy+1), mandateAt: Date.now(), raising:false, mandateReason:label}));
+    }}));
+    return {
+      mandateArc: this.arc(52, 52, 47, Math.min(0.999, frac)),
+      mandateFg: fg,
+      mandateLabel: lapsed ? 'MANDATE LAPSED' : 'MANDATE LAPSES IN',
+      mandateLeft: lapsed ? 'STEPPING DOWN' : (d > 0 ? d+'d '+String(h).padStart(2,'0')+'h' : String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0')),
+      mandateNote: lapsed
+        ? 'The '+this.mandateH(s.autonomy)/24+'-day mandate expired. The dial reverts one detent and the lapse goes on the ledger. Nobody has to notice for it to happen.'
+        : 'Held on: '+s.mandateReason+'. Re-justify before it lapses or the dial steps down on its own.',
+      raising: s.raising,
+      reJustifyStyle: near ? 'solid' : 'dashed',
+      reJustifyBg: near ? 'var(--ctn-color-surface-raised)' : 'transparent',
+      reJustify: ()=>{
+        window.__ledgerSafe && window.__ledgerSafe({tag:'dial-rj-'+Date.now(), kind:'HUMAN', actor:'a.deshmukh · L2',
+          record:'action=REJUSTIFY_AUTONOMY detent='+(s.autonomy+1)+' mandate_h='+this.mandateH(s.autonomy)+' justification="'+s.mandateReason+'"'});
+        this.setState({mandateAt: Date.now()});
+      },
+      cancelRaise: ()=>this.setState({raising:false}),
+      raiseTitle: 'RAISING AUTONOMY NEEDS A REASON ON THE RECORD',
+      raiseReasons: reasons,
+      autonomyUp: ()=>this.setState({raising:true})
+    };
+  }
+  renderVals(){ const b = this.baseVals(); return Object.assign({}, b, this.stateVals(b)); }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+:root{
+--ctn-space-1:4px;--ctn-space-2:8px;--ctn-space-3:12px;--ctn-space-4:16px;--ctn-space-5:20px;--ctn-space-6:24px;--ctn-space-8:32px;--ctn-space-10:40px;--ctn-space-12:48px;
+/* exactly 3 radius tokens, by intent */
+--ctn-radius-chip:999px; /* tags, citation chips */
+--ctn-radius-card:6px;   /* dense repeating rows, stat tiles */
+--ctn-radius-surface:14px; /* large single-instance surfaces: approval card, handover card */
+}

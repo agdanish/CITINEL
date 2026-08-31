@@ -1,0 +1,6 @@
+body{margin:0;background:var(--ctn-color-surface-shell);color:var(--ctn-color-text-primary);font-family:var(--ctn-font-body);font-size:var(--ctn-text-body);line-height:var(--ctn-text-body-lh);font-weight:var(--ctn-weight-regular)}
+a{color:var(--ctn-brand-accent);text-decoration:none}
+a:hover{text-decoration:underline;color:var(--ctn-color-text-primary)}
+:focus-visible{outline:none;box-shadow:0 0 0 2px var(--ctn-color-focus-spacer),0 0 0 4px var(--ctn-color-focus-ring)}
+::selection{background:color-mix(in oklch,var(--ctn-brand-accent) 35%,transparent)}
+code,pre,samp{font-family:var(--ctn-font-mono);letter-spacing:0}

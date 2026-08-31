@@ -1,0 +1,619 @@
+/* CITINEL — operability, accessibility and containment floor. Loaded by every screen.
+   Rules that cannot be expressed inline: containment defaults, focus state, reduced motion. */
+
+/* ============================================================
+   1. THE ROOT CAUSE — min-width/min-height: auto on flex and grid children.
+
+   A flex/grid item refuses to shrink below its content's intrinsic minimum.
+   That is the actual mechanism behind every blowout in this build: the parent
+   never constrained the box, so text-overflow:ellipsis had nothing to act on.
+   Resetting the INITIAL value to 0 for every element that can be a flex/grid
+   child fixes it once, app-wide, instead of per-row.
+
+   :where() carries zero specificity, so any inline style, any explicit rule,
+   and any deliberate floor still wins. This changes the default, not the design.
+   ============================================================ */
+:where(div, section, aside, article, header, footer, nav, main, form,
+       ul, ol, li, dl, dd, p, label, figure, table, pre, code) {
+  min-width: 0;
+  min-height: 0;
+}
+
+/* Any element told not to wrap must also be told what to do when it cannot fit.
+   NOT applied blanket: `white-space:nowrap` on a `flex:none` chip means "this is
+   sized by its content and must not shrink" — forcing overflow:hidden on it
+   collapses the label to an ellipsis with nothing gained. Tried it app-wide and
+   the nav degraded to "O… Q… R…". Containment belongs on the elements the author
+   marked as shrinkable, which is what [data-reveal] below is for. */
+
+/* Grid tracks: a bare 1fr is minmax(auto,1fr) and inherits the same refusal to
+   shrink. Nothing here can express that per-track, so tracks are authored as
+   minmax(0,1fr) in the screens; this catches any that were not. */
+:where([style*="grid-template-columns"]) > * { min-width: 0; }
+
+/* ============================================================
+   2. UNBREAKABLE TOKENS — hashes, rule ids, URLs, hostnames.
+   overflow-wrap:anywhere only breaks when the word genuinely cannot fit.
+   Never word-break:break-all (breaks mid-word even when the next line would
+   hold it) and never word-break:break-word (deprecated alias that silently
+   overrides overflow-wrap).
+   ============================================================ */
+[data-token],
+:where(code, pre, [style*="font-mono"], [style*="ctn-font-mono"]):not([style*="nowrap"]) {
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+/* ============================================================
+   3. TRUNCATION WITH REVEAL — the reveal fires on FOCUS, not hover alone.
+   Whether hover-only satisfies "the value must remain reachable" is unresolved
+   at the W3C; focus is the safe reading, and it is the only one a keyboard or
+   switch user can reach at all.
+
+   Mark a truncating element [data-reveal] and it becomes a tab stop that
+   expands over its neighbours on focus rather than pushing them.
+   ============================================================ */
+[data-reveal] {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: help;
+}
+[data-reveal]:focus-visible,
+[data-reveal]:hover {
+  position: relative;
+  z-index: 40;
+  overflow: visible;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-overflow: clip;
+  background: var(--ctn-color-surface-raised);
+  box-shadow: 0 0 0 1px var(--ctn-color-border-strong), 0 6px 22px rgba(0,0,0,0.55);
+  border-radius: 4px;
+  padding: 2px 6px;
+  margin: -2px -6px;
+  max-width: min(60ch, 90vw);
+  width: max-content;
+}
+
+/* Focus ring: dark spacer then light ring, so it reads on every surface step from well to raised.
+   box-shadow follows the element's own border-radius, so pills stay pills and 6px rows stay 6px. */
+:focus-visible {
+  outline: 2px solid transparent;          /* forced-colors / high-contrast fallback */
+  outline-offset: 2px;
+  box-shadow:
+    0 0 0 2px var(--ctn-color-surface-shell),
+    0 0 0 4px var(--ctn-color-white);
+  position: relative;
+  z-index: 2;
+}
+
+/* On the navy bar the shell colour is wrong for the spacer — invert the pair. */
+[data-on-navy] :focus-visible {
+  box-shadow:
+    0 0 0 2px var(--ctn-color-navy-900),
+    0 0 0 4px var(--ctn-color-white);
+}
+
+/* Never strip the ring from a control that can be reached by keyboard. */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[tabindex]:focus-visible {
+  outline-color: transparent;
+}
+
+/* Mouse users don't get the ring; keyboard users always do. */
+:focus:not(:focus-visible) { box-shadow: none; }
+
+/* Dense lists: the whole row is the target, so no dead area inside a row-level control. */
+a > *, button > * { pointer-events: none; }
+a a, a button, button a, button button { pointer-events: auto; }
+
+/* Scrollable panes must be reachable and operable from the keyboard. */
+[data-keys]:focus-visible { box-shadow: 0 0 0 2px var(--ctn-color-surface-shell), 0 0 0 4px var(--ctn-color-white); }
+
+@media (prefers-reduced-motion: reduce) {
+  /* Motion is removed, but the signal is not: every animated instrument in this product
+     also prints its value as tabular text beside it (eps, remaining, fired/total, node count),
+     so the reading survives without the sweep. Transitions land instantly rather than easing. */
+  *, *::before, *::after {
+    transition-duration: 1ms !important;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+  /* Substitute cue: anything whose state was carried by movement gains a static edge marker. */
+  [data-motion-signal] {
+    border-bottom: 2px solid var(--ctn-color-text-primary);
+    padding-bottom: 2px;
+  }
+  [data-motion-signal]::after {
+    content: " · LIVE VALUE";
+    font-family: var(--ctn-font-display);
+    font-size: 7.5px;
+    letter-spacing: 0.1em;
+    color: var(--ctn-color-text-muted);
+  }
+}
+
+
+
+/* Short shapes (landscape phone, split-screen): release 100vh panels so
+   vertical content scrolls rather than clips. */
+@media (max-height: 620px){
+  [data-screen-label]{ height: auto !important; min-height: 100vh; }
+  [data-screen-label] [style*="min-height:0"]{ min-height: auto !important; }
+  /* An instrument that carries its own aspect-ratio is already bounded by its width cap;
+     clamping its height here forces a non-square box and the ring draws smaller than
+     its own overlay. Radial instruments opt out. */
+  [data-screen-label] svg:not([data-radial-svg]):not([data-radial] svg){ max-height: 220px !important; height: auto !important; }
+  html, body{ overflow-y: auto !important; height: auto !important; }
+}
+
+/* Ultra-wide (21:9+): keep the measure readable, don't stretch instruments. */
+@media (min-aspect-ratio: 2/1) and (min-width: 1900px){
+  [data-screen-label] > div[style*="max-width"]{ margin-inline: auto; }
+}
+
+/* Square-ish desktop windows: rails hold a floor, the work area wins. */
+@media (max-aspect-ratio: 1/1) and (min-width: 720px){
+  [data-screen-label] [style*="clamp("]{ width: clamp(220px, 26vw, 340px) !important; }
+}
+
+/* Any shape: nothing fixed-size exceeds its container. */
+[data-screen-label] svg, [data-screen-label] img{ max-width: 100%; }
+
+
+}
+
+/* ============================================================
+   4. SVG TEXT ON A SHARED AXIS — anchor at the extremes, centre only inside.
+   text-anchor:middle at an axis end shifts the label by half its own width in
+   the one direction with no room to give. Applied here as a safety net for any
+   axis label that was authored centred.
+   ============================================================ */
+svg text[data-axis="start"] { text-anchor: start; }
+svg text[data-axis="end"]   { text-anchor: end; }
+
+/* ============================================================
+   5. CONTAINER QUERIES — a panel responds to ITS OWN box, not the window.
+   contain-intrinsic-size guards the collapse that container-type mandates:
+   containment removes children from intrinsic sizing, so a panel with no
+   explicit size can zero-collapse without a stated fallback.
+   ============================================================ */
+[data-panel] {
+  container-type: inline-size;
+  contain-intrinsic-size: auto 320px;
+}
+@container (max-width: 420px) {
+  [data-cols] { grid-template-columns: minmax(0,1fr) !important; }
+}
+
+/* ============================================================
+   6. NOTHING EVER ESCAPES THE PAGE BOX.
+   The last line of defence: if a rule above misses a case, the overflow is
+   reachable by scroll rather than painted outside the viewport and lost.
+   ============================================================ */
+html, body { max-width: 100%; }
+[data-screen-label] { max-width: 100vw; }
+
+
+/* ── Width handoff bar ──────────────────────────────────────────────────────
+   Raised only when an analyst resizes below the console floor mid-task.
+   Sits above the pinned strip, never covers it (the strip owns the bottom band). */
+[data-width-handoff] {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 44px;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 10px 18px;
+  background: var(--ctn-color-surface-navy);
+  border-top: 1px solid var(--ctn-color-border-strong);
+}
+[data-width-handoff] [data-k] {
+  font-family: var(--ctn-font-display);
+  font-size: 8.5px;
+  letter-spacing: 0.12em;
+  color: var(--ctn-color-text-on-navy);
+  flex: none;
+}
+[data-width-handoff] [data-m] {
+  font-size: 11.5px;
+  color: var(--ctn-color-text-on-navy);
+  opacity: 0.72;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+[data-width-handoff] a {
+  font-family: var(--ctn-font-display);
+  font-size: 8.5px;
+  letter-spacing: 0.12em;
+  padding: 9px 13px;
+  border: 1px solid var(--ctn-color-text-on-navy);
+  border-radius: 6px;
+  color: var(--ctn-color-text-on-navy);
+  text-decoration: none;
+  flex: none;
+}
+
+/* Origin note on the narrow view: static, in flow, at the top — it explains why this
+   view opened, which is context rather than an action, so it never overlays content. */
+[data-width-handoff][data-static] {
+  position: static;
+  inset: auto;
+  border-top: 0;
+  border-bottom: 1px solid var(--ctn-color-border-strong);
+}
+
+
+
+/* ── Radial instruments: self-contained sizing ──
+   Every dial/ring in this product takes its width from the column it sits in and derives
+   height from aspect-ratio. Nothing measures a sibling, so a stacked column and a side-by-side
+   rail both give it a real measure. No height cap, no !important, no JS geometry read. */
+:where([data-screen-label]) svg[viewBox^="0 0"] { max-width: 100%; }
+:where([data-screen-label]) *:has(> svg[viewBox^="0 0"]) { min-width: 0; }
+
+
+/* 720–1280 single-page reflow was attempted here and REVERTED.
+   It verified clean on Overview at 924px, but the selectors are too blunt to ship:
+   `[style*="display:flex"]{flex-wrap:wrap}` and the grid collapse fire on every nested
+   flex/grid in the screen, not just the top-level band, so at ~1180px the console folds
+   into a narrow column with the work area empty. A real reflow needs per-band opt-in
+   markers (e.g. data-reflow-band) rather than attribute-substring matching. */
+
+/* ── 720–1280 reflow, per-band opt-in ──
+   Only elements explicitly marked as a band or a rail respond. No attribute-substring
+   matching, so nested flex and grid inside a panel are untouched — that was what folded
+   the console into a column on the first attempt. Rails stack full-width under the work
+   area; radial instruments stay bounded because each now carries its own intrinsic cap. */
+@media (max-width: 1279px) and (min-width: 720px){
+  /* Whichever element the screen declares as dominant leads when the band stacks —
+     Overview's clock rail, Entry's sign-in column. Opt-in per screen, because only
+     the screen knows what an operator cannot afford to have pushed below the fold. */
+  /* -4, not -2: the short-height block gives generic rails -3, so the opt-in must sort
+     ahead of that. Keyed on the opt-in ALONE, not on [data-reflow-rail][data-primary-instrument]
+     together — requiring both meant a primary instrument that is a work area rather than a rail
+     matched nothing and stayed at order 0 while a supporting rail was promoted above it.
+     One source of truth for "this screen's primary instrument leads". */
+  /* Doubled attribute selector, deliberately: this is 0,3,0 so no equal-specificity reset in
+     this block or the short-height block can undo it by declaration order. Two resets had
+     already silently beaten it in turn (order:-1 here, order:0 below) and left the dominant
+     instrument beneath a supporting rail. The promotion is the invariant; resets are generic. */
+  [data-reflow-band] > [data-primary-instrument][data-primary-instrument],
+  [data-reflow-band] > [data-leads-at-reflow][data-leads-at-reflow]{ order: -4 !important; }
+  /* Order only. The flex/min-height/overflow declarations that used to live here were
+     superseded by the short-height block below, but at specificity 0,2,0 they silently beat
+     it for every non-rail pane — the rail picked up the new sizing and the work area did
+     not. Removed rather than out-specified, so one model owns pane sizing. */
+  [data-reflow-band] > *:not([data-reflow-rail]){ order: -1 !important; }
+  :where([data-screen-label]){ min-width: 0 !important; }
+  /* The band's parent is a content-driven column, so an unbounded band gives its children
+     no definite height: the work area's flex:1 1 0% collapses to 0 0 auto, its own
+     overflow-y:auto never engages, and the band scrolls the whole list instead — pushing
+     the rail thousands of px below the fold. Bounding the band to the viewport restores a
+     definite height, so each child scrolls itself. */
+  [data-reflow-band]{
+    flex-direction: column !important;
+    overflow: hidden !important;
+    min-height: 0 !important;
+    height: 100% !important;
+    flex: 1 1 0% !important;
+  }
+  [data-reflow-band] > *{ min-height: 0 !important; }
+  /* The short-landscape net (max-height:620px) unpins the root so the PAGE grows and
+     scrolls — correct for an unanticipated shape, wrong here: a stacked band needs a
+     viewport-bounded root or its children get no definite height. A console width is an
+     anticipated shape, so re-pin it and let each pane scroll itself. Asserted after that
+     block so it wins where both apply. */
+  html, body{ overflow: hidden !important; height: 100% !important; }
+  [data-screen-label]{ height: 100vh !important; min-height: 0 !important; overflow: hidden !important; }
+  [data-screen-label] [style*="min-height:0"]{ min-height: 0 !important; }
+  /* A supporting instrument sized to its own content (the detect→sign ribbon at 412px)
+     eats the whole column on a short viewport and leaves the work area 1px. Marked
+     yielders cap against the viewport and scroll themselves, so the band always keeps
+     the majority share — the reel and its query rail stay above the fold.
+     The band also carries a floor: where a screen has several content-sized siblings
+     (Policy has a summary AND a staged-changes footer) their caps can still sum past the
+     column, so the work area claims its share first and the yielders share what is left. */
+  [data-reflow-yield]{
+    max-height: 32vh !important;
+    overflow-y: auto !important;
+    flex: 0 1 auto !important;
+  }
+  [data-reflow-band]{ min-height: 34vh !important; }
+}
+
+/* ── Short console heights: definite panes, one scroll ──
+   The previous model capped every element so the whole console fit a 540px viewport. That
+   is the wrong direction: at 540px tall the chrome alone is 61% of the budget, so fitting
+   means a 44px column header over a 2-row reel — technically unclipped, operationally
+   useless, and stacked three scrollers deep.
+
+   Invert it. Below 700px the band stops trying to fit and becomes the scroll surface, and
+   each pane inside it gets a definite, readable height instead of a share of nothing. One
+   scroll gesture moves through the whole console; every pane it reveals is full size. The
+   pinned header and status strip stay pinned, so nothing that must remain visible moves. */
+@media (max-width: 1279px) and (min-width: 720px) and (max-height: 700px){
+  /* When the band stacks, the query rail leads. An audit log's query control becomes MORE
+     necessary as the reel grows, so ordering it after the reel makes it monotonically less
+     reachable exactly when it matters. Rails that a screen has not marked as leading still
+     follow the work area; a query rail is the tool, not a sidebar. */
+  /* When the band stacks, a rail leads — but only where the screen has not declared its own
+     primary instrument. A blanket rail rule outranks the per-screen opt-in that exists to
+     say what an operator cannot afford below the fold, so the generic case is scoped to
+     exclude marked rails rather than competing with them. */
+  [data-reflow-band] > [data-reflow-rail]:not([data-primary-instrument]):not([data-leads-at-reflow]):not(:has([data-reflow-band])){
+    order: -3 !important;
+  }
+  /* A declared primary instrument outranks the generic rail; its order value is set once,
+     in the wider reflow block above. This reset must therefore exempt it — at equal
+     specificity a later block wins, so an unqualified reset here silently undid the
+     promotion and left the dominant instrument below a supporting rail. */
+  [data-reflow-band] > *:not([data-reflow-rail]):not([data-primary-instrument]):not([data-leads-at-reflow]){ order: 0 !important; }
+
+  /* The root stops being a 100vh fit — under a scroll model, growth IS the model. The
+     header and the status strip stay visible by sticking, not by squeezing the band. */
+  /* The wider-zone block pins html/body to overflow:hidden for the fit model. Under the
+     scroll model that makes the page unscrollable while the root still exceeds it, so the
+     second pane sits below the fold with no way to reach it. Released here. */
+  html, body{ overflow-y: auto !important; height: auto !important; }
+  [data-screen-label]{
+    height: auto !important;
+    min-height: 100vh !important;
+    overflow: visible !important;
+  }
+  [data-screen-label] > header{
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 40 !important;
+  }
+  /* The status strip must remain visible and uncoverable at every height. Bottom-sticky
+     does not pin reliably once the body is the scrollport, so the strip is fixed to the
+     viewport and the root reserves its height \u2014 visibility is a hard requirement, not a
+     best effort, and fixed is the only positioning that cannot be defeated by an ancestor. */
+  [data-screen-label] > [data-on-navy]{
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 60 !important;
+  }
+  /* border-box, or min-height:100vh resolves against the content box and the 44px strip
+     reservation guarantees a 44px page scroll on every strip-bearing screen even when the
+     content fits. */
+  [data-screen-label]:has(> [data-on-navy]){
+    box-sizing: border-box !important;
+    padding-bottom: 44px !important;
+  }
+
+  /* the band grows to fit its panes; the page carries the scroll */
+  [data-reflow-band]{
+    overflow: visible !important;
+    min-height: 0 !important;
+    flex: 0 0 auto !important;
+  }
+  /* ── A nested band is not a pane ──
+     This model was written for one band per page. A screen whose panes live in a nested row
+     needs a second band, and then the pane rules below hit both the nested band and every
+     element between the two — giving each a definite height AND overflow-y:auto, which stacks
+     three scrollers and puts the dominant instrument whole in exactly one coordinated
+     position. So "pane" is defined by exclusion: an element that contains a band is not a
+     pane, it is structure, and structure takes content height and never scrolls. The document
+     keeps the single scroll the model promises, and the panes still stack. */
+  [data-reflow-band] *:has([data-reflow-band]),
+  [data-reflow-band] [data-reflow-band]{
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    flex: 0 0 auto !important;
+  }
+  /* Every pane is a definite, readable height — and BOUNDED. A floor alone leaves the pane
+     content-sized, so a reel of several thousand rows produces a page tens of thousands of
+     px tall with nothing to scroll but the document. Floor and ceiling together give a pane
+     that is always readable and never unbounded; its own list scrolls inside it. */
+  [data-reflow-band] > *:not(:has([data-reflow-band])){
+    flex: 0 0 auto !important;
+    height: 340px !important;
+    min-height: 340px !important;
+    max-height: 340px !important;
+    overflow: hidden !important;
+  }
+  /* the pane has a definite height again, so its flex:1 list resolves and scrolls itself */
+  [data-reflow-band] > * > [style*="flex: 1 1 0%"],
+  [data-reflow-band] > * > [style*="flex:1 1 0%"]{
+    min-height: 0 !important;
+    overflow-y: auto !important;
+  }
+  /* rails are supporting, so they get a shorter definite height, not a proportional cap */
+  [data-reflow-band] > [data-reflow-rail]:not(:has([data-reflow-band])){
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 240px !important;
+    min-height: 240px !important;
+    max-height: 240px !important;
+    overflow-y: auto !important;
+    border-left: 0 !important;
+    border-right: 0 !important;
+    border-top: 1px solid var(--ctn-color-border-strong) !important;
+  }
+  /* A pane carrying a radial instrument is not generic supporting chrome: 240px cannot hold
+     a dial plus two display headings plus a list, so the dial's wrapper gets ~16px and the
+     SVG collapses while its <text> children keep their coordinates and smear across the
+     heading below. Keyed on data-radial-svg, not on a literal viewBox: every radial in the
+     product carries that hook, and keying on "0 0 360 360" silently exempted the 460-unit
+     blast plot — the dominant instrument on the approval card. A rule that covers one
+     instrument is not a system rule.
+
+     Rails and work panes both qualify, because the radial is sometimes the work area
+     (the blast plot) and sometimes the rail (the countdown). */
+  [data-reflow-band] > [data-reflow-rail]:has(svg[data-radial-svg]):not(:has([data-reflow-band])),
+  [data-reflow-band] > *:has(svg[data-radial-svg]):not(:has([data-reflow-band])){
+    height: 520px !important;
+    min-height: 520px !important;
+    max-height: 520px !important;
+    /* the radial takes a fixed measure, so whatever shares the pane scrolls rather than
+       competing with it for the square */
+    overflow-y: auto !important;
+  }
+  /* The dial derives from the axis that is actually constrained, and the WRAPPER is what
+     becomes square — not the SVG inside it. The overlay readout is positioned inset:0
+     against the wrapper and takes its type scale from the wrapper's container-query units,
+     so a wrapper wider than the ring scales the readout for a dial that was never drawn.
+     Wrapper takes its height from the flex row, aspect-ratio makes it square, and the SVG
+     fills it exactly; overlay geometry and cqw then track the ring at any rail height. */
+  [data-reflow-band] *:has(> svg[data-radial-svg]){
+    aspect-ratio: 1 / 1 !important;
+    /* Definite, not a flex remainder: sharing the rail with the clock list left the wrapper
+       140px, and at that size the readout's cqw type scale hits its font floors and stops
+       shrinking with the ring. The app's dominant instrument gets a fixed measure and the
+       list beneath it scrolls. */
+    /* 440, not 300: the largest radial in the product is a 460-unit viewBox, and a 300px
+       square renders its 9px plot labels at 5.9px. The wrapper is sized so the WIDEST
+       viewBox still clears the 6px floor, since one rule serves every radial. */
+    height: 440px !important;
+    min-height: 440px !important;
+    max-height: 440px !important;
+    width: auto !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    flex: 0 0 auto !important;
+    margin-inline: auto !important;
+    overflow: hidden !important;
+    /* The wrapper owns the bound, so its own padding must not eat the square: a padded
+       wrapper leaves the SVG 16px short of filling it, and the cqw-scaled overlay then
+       sizes type for a ring 27% larger than the one drawn. */
+    padding: 0 !important;
+  }
+  /* Ancestors of a radial, above its direct wrapper, must not clip it. The blast plot sits
+     in a <section> two levels inside the band, so the pane rule above did not reach it and
+     it clipped 136px of a 440px square with nothing scrollable in between. The wrapper keeps
+     overflow:hidden and owns the square; everything above it yields. */
+  [data-reflow-band] *:has(svg[data-radial-svg]):not(:has(> svg[data-radial-svg])){
+    overflow-y: auto !important;
+    min-height: 0 !important;
+  }
+  [data-reflow-band] svg[data-radial-svg]{
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    /* max-height:100% resolves against the wrapper's content height and legitimately beats
+       aspect-ratio, keeping the width while clamping the height. The box stops being square,
+       preserveAspectRatio then shrinks the whole drawing, and load-bearing labels render
+       at 2px. The square has to outrank the clamp. */
+    max-height: none !important;
+    flex: 0 0 auto !important;
+  }
+  /* Inside a pane, layout is untouched: the pane now has a real height, so its own
+     flex:1 list resolves against it and fills the space without a floor or a cap. */
+  [data-reflow-yield]{
+    max-height: none !important;
+    flex: 0 0 auto !important;
+  }
+}
+
+
+/* ── Screen header rows: overflow first, then wrap ──
+   Header children are flex:none with nowrap labels (operator name, clock digits,
+   ALL CLOCKS). When the row runs out of width they do not shrink — they paint over
+   each other, and an opaque neighbour background then hides one outright.
+
+   min-width:0 here was actively wrong: a flex item only triggers a wrap when it
+   CANNOT shrink further, so letting the flexible child collapse below its content
+   width removed the overflow and flex-wrap never fired. max-content restores that
+   floor, the row genuinely overflows, and the fixed clock cluster moves to its own
+   line. The inline height:52px has to lose for the second line to have anywhere to
+   go. No visual change at widths where the row still fits on one line. */
+[data-screen-label] > header{
+  flex-wrap: wrap !important;
+  height: auto !important;
+  min-height: 52px;
+  row-gap: 0;
+}
+/* Shrink priority, in order of what an operator can afford to lose:
+   1. a scrolling nav yields first — it declares overflow-x:auto, so nothing is lost
+   2. plain label spans (bank name, timestamp) ellipsize next
+   3. control clusters never shrink, because their nowrap children would paint
+      outside the box and over a neighbour — that refusal is what makes the row
+      overflow and therefore what makes flex-wrap fire
+
+   min-width was the wrong lever twice. With `flex: 1 1 0%` the nav is the RESIDUAL
+   CLAIMANT: it takes only leftover space, so the row is never over-constrained,
+   flex-shrink on the spans never triggers, and they keep full content width while
+   navigation absorbs everything. `flex-basis: auto` puts nav's own content size
+   into the calculation, so the row genuinely overflows — which is also the only
+   condition under which flex-wrap can fire. */
+[data-screen-label] > header > nav{ flex: 1 1 auto !important; min-width: 0 !important; }
+/* No arbitrary character cap here. 22ch clipped "on duty: a. deshmukh · L2" (25 chars) by
+   22px at EVERY width including 2560 — a width-independent clip is a fixed box, never a
+   space problem — and with no text-overflow it was a bare cut with no affordance. The row
+   wraps instead, so a span keeps its full measure; if one ever does have to yield it
+   ellipsizes and reveal.js gives it a keyboard-reachable full value. */
+[data-screen-label] > header > span{
+  flex: 0 1 auto !important;
+  min-width: 0 !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+[data-screen-label] > header > div{ min-width: max-content !important; }
+[data-screen-label] > header a{ white-space: nowrap; }
+
+/* Radial hour numbers scale in SVG user units, so below roughly 380px of dial they
+   fall under the type ramp's floor. Drop the numbers, keep the ticks they label. */
+@container (max-width: 380px){
+  .ctn-dial-hour{ display: none; }
+}
+
+/* ── Scrolling column lists: children must not shrink below their content ──
+   Per spec, a flex container whose overflow is not `visible` makes its items'
+   automatic minimum size resolve to zero. So every row in a capped, scrolling
+   column flex list becomes shrinkable and, once the list is taller than its cap,
+   the rows compress below their own text and paint through one another. The
+   scroller exists precisely so content can keep its size — nothing inside one
+   should ever shrink. */
+[data-screen-label] [style*="overflow-y:auto"][style*="flex-direction:column"] > *,
+[data-screen-label] [style*="overflow-y: auto"][style*="flex-direction: column"] > * {
+  flex-shrink: 0;
+}
+
+/* ── Citation pills enclose their locator, never cross it ──
+   A locator is a provenance value: it renders whole or gets an explicit reveal, so it
+   may not be clipped. The pill is a fixed-height inline-flex, so a locator one character
+   too long for the column wraps and the border paints through the second line. Letting
+   the pill grow keeps the value intact and the border outside it. */
+[data-screen-label] button[style*="citation-chip"] {
+  height: auto !important;
+  min-height: 20px;
+}
+
+/* ── Mounted component roots are border-box ──────────────────────────────────
+   A child DC or x-import mounted at full width resolves `width:100%` against its
+   mount's CONTENT width; under content-box its own padding and border are then added
+   outside that, so the component lands wider than the box it was given by exactly its
+   horizontal padding, and `max-width:100%` cannot correct it (also content-box).
+   Measured: a 426px scroller holding a 441px chip — 15px of overflow, 15px of padding.
+   Every mount root sizes border-box so padding is drawn inside the width it was given. */
+[data-screen-label] .sc-host-x > *,
+[data-screen-label] .sc-host-dc > * {
+  box-sizing: border-box;
+}
+
+/* ── Wrapping rows stack from the start, never share height equally ──
+   `align-content` defaults to `stretch`, so a multi-line flex row inside any
+   height-constrained parent divides that height between its lines instead of giving
+   each line its content height. Measured on the Corpus header: a two-sentence subhead
+   on its own wrapped line got 37.5px for three lines of text and lost the third.
+   Every wrapping row in this product is a header or a chip rail — content height, always. */
+[data-screen-label] [style*="flex-wrap:wrap"],
+[data-screen-label] [style*="flex-wrap: wrap"] {
+  align-content: flex-start;
+}

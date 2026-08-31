@@ -1,0 +1,35 @@
+/* Tier 1 — semantic. Names and roles never change per skin or partner. */
+:root{
+--ctn-color-surface-shell:var(--ctn-color-charcoal-950);
+--ctn-color-surface-panel:var(--ctn-color-ink-900);
+--ctn-color-surface-raised:var(--ctn-color-ink-850);
+--ctn-color-surface-well:var(--ctn-color-ink-980); /* inset quotes, quarantine */
+--ctn-color-surface-navy:var(--ctn-color-navy-900);
+--ctn-color-border-hairline:var(--ctn-color-ink-700);
+--ctn-color-border-strong:var(--ctn-color-ink-600);
+--ctn-color-text-primary:var(--ctn-color-ink-100);
+--ctn-color-text-secondary:var(--ctn-color-ink-300);
+--ctn-color-text-muted:var(--ctn-color-ink-400);
+--ctn-color-text-disabled:var(--ctn-color-ink-500);
+--ctn-color-text-on-navy:var(--ctn-color-white);
+/* severity ramp — always shape glyph + printed label + fixed rank; never hue alone */
+--ctn-color-severity-critical:var(--ctn-color-red-600);
+--ctn-color-severity-critical-text:var(--ctn-color-red-400);
+--ctn-color-severity-high:var(--ctn-color-orange-500);
+--ctn-color-severity-medium:var(--ctn-color-steel-400);
+--ctn-color-severity-low:var(--ctn-color-ink-400);
+/* evidence-gold: citations + the regulatory clock. Nowhere else. */
+--ctn-color-evidence-citation:var(--ctn-color-gold-500);
+--ctn-color-clock:var(--ctn-color-gold-500);
+/* state machine */
+--ctn-color-state-node:var(--ctn-color-navy-900);
+--ctn-color-state-stroke:var(--ctn-color-ink-100);
+--ctn-color-state-cited:var(--ctn-color-gold-500);
+--ctn-color-state-deny:var(--ctn-color-red-600);
+--ctn-color-quarantine:var(--ctn-color-gray-500);
+--ctn-color-ok:var(--ctn-color-green-500);
+/* two-color focus indicator (WCAG C40): light ring over dark spacer */
+--ctn-color-focus-ring:oklch(0.82 0.02 250);
+--ctn-color-focus-spacer:var(--ctn-color-charcoal-950);
+--ctn-shadow-overlay:0 0 0 1px color-mix(in oklch,var(--ctn-color-navy-900) 60%,white 8%),0 8px 24px -8px color-mix(in oklch,var(--ctn-color-navy-900) 70%,black 30%),0 20px 48px -16px color-mix(in oklch,var(--ctn-color-charcoal-950) 80%,black 20%);
+}

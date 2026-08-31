@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="vendor/resources.js"></script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/fonts.css">
+<link rel="stylesheet" href="vendor/fonts.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/colors.primitive.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/colors.semantic.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/typography.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/spacing.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/brand.flagship.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/component.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/base.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/styles.css">
+<link rel="stylesheet" href="a11y.css">
+<link rel="stylesheet" href="motion.css">
+<script src="motion.js"></script>
+<script src="reveal.js"></script>
+<script src="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/_ds_bundle.js"></script>
+<script src="role.js"></script>
+<script src="route.js"></script>
+<style>html,body{height:100%;overflow-y:hidden;overflow-x:auto}</style>
+<script src="api.js"></script>
+</helmet>
+<div data-screen-label="Confidence panel" data-citinel-page="confidence" style="display:flex;flex-direction:column;height:100vh;min-width:1280px;background:var(--ctn-color-surface-shell)">
+
+  <header style="display:flex;align-items:center;gap:18px;padding:0 18px;height:52px;flex:none;border-bottom:1px solid var(--ctn-color-border-strong);background:var(--ctn-color-surface-panel);min-width:0">
+    <img src="assets/mark-white.png" alt="CITINEL · caught, cited, gated, actioned, closed" style="height:34px;width:90px;display:block;flex:none">
+    <nav style="display:flex;gap:2px;min-width:0;overflow-x:auto;scrollbar-width:thin;flex:1">
+      <a href="Overview.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">OVERVIEW</a>
+      <a href="Queue.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">QUEUE</a>
+      <a href="Replay.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">REPLAY</a>
+      <a href="Confidence.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-primary);background:var(--ctn-color-surface-raised);border-radius:6px;white-space:nowrap">CONFIDENCE</a>
+      <a href="Evidence.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">EVIDENCE</a>
+      <a href="Approvals.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">APPROVALS</a>
+      <a href="Compliance.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">COMPLIANCE</a>
+      <a href="Audit.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">AUDIT</a>
+      <a href="Corpus.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">CORPUS</a>
+      <a href="Eval.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">EVAL</a>
+      <a href="Policy.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">POLICY</a>
+      <a href="Handover.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">HANDOVER</a>
+      <a href="Executive.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">EXEC</a>
+      <a href="Settings.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">CONNECTORS</a>
+      <a href="Demo.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">DEMO</a>
+      <a href="Shell.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">SHELL</a>
+      <a href="Entry.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">ENTRY</a>
+          <a href="Narrow.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">NARROW</a>
+</nav>
+    <div style="flex:none;display:flex;align-items:center;gap:1px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;padding:2px">
+      <button onClick="{{ setAnalyst }}" style="font-family:var(--ctn-font-display);font-size:8.5px;letter-spacing:0.1em;padding:6px 11px;border:none;border-radius:4px;cursor:pointer;background:{{ analystBg }};color:{{ analystFg }}">ANALYST</button>
+      <button onClick="{{ setCiso }}" style="font-family:var(--ctn-font-display);font-size:8.5px;letter-spacing:0.1em;padding:6px 11px;border:none;border-radius:4px;cursor:pointer;background:{{ cisoBg }};color:{{ cisoFg }}">CISO</button>
+    </div>
+    <span style="flex:none;font-family:var(--ctn-font-mono);font-size:12px;color:var(--ctn-color-text-primary);white-space:nowrap">INC-0417</span>
+    <a href="Replay.dc.html?at=78" style="flex:none;font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:9px 14px;background:var(--ctn-color-surface-navy);color:var(--ctn-color-text-on-navy);border-radius:6px;text-decoration:none;white-space:nowrap">◀ RETURN TO REPLAY</a>
+  </header>
+
+  <div data-reflow-band style="flex:none;display:flex;align-items:stretch;border-bottom:1px solid var(--ctn-color-border-strong);background:var(--ctn-color-surface-panel);min-width:0">
+
+    <div data-reflow-rail style="width:clamp(246px, 11.00rem + 12.22vw, 352px);flex:none;box-sizing:border-box;border-right:1px solid var(--ctn-color-border-hairline);padding:14px 20px 16px;display:flex;flex-direction:column;min-width:0">
+      <div style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.14em;color:var(--ctn-color-text-muted);flex:none">CONFIDENCE IN THE VERDICT · NOT IN THE OUTCOME</div>
+      <svg viewBox="0 0 312 108" style="width:100%;height:108px;display:block;flex:none;margin-top:4px">
+        <line x1="156" y1="30" x2="156" y2="96" stroke="var(--ctn-color-border-strong)" stroke-width="2"></line>
+        <polygon points="146,96 166,96 156,86" fill="var(--ctn-color-border-strong)"></polygon>
+        <g transform="rotate({{ beamAngle }} 156 30)" style="transition:transform 0.55s cubic-bezier(0.25,1.2,0.4,1)">
+          <line x1="42" y1="30" x2="270" y2="30" stroke="var(--ctn-color-text-primary)" stroke-width="2.5" stroke-linecap="round"></line>
+          <line x1="42" y1="30" x2="42" y2="52" stroke="var(--ctn-color-border-strong)" stroke-width="1.2"></line>
+          <line x1="270" y1="30" x2="270" y2="52" stroke="var(--ctn-color-border-strong)" stroke-width="1.2"></line>
+          <path d="M 24 52 H 60 L 52 68 H 32 Z" fill="var(--ctn-color-surface-raised)" stroke="var(--ctn-color-text-secondary)" stroke-width="1.4"></path>
+          <path d="M 252 52 H 288 L 280 68 H 260 Z" fill="var(--ctn-color-surface-raised)" stroke="var(--ctn-color-text-secondary)" stroke-width="1.4"></path>
+          {{ panLabels }}
+        </g>
+        <circle cx="156" cy="30" r="5" fill="var(--ctn-color-text-primary)"></circle>
+        <text x="42" y="9" text-anchor="middle" font-family="var(--ctn-font-display)" font-size="7.5" letter-spacing="1.2" fill="var(--ctn-color-text-muted)">SUPPORTS</text>
+        <text x="270" y="9" text-anchor="middle" font-family="var(--ctn-font-display)" font-size="7.5" letter-spacing="1.2" fill="var(--ctn-color-text-muted)">COUNTERS</text>
+      </svg>
+      <div style="flex:none;margin-top:2px">
+        <div style="position:relative;height:26px;min-width:0">
+          <div style="position:absolute;left:0;right:0;top:11px;height:3px;background:var(--ctn-color-surface-well);border:1px solid var(--ctn-color-border-hairline);border-radius:2px"></div>
+          <sc-for list="{{ bandTicks }}" as="b" hint-placeholder-count="4">
+            <span style="position:absolute;left:{{ b.left }};top:6px;width:1px;height:13px;background:var(--ctn-color-border-strong)"></span>
+          </sc-for>
+          <span style="position:absolute;left:{{ riderLeft }};top:2px;transform:translateX(-50%);width:3px;height:22px;background:var(--ctn-color-text-primary);transition:left 0.55s cubic-bezier(0.25,1.2,0.4,1)"></span>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:1px">
+          <sc-for list="{{ bandLabels }}" as="l" hint-placeholder-count="4">
+            <span style="font-family:var(--ctn-font-display);font-size:7.5px;letter-spacing:0.08em;color:{{ l.fg }}">{{ l.name }}</span>
+          </sc-for>
+        </div>
+      </div>
+      <div style="flex:none;margin-top:9px">
+        <div style="font-family:var(--ctn-font-display);font-size:13px;letter-spacing:0.06em;color:var(--ctn-color-text-primary)">{{ bandName }}</div>
+        <div style="font-size:12px;color:var(--ctn-color-text-secondary);margin-top:5px;line-height:1.45;text-wrap:pretty">{{ bandStatement }}</div>
+        <div style="font-size:11.5px;color:var(--ctn-color-text-muted);margin-top:7px;line-height:1.45;text-wrap:pretty">{{ bandCaveat }}</div>
+      </div>
+    </div>
+
+    <div style="flex:1;min-width:0;display:grid;grid-template-columns:1fr 1fr">
+      <div style="border-right:1px solid var(--ctn-color-border-hairline);display:flex;flex-direction:column;min-width:0;padding:14px 18px 12px">
+        <div style="display:flex;align-items:baseline;gap:10px;flex:none;min-width:0">
+          <span style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.14em;color:var(--ctn-color-text-primary);flex:none">SUPPORTING</span>
+          <span style="font-size:11px;color:var(--ctn-color-text-muted);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ supNote }}</span>
+          <span style="font-family:var(--ctn-font-display);font-size:16px;color:var(--ctn-color-text-primary);font-variant-numeric:tabular-nums slashed-zero;flex:none">{{ supCount }}</span>
+        </div>
+        <div style="flex:1;min-height:0;overflow-y:auto;margin-top:7px;display:flex;flex-direction:column">
+          <sc-for list="{{ supporting }}" as="r" hint-placeholder-count="4">
+            <div style="padding:7px 0;border-bottom:1px solid var(--ctn-color-border-hairline);min-width:0">
+              <div style="display:flex;align-items:baseline;gap:9px;min-width:0">
+                <span data-token style="font-family:var(--ctn-font-mono);font-size:10.5px;color:var(--ctn-color-text-muted);font-variant-numeric:tabular-nums;flex:none">w{{ r.w }}</span>
+                <span style="font-size:12.5px;color:var(--ctn-color-text-primary);flex:1;min-width:0;line-height:1.4">{{ r.claim }}</span>
+              </div>
+              <div style="margin-top:5px;display:flex;min-width:0">
+                <sc-if value="{{ r.isInternal }}" hint-placeholder-val="{{ true }}">
+                  <x-import component-from-global-scope="CITINELDesignSystem_fdfd66.CitationChip" locator="{{ r.locator }}" size="sm" hint-size="230px,22px"></x-import>
+                </sc-if>
+                <sc-if value="{{ r.isExternal }}" hint-placeholder-val="{{ false }}">
+                  <dc-import name="ExternalCitationChip" source="{{ r.extSource }}" url="{{ r.extUrl }}" fetched-at="{{ r.extFetched }}" size="sm" hint-size="290px,24px"></dc-import>
+                </sc-if>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;min-width:0;padding:14px 18px 12px">
+        <div style="display:flex;align-items:baseline;gap:10px;flex:none;min-width:0">
+          <span style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.14em;color:var(--ctn-color-text-primary);flex:none">COUNTER-EVIDENCE</span>
+          <span style="font-size:11px;color:var(--ctn-color-text-muted);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ cntNote }}</span>
+          <span style="font-family:var(--ctn-font-display);font-size:16px;color:var(--ctn-color-text-primary);font-variant-numeric:tabular-nums slashed-zero;flex:none">{{ cntCount }}</span>
+        </div>
+        <sc-if value="{{ cntEmpty }}" hint-placeholder-val="{{ false }}">
+          <div style="flex:1;min-height:0;margin-top:7px;border:1px dashed var(--ctn-color-border-strong);border-radius:6px;display:flex;flex-direction:column;justify-content:center;padding:14px 16px;min-width:0">
+            <div style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.12em;color:var(--ctn-color-text-muted)">NONE FOUND · COLUMN LEFT OPEN</div>
+            <div style="font-size:12px;color:var(--ctn-color-text-secondary);margin-top:6px;line-height:1.45;text-wrap:pretty">The Correlator searched change tickets, maintenance windows, the allowlist, and prior benign patterns for this account and found nothing that argues the other way. An empty column is a result. It is shown so you can see the search happened.</div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ cntPresent }}" hint-placeholder-val="{{ true }}">
+          <div style="flex:1;min-height:0;overflow-y:auto;margin-top:7px;display:flex;flex-direction:column">
+            <sc-for list="{{ countering }}" as="r" hint-placeholder-count="2">
+              <div style="padding:7px 0;border-bottom:1px solid var(--ctn-color-border-hairline);min-width:0">
+                <div style="display:flex;align-items:baseline;gap:9px;min-width:0">
+                  <span data-token style="font-family:var(--ctn-font-mono);font-size:10.5px;color:var(--ctn-color-text-muted);font-variant-numeric:tabular-nums;flex:none">w{{ r.w }}</span>
+                  <span style="font-size:12.5px;color:var(--ctn-color-text-primary);flex:1;min-width:0;line-height:1.4">{{ r.claim }}</span>
+                </div>
+                <div style="margin-top:5px;display:flex;min-width:0">
+                  <sc-if value="{{ r.isInternal }}" hint-placeholder-val="{{ true }}">
+                    <x-import component-from-global-scope="CITINELDesignSystem_fdfd66.CitationChip" locator="{{ r.locator }}" size="sm" hint-size="230px,22px"></x-import>
+                  </sc-if>
+                  <sc-if value="{{ r.isExternal }}" hint-placeholder-val="{{ false }}">
+                    <dc-import name="ExternalCitationChip" source="{{ r.extSource }}" url="{{ r.extUrl }}" fetched-at="{{ r.extFetched }}" size="sm" hint-size="290px,24px"></dc-import>
+                  </sc-if>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </div>
+
+  <section style="flex:1;min-height:0;min-width:0;display:flex;flex-direction:column;overflow:hidden">
+    <div style="flex:none;display:flex;align-items:baseline;gap:8px 14px;flex-wrap:wrap;padding:14px 24px 10px;min-width:0">
+      <span style="font-family:var(--ctn-font-display);font-size:11.5px;letter-spacing:0.14em;color:var(--ctn-color-text-primary);flex:none">DISCARD TRAY · EVIDENCE CHECKED, THEN CUT</span>
+      <span style="font-family:var(--ctn-font-display);font-size:26px;color:var(--ctn-color-text-primary);font-variant-numeric:tabular-nums slashed-zero;flex:none;margin-right:auto">{{ retiredCount }}</span>
+      <span style="flex:1 1 100%;order:2;font-size:12.5px;color:var(--ctn-color-text-secondary);min-width:0;max-width:110ch;line-height:1.5;text-wrap:pretty">every line the swarm put on a pan and then took off, with the reason it came off. a verdict built only from what survived is not auditable. this is the part that was thrown away.</span>
+      <button onClick="{{ toggleAll }}" style="flex:none;font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:8px 13px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;background:none;color:var(--ctn-color-text-primary);cursor:pointer">{{ toggleAllLabel }}</button>
+    </div>
+
+    <div style="flex:none;display:grid;grid-template-columns:34px 92px 1fr 300px 128px 108px;gap:0 14px;padding:0 24px 6px;border-bottom:1px solid var(--ctn-color-border-strong);font-family:var(--ctn-font-display);font-size:8px;letter-spacing:0.12em;color:var(--ctn-color-text-muted);min-width:0">
+      <span></span><span>CUT AT</span><span>THE LINE, AS IT WOULD HAVE BEEN CITED</span><span>WHY IT CAME OFF THE PAN</span><span>CUT BY</span><span></span>
+    </div>
+
+    <div style="flex:1;min-height:0;overflow-y:auto;padding:0 24px 20px">
+      <sc-if value="{{ ciso }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;gap:10px;flex-wrap:wrap;padding:12px 0 14px;border-bottom:1px solid var(--ctn-color-border-hairline);min-width:0">
+          <sc-for list="{{ cutTally }}" as="t" hint-placeholder-count="6">
+            <div style="border:1px dashed var(--ctn-color-border-strong);border-radius:6px;padding:9px 13px;min-width:0">
+              <div style="font-family:var(--ctn-font-display);font-size:17px;color:var(--ctn-color-text-primary);font-variant-numeric:tabular-nums slashed-zero">{{ t.n }}</div>
+              <div style="font-family:var(--ctn-font-display);font-size:7.5px;letter-spacing:0.1em;color:var(--ctn-color-text-muted);margin-top:3px;white-space:nowrap">{{ t.k }}</div>
+            </div>
+          </sc-for>
+          <div style="flex:1;min-width:220px;font-size:12px;color:var(--ctn-color-text-secondary);line-height:1.5;text-wrap:pretty">{{ cutNote }}</div>
+        </div>
+      </sc-if>
+      <sc-for list="{{ retired }}" as="r" hint-placeholder-count="6">
+        <div style="display:grid;grid-template-columns:34px 92px 1fr 300px 128px 108px;gap:0 14px;align-items:center;padding:11px 0;border-bottom:1px solid var(--ctn-color-border-hairline);opacity:{{ r.opacity }};min-width:0">
+          <span style="flex:none;display:flex;align-items:center;justify-content:center">{{ r.glyph }}</span>
+          <span data-token style="font-family:var(--ctn-font-mono);font-size:11.5px;color:var(--ctn-color-text-muted);font-variant-numeric:tabular-nums">{{ r.cutAt }}</span>
+          <div style="min-width:0">
+            <div style="font-family:var(--ctn-font-mono);font-size:12px;letter-spacing:0;color:{{ r.lineFg }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-decoration:{{ r.strike }}">{{ r.line }}</div>
+            <div style="margin-top:5px;display:flex;min-width:0">
+              <sc-if value="{{ r.isInternal }}" hint-placeholder-val="{{ true }}">
+                <x-import component-from-global-scope="CITINELDesignSystem_fdfd66.CitationChip" locator="{{ r.locator }}" size="sm" hint-size="240px,22px"></x-import>
+              </sc-if>
+              <sc-if value="{{ r.isExternal }}" hint-placeholder-val="{{ false }}">
+                <dc-import name="ExternalCitationChip" source="{{ r.extSource }}" url="{{ r.extUrl }}" fetched-at="{{ r.extFetched }}" size="sm" hint-size="300px,24px"></dc-import>
+              </sc-if>
+            </div>
+          </div>
+          <div style="min-width:0">
+            <div style="font-family:var(--ctn-font-display);font-size:8px;letter-spacing:0.1em;color:var(--ctn-color-text-muted)">{{ r.reasonTag }}</div>
+            <div style="font-size:12px;color:var(--ctn-color-text-secondary);margin-top:3px;line-height:1.4;text-wrap:pretty">{{ r.reason }}</div>
+          </div>
+          <div style="min-width:0">
+            <div style="font-size:12px;color:var(--ctn-color-text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.by }}</div>
+            <div style="font-family:var(--ctn-font-mono);font-size:10.5px;color:var(--ctn-color-text-muted);margin-top:2px">#{{ r.seq }}</div>
+          </div>
+          <button onClick="{{ r.toggle }}" style="justify-self:end;font-family:var(--ctn-font-display);font-size:8.5px;letter-spacing:0.1em;padding:7px 10px;border:1px {{ r.btnBorder }} var(--ctn-color-border-strong);border-radius:6px;background:none;color:var(--ctn-color-text-primary);cursor:pointer;white-space:nowrap">{{ r.btn }}</button>
+        </div>
+      </sc-for>
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 0 0;min-width:0">
+        <span style="font-size:11.5px;color:var(--ctn-color-text-muted);flex:1;min-width:0;line-height:1.5;text-wrap:pretty">restoring a line puts it back on its pan and re-weighs the balance above. The restore is itself a ledger entry, so a wrong cut leaves a trace of having been wrong. cuts are never deleted from this tray.</span>
+        <a href="Audit.dc.html" style="flex:none;font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:8px 13px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;color:var(--ctn-color-text-primary);text-decoration:none">SEE THE CUTS IN THE LEDGER</a>
+      </div>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1600,&quot;height&quot;:900}}">
+class Component extends DCLogic {
+  constructor(p){
+    super(p);
+    this.support = [
+      {id:'s1', w:5, claim:'Nine payout beneficiaries registered from one UPI session in 71 seconds.', locator:'upi-switch/2026-08-23.log:41113'},
+      {id:'s2', w:5, claim:'Bulk payout template modified with maker-checker bypassed, +14 beneficiaries.', locator:'finacle/audit_trail:88412'},
+      {id:'s3', w:4, claim:'₹18,40,000 staged for release, status PENDING_RELEASE at verdict time.', locator:'upi-switch/2026-08-23.log:41207'},
+      {id:'s4', w:3, claim:'Three failed su attempts on cbs-app-04 from the same source address, two minutes prior.', locator:'auth/secure.log:7742'},
+      {id:'s5', w:3, ext:{source:'RBI · authorised PSP list', url:'https://rbi.org.in/Scripts/PublicationsView.aspx?id=PSP-authorised-list', fetchedAt:'2026-08-23 21:00:12 IST'},
+       claim:'Eleven of fourteen beneficiary handles resolve to a PSP absent from the RBI authorised list.'},
+      {id:'s6', w:2, ext:{source:'CERT-In · CIAD-2026-0041', url:'https://cert-in.org.in/advisories/CIAD-2026-0041', fetchedAt:'2026-08-23 21:05:03 IST'},
+       claim:'Sequence matches the beneficiary-burst pattern CERT-In published on 30 July.'}
+    ];
+    this.counter = [
+      {id:'c1', w:2, claim:'opr_kiosk holds a standing exception for after-hours batch work, filed by the branch manager in June and still open.', locator:'grc/exceptions.db:EXC-2211'},
+      {id:'c2', w:1, claim:'Two of the fourteen destination accounts have received legitimate vendor settlements from this bank in the last quarter.', locator:'finacle/txn_history:4471902'}
+    ];
+    this.retiredDefs = [
+      {id:'r1', cutAt:'21:04:11', by:'Correlator', seq:'88409', side:'support', w:4,
+       line:'2026-08-23T20:57:06.4+05:30 upi-collector-b BENEF_ADD sess=8842aa count_60s=9 rule=upi_beneficiary_burst',
+       locator:'upi-collector-b/relay.log:9917',
+       reasonTag:'DUPLICATE COLLECTOR',
+       reason:'Same physical event as §upi-switch:41113, arriving via the secondary collector. Counting it twice would have inflated the burst evidence into two independent sources when there is only one.'},
+      {id:'r2', cutAt:'21:04:52', by:'Correlator', seq:'88410', side:'support', w:3,
+       line:'Aug 23 20:41:02 br-dns-01 named[912]: client 10.4.7.51 query flood 2,140 in 60s',
+       locator:'dns/query.log:71204',
+       reasonTag:'CLOCK SKEW CORRECTED',
+       reason:'br-dns-01 was running +41s ahead of the NTP source. After correction the flood falls outside the incident window and belongs to an unrelated backup job.'},
+      {id:'r3', cutAt:'21:05:36', by:'Enrichment Squad', seq:'88411', side:'support', w:3,
+       line:'EventID=4720 NewAccount=svc_upi_tmp Creator=opr_kiosk Domain=SAHYADRI',
+       locator:'ad/security.evtx:118961',
+       reasonTag:'MATCHED CHANGE TICKET',
+       reason:'Account creation is covered by approved change CHG-88114, raised nine days ago and signed off by two names. It looked like staging for persistence and was not.'},
+      {id:'r4', cutAt:'21:06:02', by:'Verdict Narrator', seq:'88414', side:'support', w:5,
+       line:'memo: URGENT vendor settlement batch · release without maker-checker per GM telephonic approval',
+       locator:'finacle/audit_trail:88412 · memo field',
+       reasonTag:'ATTACKER-CONTROLLED',
+       reason:'The strongest-sounding line in the incident, and the one most tempting to quote. It is free text written by whoever modified the template, so it can never be load-bearing. Quarantined, never narrated.'},
+      {id:'r5', cutAt:'21:06:48', by:'Correlator', seq:'88416', side:'support', w:2,
+       line:'2026-08-23T21:02:11 br-fw-01 DENY src=10.4.7.112 dst=185.243.x.x dport=443 proto=tcp',
+       locator:'firewall/br-fw-01.log:220417',
+       reasonTag:'COINCIDENTAL CORRELATION',
+       reason:'Same /24 as the kiosk, different host and a different session id. Shared subnet is not shared activity; joining on it would have manufactured an exfiltration leg that did not exist.'},
+      {id:'r6', cutAt:'21:07:20', by:'Enrichment Squad', seq:'88417', side:'support', w:3,
+       ext:{source:'AbuseDB · community IP reports', url:'https://abusedb.example.net/report/185.243.0.0-24', fetchedAt:'2026-08-23 21:06:55 IST'},
+       line:'reports=41 confidence=high categories=["fraud","phishing"] last_report=2026-08-21',
+       reasonTag:'UNVERIFIABLE SOURCE',
+       reason:'Community-submitted reputation with no named reporter and no method. It would have raised the score without being defensible to a regulator, so it came off the pan rather than pad the case.'},
+      {id:'r7', cutAt:'21:07:44', by:'Correlator', seq:'88419', side:'counter', w:2,
+       line:'CHG-88097 maintenance window 20:00–22:00 IST scope="branch network" state=OPEN',
+       locator:'grc/change.db:CHG-88097',
+       reasonTag:'SCOPE DOES NOT COVER',
+       reason:'A live maintenance window would have argued the whole thing was routine. Its scope is branch network only and explicitly excludes CBS and payout systems, so it cannot excuse the template change.'}
+    ];
+    this.state = {role:this.roleInit(), restored:{}};
+  }
+  ringGlyph(kind){
+    const R = React;
+    if(kind==='cut') return R.createElement('svg',{width:16,height:16,viewBox:'0 0 18 18'},[
+      R.createElement('circle',{key:'n',cx:9,cy:9,r:2.6,fill:'var(--ctn-color-surface-panel)',stroke:'var(--ctn-color-text-disabled)',strokeWidth:1.3}),
+      R.createElement('path',{key:'a',d:'M 9 2 A 7 7 0 0 1 15.06 5.5',fill:'none',stroke:'var(--ctn-color-text-disabled)',strokeWidth:1.8,strokeLinecap:'round'}),
+      R.createElement('path',{key:'x',d:'M 3.5 14.5 L 14.5 3.5',stroke:'var(--ctn-color-text-disabled)',strokeWidth:1.1,strokeDasharray:'2 2'})]);
+    return R.createElement('svg',{width:16,height:16,viewBox:'0 0 18 18'},[
+      R.createElement('circle',{key:'n',cx:9,cy:9,r:2.8,fill:'var(--ctn-color-state-node)',stroke:'var(--ctn-color-state-stroke)',strokeWidth:1.4}),
+      R.createElement('path',{key:'a',d:'M 9 2 A 7 7 0 1 0 16 9',fill:'none',stroke:'var(--ctn-color-state-cited)',strokeWidth:1.9,strokeLinecap:'round'})]);
+  }
+  dress(r){
+    const ext = !!r.ext;
+    return {...r, isInternal: !ext, isExternal: ext,
+      extSource: ext ? r.ext.source : '', extUrl: ext ? r.ext.url : '', extFetched: ext ? r.ext.fetchedAt : ''};
+  }
+  baseVals(){
+    const s = this.state;
+    const back = this.retiredDefs.filter(r=>s.restored[r.id]);
+    const supRows = this.support.concat(back.filter(r=>r.side==='support'));
+    const cntRows = this.counter.concat(back.filter(r=>r.side==='counter'));
+    const supW = supRows.reduce((n,r)=>n+r.w,0);
+    const cntW = cntRows.reduce((n,r)=>n+r.w,0);
+    const diff = (supW-cntW)/Math.max(supW+cntW,1);
+    const bands = [
+      {name:'CONTESTED', max:0.15},
+      {name:'LEANS', max:0.45},
+      {name:'HOLDS', max:0.75},
+      {name:'STRONG', max:1.01}
+    ];
+    const bandIdx = bands.findIndex(b=>diff < b.max);
+    const bi = bandIdx < 0 ? 3 : bandIdx;
+    const indep = new Set(supRows.map(r=>r.ext ? 'ext:'+r.ext.source : (r.locator||'').split('/')[0])).size;
+    const restoredCount = back.length;
+    return {
+      beamAngle: (-diff*13).toFixed(2),
+      supWeight: supW, cntWeight: cntW,
+      bandTicks: [0,25,50,75,100].map(p=>({left:p+'%'})),
+      bandLabels: bands.map((b,i)=>({name:b.name, fg: i===bi ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-text-muted)'})),
+      riderLeft: Math.max(2, Math.min(98, ((diff+1)/2)*100)).toFixed(1)+'%',
+      bandName: bands[bi].name+' · '+supW+' AGAINST '+cntW,
+      bandStatement: 'The verdict is corroborated by '+indep+' independent sources and '+(cntRows.length ? cntRows.length+' line'+(cntRows.length>1?'s':'')+' argue against it' : 'nothing argues against it')+'. The band is the reading of the ledger above, not a separate score. move a line and the beam moves.',
+      bandCaveat: 'This expresses how strongly CITINEL holds its own verdict on the evidence it has. It is not a probability that fraud occurred, and it is not a recommendation. The two counter-lines are the ones to read before approving anything.',
+      supNote: 'weighted, each row citable', supCount: String(supRows.length).padStart(2,'0'),
+      cntNote: cntRows.length ? 'read these before approving' : 'searched, nothing found',
+      cntCount: String(cntRows.length).padStart(2,'0'),
+      cntEmpty: cntRows.length === 0, cntPresent: cntRows.length > 0,
+      supporting: supRows.map(r=>this.dress(r)),
+      countering: cntRows.map(r=>this.dress(r)),
+      retiredCount: String(this.retiredDefs.length).padStart(2,'0'),
+      toggleAll: ()=>this.setState(x=>{
+        const all = this.retiredDefs.every(r=>x.restored[r.id]);
+        if(all) return {restored:{}};
+        const m = {}; this.retiredDefs.forEach(r=>{ m[r.id]=true; });
+        return {restored:m};
+      }),
+      toggleAllLabel: restoredCount === this.retiredDefs.length ? 'CUT ALL AGAIN' : 'RESTORE ALL TO PANS',
+      retired: this.retiredDefs.map(r=>{
+        const on = !!s.restored[r.id];
+        return {...this.dress(r),
+          glyph: this.ringGlyph(on ? 'back' : 'cut'),
+          opacity: on ? 1 : 0.62,
+          lineFg: on ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-text-muted)',
+          strike: on ? 'none' : 'line-through',
+          btn: on ? 'CUT AGAIN' : 'RESTORE',
+          btnBorder: on ? 'solid' : 'dashed',
+          toggle: ()=>this.setState(x=>({restored:{...x.restored, [r.id]: !x.restored[r.id]}}))
+        };
+      })
+    };
+  }
+
+  roleInit(){ try{ return (window.CitinelRole && window.CitinelRole.get()) || 'analyst'; }catch(e){ return 'analyst'; } }
+  roleMount(){ if(window.CitinelRole) this.unsubRole = window.CitinelRole.subscribe(r=>{ if(r !== this.state.role) this.setState({role:r}); }); }
+  componentWillUnmount_role(){ if(this.unsubRole) this.unsubRole(); }
+  roleVals(){
+    const ciso = this.state.role === 'ciso';
+    return { ciso, analyst: !ciso,
+      setAnalyst: ()=>{ this.setState({role:'analyst'}); if(window.CitinelRole) window.CitinelRole.set('analyst'); },
+      setCiso: ()=>{ this.setState({role:'ciso'}); if(window.CitinelRole) window.CitinelRole.set('ciso'); },
+      analystBg: ciso ? 'transparent' : 'var(--ctn-color-surface-navy)',
+      analystFg: ciso ? 'var(--ctn-color-text-muted)' : 'var(--ctn-color-text-on-navy)',
+      cisoBg: ciso ? 'var(--ctn-color-surface-navy)' : 'transparent',
+      cisoFg: ciso ? 'var(--ctn-color-text-on-navy)' : 'var(--ctn-color-text-muted)' };
+  }
+  svgLabels(b){
+    return {panLabels: [
+      this.svgText(42, 64, b.supWeight, {size:12, fill:'var(--ctn-color-text-primary)', tab:true}),
+      this.svgText(270, 64, b.cntWeight, {size:12, fill:'var(--ctn-color-text-primary)', tab:true})
+    ].map((el,i)=>React.cloneElement(el,{key:i}))};
+  }
+  renderVals(){ const b = this.baseVals(); return Object.assign({}, b, this.roleVals(), this.depthVals ? this.depthVals(b) : {}, this.svgLabels(b)); }
+  componentDidMount(){ this.roleMount(); }
+
+  depthVals(b){
+    if(this.state.role !== 'ciso') return {};
+    const top = b.supporting.slice().sort((a,c)=>c.w-a.w).slice(0,3);
+    const rest = b.supporting.length - top.length;
+    const tally = {};
+    this.retiredDefs.forEach(r=>{ tally[r.reasonTag] = (tally[r.reasonTag]||0)+1; });
+    return {
+      supporting: top,
+      supNote: 'three load-bearing lines of '+rest+' further supporting lines in the analyst depth',
+      cntNote: 'read in full · this is what an authority must weigh',
+      retired: b.retired.filter(r=>r.reasonTag === 'ATTACKER-CONTROLLED' || r.reasonTag === 'SCOPE DOES NOT COVER'),
+      cutTally: Object.keys(tally).map(k=>({k, n:String(tally[k]).padStart(2,'0')})),
+      cutNote: 'Seven lines were checked and cut. Two are shown in full below because they are the two that could have changed the answer. The first is the attacker\'s own memo, which was the most quotable line in the incident, and a maintenance window that would have excused everything if its scope had covered CBS. The other five are counted, not narrated; they are in the analyst depth line by line.',
+      bandCaveat: 'You are being asked to sign against this. The band says how strongly the system holds its verdict on the evidence it kept. It is not a probability that fraud occurred, and it covers nothing outside the bank\'s telemetry. The counter-evidence column, not this reading, is the part to argue with.'
+    };
+  }
+
+  svgText(x,y,str,opts){
+    const o = opts || {};
+    return React.createElement('text', {x, y, textAnchor:o.anchor||'middle',
+      fontFamily:o.mono ? 'var(--ctn-font-mono)' : 'var(--ctn-font-display)',
+      fontSize:o.size||10, letterSpacing:o.track, fill:o.fill||'var(--ctn-color-text-muted)',
+      style:o.tab ? {fontVariantNumeric:'tabular-nums slashed-zero'} : undefined}, str);
+  }
+}
+</script>
+</body>
+</html>

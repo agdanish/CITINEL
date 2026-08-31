@@ -4,13 +4,23 @@ FROM python:3.11-slim
 WORKDIR /app
 ENV PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1
 
-# Dependencies first for layer caching.
-COPY backend/pyproject.toml /app/backend/pyproject.toml
-RUN pip install --upgrade pip && pip install "/app/backend[swarm,api,detect]" || true
-
+# The package is installed from source, so pyproject.toml alone cannot resolve
+# it -- an earlier "deps first for layer caching" step tried that and needed
+# `|| true` to survive, which cached nothing and swallowed real failures. One
+# honest install, and a genuine build failure now fails the build.
 COPY backend /app/backend
+RUN pip install --upgrade pip && pip install "/app/backend[swarm,api]"
+
 COPY policies /app/policies
-RUN pip install /app/backend[swarm,api]
+
+# The corpus the API answers from. data/incidents/ is gitignored live output
+# that a fresh clone does not have, so the image ships data/seed/ -- the
+# committed BOTS v1 (CC0) slice. app.py resolves live-then-seed and reports
+# which via /api/source, so a seed-backed deployment never poses as live.
+COPY data/seed /app/data/seed
+
+# The console itself. Without this the service answers JSON and shows no UI.
+COPY dashboard/static /app/dashboard/static
 
 # Render provides $PORT; the web role binds it.
 ENV CITINEL_ROLE=web

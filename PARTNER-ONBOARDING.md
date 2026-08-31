@@ -1,142 +1,152 @@
 # CITINEL — Partner & API Onboarding Checklist
 
-*Prepared 25 Aug 2026 from a live-research pass (11 agents, all high-confidence,
-verified against each partner's own pages and the Decode SIH 2026 event page).
-Team AeroFyta, Decode SIH 2026. This is an operational checklist, not spec —
-work through it in priority order. Credentials go into `.env` (gitignored),
-never into source or chat.*
+*Prepared 25 Aug 2026, rewritten 31 Aug 2026 with real, official redemption
+steps (organizer PDFs forwarded by Danish, not inferred from public pages).
+Team AeroFyta, Decode SIH 2026, **confirmed finalist**. This is an operational
+checklist, not spec — work through it in priority order. Credentials and
+voucher codes go into `.env` (gitignored) once redeemed; the codes below are
+single-use-per-team or per-member and came from the organizer directly —
+don't post this file's contents outside the team.*
 
 ---
 
-## Read this first — the reality that reframes "let's claim the credits"
+## Read this first — what changed 31 Aug 2026
 
-**Today is 25 Aug 2026. Every gating date on the event has already passed:**
-registration close and idea submission (**13 Aug** on the live page / 11 Aug in
-our internal docs), and the shortlist announcement (**~16 Aug**, Top 80 on the
-live page / Top 60 internally — the discrepancy in SDD §22 Q14 is still open).
+**The shortlist question is closed.** AeroFyta is a confirmed finalist (the
+team is in a WhatsApp group literally named "Finalist Decode SIH 2026," with
+finale logistics already being discussed). Every "P2 — only if shortlisted"
+item below is now simply P1 — claimable now, not conditional.
 
-What that means, precisely:
+**Six of eight partners now have official, organizer-issued redemption
+steps** (not the public event page's general wording) — Render, Tavily,
+Swytchcode, Startuped, n8n, Codemate. Lyzr's participant grant and Gemini
+have no equivalent document; treat those as lower-confidence until something
+more specific turns up.
 
-1. **The build-critical *sponsor prize* credits cannot be freshly "claimed" by
-   signing up now.** On the live event page, Render's $50, Tavily's 8,000
-   credits, n8n's 1-month Cloud Pro, and Codemate's 15-day Pro are each worded
-   **"every *shortlisted* team"** — not "every participant." They are
-   distributed to shortlisted teams via **private redemption links** (email /
-   WhatsApp / Discord), not a public signup. So whether we can get them depends
-   entirely on whether **AeroFyta made the shortlist** — which nothing in this
-   repo records (SDD §22 Open Question 1, unresolved).
+**One real deadline, easy to miss:** the Render credits portal
+(`credits-portal-mmdm.onrender.com`) **auto-closes 2 Sep 2026** — that's 3
+days before the 5 Sep finale. Do this one first, this week, not "eventually."
 
-2. **But the build is NOT blocked on the shortlist.** Every partner CITINEL
-   integrates has a **standing free tier large enough to develop and demo
-   against**, independent of any prize. Tavily gives 1,000 credits/month free
-   forever; n8n self-hosted is free and unlimited; Render's free tier needs no
-   card; Lyzr grants $20/month to registered participants; VirusTotal and
-   AbuseIPDB are free. We can build the whole pipeline and the whole demo on
-   free tiers. The prize credits are a *bonus on top*, not a prerequisite.
+**The one genuine build-blocker is still Anthropic**, not any sponsor. It's
+pay-as-you-go, needs a card, no confirmed free tier — and Step 7 (the swarm)
+cannot run without it. Nothing below changes that; it stays P0 #1.
 
-3. **The one genuine build-blocker is not a sponsor at all — it's Anthropic.**
-   Pay-as-you-go, needs a card and prepaid credits, no confirmed free tier. It
-   is what Step 7 (the swarm) cannot run without.
-
-**→ The single most important thing only Danish can resolve:** did Team AeroFyta
-make the Top 80/60 shortlist? Check the team inbox, the OSCode WhatsApp group,
-and Discord for a shortlist notice and any sponsor redemption links. This gates
-the prize credits **and** whether there is a 5 Sep Grand Finale to build toward
-at all. Everything below is ordered so the build proceeds regardless of the
-answer.
+**None of these can be redeemed by Claude.** Every step here needs a human to
+create an account, verify an email, or enter payment info — actions Claude
+is not able to do on anyone's behalf. Claude's part is: keep this checklist
+accurate, and wire whatever key/URL results into the actual connector code
+the moment it exists in `.env`.
 
 ---
 
 ## Priority-ordered actions
 
-### P0 — Build-critical, do now (unblocks the pipeline)
+### P0 — Build-critical, do first (unblocks Step 7)
 
-| # | What | Who does it | Gate | env var |
-|---|------|-------------|------|---------|
-| 1 | **Anthropic API key** — add card, buy prepaid credits, create key | Danish | open, needs card | `CITINEL_ANTHROPIC_API_KEY` |
-| 2 | **Tavily** free "Researcher" (1,000 cr/mo, no card) | any member | open now | `CITINEL_TAVILY_API_KEY` |
-| 3 | **VirusTotal** free public API | any member | open now | `CITINEL_VIRUSTOTAL_API_KEY` |
-| 4 | **AbuseIPDB** free Individual tier | any member | open now | `CITINEL_ABUSEIPDB_API_KEY` |
+| # | What | Who | Gate | env var |
+|---|------|-----|------|---------|
+| 1 | **Anthropic API key** — add card, buy prepaid credits, create key | Danish | needs a card | `CITINEL_ANTHROPIC_API_KEY` |
+| 2 | **VirusTotal** free public API | any member | open now | `CITINEL_VIRUSTOTAL_API_KEY` |
+| 3 | **AbuseIPDB** free Individual tier | any member | open now | `CITINEL_ABUSEIPDB_API_KEY` |
 
-After P0, Step 7 (the swarm) and its Enrichment Squad can run live.
+### P1 — Time-sensitive, real credits, do this week
 
-### P1 — Sponsor free tiers, claimable now (build + track eligibility)
+| # | What | Who | Deadline | env var |
+|---|------|-----|----------|---------|
+| 4 | **Render** — sign up via UTM link, generate code at the credits portal, paste into Billing → Credit Balance. $50, no card. | **every member** | **portal closes 2 Sep 2026** | *(deploy config, no key)* |
+| 5 | **Tavily** — sign up, Billing tab → "Project" plan → code `Decode26` → 8,000 credits, free 2 months | **every member** | not stated, don't delay | `CITINEL_TAVILY_API_KEY` |
+| 6 | **n8n** — redeem the Cloud Pro voucher (below) at n8n's voucher-redemption page | **team leader only, once** | voucher expires 1 week after the event | `CITINEL_N8N_WEBHOOK_URL` |
+| 7 | **Codemate** — QR scan → sign up with team-leader email → verify → log in at codemate.ai | **team leader only, once** | not stated | *(build-time, no key)* |
+| 8 | **Swytchcode** — register via the Decode SIH Google Form → $100 credits | **every member** | not stated | `CITINEL_SWYTCHCODE_API_KEY` |
+| 9 | **Startuped** — sign up via the event URL → they email access | **every member** | not stated | *(none, GTM tool)* |
 
-| # | What | Gate | env var |
-|---|------|------|---------|
-| 5 | **n8n** self-hosted Community (free, unlimited) — for the Beat 5b flow | open now | `CITINEL_N8N_WEBHOOK_URL` |
-| 6 | **Lyzr** — $20/mo auto-reset for registered participants *(still unconfirmed as a CITINEL stack addition — SDD Q15)* | participants | `CITINEL_LYZR_API_KEY` |
-| 7 | **Swytchcode** — $100 via the Decode SIH **referral link** (get it from event channels) | participants | `CITINEL_SWYTCHCODE_API_KEY` |
-| 8 | **Render** free tier (750 hrs/mo, no card) — for Step 12 deploy | open now | *(deploy config)* |
-| 9 | **Startuped** participant grant — for GTM artifacts (not code) | participants | *(none)* |
-| 10 | **Codemate** 14-day Pro trial — build-time only, not runtime | open now | *(none)* |
+### P2 — Lower confidence, no official doc yet
 
-### P2 — Shortlist-gated prize credits (only if AeroFyta is shortlisted)
-
-Redemption links are sent privately to shortlisted teams — check the inbox /
-group chat. Do **not** block the build on these.
-
-- Render **$50** · Tavily **8,000 credits** · n8n **1-month Cloud Pro** · Codemate **15-day Pro** (per member)
+| # | What | Status |
+|---|------|--------|
+| 10 | **Lyzr** — $20/mo grant for registered participants | Carried from the 25 Aug pass; no organizer redemption doc has surfaced alongside the other 6. Confirm before relying on it. |
+| 11 | **Gemini** | Real, organizer-tracked category (confirmed by a finalist-group poll — 29 other-team votes), but no redemption/credential document exists. Most likely just a standard Google AI Studio key obtained independently, not a hackathon-specific voucher. |
 
 ### P3 — Finale-only prizes (judged 5 Sep on the built product)
 
-- "Best Use of X" awards: Render $600/500/400 · Swytchcode $1,000 · Tavily 10k/5k/3k · n8n 1-yr Pro · Lyzr ₹20,000 · Startuped ₹25,000 bundle · Codemate 3-mo Pro + PPI.
+"Best Use of X": Render $600/500/400 · Swytchcode $1,000 · Tavily 10k/5k/3k ·
+n8n 1-yr Pro · Lyzr ₹20,000 · Startuped ₹25,000 bundle · Codemate 3-mo Pro +
+PPI · plus whatever Gemini/CodeMate's own tracks judge on. Eligibility is
+necessary, not sufficient — none of this is a guaranteed win regardless of
+how completely the checklist above gets worked through.
 
 ---
 
 ## Per-partner detail
 
 ### 1. Anthropic API (core — the real blocker)
-- **URL:** https://platform.claude.com/settings/keys *(console.anthropic.com redirects here)*
-- **Offer:** pay-as-you-go, **no confirmed free tier**. Prepaid credits, per-token pricing, expire 1 year, non-refundable. The commonly-cited ~$5 new-account credit is **unverified** (not in official docs).
-- **Steps:** sign up + SMS verify → Billing: add card, buy credits (enable Auto-reload so the swarm doesn't stall) → API Keys: Create Key, copy once → `CITINEL_ANTHROPIC_API_KEY=…`.
-- **Model IDs (live-checked 25 Aug 2026, satisfies ledger rule L9):** current GA family is `claude-fable-5`, `claude-opus-5` (docs-recommended default), `claude-sonnet-5`, `claude-haiku-4-5`. **Every ID is a pinned snapshot**, so L9 validation checks the literal configured string against `GET /v1/models` at runtime. Budget tip: `claude-haiku-4-5` or `claude-sonnet-5` for high-volume swarm agents, `claude-opus-5` for reasoning-heavy steps.
+- **URL:** https://platform.claude.com/settings/keys
+- **Offer:** pay-as-you-go, no confirmed free tier. Prepaid credits, expire 1 year, non-refundable.
+- **Steps:** sign up + SMS verify → Billing: add card, buy credits (Auto-reload on) → API Keys: Create Key → `CITINEL_ANTHROPIC_API_KEY=…`.
+- **Model IDs (L9-verified 25 Aug 2026):** `claude-fable-5`, `claude-opus-5` (default), `claude-sonnet-5`, `claude-haiku-4-5`. Every ID is a pinned snapshot, checked live against `GET /v1/models` at runtime — don't trust this list by the time you read it, `models.py` does the real check.
 - **Smoke test:** `curl https://api.anthropic.com/v1/messages -H "x-api-key: $CITINEL_ANTHROPIC_API_KEY" -H "anthropic-version: 2023-06-01" -H "content-type: application/json" -d '{"model":"claude-sonnet-5","max_tokens":16,"messages":[{"role":"user","content":"ping"}]}'`
 
-### 2. Tavily (sponsor — free tier powers the build)
-- **URL:** https://app.tavily.com/home
-- **Free tier:** "Researcher" plan, **1,000 credits/month, forever, no card**. Dev key 100 req/min, Prod key 1,000 req/min.
-- **Steps:** sign up (Google/GitHub/email) → dashboard shows 1,000 credits → copy key (`tvly-…`) → `CITINEL_TAVILY_API_KEY=tvly-…`. Powers Step 7 Enrichment Squad.
-- **Prize (separate, shortlist-gated):** 8,000 credits to shortlisted teams; 10k/5k/3k to track winners.
-
-### 3. VirusTotal (enrichment — free, not a sponsor)
+### 2. VirusTotal (enrichment — free, not a sponsor)
 - **URL:** https://www.virustotal.com/gui/join-us
-- **Caps (live-verified):** **4 req/min, 500/day**. These are exactly why CITINEL is cache-first + hash-dedup — the cap can never fire mid-demo.
+- **Caps:** 4 req/min, 500/day — exactly why CITINEL is cache-first + hash-dedup.
 - **Steps:** register → avatar menu → API key → `CITINEL_VIRUSTOTAL_API_KEY=…`. Header: `x-apikey`.
 
-### 4. AbuseIPDB (enrichment — free, not a sponsor)
+### 3. AbuseIPDB (enrichment — free, not a sponsor)
 - **URL:** https://www.abuseipdb.com/register
-- **Free tier:** 1,000 IP checks/day, no card, no expiry.
+- **Free tier:** 1,000 IP checks/day, no card.
 - **Steps:** register → https://www.abuseipdb.com/account/api → Create Key → `CITINEL_ABUSEIPDB_API_KEY=…`. Header: `Key`.
 
-### 5. n8n (sponsor — self-hosted is free)
-- **Build path (free, no gate):** self-hosted Community Edition via Docker — `docker volume create n8n_data` then run the `n8nio/n8n` container on :5678. Unlimited workflows/executions.
-- **Beat 5b flow:** Webhook "Incident Signed" → Format Notification → Send Slack/Email → Export Signed PDF → Create Follow-up Ticket. Put the webhook production URL in `CITINEL_N8N_WEBHOOK_URL`.
-- **Prize (shortlist-gated):** 1-month Cloud Pro. Managed trial (optional): https://app.n8n.cloud/register (14-day, no card).
+### 4. Render — **do this one first, real deadline**
+- **Step 1 — sign up:** https://dashboard.render.com/register?utm_source=events&utm_medium=events&utm_campaign=2026_event_decode_sih_2026
+- **Step 2 — generate your code:** https://credits-portal-mmdm.onrender.com/claim/decode-sih-2026 (generate once per person)
+- **Step 3 — redeem:** workspace → Billing → Credit Balance → paste the code. No card required. $50, expires 12 months after redemption per the organizer's own screenshot.
+- **Deadline: portal auto-closes 2 Sep 2026.** Every team member should do this individually before then.
+- **Build use (Step 12):** Web Service + Background Worker + managed Postgres + Key Value = >1 service, satisfies "Best Use of Render." Point the deck's QR code at the live web service. Free services cold-start after 15 min idle — pre-warm before judging.
 
-### 6. Lyzr AI (sponsor — $20/mo for participants; **stack addition still unconfirmed, SDD Q15**)
+### 5. Tavily — the real prize code, separate from the standing free tier
+- **URL:** tavily.com
+- **Standing free tier (no code needed):** 1,000 credits/month forever, no card.
+- **Decode SIH promo (better — do this instead of just the free tier):** sign up → Billing tab → click the "Project" monthly plan → enter code **`Decode26`** → 8,000 credits, free for 2 months → redeem the API key from the dashboard → `CITINEL_TAVILY_API_KEY=tvly-…`.
+- Powers Step 7's Enrichment Squad.
+
+### 6. n8n — one redemption per team, leader only
+- **Voucher code:** `2026-COMMUNITY-HACKATHON-INDIA-BAE35BA1`
+- **Redeem at:** https://n8n.notion.site/voucher-code
+- **Only one team member (the leader) should do this.** Grants one month of Cloud Pro, expires **one week after the event**.
+- **Requires a credit card.** If the team would rather not enter one, a 14-day free trial (starter, not Pro) is available with just a login — a real tradeoff, not a bug: full Pro needs a card, the card-free path is the lesser tier.
+- **Beat 5b flow:** Webhook "Incident Signed" → Format Notification → Send Slack/Email → Export Signed PDF → Create Follow-up Ticket. Webhook URL → `CITINEL_N8N_WEBHOOK_URL`.
+
+### 7. Codemate — one redemption per team, leader only
+- **Steps:** scan the organizer's QR code (Google Lens) → sign up with the **team leader's email**, set a password → verify the email (fill Organisation = college name, Organisation size = first option, Designation = student/developer) → check verification status → go to https://codemate.ai/ → "Get Started" → log in with the same email/password.
+- Build-time tool (used to write code, not called at runtime) — no `.env` key.
+
+### 8. Swytchcode
+- **URL:** https://forms.gle/vdNBiUvfKfz3H9zD8 (Google Form, not a referral link as previously assumed — this is the actual, correct mechanism)
+- **Offer:** $100 credits per team member, valid for the hackathon.
+- **To win the track specifically:** scaffold with the Swytchcode CLI (`swy`), not just call the API at runtime; ≥2 ecosystem APIs; AI agent; end-to-end app. Powers Response Marshal/Scribe agent→API execution.
+- Install: `curl -fsSL https://cli.swytchcode.com/install.sh | sh` → `swy login` → `CITINEL_SWYTCHCODE_API_KEY=…`.
+
+### 9. Startuped.ai
+- **URL:** https://www.startuped.ai/events/decode-sih-2026 — sign up, they email required access.
+- **Use:** run CITINEL's locked positioning (persona, differentiation line, channel strategy) through the platform; export into deck material. No `.env` key. *(Deck work is currently deprioritized — do the signup now if convenient, the actual platform run can wait.)*
+
+### 10. Lyzr AI — code complete, credential still unconfirmed
 - **URL:** https://studio.lyzr.ai/
-- **Grant:** $20/mo auto-resetting for registered participants; standalone free tier 500 credits/mo. Provider-agnostic — set the agent model to Claude so it complements the swarm, not replaces it.
-- **Steps:** sign up → org dropdown → Account & API Key → `CITINEL_LYZR_API_KEY=…`.
-- **Decide first:** whether Lyzr enters the CITINEL stack at all (governance/observability layer over the 7 agents). Don't wire it until that's confirmed.
+- Carried from the original research pass: $20/mo for registered participants. No organizer redemption PDF has surfaced for this one the way it has for the other 6 — confirm the offer is still live before relying on it for the build.
+- **Integration status: all four SDD §15.3 attachment points now resolved**, and every one degrades to a no-op without a key, so nothing here blocks on the credential:
 
-### 7. Swytchcode (sponsor — $100 needs the referral link)
-- **URL:** https://app.swytchcode.com — **but the $100 requires the official Decode SIH referral link** distributed in event channels (WhatsApp/Discord). Get that link first.
-- **To win the track:** must **scaffold with the Swytchcode CLI** (`swy`), not just call an API at runtime; Python or TS runtime SDK; ≥2 ecosystem APIs; AI agent; end-to-end app. Powers Response Marshal/Scribe agent→API execution.
-- **Steps:** register participant → get referral link → create account via it → confirm $100 → install CLI (`curl -fsSL https://cli.swytchcode.com/install.sh | sh`) → `swy login` → add runtime SDK.
+  | # | Attachment point | Status |
+  |---|---|---|
+  | 1 | Fleet observability | **Built + wired.** `LyzrObserver` receives start / tool_call / finish events from `SwarmPipeline`; `NullObserver` is the default. |
+  | 2 | Hallucination & PII guard | **Built + wired.** `LyzrGuard` adds an independent second opinion on top of CITINEL's own deterministic screen, before compliance sign-off. |
+  | 3 | RBAC | **Deliberately NOT Lyzr.** Implemented in CITINEL's own `policy/roles.py` instead — routing authorization to an external control plane would contradict "the policy gate is the sole authority," and would make a third-party outage a correctness problem for a bank's SOC. Reasoning is in that module's docstring. This is a considered decline, not a gap. |
+  | 4 | Immutable audit log | **Built + wired.** `LyzrLedgerMirror` is an external *witness*: it mirrors every committed entry and `compare()` reconciles the local chain head against it. Closes a real, narrow gap — a self-contained hash chain cannot detect wholesale file replacement, because a rewritten chain verifies against itself. Surfaced on `/api/ledger/verify` as a separate `witness` field, never merged into the local `intact` boolean. |
 
-### 8. Render (sponsor — free tier builds; $50 is shortlist-gated)
-- **URL:** https://dashboard.render.com/register — free tier, **no card**.
-- **Build/deploy (Step 12):** Web Service + Background Worker + managed PostgreSQL + Key Value (Redis) = >1 service (satisfies "Best Use of Render"). Point the **QR-code URL** at the Render web service. **Note:** free web services spin down after 15 min (~30–60s cold start) — pre-warm before judging, or the QR demo stalls.
-- **Prize:** $50 shortlist-gated; $600/500/400 at finale.
+- **What still needs the key:** all four run as no-ops until `CITINEL_LYZR_API_KEY` + `CITINEL_LYZR_GUARD_URL` + `CITINEL_LYZR_AGENT_ID` are set. The Lyzr-side agent must answer two tasks — `pii_guard` and `ledger_head` (returning `{head, count}`) — which is Studio configuration, not code.
+- **Honest limit:** the request/response shapes for those two tasks are CITINEL's own contract, written against Lyzr's documented Agent API pattern but **never executed against the live service**. First real run must confirm them.
 
-### 9. Startuped.ai (sponsor — GTM artifacts, not code)
-- **URL:** https://www.startuped.ai/forms/decode-sih-2026 — participant grant delivered by email after registration ("join link with step-by-step instructions"). Fallback contact: komal@startuped.ai.
-- **Use:** run CITINEL's *locked* positioning (A1-F45 persona, STATE §1.4 line, A1-F47/F42 channel) through the platform; export outputs into deck slides 8 & 13. No env var.
-
-### 10. Codemate.ai (sponsor — build-time, not runtime)
-- **URL:** https://app.codemate.ai — 14-day Pro trial for anyone now.
-- **Prize:** 15-day Pro per shortlisted member; 3-month Pro + PPI for flagship-track winners. No CITINEL runtime dependency, no env var.
+### 11. Gemini — real category, no redemption mechanism found
+- No signup form, code, or credential doc has appeared alongside the other 6 official PDFs. Likely just requires an independently-obtained Google AI Studio API key rather than a hackathon-specific grant. Revisit if the organizers post something more specific.
 
 ---
 
@@ -146,24 +156,21 @@ group chat. Do **not** block the build on these.
 CITINEL_ANTHROPIC_API_KEY=      # P0 #1 — the blocker
 CITINEL_TRIAGE_MODEL=           # propose: claude-haiku-4-5   (L9: verify live)
 CITINEL_REASONING_MODEL=        # propose: claude-opus-5      (L9: verify live)
-CITINEL_TAVILY_API_KEY=         # P0 #2 — tvly-…
-CITINEL_VIRUSTOTAL_API_KEY=     # P0 #3
-CITINEL_ABUSEIPDB_API_KEY=      # P0 #4
-CITINEL_N8N_WEBHOOK_URL=        # P1 #5 — self-hosted webhook URL
-CITINEL_LYZR_API_KEY=           # P1 #6 — only if Lyzr is confirmed in-stack
-CITINEL_SWYTCHCODE_API_KEY=     # P1 #7 — after referral-link signup
+CITINEL_VIRUSTOTAL_API_KEY=     # P0 #2
+CITINEL_ABUSEIPDB_API_KEY=      # P0 #3
+CITINEL_TAVILY_API_KEY=         # P1 #5 — tvly-…, redeem via code Decode26
+CITINEL_N8N_WEBHOOK_URL=        # P1 #6 — after voucher redemption, leader only
+CITINEL_SWYTCHCODE_API_KEY=     # P1 #8 — after form signup
+CITINEL_LYZR_API_KEY=           # P2 #10 — only if Lyzr is confirmed in-stack
 ```
 
-Render, Startuped and Codemate carry no runtime key (deploy config / GTM tool /
-build-time tool respectively).
+Render, Codemate, and Startuped carry no runtime key.
 
 ---
 
 ## Open items only Danish can close
 
-1. **Did AeroFyta make the shortlist?** (Top 80/60 — SDD §22 Q1.) Gates all P2/P3 credits and the finale itself. Check inbox / WhatsApp / Discord.
-2. **Get the Swytchcode referral link** from event channels (needed for the $100).
-3. **Confirm Lyzr is in the CITINEL stack** before wiring it (SDD §22 Q15).
-4. **Register for Startuped** to trigger the participant GTM grant email.
-5. The 13 Aug/Top 80 vs 11 Aug/Top 60 discrepancy (SDD §22 Q14) — the live page
-   says 13 Aug / Top 80; still not reconciled with internal docs.
+1. **Who is "team leader" for the n8n and Codemate one-per-team redemptions?** Both explicitly say only one member should do this — needs a named person before either gets redeemed, to avoid two people accidentally burning both attempts.
+2. **Confirm Lyzr's offer is still live** — no official doc accompanied it this round.
+3. ~~Whether Lyzr enters the CITINEL stack at all~~ (SDD §22 Q15) — **resolved in the affirmative and built**: all four §15.3 attachment points are code-complete (§10 above), three as Lyzr integrations and one as a reasoned decline. Every one is a no-op without the key, so the build carries no dependency on the credential arriving. What remains is purely operational: get the key, configure the Studio agent to answer `pii_guard` and `ledger_head`.
+4. Gemini — watch for an organizer doc; nothing actionable yet beyond an independently-obtained API key.

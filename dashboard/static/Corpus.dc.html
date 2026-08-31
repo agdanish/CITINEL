@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="vendor/resources.js"></script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/fonts.css">
+<link rel="stylesheet" href="vendor/fonts.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/colors.primitive.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/colors.semantic.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/typography.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/spacing.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/brand.flagship.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/component.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/base.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/styles.css">
+<link rel="stylesheet" href="a11y.css">
+<link rel="stylesheet" href="motion.css">
+<script src="motion.js"></script>
+<script src="reveal.js"></script>
+<script src="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/_ds_bundle.js"></script>
+<script src="role.js"></script>
+<script src="route.js"></script>
+<style>html,body{height:100%;overflow-y:hidden;overflow-x:auto}</style>
+<script src="api.js"></script>
+</helmet>
+<div data-screen-label="Rule corpus" data-citinel-page="corpus" style="display:flex;flex-direction:column;height:100vh;min-width:1280px;background:var(--ctn-color-surface-shell)">
+
+  <header style="display:flex;align-items:center;gap:16px;padding:0 18px;height:52px;flex:none;border-bottom:1px solid var(--ctn-color-border-strong);background:var(--ctn-color-surface-panel);min-width:0">
+    <img src="assets/mark-white.png" alt="CITINEL · caught, cited, gated, actioned, closed" style="height:34px;width:90px;display:block;flex:none">
+    <nav style="display:flex;gap:2px;min-width:0;overflow-x:auto;scrollbar-width:thin;flex:1">
+      <a href="Overview.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">OVERVIEW</a>
+      <a href="Queue.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">QUEUE</a>
+      <a href="Replay.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">REPLAY</a>
+      <a href="Confidence.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">CONFIDENCE</a>
+      <a href="Evidence.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">EVIDENCE</a>
+      <a href="Approvals.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">APPROVALS</a>
+      <a href="Compliance.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">COMPLIANCE</a>
+      <a href="Audit.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">AUDIT</a>
+      <a href="Corpus.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-primary);background:var(--ctn-color-surface-raised);border-radius:6px;white-space:nowrap">CORPUS</a>
+      <a href="Eval.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">EVAL</a>
+      <a href="Policy.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">POLICY</a>
+      <a href="Handover.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">HANDOVER</a>
+      <a href="Executive.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">EXEC</a>
+      <a href="Settings.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">CONNECTORS</a>
+      <a href="Demo.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">DEMO</a>
+      <a href="Shell.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">SHELL</a>
+      <a href="Entry.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">ENTRY</a>
+          <a href="Narrow.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">NARROW</a>
+</nav>
+    <div style="flex:none;display:flex;align-items:center;gap:1px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;padding:2px">
+      <button onClick="{{ setAnalyst }}" style="font-family:var(--ctn-font-display);font-size:8.5px;letter-spacing:0.1em;padding:6px 11px;border:none;border-radius:4px;cursor:pointer;background:{{ analystBg }};color:{{ analystFg }}">ANALYST</button>
+      <button onClick="{{ setCiso }}" style="font-family:var(--ctn-font-display);font-size:8.5px;letter-spacing:0.1em;padding:6px 11px;border:none;border-radius:4px;cursor:pointer;background:{{ cisoBg }};color:{{ cisoFg }}">CISO</button>
+    </div>
+    <span style="flex:none;font-family:var(--ctn-font-mono);font-size:11.5px;color:var(--ctn-color-text-muted);white-space:nowrap">{{ headNote }}</span>
+  </header>
+
+  <div style="flex:1;min-height:0;min-width:0;display:flex" data-reflow-band>
+
+    <section style="flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;overflow:hidden;border-right:1px solid var(--ctn-color-border-strong)">
+      <div style="flex:none;display:flex;align-items:baseline;gap:8px 14px;flex-wrap:wrap;padding:13px 22px 9px;min-width:0">
+        <span style="font-family:var(--ctn-font-display);font-size:11.5px;letter-spacing:0.14em;color:var(--ctn-color-text-primary);flex:none">ACCESSION BENCH · AWAITING DETERMINATION</span>
+        <span style="font-family:var(--ctn-font-display);font-size:26px;color:var(--ctn-color-text-primary);font-variant-numeric:tabular-nums slashed-zero;flex:none;margin-right:auto">{{ pendingCount }}</span>
+        <div style="flex:none;display:flex;gap:2px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;padding:2px">
+          <sc-for list="{{ typeFilters }}" as="t" hint-placeholder-count="3">
+            <button onClick="{{ t.pick }}" style="font-family:var(--ctn-font-display);font-size:8px;letter-spacing:0.09em;padding:6px 10px;border:none;border-radius:4px;cursor:pointer;background:{{ t.bg }};color:{{ t.fg }};white-space:nowrap">{{ t.label }}</button>
+          </sc-for>
+        </div>
+        <div style="flex:1 1 100%;min-width:0;font-size:12.5px;color:var(--ctn-color-text-secondary);line-height:1.5;max-width:110ch;text-wrap:pretty">{{ benchNote }}</div>
+      </div>
+
+      <div style="flex:none;display:flex;gap:6px;padding:0 22px 10px;overflow-x:auto;min-width:0">
+        <sc-for list="{{ pendingTabs }}" as="t" hint-placeholder-count="5">
+          <button onClick="{{ t.mount }}" style="flex:none;display:flex;align-items:center;gap:8px;padding:8px 12px 7px;border:1px {{ t.style }} {{ t.border }};border-radius:6px 6px 0 0;background:{{ t.bg }};cursor:pointer;min-width:0">
+            <span style="font-family:var(--ctn-font-display);font-size:7px;letter-spacing:0.09em;color:var(--ctn-color-text-muted);flex:none">{{ t.tag }}</span>
+            <span data-token style="font-family:var(--ctn-font-mono);font-size:11px;color:{{ t.fg }};flex:none">{{ t.id }}</span>
+            <span data-token style="font-family:var(--ctn-font-mono);font-size:10px;color:var(--ctn-color-text-muted);flex:none">◂ {{ t.from }}</span>
+          </button>
+        </sc-for>
+      </div>
+      <div style="flex:1;min-height:0;overflow-y:auto;padding:0 22px 18px;display:flex;flex-direction:column;gap:10px">
+        <sc-if value="{{ benchEmpty }}" hint-placeholder-val="{{ false }}">
+          <div style="border:1px dashed var(--ctn-color-border-strong);border-radius:6px;padding:20px 22px;min-width:0">
+            <div style="font-family:var(--ctn-font-display);font-size:10px;letter-spacing:0.12em;color:var(--ctn-color-text-primary)">{{ emptyTitle }}</div>
+            <div style="font-size:13px;color:var(--ctn-color-text-secondary);margin-top:9px;line-height:1.55;max-width:92ch;text-wrap:pretty">{{ emptyBody }}</div>
+            <div style="font-size:11.5px;color:var(--ctn-color-text-muted);margin-top:12px;line-height:1.5;max-width:92ch;text-wrap:pretty">{{ emptyCaveat }}</div>
+          </div>
+        </sc-if>
+        <sc-for list="{{ pending }}" as="p" hint-placeholder-count="5">
+          <div style="border:1px solid {{ p.border }};border-left:3px solid {{ p.edge }};border-radius:6px;background:var(--ctn-color-surface-panel);padding:13px 15px;min-width:0">
+
+            <div style="display:flex;align-items:flex-start;gap:14px;min-width:0">
+              <div style="flex:none;display:flex;flex-direction:column;align-items:center;gap:5px;width:56px">
+                <svg width="52" height="52" viewBox="0 0 52 52">
+                  <circle cx="26" cy="26" r="20" fill="none" stroke="var(--ctn-color-border-strong)" stroke-width="1.4"></circle>
+                  <path d="{{ p.arc }}" fill="none" stroke="var(--ctn-color-state-cited)" stroke-width="3.2"></path>
+                  <g>{{ p.nodes }}</g>
+                </svg>
+                <span style="font-family:var(--ctn-font-display);font-size:6.5px;letter-spacing:0.06em;color:var(--ctn-color-text-muted);text-align:center;line-height:1.3;width:100%;overflow-wrap:anywhere">{{ p.stageLabel }}</span>
+              </div>
+
+              <div style="flex:1;min-width:0">
+                <div style="display:flex;align-items:center;gap:10px;min-width:0">
+                  <span style="font-family:var(--ctn-font-display);font-size:7.5px;letter-spacing:0.1em;color:var(--ctn-color-text-muted);border:1px {{ p.typeStyle }} var(--ctn-color-border-strong);padding:3px 7px;border-radius:3px;flex:none">{{ p.type }}</span>
+                  <span data-token style="font-family:var(--ctn-font-mono);font-size:12.5px;color:var(--ctn-color-text-primary);flex:none">{{ p.id }}</span>
+                  <span data-reveal style="font-family:var(--ctn-font-mono);font-size:12.5px;color:var(--ctn-color-text-primary);flex:1 1 42%;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="{{ p.name }}">{{ p.name }}</span>
+                  <span style="font-size:12.5px;color:var(--ctn-color-text-secondary);flex:1 1 34%;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="{{ p.behaviour }}">{{ p.behaviour }}</span>
+                  <span style="font-family:var(--ctn-font-display);font-size:7.5px;letter-spacing:0.1em;color:{{ p.stampFg }};border:1px {{ p.stampStyle }} {{ p.stampFg }};padding:3px 8px;border-radius:999px;flex:none">{{ p.stamp }}</span>
+                </div>
+
+                <div style="display:flex;align-items:center;gap:9px;margin-top:8px;flex-wrap:wrap;min-width:0">
+                  <span style="font-family:var(--ctn-font-display);font-size:7.5px;letter-spacing:0.1em;color:var(--ctn-color-text-muted);flex:none">COLLECTION LABEL</span>
+                  <a href="{{ p.fromHref }}" style="display:flex;align-items:center;gap:8px;padding:5px 10px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;text-decoration:none;min-width:0" style-hover="background:var(--ctn-color-surface-raised)">
+                    <span style="flex:none;width:13px;height:13px;display:flex;align-items:center;justify-content:center">{{ p.fromGlyph }}</span>
+                    <span data-token style="font-family:var(--ctn-font-mono);font-size:11.5px;color:var(--ctn-color-text-primary);flex:none">{{ p.fromId }}</span>
+                    <span style="font-size:11.5px;color:var(--ctn-color-text-muted);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.fromTitle }}</span>
+                  </a>
+                  <span data-token style="font-family:var(--ctn-font-mono);font-size:11px;color:var(--ctn-color-text-muted);flex:none">drafted by {{ p.by }} · {{ p.when }}</span>
+                </div>
+
+                <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;min-width:0">
+                  <dc-import name="RuleRef" source="{{ p.refSource }}" name="{{ p.refName }}" id="{{ p.uuid }}" size="sm" hint-size="330px,24px"></dc-import>
+                  <dc-import name="StandardRef" standard="{{ p.stdName }}" version="{{ p.stdVer }}" locator="{{ p.stdLoc }}" size="sm" hint-size="300px,24px"></dc-import>
+                </div>
+                <div style="margin-top:8px">
+                  <x-import component-from-global-scope="CITINELDesignSystem_fdfd66.LogWell" dense="{{ true }}" hint-size="100%,120px">{{ p.body }}</x-import>
+                </div>
+
+                <div style="display:flex;gap:20px;margin-top:9px;flex-wrap:wrap;min-width:0">
+                  <sc-for list="{{ p.backtest }}" as="t" hint-placeholder-count="3">
+                    <div style="min-width:0">
+                      <div style="font-family:var(--ctn-font-display);font-size:14px;color:{{ t.fg }};font-variant-numeric:tabular-nums slashed-zero">{{ t.v }}</div>
+                      <div style="font-size:10.5px;color:var(--ctn-color-text-muted);font-variant-caps:all-small-caps;white-space:nowrap">{{ t.k }}</div>
+                    </div>
+                  </sc-for>
+                  <div style="flex:1;min-width:200px;font-size:11.5px;color:var(--ctn-color-text-muted);line-height:1.45;text-wrap:pretty">{{ p.risk }}</div>
+                </div>
+
+                <div style="display:flex;align-items:center;gap:8px;margin-top:11px;flex-wrap:wrap;min-width:0">
+                  <sc-for list="{{ p.determinations }}" as="d" hint-placeholder-count="3">
+                    <button onClick="{{ d.pick }}" style="font-family:var(--ctn-font-display);font-size:8.5px;letter-spacing:0.1em;padding:8px 12px;border:1px solid {{ d.border }};border-radius:6px;background:{{ d.bg }};color:{{ d.fg }};cursor:{{ d.cursor }};white-space:nowrap">{{ d.label }}</button>
+                  </sc-for>
+                  <button onClick="{{ p.toggleSelect }}" style="font-family:var(--ctn-font-display);font-size:8.5px;letter-spacing:0.1em;padding:8px 12px;border:1px {{ p.selStyle }} var(--ctn-color-border-strong);border-radius:6px;background:{{ p.selBg }};color:var(--ctn-color-text-primary);cursor:pointer;white-space:nowrap">{{ p.selLabel }}</button>
+                  <span style="font-size:11px;color:var(--ctn-color-text-muted);flex:1;min-width:160px;line-height:1.4">{{ p.gateNote }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <aside data-reflow-rail style="width:clamp(288px, 12.92rem + 14.26vw, 412px);flex:none;box-sizing:border-box;display:flex;flex-direction:column;min-height:0;min-width:0;overflow:hidden">
+
+      <div style="flex:1;min-height:0;display:flex;flex-direction:column;min-width:0;padding:13px 18px 0">
+        <div style="display:flex;flex-wrap:wrap;align-items:baseline;gap:3px 10px;flex:none;min-width:0">
+          <span style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.14em;color:var(--ctn-color-text-primary);flex:none">THE COLLECTION</span>
+          <span data-token style="font-family:var(--ctn-font-mono);font-size:11.5px;color:var(--ctn-color-text-muted);flex:1 1 100%;min-width:0">{{ corpusNote }}</span>
+        </div>
+        <input value="{{ q }}" onChange="{{ onQ }}" placeholder="technique, family, incident, catalogue no…" style="width:100%;box-sizing:border-box;font-family:var(--ctn-font-mono);font-size:12px;letter-spacing:0;padding:9px 11px;margin-top:8px;background:var(--ctn-color-surface-well);border:1px solid var(--ctn-color-border-strong);border-radius:6px;color:var(--ctn-color-text-primary);flex:none">
+        <div style="margin-top:8px;flex:none;display:flex;flex-wrap:wrap;gap:6px">
+          <dc-import name="StandardRef" standard="SIGMA" version="spec 2.0" locator="@ 7f31c0d" size="sm" hint-size="200px,24px"></dc-import>
+          <dc-import name="StandardRef" standard="SYNCED" version="22 Aug" locator="04:10 IST" size="sm" hint-size="200px,24px"></dc-import>
+          <dc-import name="StandardRef" standard="ATT&amp;CK" version="v16.1" locator="214 of 823" size="sm" hint-size="200px,24px"></dc-import>
+        </div>
+        <div style="display:flex;gap:14px;margin-top:9px;flex:none;flex-wrap:wrap">
+          <sc-for list="{{ corpusTally }}" as="t" hint-placeholder-count="4">
+            <div><div style="font-family:var(--ctn-font-display);font-size:15px;color:var(--ctn-color-text-primary);font-variant-numeric:tabular-nums slashed-zero">{{ t.v }}</div><div style="font-size:10px;color:var(--ctn-color-text-muted);font-variant-caps:all-small-caps;white-space:nowrap">{{ t.k }}</div></div>
+          </sc-for>
+        </div>
+        <div style="flex:1;min-height:0;overflow-y:auto;margin-top:10px">
+          <sc-for list="{{ corpus }}" as="c" hint-placeholder-count="10">
+            <div style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--ctn-color-border-hairline);min-width:0">
+              <span style="font-family:var(--ctn-font-display);font-size:7px;letter-spacing:0.08em;color:var(--ctn-color-text-muted);border:1px {{ c.typeStyle }} var(--ctn-color-border-strong);padding:2px 5px;border-radius:3px;flex:none;margin-top:2px">{{ c.tag }}</span>
+              <div style="flex:1;min-width:0">
+                <div style="font-family:var(--ctn-font-mono);font-size:11.5px;color:var(--ctn-color-text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.id }}</div>
+                <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-top:2px">
+                  <span data-reveal style="font-family:var(--ctn-font-mono);font-size:11px;color:var(--ctn-color-text-primary);min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="{{ c.name }}">{{ c.name }}</span>
+                  <span style="font-size:11.5px;color:var(--ctn-color-text-secondary);min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="{{ c.behaviour }}">{{ c.behaviour }}</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;margin-top:4px;min-width:0">
+                  <a href="{{ c.fromHref }}" style="font-family:var(--ctn-font-mono);font-size:10.5px;color:var(--ctn-color-text-muted);text-decoration:none;flex:none">◂ {{ c.from }}</a>
+                  <span data-reveal style="font-family:var(--ctn-font-mono);font-size:10.5px;color:var(--ctn-color-text-muted);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.stats }}</span>
+                  <button onClick="{{ c.toggleSelect }}" style="font-family:var(--ctn-font-display);font-size:7.5px;letter-spacing:0.09em;padding:4px 8px;border:1px {{ c.selStyle }} var(--ctn-color-border-strong);border-radius:5px;background:{{ c.selBg }};color:var(--ctn-color-text-primary);cursor:pointer;flex:none">{{ c.selLabel }}</button>
+                </div>
+              </div>
+            </div>
+          </sc-for>
+          <sc-if value="{{ noCorpus }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:18px 0;font-size:12px;color:var(--ctn-color-text-muted);line-height:1.5">Nothing in the collection matches. {{ corpusTotal }} accessioned artefacts are still there · clear the search.</div>
+          </sc-if>
+        </div>
+      </div>
+
+      <div style="flex:none;border-top:2px solid var(--ctn-color-border-strong);background:var(--ctn-color-surface-panel);padding:13px 18px 16px;min-width:0">
+        <div style="display:flex;align-items:baseline;gap:10px;min-width:0">
+          <span style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.14em;color:var(--ctn-color-text-primary);flex:none">DUPLICATE PACKET</span>
+          <span style="font-family:var(--ctn-font-display);font-size:19px;color:var(--ctn-color-text-primary);font-variant-numeric:tabular-nums slashed-zero;flex:none">{{ selCount }}</span>
+          <span style="font-size:11px;color:var(--ctn-color-text-muted);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ selBreak }}</span>
+        </div>
+        <div style="height:6px;background:var(--ctn-color-surface-well);border:1px solid var(--ctn-color-border-hairline);border-radius:3px;margin-top:8px;overflow:hidden">
+          <div style="height:100%;width:{{ packFill }};background:var(--ctn-color-text-secondary);transition:width 0.3s ease"></div>
+        </div>
+        <sc-if value="{{ hasSel }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:9px">
+            <x-import component-from-global-scope="CITINELDesignSystem_fdfd66.LogWell" dense="{{ true }}" hint-size="100%,90px">{{ manifest }}</x-import>
+          </div>
+        </sc-if>
+        <div style="font-size:11.5px;color:var(--ctn-color-text-muted);margin-top:9px;line-height:1.5;text-wrap:pretty">{{ packNote }}</div>
+        <div style="display:flex;gap:7px;margin-top:10px;flex-wrap:wrap">
+          <x-import component-from-global-scope="CITINELDesignSystem_fdfd66.Button" variant="primary" size="md" disabled="{{ exportDisabled }}" on-click="{{ doExport }}" hint-size="180px,38px">{{ exportLabel }}</x-import>
+          <button onClick="{{ clearSel }}" style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:10px 13px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;background:none;color:var(--ctn-color-text-primary);cursor:pointer">CLEAR</button>
+        </div>
+        <sc-if value="{{ exported }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:10px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;padding:11px 12px;min-width:0">
+            <div style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.12em;color:var(--ctn-color-text-primary)">PACKET WRITTEN · NOT SENT</div>
+            <div style="font-family:var(--ctn-font-mono);font-size:11.5px;color:var(--ctn-color-text-primary);margin-top:5px;overflow-wrap:anywhere">{{ exportFile }}</div>
+            <div style="font-size:11px;color:var(--ctn-color-text-muted);margin-top:5px;line-height:1.45">{{ exportNote }}</div>
+          </div>
+        </sc-if>
+      </div>
+    </aside>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1600,&quot;height&quot;:900}}">
+class Component extends DCLogic {
+  constructor(p){
+    super(p);
+    this.pendingDefs = [
+      {id:'SIG-DRAFT-0221', kind:'rule', name:'upi_beneficiary_burst_v2', behaviour:'keys on session id across switch nodes',
+       fromId:'INC-0417', fromTitle:'UPI mule cashout chain, ₹18.4L held', fromHref:'Replay.dc.html?at=14', fromClosed:false,
+       by:'Verdict Narrator', when:'23:20 IST today', technique:'T1657', rule:'upi_beneficiary_burst_v2', uuid:'9f21c4a8-7b02-4e11-b3d1-0c4471aa2210',
+       body:`title: UPI beneficiary burst (session-scoped)
+id: 9f21c4a8-7b02-4e11-b3d1-0c4471aa2210
+status: experimental
+logsource: { product: upi_switch, service: transaction }
+detection:
+  burst:
+    event: BENEF_ADD
+    count_60s|gte: 8
+    session_id|exists: true
+  filter_batch:
+    channel: SCHEDULED_VENDOR_BATCH
+  condition: burst and not filter_batch
+level: critical`,
+       backtest:[{k:'matches, 90d replay',v:'3'},{k:'false positives',v:'0'},{k:'would have fired',v:'21:57'}],
+       risk:'v1 keyed on host and would have missed a burst split across two switch nodes. This version keys on session id; the scheduled-vendor exclusion is the only thing keeping month-end batches quiet, and it is untested against December volumes.'},
+
+      {id:'PB-DRAFT-0068', kind:'playbook', name:'mule_cashout_containment', behaviour:'freeze, block, flag, draft',
+       fromId:'INC-0417', fromTitle:'UPI mule cashout chain, ₹18.4L held', fromHref:'Replay.dc.html?at=92', fromClosed:false,
+       by:'Response Marshal', when:'23:22 IST today', technique:'T1657', rule:'mule_cashout_containment', uuid:'pb:6d4f10c2-88a1-4b73-9e05-2ac7719b3341',
+       body:`playbook: mule_cashout_containment
+trigger: sigma:upi_beneficiary_burst_v2
+steps:
+  - freeze_payout_template:   { gated: true,  reason: value_above_cap }
+  - egress_block_segment:     { gated: true,  ttl_h: 24 }
+  - npci_fraud_flag:          { gated: false, reversible: true }
+  - draft_certin_6hr:         { gated: false, files: false }
+requires_human: [freeze_payout_template, egress_block_segment]
+never_autonomous: true`,
+       backtest:[{k:'steps',v:'4'},{k:'gated steps',v:'2'},{k:'dry runs passed',v:'6/6'}],
+       risk:'Encodes what a. deshmukh actually did on 23 Aug, in order. The two gated steps stay gated at every autonomy detent. Editing the policy dial cannot promote this playbook to unattended.'},
+
+      {id:'SIG-DRAFT-0222', kind:'rule', name:'finacle_maker_checker_bypass', behaviour:'template writes outside dual control',
+       fromId:'INC-0417', fromTitle:'UPI mule cashout chain, ₹18.4L held', fromHref:'Replay.dc.html?at=58', fromClosed:false,
+       by:'Verdict Narrator', when:'23:24 IST today', technique:'T1565.001', rule:'finacle_maker_checker_bypass', uuid:'44b0e2f7-91ac-4d55-8e30-77cc10bb4419',
+       body:`title: Finacle payout template modified with maker-checker bypassed
+id: 44b0e2f7-91ac-4d55-8e30-77cc10bb4419
+status: experimental
+logsource: { product: finacle, service: audit_trail }
+detection:
+  sel: { operation: TEMPLATE_MODIFY, maker_checker: BYPASSED }
+  condition: sel
+level: high`,
+       backtest:[{k:'matches, 90d replay',v:'11'},{k:'false positives',v:'8'},{k:'precision',v:'27%'}],
+       risk:'Eight of eleven historical matches were legitimate emergency overrides during the June core upgrade. As written this rule will be noisy. Consider a maintenance-window exclusion before accession, or accession at medium and let the swarm carry the triage.'},
+
+      {id:'PB-DRAFT-0067', kind:'playbook', name:'consent_grant_revocation', behaviour:'mailbox scope, reversible',
+       fromId:'INC-0416', fromTitle:'consent phishing, Kolhapur branch · closed', fromHref:'Replay.dc.html?demo=1', fromClosed:true,
+       by:'Response Marshal', when:'19 Aug, 11:52 IST', technique:'T1528', rule:'consent_grant_revocation', uuid:'pb:1f88ae30-52dc-4c19-b7a6-90ee4413c082',
+       body:`playbook: consent_grant_revocation
+trigger: sigma:oauth_consent_unverified_publisher
+steps:
+  - revoke_oauth_grant:   { gated: false, reversible: true, token_ttl_h: 24 }
+  - quarantine_messages:  { gated: false, reversible: true }
+  - block_sender_domain:  { gated: false, reversible: true }
+  - notify_mailbox_owner: { gated: false }
+requires_human: []
+shadow_until: 2026-09-04`,
+       backtest:[{k:'steps',v:'4'},{k:'gated steps',v:'0'},{k:'shadow proposals',v:'9'}],
+       risk:'Every step is reversible and token-backed, so it is a candidate for unattended running once the SaaS class leaves shadow on 4 Sep. Accessioning the playbook does not promote the class; it only makes it available to the dial when the shadow window ends.'},
+
+      {id:'SIG-DRAFT-0219', kind:'rule', name:'oauth_consent_unverified_publisher', behaviour:'grant to an app outside the allowlist',
+       fromId:'ALR-99138', fromTitle:'OAuth consent to unverified publisher', fromHref:'Queue.dc.html', fromClosed:false,
+       by:'Verdict Narrator', when:'19 Aug, 11:40 IST', technique:'T1528', rule:'oauth_consent_unverified_publisher', uuid:'c7301bd5-2ee4-4a90-9f18-5b0a2d774c63',
+       body:`title: OAuth consent granted to unverified publisher
+id: c7301bd5-2ee4-4a90-9f18-5b0a2d774c63
+status: experimental
+logsource: { product: m365, service: audit }
+detection:
+  sel: { Operation: 'Consent to application', PublisherVerified: false }
+  filter_known: { AppId: '%allowlist%' }
+  condition: sel and not filter_known
+level: medium`,
+       backtest:[{k:'matches, 90d replay',v:'6'},{k:'false positives',v:'1'},{k:'precision',v:'83%'}],
+       risk:'One false positive was a departmental Power BI connector added without going through IT. Precision is acceptable; the allowlist reference needs the tenant list wired before this leaves the bench.'}
+    ];
+
+    this.corpusDefs = [
+      {id:'SIG-0188', kind:'rule', name:'impossible_travel_vpn_excluded', behaviour:'excludes known VPN egress', from:'INC-0771', fromHref:'Replay.dc.html', fires:'41 fires · 2 FP · 30d', tech:'T1078'},
+      {id:'PB-0052', kind:'playbook', name:'phishing_sender_block', behaviour:'block sender, purge mailbox', from:'INC-0845', fromHref:'Replay.dc.html', fires:'6 runs · 0 rollback · 30d', tech:'T1566'},
+      {id:'SIG-0201', kind:'rule', name:'lsass_handle_non_edr', behaviour:'handle open from a non-EDR process', from:'INC-0803', fromHref:'Replay.dc.html', fires:'12 fires · 3 FP · 30d', tech:'T1003.001'},
+      {id:'SIG-0176', kind:'rule', name:'encoded_powershell_teller', behaviour:'encoded command on teller estate', from:'INC-0729', fromHref:'Replay.dc.html', fires:'28 fires · 6 FP · 30d', tech:'T1059.001'},
+      {id:'PB-0049', kind:'playbook', name:'jump_host_isolation', behaviour:'isolate with session drain', from:'INC-0762', fromHref:'Replay.dc.html', fires:'2 runs · 1 rollback · 30d', tech:'T1021.001'},
+      {id:'SIG-0193', kind:'rule', name:'payout_reversal_off_window', behaviour:'reversal outside settlement window', from:'INC-0844', fromHref:'Replay.dc.html', fires:'4 fires · 0 FP · 30d', tech:'T1657'},
+      {id:'SIG-0210', kind:'rule', name:'rdp_relay_off_broker', behaviour:'relay account outside the broker set', from:'INC-0846', fromHref:'Replay.dc.html', fires:'9 fires · 1 FP · 30d', tech:'T1021.001'},
+      {id:'PB-0044', kind:'playbook', name:'credential_stuffing_reset', behaviour:'bulk reset with notification', from:'INC-0842', fromHref:'Replay.dc.html', fires:'1 run · 0 rollback · 30d', tech:'T1110'},
+      {id:'SIG-0165', kind:'rule', name:'dns_volume_tunnel_sig', behaviour:'volume anomaly, tunnel signature', from:'INC-0698', fromHref:'Replay.dc.html', fires:'17 fires · 5 FP · 30d', tech:'T1071.004'},
+      {id:'SIG-0204', kind:'rule', name:'local_admin_off_window', behaviour:'new local admin outside change window', from:'INC-0818', fromHref:'Replay.dc.html', fires:'22 fires · 4 FP · 30d', tech:'T1136.001'}
+    ];
+
+    let focus = null;
+    try{ focus = new URLSearchParams(window.location.search).get('incident'); }catch(e){}
+    const sel = {};
+    if(focus) this.pendingDefs.forEach(p=>{ if(p.fromId === focus) sel[p.id] = true; });
+
+    this.state = {role:this.roleInit(), filter:'ALL', det:{}, sel, q:'', exported:false, focus};
+  }
+  componentDidMount(){ this.roleMount(); }
+  roleInit(){ try{ return (window.CitinelRole && window.CitinelRole.get()) || 'analyst'; }catch(e){ return 'analyst'; } }
+  roleMount(){ if(window.CitinelRole) this.unsubRole = window.CitinelRole.subscribe(r=>{ if(r !== this.state.role) this.setState({role:r}); }); }
+  componentWillUnmount(){ if(this.unsubRole) this.unsubRole(); }
+  arcPath(cx,cy,r,frac){
+    if(frac<=0) return '';
+    const a = Math.min(frac,0.9999)*2*Math.PI - Math.PI/2;
+    return `M ${cx} ${cy-r} A ${r} ${r} 0 ${frac>0.5?1:0} 1 ${(cx+r*Math.cos(a)).toFixed(1)} ${(cy+r*Math.sin(a)).toFixed(1)}`;
+  }
+  nodes(cx,cy,r,reached,rejected){
+    const R = React, seq = ['caught','cited','gated','actioned','closed'];
+    return seq.map((k,i)=>{
+      const a = (i/4)*2*Math.PI - Math.PI/2, x = cx+r*Math.cos(a), y = cy+r*Math.sin(a);
+      const on = i <= reached;
+      const stroke = on ? 'var(--ctn-color-state-stroke)' : 'var(--ctn-color-text-disabled)';
+      const fill = on ? 'var(--ctn-color-state-node)' : 'var(--ctn-color-surface-panel)';
+      if(k==='gated' && rejected) return R.createElement('rect',{key:i,x:x-3.8,y:y-3.8,width:7.6,height:7.6,fill:'var(--ctn-color-state-deny)'});
+      if(k==='gated') return R.createElement('circle',{key:i,cx:x,cy:y,r:4,fill:'var(--ctn-color-surface-panel)',stroke,strokeWidth:1.8,strokeDasharray:'2.8 2.8'});
+      if(k==='actioned') return R.createElement('rect',{key:i,x:x-3.8,y:y-3.8,width:7.6,height:7.6,transform:`rotate(45 ${x} ${y})`,fill,stroke,strokeWidth:2.2});
+      if(k==='closed') return R.createElement('circle',{key:i,cx:x,cy:y,r:4.6,fill,stroke,strokeWidth:2.2});
+      return R.createElement('circle',{key:i,cx:x,cy:y,r:3.6,fill,stroke,strokeWidth:1.7});
+    });
+  }
+  srcGlyph(closed){
+    const R = React;
+    if(closed) return R.createElement('svg',{width:13,height:13,viewBox:'0 0 16 16'},[
+      R.createElement('circle',{key:'o',cx:8,cy:8,r:6.2,fill:'none',stroke:'var(--ctn-color-state-cited)',strokeWidth:1.7}),
+      R.createElement('circle',{key:'i',cx:8,cy:8,r:2.6,fill:'var(--ctn-color-state-node)',stroke:'var(--ctn-color-state-stroke)',strokeWidth:1})]);
+    return R.createElement('svg',{width:13,height:13,viewBox:'0 0 16 16'},[
+      R.createElement('circle',{key:'n',cx:8,cy:8,r:2.6,fill:'var(--ctn-color-state-node)',stroke:'var(--ctn-color-state-stroke)',strokeWidth:1.3}),
+      R.createElement('path',{key:'a',d:'M 8 1.6 A 6.4 6.4 0 1 0 14.4 8',fill:'none',stroke:'var(--ctn-color-state-cited)',strokeWidth:1.7,strokeLinecap:'round'})]);
+  }
+  baseVals(){
+    const s = this.state, ciso = s.role === 'ciso';
+    const DET = ['ACCESSION','REVISE','REJECT'];
+    const shown = this.pendingDefs.filter(p=>
+      s.filter === 'ALL' || (s.filter === 'RULES' && p.kind === 'rule') || (s.filter === 'PLAYBOOKS' && p.kind === 'playbook'));
+
+    const selIds = Object.keys(s.sel).filter(k=>s.sel[k]);
+    const allDefs = this.pendingDefs.concat(this.corpusDefs);
+    const selItems = allDefs.filter(a=>s.sel[a.id]);
+    const nRules = selItems.filter(a=>a.kind === 'rule').length;
+    const nPlay = selItems.filter(a=>a.kind === 'playbook').length;
+
+    const q = s.q.trim().toLowerCase();
+    const corpus = this.corpusDefs.filter(c=>!q || (c.id+' '+c.name+' '+c.behaviour+' '+c.from+' '+c.tech+' '+c.kind).toLowerCase().includes(q));
+
+    const manifest = selItems.length ? [
+      'packet: citinel-duplicates-2026-08-23.tar.gz',
+      'format: sigma 2.0 yaml · citinel playbook v1 yaml · provenance.json'
+    ].concat(selItems.map(a=>'  '+a.id+'  ← '+(a.fromId || a.from)+'  '+(a.kind === 'rule' ? 'sigma' : 'playbook')))
+     .concat(['provenance: each artefact carries the incident id, the cited log locators, and the ledger entry of its determination']).join('\n') : '';
+
+    return {
+      ciso, analyst: !ciso,
+      setAnalyst: ()=>{ this.setState({role:'analyst'}); if(window.CitinelRole) window.CitinelRole.set('analyst'); },
+      setCiso: ()=>{ this.setState({role:'ciso'}); if(window.CitinelRole) window.CitinelRole.set('ciso'); },
+      analystBg: ciso ? 'transparent' : 'var(--ctn-color-surface-navy)',
+      analystFg: ciso ? 'var(--ctn-color-text-muted)' : 'var(--ctn-color-text-on-navy)',
+      cisoBg: ciso ? 'var(--ctn-color-surface-navy)' : 'transparent',
+      cisoFg: ciso ? 'var(--ctn-color-text-on-navy)' : 'var(--ctn-color-text-muted)',
+
+      headNote: s.focus ? 'filtered to artefacts from '+s.focus : 'nothing joins the corpus unreviewed',
+      pendingCount: String(this.pendingDefs.length).padStart(2,'0'),
+      fromClose: (()=>{ try{ return new URLSearchParams(window.location.search).get('from') === 'close'; }catch(e){ return false; } })(),
+      benchNote: (()=>{ try{ if(new URLSearchParams(window.location.search).get('from') === 'close') return 'These arrived from a close-out you just completed. The incident reached Closed, the arc finished, and the artefacts it produced were routed here. The flywheel turns only through this bench, and every specimen needs a determination to leave it.'; }catch(e){} return null; })() || s.focus
+        ? 'Arrived from '+s.focus+' and pre-selected for export. The bench holds rules and playbooks together because the flywheel produces both and neither joins the corpus on its own.'
+        : 'Rules and playbooks share one bench and one gate. Each is pinned to the incident it was collected from. A specimen without that label carries no evidentiary weight.',
+      typeFilters: ['ALL','RULES','PLAYBOOKS'].map(f=>({label:f, pick: ()=>this.setState({filter:f}),
+        bg: s.filter === f ? 'var(--ctn-color-surface-navy)' : 'transparent',
+        fg: s.filter === f ? 'var(--ctn-color-text-on-navy)' : 'var(--ctn-color-text-muted)'})),
+
+      pendingTabs: shown.map(t=>{
+        const on = t.id === (s.mount || (shown[0] && shown[0].id));
+        return {id:t.id, from:t.fromId, tag: t.kind === 'rule' ? 'SIG' : 'PB',
+          style: t.kind === 'rule' ? 'solid' : 'dashed',
+          mount: ()=>this.setState({mount:t.id}),
+          border: on ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-border-hairline)',
+          bg: on ? 'var(--ctn-color-surface-panel)' : 'transparent',
+          fg: on ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-text-muted)'};
+      }),
+      pending: shown.filter(p=>p.id === (s.mount || (shown[0] && shown[0].id))).map(p=>{
+        const d = s.det[p.id];
+        const done = d === 'ACCESSION';
+        const rejected = d === 'REJECT';
+        const reached = rejected ? 2 : done ? 3 : 2;
+        return {
+          id:p.id, name:p.name, behaviour:p.behaviour, body:p.body, by:p.by, when:p.when, risk:p.risk,
+          uuid: p.uuid, refSource: p.kind === 'rule' ? 'SIGMA' : 'PLAYBOOK',
+          refName: p.rule || p.id,
+          stdName: p.kind === 'rule' ? 'SIGMA' : 'CITINEL PB',
+          stdVer: p.kind === 'rule' ? 'spec 2.0' : 'v1',
+          stdLoc: p.technique + ' · ATT&CK v16.1',
+          type: p.kind === 'rule' ? 'SIGMA RULE' : 'RESPONSE PLAYBOOK',
+          typeStyle: p.kind === 'rule' ? 'solid' : 'dashed',
+          edge: p.kind === 'rule' ? 'var(--ctn-color-border-strong)' : 'var(--ctn-color-text-secondary)',
+          border: s.sel[p.id] ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-border-hairline)',
+          arc: this.arcPath(26,26,20, reached/4),
+          nodes: this.nodes(26,26,20, reached, rejected),
+          stageLabel: rejected ? 'rejected at the gate' : done ? 'accessioned' : 'awaiting determination',
+          stamp: d || 'UNDETERMINED',
+          stampFg: d ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-text-muted)',
+          stampStyle: d ? 'solid' : 'dashed',
+          fromId:p.fromId, fromTitle:p.fromTitle, fromHref:p.fromHref, fromGlyph:this.srcGlyph(p.fromClosed),
+          backtest: p.backtest.map(t=>({k:t.k, v:t.v, fg:'var(--ctn-color-text-primary)'})),
+          determinations: DET.map(label=>({
+            label, pick: ()=>{ if(label !== 'ACCESSION' || ciso) this.setState(x=>({det:{...x.det, [p.id]: x.det[p.id] === label ? null : label}})); },
+            border: d === label ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-border-strong)',
+            bg: d === label ? 'var(--ctn-color-surface-raised)' : 'transparent',
+            fg: (label === 'ACCESSION' && !ciso) ? 'var(--ctn-color-text-disabled)' : (d === label ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-text-muted)'),
+            cursor: (label === 'ACCESSION' && !ciso) ? 'not-allowed' : 'pointer'
+          })),
+          toggleSelect: ()=>this.setState(x=>({sel:{...x.sel, [p.id]: !x.sel[p.id]}, exported:false})),
+          selLabel: s.sel[p.id] ? 'IN PACKET' : 'ADD TO PACKET',
+          selStyle: s.sel[p.id] ? 'solid' : 'dashed',
+          selBg: s.sel[p.id] ? 'var(--ctn-color-surface-raised)' : 'transparent',
+          gateNote: ciso
+            ? 'you hold accession authority · an analyst can recommend, only you can catalogue'
+            : 'recommend a determination; accession into the corpus is the CISO\'s signature, not yours'
+        };
+      }),
+
+      corpusNote: corpus.length + ' of ' + this.corpusDefs.length + ' accessioned',
+      corpusTotal: this.corpusDefs.length,
+      q: s.q, onQ: e=>this.setState({q:e.target.value}),
+      corpusTally: [
+        {k:'sigma rules', v:String(this.corpusDefs.filter(c=>c.kind==='rule').length + 2988)},
+        {k:'playbooks', v:String(this.corpusDefs.filter(c=>c.kind==='playbook').length + 44)},
+        {k:'from our own incidents', v:'62'},
+        {k:'att&ck techniques', v:'214 / 823'}
+      ],
+      corpus: corpus.map(c=>({
+        id:c.id, name:c.name, behaviour:c.behaviour, from:c.from, fromHref:c.fromHref, stats:c.fires,
+        tag: c.kind === 'rule' ? 'SIG' : 'PB',
+        typeStyle: c.kind === 'rule' ? 'solid' : 'dashed',
+        toggleSelect: ()=>this.setState(x=>({sel:{...x.sel, [c.id]: !x.sel[c.id]}, exported:false})),
+        selLabel: s.sel[c.id] ? 'IN' : 'ADD',
+        selStyle: s.sel[c.id] ? 'solid' : 'dashed',
+        selBg: s.sel[c.id] ? 'var(--ctn-color-surface-raised)' : 'transparent'
+      })),
+      noCorpus: corpus.length === 0,
+
+      selCount: String(selIds.length).padStart(2,'0'),
+      selBreak: selIds.length ? nRules+' rule'+(nRules===1?'':'s')+' · '+nPlay+' playbook'+(nPlay===1?'':'s') : 'nothing selected',
+      hasSel: selIds.length > 0,
+      packFill: Math.min(100, selIds.length*14)+'%',
+      manifest,
+      packNote: 'The packet is portable Sigma and playbook YAML plus a provenance manifest. It opens in any SIEM that reads Sigma and names the incident behind every artefact. CITINEL writes the file; it does not upload it anywhere.',
+      exportDisabled: selIds.length === 0,
+      exportLabel: selIds.length ? 'TAKE THE DUPLICATE' : 'SELECT ARTEFACTS',
+      doExport: ()=>{ if(Object.keys(this.state.sel).some(k=>this.state.sel[k])) this.setState({exported:true}); },
+      clearSel: ()=>this.setState({sel:{}, exported:false}),
+      exported: s.exported,
+      exportFile: 'citinel-duplicates-2026-08-23-'+String(selIds.length).padStart(2,'0')+'.tar.gz',
+      exportNote: 'written to the analyst workstation. The provenance manifest travels with it, so whoever receives these can trace every rule back to the incident that produced it.'
+    };
+  }
+
+  stateVals(b){
+    let m = 'normal';
+    try{ m = new URLSearchParams(window.location.search).get('state') || 'normal'; }catch(e){}
+    if(m === 'firstrun') return {
+      benchEmpty:true, pending:[], pendingTabs:[], pendingCount:'00', corpus:[], noCorpus:true, corpusTotal:0,
+      corpusNote:'0 accessioned on this install',
+      corpusTally:[{k:'sigma rules',v:'3,000'},{k:'playbooks',v:'44'},{k:'from our own incidents',v:'0'},{k:'att&ck techniques',v:'214 / 823'}],
+      emptyTitle:'NOTHING COLLECTED YET · THE FLYWHEEL HAS NOT TURNED',
+      emptyBody:'The bench is empty because no incident has closed on this install. The 3,000 upstream Sigma rules and 44 shipped playbooks are in the collection, but none came from here. The "from our own incidents" count stays at zero until an incident produces something.',
+      emptyCaveat:'That count is the honest measure of whether this install is learning. Treat it as the number to watch over the first quarter, not the 3,000.'
+    };
+    if(m !== 'empty') return {benchEmpty:false};
+    return {
+      benchEmpty:true, pending:[], pendingTabs:[], pendingCount:'00',
+      emptyTitle:'BENCH CLEAR · EVERY SPECIMEN DETERMINED',
+      emptyBody:'Nothing is awaiting determination. The last five artefacts were accessioned or rejected on 22 August and the collection is current. This is a cleared bench; the load succeeded.',
+      emptyCaveat:'An empty bench for more than a fortnight is worth questioning rather than celebrating: it usually means incidents are closing without anyone asking what the corpus should have learned from them.'
+    };
+  }
+  renderVals(){ const b = this.baseVals(); return Object.assign({}, b, this.stateVals(b)); }
+}
+</script>
+</body>
+</html>

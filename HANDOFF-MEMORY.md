@@ -145,20 +145,20 @@ All of this happened in the separate Claude Design canvas noted in §3, driven f
 
 - **The Grand Finale is 5 September 2026** (SDD §15, sourced from a live fetch of the event page on 21 Aug). ~~As of this update (24 Aug) that is 12 days, not 20~~ — **confirmed correct on 25 Aug via a second independent live fetch of the event page** (§12). Recompute the day count from today's date against 5 Sep; do not reuse a hardcoded number from either handoff update, they go stale immediately.
 - ~~A live, external, currently-unverified claim may exist~~ — **RESOLVED, and it is worse than "may."** The QR code was decoded on 24–25 Aug: it points to `https://dub.sh/citinel`, which redirects to `https://xzashr.com` — Danish's personal portfolio site, **not** a CITINEL prototype. This is a **confirmed live false claim** on the submitted deck's Thank-You slide, sitting in front of evaluators right now, not a hypothetical. Because it's a redirect, it's fixable by repointing the destination without resubmitting the deck. Full detail: §12.
-- **Team eligibility hard-disqualifier risk — still unconfirmed, still unresolved.** Preethi's current enrollment status has not been confirmed as of 25 Aug. This still gates the team's eligibility entirely, not just one prize track. Highest-priority unresolved item in the whole handoff.
+- ~~Team eligibility hard-disqualifier risk~~ — **RESOLVED 25 Aug (Danish, directly): all 6 members are currently enrolled, Danish is team lead.** The event's 3–6 members / same institute / currently enrolled / at least one female member rule is satisfied. This is no longer a risk; do not re-raise it.
 - ~~The application-build decision is explicitly paused~~ — **RESOLVED: Danish authorized the build on 25 Aug.** It is now underway; see §12. Do not re-ask whether to start it.
 - **The partner-prize plan is now 8 tracks, not 7, and partially built, not entirely unbuilt.** Lyzr confirmed in-stack; two more tracks (Gemini, CodeMate) added via private organizer channels Danish has access to and this assistant does not. Genuine build progress exists (§12) but is capped by the swarm not existing yet, per an adversarial rubric audit (§13). Eligibility is still necessary, not sufficient — none of this is a guaranteed win, see §13's honesty framing.
 
 ## 10. Open items — Danish's calls, not decided by Claude
 
 Full list with context: SDD §22 (23 items). Status as of 25 Aug, highest-priority first:
-1. **Did CITINEL make the Top 60/80 shortlist?** Still unresolved as of 25 Aug — the single most important unanswered fact in the project. Gates every sponsor prize credit and whether there is a finale to build toward. Deadline/count discrepancy itself also still unresolved (11 Aug/Top 60 vs. 13 Aug/Top 80).
+1. ~~Did CITINEL make the Top 60/80 shortlist?~~ — **RESOLVED 25 Aug (Danish, directly): AeroFyta IS shortlisted.** The finale on 5 Sep is real and is being built toward. This unlocks the P2 shortlist-gated sponsor credits in `PARTNER-ONBOARDING.md` (Render $50, Tavily 8,000 credits, n8n 1-month Cloud Pro, CodeMate 15-day Pro per member) — redemption links are sent privately to shortlisted teams, so check the team inbox / event group chat. The old 11 Aug/Top 60 vs. 13 Aug/Top 80 deadline discrepancy is now moot for planning purposes; the outcome is known regardless of which count was correct.
 2. ~~Where does the deck's QR code point~~ — **RESOLVED 24–25 Aug: it points to Danish's personal portfolio, not a prototype.** See §9/§12. Open action: repoint the `dub.sh/citinel` redirect at something real before the finale.
 3. ~~Initialize git~~ — **DONE 25 Aug.** Branch `build/stage-1`, 16 commits. Still open: the separate Claude Design UI prototype has no version control of its own.
 4. Patentability strategy (§21) — still genuinely undecided.
 5. Two research gaps (gamification, community/network-effect features) — still open, low priority.
 6. ~~Lyzr AI integration confirmed?~~ — **RESOLVED 25 Aug: yes, confirmed in-stack** by Danish. Built (§12).
-7. **Confirm Preethi's current enrollment status** — still unconfirmed, still the team-eligibility hard-disqualifier risk.
+7. ~~Confirm Preethi's current enrollment status~~ — **RESOLVED 25 Aug (Danish, directly): all 6 members currently enrolled, Danish team lead.** Eligibility rule satisfied in full. Closed.
 8. ~~Application build: start now or wait?~~ — **RESOLVED 25 Aug: started.** See §12.
 9. The submitted deck's 13 tagline occurrences and the two badge PNGs (§4a) — still unresolved, unchanged since 24 Aug.
 10. The responsive "orphaned zone" retest (§8) — still unresolved, unchanged since 24 Aug; this thread was not picked up this session (Danish chose the application build instead, §12).
@@ -212,13 +212,38 @@ Danish authorized the application build (previously paused on "Wait," §9/§10).
 
 **Sponsor-track deliverables already handed to Danish, both committed:** `PARTNER-ONBOARDING.md` (signup priority order, free-tier-vs-shortlist-gated status per partner, exact `.env` mapping) and `STARTUPED-GTM-PLAYBOOK.md` (curated GTM module inputs + the click-by-click path on the Startuped website — the actual platform run is still his to do, since the award is judged on demonstrated tool use).
 
+## 13a. Lyzr attachment points — status (31 Aug 2026)
+
+SDD 15.3 named four Lyzr attachment points. Three are now genuinely wired;
+the fourth was deliberately built elsewhere, for a stated architectural
+reason:
+
+| # | Attachment point | Status |
+|---|---|---|
+| 1 | **PII/hallucination second opinion** (`LyzrGuard`) | **Wired** — CITINEL's own deterministic guard always runs (tier 1); Lyzr adds an independent second opinion (tier 2) when configured. Reachable via the compliance CLI. |
+| 2 | **Fleet observability** (`LyzrObserver`) | **Wired 31 Aug.** Previously the class existed and was unit-tested, but *nothing in the pipeline ever called it* — a real gap, not a design choice. `SwarmPipeline` now takes an `observer` (defaulting to `NullObserver`) and emits sentinel start/finish plus a per-agent event on every model call. |
+| 3 | **Audit mirroring** | **Wired 31 Aug.** All ledger writes in the pipeline now route through one `_ledger()` helper that appends *and* mirrors to the observer. The ledger stays canonical (SDD 15.3's "fulfill, not duplicate"); Lyzr can display the same trail. A structural test greps the source to fail if a future call site writes to the ledger directly and skips the mirror. |
+| 4 | **RBAC** | **Deliberately NOT built on Lyzr** — built in CITINEL's own policy layer instead (`policy/roles.py`), and named honestly as *role-adaptive projection*, not RBAC. Two reasons, both load-bearing. (a) Routing authorization to an external control plane contradicts the architecture's own rule that the policy gate is the sole authority, and would make a third-party outage a correctness problem for a bank SOC. Lyzr's other three points fail safe — a second opinion and a dashboard can both be down without changing a verdict; an authorization engine cannot. (b) The spec asks for role-adaptive *depth* ("Tier-1 concise / Tier-3 deep", "two skins"), which is a UX affordance, not a confidentiality boundary. Calling it RBAC would overclaim a security property that isn't there. |
+
+**On the role projection specifically, so nobody later mistakes it for auth:**
+`GET /api/incidents/{id}` now projects at the caller's depth via an
+`X-Citinel-Role` header, with `?expand=true` returning full depth to anyone.
+The role is **self-asserted** — there is no authentication model (§22 Q10,
+still open). That is acceptable *only* because nothing is withheld: the CISO
+view folds the per-finding array into a count and explicitly discloses what
+it folded (`_projection.omitted`), delivering the spec's "citations one click
+deeper" rather than a thinner record that looks complete. **Do not extend
+this header to gate anything that actually needs protecting until Q10 has a
+real answer.**
+
 ## 14. Suggested immediate next step (25 Aug 2026, current)
 
 **The single highest-leverage action is getting `CITINEL_ANTHROPIC_API_KEY` into `.env`.** Everything else — the swarm itself (Step 7), and per §13's audit, most of the 8 partner-prize tracks — is gated on it. Copy `.env.example` to `.env` and fill it in; nothing else in the build is currently blocking.
 
-While waiting on that, still open and independently actionable:
-- **Confirm the shortlist outcome** (§10 item 1) — the single most important unresolved fact in the whole project.
-- **Confirm Preethi's enrollment status** (§10 item 7) — the team-eligibility hard-disqualifier.
+**Two former blockers closed 25 Aug, both by Danish directly:** AeroFyta **is shortlisted** (the finale is real), and **all 6 members are enrolled** with Danish as team lead (eligibility rule fully satisfied). Neither needs re-asking. The shortlist confirmation also makes the P2 sponsor credits in `PARTNER-ONBOARDING.md` claimable — redemption links go out privately to shortlisted teams, so the team inbox / event group chat is worth checking now.
+
+While waiting on the API key, still open and independently actionable:
+- **Claim the P2 shortlist-gated credits** (`PARTNER-ONBOARDING.md`) — now unlocked. Render $50 · Tavily 8,000 credits · n8n 1-month Cloud Pro · CodeMate 15-day Pro per member.
 - **Get the Gemini/CodeMate track criteria in writing** (§10 item 12, §13) if at all possible.
 - **Repoint the QR redirect** (§10 item 2) at something real, or plan the deck-revision conversation.
 - **The separate UI/UX prototype thread (§8, §11)** remains available and untouched — Danish may still want it picked up in parallel or after.

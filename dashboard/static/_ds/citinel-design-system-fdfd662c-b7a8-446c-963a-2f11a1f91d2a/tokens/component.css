@@ -1,0 +1,18 @@
+/* Tier 2 — component-scoped; references semantic tokens only.
+   Max one accent per surface: no component may take both evidence-gold and severity-red. */
+:root{
+--ctn-badge-severity-critical-bg:var(--ctn-color-severity-critical);
+--ctn-badge-severity-critical-fg:var(--ctn-color-white);
+--ctn-badge-severity-text:var(--ctn-color-severity-critical-text);
+--ctn-citation-chip-border:var(--ctn-color-evidence-citation);
+--ctn-citation-chip-fg:var(--ctn-color-evidence-citation);
+--ctn-citation-chip-bg:transparent;
+--ctn-clock-digits:var(--ctn-color-clock);
+--ctn-quarantine-border:var(--ctn-color-quarantine);
+--ctn-quarantine-label:var(--ctn-color-quarantine);
+--ctn-quarantine-bg:var(--ctn-color-surface-well);
+--ctn-button-primary-bg:var(--ctn-brand-accent);
+--ctn-button-primary-fg:var(--ctn-color-charcoal-950);
+--ctn-button-deny-fg:var(--ctn-color-severity-critical-text);
+--ctn-row-hover-bg:color-mix(in oklch,var(--ctn-color-surface-panel) 60%,var(--ctn-color-surface-raised) 40%);
+}

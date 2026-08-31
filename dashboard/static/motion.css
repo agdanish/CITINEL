@@ -1,0 +1,117 @@
+/* CITINEL — instrument motion. Loaded by every screen, after a11y.css.
+
+   Scope note, deliberately narrow: this file contains no glow, no gradient, no
+   blur, no glassmorphism and no decorative animation. Those are locked out by the
+   brand law, and a security console that shimmers reads as a marketing site rather
+   than an instrument — the exact failure the self-test exists to catch.
+
+   What it does instead is make the screens LOOK ALIVE THE WAY REAL TERMINALS DO:
+   every animation here is bound to a datum changing. A tick flashes because a value
+   moved. An arc draws because a state advanced. A row slides because the ledger was
+   appended to. Nothing animates on a timer for effect.
+*/
+
+/* ── 1. Tick flash — a value that changed announces itself ──
+   Bloomberg/Reuters behaviour: the cell steps up one surface level and the digit
+   brightens for a beat, then settles. Direction-coded where the sign is known. */
+@keyframes ctn-tick {
+  0%   { background-color: var(--ctn-color-surface-raised); color: var(--ctn-color-white); }
+  100% { background-color: transparent; }
+}
+@keyframes ctn-tick-up {
+  0%   { background-color: var(--ctn-color-surface-raised); color: var(--ctn-color-clock); }
+  100% { background-color: transparent; }
+}
+@keyframes ctn-tick-alarm {
+  0%   { background-color: var(--ctn-color-surface-raised); color: var(--ctn-color-severity-critical-text); }
+  100% { background-color: transparent; }
+}
+.ctn-ticked      { animation: ctn-tick       460ms ease-out 1; border-radius: 3px; }
+.ctn-ticked-up   { animation: ctn-tick-up    460ms ease-out 1; border-radius: 3px; }
+.ctn-ticked-alarm{ animation: ctn-tick-alarm 620ms ease-out 1; border-radius: 3px; }
+
+/* ── 2. Arc draw — the signature device completes rather than appearing ──
+   Caught → Cited → Gated → Actioned → Closed. The gold arc sweeps to its current
+   position on mount, so a closed incident's ring visibly closes. One pass, no loop:
+   it is a state readout, not an ornament. */
+@keyframes ctn-arc-draw {
+  from { stroke-dashoffset: var(--ctn-arc-len, 400); }
+  to   { stroke-dashoffset: 0; }
+}
+.ctn-arc {
+  stroke-dasharray: var(--ctn-arc-len, 400);
+  animation: ctn-arc-draw 900ms cubic-bezier(0.22, 0.75, 0.25, 1) 1 both;
+}
+
+/* ── 3. Needle sweep — a dial hand moves, it does not teleport ──
+   Applied to any transform-driven indicator so a detent change or a countdown hand
+   travels at instrument speed. */
+[data-needle] {
+  transition: transform 620ms cubic-bezier(0.3, 1.2, 0.4, 1);
+}
+[data-sweep] {
+  transition: stroke-dashoffset 700ms cubic-bezier(0.22, 0.75, 0.25, 1),
+              d 700ms linear;
+}
+
+/* ── 4. Strip advance — an append reads as an append ──
+   New rows in the disposition feed, the ledger reel and the alert journal enter
+   from the edge they arrived on, briefly, once. */
+@keyframes ctn-advance {
+  from { transform: translateY(-6px); opacity: 0; }
+  to   { transform: none; opacity: 1; }
+}
+.ctn-advanced { animation: ctn-advance 320ms cubic-bezier(0.2, 0.8, 0.2, 1) 1 both; }
+
+/* ── 5. Live-channel trace — the fleet wall breathes with real throughput ──
+   The polyline's own points are re-computed from measured events per second every
+   second; this only smooths the redraw so the trace scrolls instead of stepping. */
+[data-trace] { transition: opacity 200ms linear; }
+
+/* ── 6. Row and control response — surface step, never weight ──
+   A weight change reflows text and jitters dense rows, so hover and press move the
+   surface instead. Matches the design system's stated hover rule. Scoped to the
+   properties that cannot affect layout, so it is safe to apply broadly — dense list
+   rows are plain divs and would otherwise get no response at all. */
+[data-screen-label] [data-row],
+[data-screen-label] section > div,
+[data-screen-label] aside > div {
+  transition: background-color 130ms linear, border-color 130ms linear;
+}
+button, a[href], [role="button"] {
+  transition: background-color 130ms linear, border-color 130ms linear, color 130ms linear;
+}
+button:active, [role="button"]:active { transform: translateY(0.5px); }
+
+/* ── 7. Statutory clock — the one place a pulse is earned ──
+   Inside the final hour of a live statutory window the countdown's own colour
+   breathes, because the deadline is genuinely closing. It stops the moment the
+   window is met or breached: a stopped clock does not pulse. */
+@keyframes ctn-deadline {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.62; }
+}
+[data-deadline="closing"] { animation: ctn-deadline 2s ease-in-out infinite; }
+
+/* ── 8. Mount settle — the screen assembles, once ──
+   Bands fade up in place over 260ms so a dense console does not slam in. No stagger
+   cascade: a security screen that choreographs its own entrance is showing off. */
+@keyframes ctn-settle { from { opacity: 0; } to { opacity: 1; } }
+[data-screen-label] { animation: ctn-settle 260ms linear 1 both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ctn-ticked, .ctn-ticked-up, .ctn-ticked-alarm,
+  .ctn-arc, .ctn-advanced,
+  [data-deadline="closing"], [data-screen-label] {
+    animation: none !important;
+  }
+  [data-needle], [data-sweep], [data-row], [data-screen-label] section > div,
+  [data-screen-label] aside > div, button, a[href], [role="button"] {
+    transition: none !important;
+  }
+  /* The value still has to announce that it changed — a static edge marker replaces
+     the flash, so nothing that was carried by motion is simply lost. */
+  .ctn-ticked, .ctn-ticked-up, .ctn-ticked-alarm {
+    box-shadow: inset 0 -2px 0 var(--ctn-color-text-primary);
+  }
+}

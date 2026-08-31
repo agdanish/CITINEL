@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="vendor/resources.js"></script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/fonts.css">
+<link rel="stylesheet" href="vendor/fonts.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/colors.primitive.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/colors.semantic.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/typography.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/spacing.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/brand.flagship.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/component.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/base.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/styles.css">
+<link rel="stylesheet" href="a11y.css">
+<link rel="stylesheet" href="motion.css">
+<script src="motion.js"></script>
+<script src="reveal.js"></script>
+<script src="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/_ds_bundle.js"></script>
+<script src="role.js"></script>
+<script>
+// narrow-origin: opened in place of a console screen because the window is below 1280.
+addEventListener('DOMContentLoaded', function () {
+  var q = new URLSearchParams(location.search), from = q.get('from');
+  if (!from) return;
+  var name = from.replace('.dc.html', '');
+  var el = document.createElement('div');
+  el.setAttribute('data-width-handoff', '');
+  el.setAttribute('data-static', '');
+  el.innerHTML = '<span data-k>NARROW VIEW · ' + (q.get('w') || window.innerWidth) + 'px</span>' +
+    '<span data-m>opened instead of ' + name + ' — this width is below the console floor of 1280px.</span>' +
+    '<a href="' + from + '?force=console">OPEN ' + name.toUpperCase() + ' ANYWAY</a>';
+  var host = document.querySelector('[data-screen-label]') || document.body;
+  host.insertBefore(el, host.firstChild);
+});
+</script>
+<script src="ledger.js"></script>
+<style>html,body{height:auto;overflow-x:hidden}</style>
+<script src="api.js"></script>
+</helmet>
+<div data-screen-label="Narrow view" data-citinel-page="narrow" style="display:flex;flex-direction:column;min-height:100vh;background:var(--ctn-color-surface-shell)">
+
+  <header style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:10px 14px;border-bottom:1px solid var(--ctn-color-border-strong);background:var(--ctn-color-surface-panel)">
+    <img src="assets/mark-white.png" alt="CITINEL · caught, cited, gated, actioned, closed" style="height:28px;width:74px;display:block;flex:none">
+    <span style="font-family:var(--ctn-font-display);font-size:8px;letter-spacing:0.12em;color:var(--ctn-color-text-muted);border:1px solid var(--ctn-color-border-strong);padding:3px 7px;border-radius:3px;flex:none">TOUR CARD</span>
+    <div style="flex:none;margin-left:auto;display:flex;align-items:center;gap:1px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;padding:2px">
+      <button onClick="{{ setAnalyst }}" style="font-family:var(--ctn-font-display);font-size:8.5px;letter-spacing:0.1em;min-height:46px;padding:0 14px;border:none;border-radius:4px;cursor:pointer;background:{{ analystBg }};color:{{ analystFg }}">ANALYST</button>
+      <button onClick="{{ setCiso }}" style="font-family:var(--ctn-font-display);font-size:8.5px;letter-spacing:0.1em;min-height:46px;padding:0 14px;border:none;border-radius:4px;cursor:pointer;background:{{ cisoBg }};color:{{ cisoFg }}">CISO</button>
+    </div>
+    <div style="flex:1 1 100%;font-size:11.5px;color:var(--ctn-color-text-muted);line-height:1.45;text-wrap:pretty">{{ intro }}</div>
+  </header>
+
+  <section style="padding:16px 14px 18px;border-bottom:2px solid var(--ctn-color-border-strong)">
+    <div style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.13em;color:var(--ctn-color-text-muted)">STATION 1 · THE CLOCK THAT CANNOT WAIT</div>
+    <div style="display:flex;justify-content:center;padding:10px 0 4px;position:relative">
+      <svg viewBox="0 0 240 240" style="width:min(100%,260px);height:auto;display:block">
+        <circle cx="120" cy="120" r="104" fill="none" stroke="var(--ctn-color-border-hairline)" stroke-width="1"></circle>
+        <circle cx="120" cy="120" r="92" fill="none" stroke="var(--ctn-color-border-strong)" stroke-width="2"></circle>
+        <g>{{ ticks }}</g>
+        <path d="{{ masterArc }}" fill="none" stroke="{{ clockFg }}" stroke-width="9"></path>
+        <line x1="120" y1="120" x2="120" y2="34" stroke="var(--ctn-color-text-primary)" stroke-width="2" transform="rotate({{ hand }} 120 120)"></line>
+        <circle cx="120" cy="120" r="4" fill="var(--ctn-color-text-primary)"></circle>
+      </svg>
+      <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;gap:2px">
+        <div style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.16em;color:var(--ctn-color-text-muted);text-align:center">CERT-IN · REMAINING</div>
+        <div style="font-family:var(--ctn-font-display);font-size:34px;line-height:1;color:{{ clockFg }};font-variant-numeric:tabular-nums slashed-zero">{{ digits }}</div>
+        <div style="font-family:var(--ctn-font-mono);font-size:10px;color:var(--ctn-color-text-muted);text-align:center">of 06:00:00 · due 03:03 IST</div>
+      </div>
+    </div>
+    <div style="font-size:11.5px;color:var(--ctn-color-text-muted);line-height:1.5;text-wrap:pretty">{{ clockNote }}</div>
+    <a href="Compliance.dc.html" style="display:flex;align-items:center;justify-content:center;min-height:46px;box-sizing:border-box;margin-top:10px;font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:12px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;color:var(--ctn-color-text-primary);text-decoration:none">OPEN THE FILING DESK</a>
+  </section>
+
+  <section style="padding:14px;border-bottom:1px solid var(--ctn-color-border-hairline)">
+    <div style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.13em;color:var(--ctn-color-text-muted)">STATION 2 · WHAT NEEDS A HUMAN</div>
+    <div style="display:flex;gap:10px;margin-top:9px">
+      <sc-for list="{{ lanes }}" as="l" hint-placeholder-count="2">
+        <a href="{{ l.href }}" style="flex:1;min-width:0;display:block;text-decoration:none;padding:11px 12px;background:var(--ctn-color-surface-panel);border:1px solid {{ l.border }};border-radius:6px">
+          <div style="font-family:var(--ctn-font-display);font-size:8px;letter-spacing:0.11em;color:var(--ctn-color-text-muted)">{{ l.tag }}</div>
+          <div style="font-family:var(--ctn-font-display);font-size:{{ l.size }};line-height:1.05;color:var(--ctn-color-text-primary);font-variant-numeric:tabular-nums slashed-zero;margin-top:3px;overflow-wrap:anywhere">{{ l.count }}</div>
+          <div style="font-size:11px;color:var(--ctn-color-text-secondary);margin-top:3px;line-height:1.35">{{ l.name }}</div>
+        </a>
+      </sc-for>
+    </div>
+  </section>
+
+  <section style="padding:14px;border-bottom:1px solid var(--ctn-color-border-hairline)">
+    <div style="display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px">
+      <span style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.13em;color:var(--ctn-color-text-muted);flex:none">STATION 3 · THE ROUNDS</span>
+      <span style="font-size:11px;color:var(--ctn-color-text-muted);flex:1 1 100%;line-height:1.45;text-wrap:pretty">{{ roundsNote }}</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px">
+      <sc-for list="{{ rounds }}" as="r" hint-placeholder-count="4">
+        <a href="{{ r.href }}" style="display:flex;align-items:center;gap:11px;padding:11px 12px;background:var(--ctn-color-surface-panel);border:1px solid var(--ctn-color-border-hairline);border-left:3px solid {{ r.edge }};border-radius:6px;text-decoration:none;min-height:48px">
+          <svg width="34" height="34" viewBox="0 0 34 34" style="flex:none">
+            <circle cx="17" cy="17" r="13" fill="none" stroke="var(--ctn-color-border-strong)" stroke-width="1.2"></circle>
+            <path d="{{ r.arc }}" fill="none" stroke="var(--ctn-color-state-cited)" stroke-width="2.6"></path>
+            <g>{{ r.nodes }}</g>
+          </svg>
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;flex-wrap:wrap;align-items:baseline;gap:3px 8px">
+              <span style="font-family:var(--ctn-font-display);font-size:8px;letter-spacing:0.1em;color:{{ r.sevFg }};border:1px solid {{ r.sevFg }};padding:2px 5px;border-radius:3px;flex:none">{{ r.sev }}</span>
+              <span data-token style="font-family:var(--ctn-font-mono);font-size:12.5px;color:var(--ctn-color-text-primary);flex:1 1 auto;min-width:0;overflow-wrap:anywhere">{{ r.id }}</span>
+              <span style="font-family:var(--ctn-font-display);font-size:14px;color:{{ r.ageFg }};font-variant-numeric:tabular-nums slashed-zero;flex:none;margin-left:auto;order:-1">{{ r.age }}</span>
+            </div>
+            <sc-if value="{{ r.showLane }}" hint-placeholder-val="{{ true }}">
+              <div style="font-family:var(--ctn-font-display);font-size:7.5px;letter-spacing:0.1em;color:var(--ctn-color-text-muted);margin-top:4px">{{ r.lane }}</div>
+            </sc-if>
+            <sc-if value="{{ r.showDesc }}" hint-placeholder-val="{{ false }}">
+              <div style="font-size:11.5px;color:var(--ctn-color-text-secondary);margin-top:4px;line-height:1.4;text-wrap:pretty">{{ r.desc }}</div>
+            </sc-if>
+          </div>
+        </a>
+      </sc-for>
+    </div>
+  </section>
+
+  <section style="padding:14px;border-bottom:1px solid var(--ctn-color-border-hairline)">
+    <div style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.13em;color:var(--ctn-color-text-muted)">STATION 4 · AT THE GATE</div>
+    <sc-if value="{{ hasGate }}" hint-placeholder-val="{{ true }}">
+      <div style="margin-top:10px;border:1px solid var(--ctn-color-text-primary);border-radius:6px;background:var(--ctn-color-surface-panel);padding:13px 14px">
+        <div style="font-family:var(--ctn-font-mono);font-size:13px;color:var(--ctn-color-text-primary);overflow-wrap:anywhere">{{ gate.name }}</div>
+        <div style="font-size:12px;color:var(--ctn-color-text-secondary);margin-top:6px;line-height:1.45;text-wrap:pretty">{{ gate.what }}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:10px">
+          <sc-for list="{{ gate.facts }}" as="f" hint-placeholder-count="3">
+            <div style="min-width:0">
+              <div style="font-family:var(--ctn-font-display);font-size:15px;color:var(--ctn-color-text-primary);font-variant-numeric:tabular-nums slashed-zero">{{ f.v }}</div>
+              <div style="font-size:10px;color:var(--ctn-color-text-muted);font-variant-caps:all-small-caps">{{ f.k }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="font-size:11.5px;color:var(--ctn-color-text-muted);margin-top:10px;line-height:1.5;text-wrap:pretty">{{ gate.clause }}</div>
+        <sc-if value="{{ gate.undecided }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;flex-direction:column;gap:7px;margin-top:12px">
+            <button onClick="{{ gate.arm }}" style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:13px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;background:{{ gate.armBg }};color:var(--ctn-color-text-primary);cursor:pointer;min-height:44px">{{ gate.armLabel }}</button>
+            <button onClick="{{ gate.approve }}" style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:13px;border:none;border-radius:6px;background:{{ gate.apprBg }};color:{{ gate.apprFg }};cursor:{{ gate.apprCursor }};min-height:44px">{{ gate.apprLabel }}</button>
+            <button onClick="{{ gate.deny }}" style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:13px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;background:none;color:var(--ctn-color-text-primary);cursor:pointer;min-height:44px">DENY WITH REASON</button>
+          </div>
+        </sc-if>
+        <sc-if value="{{ gate.decided }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:12px;border-top:1px solid var(--ctn-color-border-hairline);padding-top:10px">
+            <div style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.11em;color:var(--ctn-color-text-primary)">{{ gate.outcome }}</div>
+            <div style="font-size:11.5px;color:var(--ctn-color-text-muted);margin-top:5px;line-height:1.45;text-wrap:pretty">{{ gate.outcomeNote }}</div>
+            <a href="Audit.dc.html" style="display:block;margin-top:9px;font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:12px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;color:var(--ctn-color-text-primary);text-decoration:none;text-align:center;min-height:44px;box-sizing:border-box">FIND IT IN THE LEDGER</a>
+          </div>
+        </sc-if>
+        <div style="font-family:var(--ctn-font-display);font-size:7.5px;letter-spacing:0.1em;color:var(--ctn-color-text-muted);border:1px dashed var(--ctn-color-border-strong);padding:3px 7px;border-radius:3px;display:inline-block;margin-top:11px">SIMULATED ENDPOINT</div>
+      </div>
+    </sc-if>
+    <sc-if value="{{ noGate }}" hint-placeholder-val="{{ false }}">
+      <div style="margin-top:10px;border:1px dashed var(--ctn-color-border-strong);border-radius:6px;padding:14px">
+        <div style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.11em;color:var(--ctn-color-text-primary)">NOTHING WAITING ON A NAME</div>
+        <div style="font-size:11.5px;color:var(--ctn-color-text-muted);margin-top:6px;line-height:1.5;text-wrap:pretty">The gate is clear. Nothing drafted needs a human decision. An empty gate is the normal state; two of the last five watches ended this way.</div>
+      </div>
+    </sc-if>
+  </section>
+
+  <section style="padding:14px;border-bottom:1px solid var(--ctn-color-border-hairline)">
+    <div style="display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px">
+      <span style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.13em;color:var(--ctn-color-text-muted);flex:none">STATION 5 · THE LEDGER</span>
+      <span data-token style="font-family:var(--ctn-font-mono);font-size:11px;color:var(--ctn-color-text-muted);flex:none">head #{{ headSeq }}</span>
+      <span style="font-size:11px;color:var(--ctn-color-text-muted);flex:1 1 100%;line-height:1.45;text-wrap:pretty">{{ ledgerNote }}</span>
+    </div>
+    <div style="display:flex;flex-direction:column;margin-top:9px">
+      <sc-for list="{{ frames }}" as="f" hint-placeholder-count="5">
+        <div style="padding:9px 0;border-bottom:1px solid var(--ctn-color-border-hairline)">
+          <div style="display:flex;flex-wrap:wrap;align-items:baseline;gap:3px 9px">
+            <span data-token style="font-family:var(--ctn-font-mono);font-size:11px;color:var(--ctn-color-text-muted);flex:none">#{{ f.seq }}</span>
+            <span data-token style="font-family:var(--ctn-font-mono);font-size:11.5px;color:var(--ctn-color-text-primary);font-variant-numeric:tabular-nums;flex:none">{{ f.t }}</span>
+            <span style="font-family:var(--ctn-font-display);font-size:7.5px;letter-spacing:0.1em;color:var(--ctn-color-text-muted);flex:none">{{ f.kind }}</span>
+          </div>
+          <div style="font-size:11.5px;color:var(--ctn-color-text-secondary);margin-top:3px;line-height:1.4;overflow-wrap:anywhere">{{ f.actor }} · {{ f.action }}</div>
+          <div style="display:flex;flex-wrap:wrap;align-items:baseline;gap:3px 8px;margin-top:3px">
+            <span style="font-size:11px;color:var(--ctn-color-text-muted);flex:none">{{ f.outcome }}</span>
+            <button onClick="{{ f.reveal }}" style="font-family:var(--ctn-font-mono);font-size:11px;color:var(--ctn-color-text-muted);background:none;border:1px dotted var(--ctn-color-border-strong);border-radius:4px;min-height:46px;padding:6px 10px;cursor:pointer;max-width:100%;overflow-wrap:anywhere;text-align:left">{{ f.hash }} ▾</button>
+          </div>
+          <sc-if value="{{ f.open }}" hint-placeholder-val="{{ false }}">
+            <div style="font-family:var(--ctn-font-mono);font-size:10.5px;color:var(--ctn-color-text-muted);margin-top:4px;overflow-wrap:anywhere;line-height:1.45">{{ f.fullHash }}</div>
+          </sc-if>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <section style="padding:14px 14px 24px">
+    <div style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.13em;color:var(--ctn-color-text-muted)">NOT ON THE TOUR CARD</div>
+    <div style="font-size:11.5px;color:var(--ctn-color-text-muted);margin-top:7px;line-height:1.5;text-wrap:pretty">{{ exceptionIntro }}</div>
+    <div style="display:flex;flex-direction:column;gap:7px;margin-top:11px">
+      <sc-for list="{{ excepted }}" as="x" hint-placeholder-count="3">
+        <div style="border:1px dashed var(--ctn-color-border-strong);border-radius:6px;padding:11px 12px">
+          <div style="font-family:var(--ctn-font-display);font-size:8.5px;letter-spacing:0.1em;color:var(--ctn-color-text-primary)">{{ x.name }}</div>
+          <div style="font-size:11px;color:var(--ctn-color-text-muted);margin-top:4px;line-height:1.45;text-wrap:pretty">{{ x.why }}</div>
+          <div style="margin-top:9px;overflow:auto;border:1px solid var(--ctn-color-border-hairline);border-radius:4px;background:var(--ctn-color-surface-panel);max-height:270px">
+            <div style="min-width:{{ x.natural }};padding:11px 12px">
+              <sc-if value="{{ x.isRecorder }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;gap:7px">
+                  <div style="display:flex;align-items:baseline;gap:10px">
+                    <span style="width:132px;flex:none;font-family:var(--ctn-font-display);font-size:7.5px;letter-spacing:0.1em;color:var(--ctn-color-text-muted)">CHANNEL</span>
+                    <span style="flex:1;font-family:var(--ctn-font-mono);font-size:9.5px;color:var(--ctn-color-text-muted)">20:55 to 21:10 IST · one shared time axis</span>
+                  </div>
+                  <sc-for list="{{ x.lanes }}" as="ln" hint-placeholder-count="4">
+                    <div style="display:flex;align-items:center;gap:10px">
+                      <span style="width:132px;flex:none;font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.08em;color:var(--ctn-color-text-primary)">{{ ln.name }}</span>
+                      <div style="flex:1;height:20px;position:relative;background:var(--ctn-color-surface-well);border-radius:2px">
+                        <div style="position:absolute;top:4px;height:12px;left:{{ ln.left }};width:{{ ln.width }};background:{{ ln.fill }};border-radius:2px"></div>
+                      </div>
+                      <span style="width:62px;flex:none;font-family:var(--ctn-font-mono);font-size:9.5px;color:var(--ctn-color-text-muted);text-align:right">{{ ln.at }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+              <sc-if value="{{ x.isBlast }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;align-items:center;gap:14px">
+                  <svg width="230" height="230" viewBox="0 0 230 230" style="flex:none;display:block">
+                    <circle cx="115" cy="115" r="104" fill="none" stroke="var(--ctn-color-border-strong)" stroke-width="1.6" stroke-dasharray="6 5"></circle>
+                    <circle cx="115" cy="115" r="72" fill="none" stroke="var(--ctn-color-text-primary)" stroke-width="2"></circle>
+                    <circle cx="115" cy="115" r="52" fill="none" stroke="var(--ctn-color-text-secondary)" stroke-width="1.6"></circle>
+                    <circle cx="115" cy="115" r="30" fill="var(--ctn-color-surface-panel)" stroke="var(--ctn-color-border-strong)" stroke-width="1.4"></circle>
+                  </svg>
+                  <div style="min-width:150px;display:flex;flex-direction:column;gap:8px">
+                    <sc-for list="{{ x.rings }}" as="rg" hint-placeholder-count="3">
+                      <div>
+                        <div style="font-family:var(--ctn-font-display);font-size:15px;color:var(--ctn-color-text-primary);font-variant-numeric:tabular-nums slashed-zero">{{ rg.n }}</div>
+                        <div style="font-size:10.5px;color:var(--ctn-color-text-muted)">{{ rg.label }}</div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-if>
+              <sc-if value="{{ x.isLedger }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;gap:14px">
+                  <div style="flex:1;min-width:0">
+                    <div style="font-family:var(--ctn-font-display);font-size:8px;letter-spacing:0.1em;color:var(--ctn-color-text-muted)">SUPPORTS</div>
+                    <sc-for list="{{ x.supports }}" as="sp" hint-placeholder-count="3">
+                      <div style="font-size:11px;color:var(--ctn-color-text-secondary);margin-top:6px;line-height:1.4">{{ sp }}</div>
+                    </sc-for>
+                  </div>
+                  <div style="width:1px;flex:none;background:var(--ctn-color-border-strong)"></div>
+                  <div style="flex:1;min-width:0">
+                    <div style="font-family:var(--ctn-font-display);font-size:8px;letter-spacing:0.1em;color:var(--ctn-color-text-muted)">ARGUES AGAINST</div>
+                    <sc-for list="{{ x.counters }}" as="ct" hint-placeholder-count="2">
+                      <div style="font-size:11px;color:var(--ctn-color-text-secondary);margin-top:6px;line-height:1.4">{{ ct }}</div>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-if>
+            </div>
+          </div>
+          <div style="font-size:10.5px;color:var(--ctn-color-text-muted);margin-top:6px;line-height:1.4">{{ x.scrollHint }}</div>
+          <a href="{{ x.href }}" style="display:flex;align-items:center;justify-content:center;min-height:46px;box-sizing:border-box;margin-top:8px;font-family:var(--ctn-font-display);font-size:8.5px;letter-spacing:0.1em;border:1px solid var(--ctn-color-border-strong);border-radius:6px;color:var(--ctn-color-text-primary);text-decoration:none">OPEN IN THE FULL CONSOLE</a>
+        </div>
+      </sc-for>
+    </div>
+    <a href="Overview.dc.html" style="display:block;margin-top:14px;font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:13px;background:var(--ctn-color-surface-navy);color:var(--ctn-color-text-on-navy);border-radius:6px;text-decoration:none;text-align:center;min-height:44px;box-sizing:border-box">FULL CONSOLE</a>
+    <div style="font-size:11px;color:var(--ctn-color-text-muted);margin-top:6px;text-align:center;line-height:1.4">needs a screen 1280px or wider</div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:390,&quot;height&quot;:844}}">
+class Component extends DCLogic {
+  constructor(p){
+    super(p);
+    let breached = false;
+    try{ breached = new URLSearchParams(window.location.search).get('state') === 'breached'; }catch(e){}
+    this.state = {role:this.roleInit(), now:Date.now(), armed:false, decided:null, open:{}, breached};
+  }
+  roleInit(){ try{ return (window.CitinelRole && window.CitinelRole.get()) || 'analyst'; }catch(e){ return 'analyst'; } }
+  componentDidMount(){
+    if(window.CitinelRole) this.unsubRole = window.CitinelRole.subscribe(r=>{ if(r !== this.state.role) this.setState({role:r}); });
+    this.base = Date.now();
+    this.t = setInterval(()=>this.setState({now:Date.now()}), 1000);
+  }
+  componentWillUnmount(){ clearInterval(this.t); if(this.unsubRole) this.unsubRole(); }
+  arc(cx,cy,r,frac){
+    if(frac<=0) return '';
+    const a = Math.min(frac,0.9999)*2*Math.PI - Math.PI/2;
+    return `M ${cx} ${cy-r} A ${r} ${r} 0 ${frac>0.5?1:0} 1 ${(cx+r*Math.cos(a)).toFixed(1)} ${(cy+r*Math.sin(a)).toFixed(1)}`;
+  }
+  nodes(cx,cy,r,reached){
+    const R = React;
+    return ['caught','cited','gated','actioned','closed'].map((k,i)=>{
+      const a = (i/4)*2*Math.PI - Math.PI/2, x = cx+r*Math.cos(a), y = cy+r*Math.sin(a);
+      const on = i <= reached;
+      const stroke = on ? 'var(--ctn-color-state-stroke)' : 'var(--ctn-color-text-muted)';
+      const fill = on ? 'var(--ctn-color-state-node)' : 'var(--ctn-color-surface-panel)';
+      if(k==='gated') return R.createElement('circle',{key:i,cx:x,cy:y,r:2.6,fill:'var(--ctn-color-surface-panel)',stroke,strokeWidth:1.4,strokeDasharray:'2 2'});
+      if(k==='actioned') return R.createElement('rect',{key:i,x:x-2.4,y:y-2.4,width:4.8,height:4.8,transform:`rotate(45 ${x} ${y})`,fill,stroke,strokeWidth:1.6});
+      if(k==='closed') return R.createElement('circle',{key:i,cx:x,cy:y,r:3,fill,stroke,strokeWidth:1.6});
+      return R.createElement('circle',{key:i,cx:x,cy:y,r:2.3,fill,stroke,strokeWidth:1.2});
+    });
+  }
+  renderVals(){
+    const s = this.state, ciso = s.role === 'ciso', R = React;
+    const f = x=>{x=Math.max(0,x);return [3600,60,1].map(u=>String(Math.floor(x/u)%60).padStart(2,'0')).join(':');};
+    const base = this.base || s.now;
+    const remain = (3*3600+45*60) - Math.floor((s.now-base)/1000);
+    const breached = s.breached;
+
+    const ticks = [];
+    for(let i=0;i<12;i++){
+      const a = i/12*2*Math.PI - Math.PI/2, big = i%3===0;
+      ticks.push(R.createElement('line',{key:i,x1:120+(big?82:86)*Math.cos(a),y1:120+(big?82:86)*Math.sin(a),
+        x2:120+92*Math.cos(a),y2:120+92*Math.sin(a),stroke:'var(--ctn-color-text-muted)',strokeWidth:big?1.8:1}));
+    }
+
+    // ratified drop order · the narrow view is where columns actually drop
+    const inc = [
+      {sev:'CRITICAL', id:'INC-0417', ageS:2489, lane:'LANE B · HELD FOR A HUMAN', reached:3,
+       desc:'UPI beneficiary burst into a modified payout template · ₹18,40,000 held.', href:'Replay.dc.html'},
+      {sev:'HIGH', id:'INC-0846', ageS:1620, lane:'LANE B · HELD FOR A HUMAN', reached:2,
+       desc:'RDP relay account used outside the broker set; isolation drafted, undecided at relief.', href:'Replay.dc.html'},
+      {sev:'MEDIUM', id:'ALR-99138', ageS:940, lane:'LANE B · HELD FOR A HUMAN', reached:1,
+       desc:'OAuth consent to an unverified publisher. One mailbox readable by an unlisted app.', href:'Queue.dc.html'},
+      {sev:'LOW', id:'ALR-99120', ageS:410, lane:'LANE A · CLOSED ON CITATION', reached:4,
+       desc:'Benign parent MsMpEng.exe cited; closed deterministically without a model.', href:'Queue.dc.html'}
+    ];
+    const sevFg = {CRITICAL:'var(--ctn-color-severity-critical-text)', HIGH:'var(--ctn-color-severity-high)',
+      MEDIUM:'var(--ctn-color-text-primary)', LOW:'var(--ctn-color-text-muted)'};
+
+    const decided = s.decided;
+    const led = window.CitinelLedger ? window.CitinelLedger.all() : [];
+    const sessionFrames = led.slice(-3).reverse().map((e,i)=>({
+      seq:e.seq, t:new Date(e.at+330*60000).toISOString().slice(11,19), kind:e.kind,
+      actor:e.actor||'CITINEL', action:(e.record||'').split(' ')[0].replace('action=',''),
+      outcome:'this session', hash:'sha256:'+(88400+i).toString(16).padStart(7,'0'),
+      full:'sha256:'+(88400+i).toString(16).padStart(7,'0')+'c41e9b7ad0288f31447a92e11c04b5d6f0a3'
+    }));
+    const baseFrames = [
+      {seq:'88425', t:'23:14:06', kind:'HUMAN', actor:'a. deshmukh · L2', action:'SEAL_DRAFT certin_6hr_INC-0417', outcome:'sealed, unfiled',
+       hash:'e11c04b', full:'sha256:e11c04b5d6f0a3c41e9b7ad0288f31447a92e11c04b5d6f0a3c41e9b7ad0288f'},
+      {seq:'88423', t:'21:52:41', kind:'HUMAN', actor:'a. deshmukh · L2', action:'APPROVE egress_block_segment', outcome:'applied, 38 hosts',
+       hash:'c8b2049', full:'sha256:c8b2049f31447a92e11c04b5d6f0a3c41e9b7ad0288f31447a92e11c04b5d6f0'},
+      {seq:'88421', t:'21:52:08', kind:'HUMAN', actor:'a. deshmukh · L2', action:'APPROVE freeze_payout_template', outcome:'applied, 14 held',
+       hash:'a30f912', full:'sha256:a30f912e11c04b5d6f0a3c41e9b7ad0288f31447a92e11c04b5d6f0a3c41e9b7'},
+      {seq:'88418', t:'21:08:33', kind:'DECISION', actor:'Response Marshal', action:'GATE_HOLD freeze_payout_template', outcome:'held for a name',
+       hash:'7ad0288', full:'sha256:7ad0288f31447a92e11c04b5d6f0a3c41e9b7ad0288f31447a92e11c04b5d6f0'},
+      {seq:'88412', t:'21:03:52', kind:'DECISION', actor:'Correlator', action:'CHAIN_STITCH INC-0417', outcome:'6 citations',
+       hash:'f31447a', full:'sha256:f31447a92e11c04b5d6f0a3c41e9b7ad0288f31447a92e11c04b5d6f0a3c41e9'}
+    ];
+
+    return {
+      setAnalyst: ()=>{ this.setState({role:'analyst'}); if(window.CitinelRole) window.CitinelRole.set('analyst'); },
+      setCiso: ()=>{ this.setState({role:'ciso'}); if(window.CitinelRole) window.CitinelRole.set('ciso'); },
+      analystBg: ciso ? 'transparent' : 'var(--ctn-color-surface-navy)',
+      analystFg: ciso ? 'var(--ctn-color-text-muted)' : 'var(--ctn-color-text-on-navy)',
+      cisoBg: ciso ? 'var(--ctn-color-surface-navy)' : 'transparent',
+      cisoFg: ciso ? 'var(--ctn-color-text-on-navy)' : 'var(--ctn-color-text-muted)',
+
+      intro: ciso
+        ? 'A watchman\u2019s tour card: five stations in fixed order, one screen wide. You are reading it as sign-off authority. The gate below carries your name if you use it.'
+        : 'A watchman\u2019s tour card: five stations in fixed order, one screen wide. Everything here works at this width; the wide-screen instruments are named at the bottom with why.',
+
+      ticks,
+      digits: breached ? '+'+f(41*60+12) : f(remain),
+      masterArc: this.arc(120,120,92, breached ? 1 : 1 - remain/(6*3600)),
+      hand: (breached ? 360 : (1 - remain/(6*3600))*360).toFixed(2),
+      clockFg: breached ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-clock)',
+      clockNote: breached
+        ? 'The window closed 41 minutes ago. This is no longer a countdown. It is a reportable fact: the draft is sealed, unfiled, and the 41-minute delay is on the ledger.'
+        : ' CITINEL drafts the filing; a human signs it; the bank files it. Nothing on this card files anything.',
+
+      lanes: [
+        {tag:'LANE A · AUTONOMOUS', count:'39', name:'closed on a citation alone', border:'var(--ctn-color-border-hairline)', href:'Queue.dc.html'},
+        {tag:'LANE B · AT THE GATE', count:'02', name:'waiting for a named human', border:'var(--ctn-color-text-primary)', href:'Approvals.dc.html'}
+      ].map(l=>({...l, size: l.count.length >= 5 ? '19px' : l.count.length === 4 ? '24px' : '30px'})),
+
+      roundsNote: ciso
+        ? 'severity, id and age hold at every width. At this width the lane tag is kept. After severity, the second question is whether a machine closed it or a human still owes it a decision.'
+        : 'Severity, id and age never drop. Description drops first at this width, then rule id. The lane tag stays: it answers whether this needs you at all.',
+      rounds: inc.map(i=>({
+        sev:i.sev, sevFg:sevFg[i.sev], id:i.id, lane:i.lane, desc:i.desc, href:i.href,
+        age: String(Math.floor(i.ageS/60)).padStart(2,'0')+':'+String(i.ageS%60).padStart(2,'0'),
+        ageFg: i.ageS>1200 ? 'var(--ctn-color-severity-critical-text)' : i.ageS>600 ? 'var(--ctn-color-clock)' : 'var(--ctn-color-text-primary)',
+        edge: sevFg[i.sev],
+        arc: this.arc(17,17,13, i.reached/4),
+        nodes: this.nodes(17,17,13,i.reached),
+        showLane: true, showDesc: ciso
+      })),
+
+      hasGate: !!decided || true, noGate: false,
+      gate: {
+        name:'freeze:BULK_PAYOUT_TPL_07',
+        what: ciso
+          ? 'Freezes the payout template behind 14 staged beneficiaries. ₹18,40,000 at risk, none cleared. Your authority covers it; an L2 would need a second name above 60 nodes.'
+          : 'Freezes the payout template behind 14 staged beneficiaries so the money cannot move while the chain is confirmed.',
+        facts: [{v:'14', k:'nodes touched'}, {v:'60', k:'policy cap'}, {v:'₹18.4L', k:'held'}],
+        clause: ciso
+          ? 'Any freeze above ₹5,00,000 requires a named human. This batch is ₹18,40,000, so no autonomy detent could have fired it.'
+          : 'payout_freeze.rego · require_human_for_value. The rego source and the full decision trace are in the wide console.',
+        undecided: !decided, decided: !!decided,
+        armLabel: s.armed ? 'KEY ARMED · APPROVE UNLOCKED' : 'ARM THE KEY',
+        armBg: s.armed ? 'var(--ctn-color-surface-raised)' : 'transparent',
+        arm: ()=>this.setState(x=>({armed:!x.armed})),
+        apprLabel: s.armed ? (ciso ? 'APPROVE AS SIGN-OFF AUTHORITY' : 'APPROVE') : 'ARM THE KEY FIRST',
+        apprBg: s.armed ? 'var(--ctn-color-surface-navy)' : 'var(--ctn-color-surface-well)',
+        apprFg: s.armed ? 'var(--ctn-color-text-on-navy)' : 'var(--ctn-color-text-muted)',
+        apprCursor: s.armed ? 'pointer' : 'not-allowed',
+        approve: ()=>{ if(!this.state.armed) return;
+          if(window.__ledgerSafe) window.__ledgerSafe({tag:'narrow-appr', kind:'HUMAN', actor:'a.deshmukh · L2', link:'approve', label:'HUMAN APPROVE',
+            record:'action=APPROVE object=freeze:BULK_PAYOUT_TPL_07 nodes=14 surface=narrow endpoint=citinel-mock-finacle:v0.9 simulated=true'});
+          this.setState({decided:'approved', armed:false}); },
+        deny: ()=>{ if(window.__ledgerSafe) window.__ledgerSafe({tag:'narrow-deny', kind:'HUMAN', actor:'a.deshmukh · L2', link:'deny', label:'HUMAN DENY',
+            record:'action=DENY object=freeze:BULK_PAYOUT_TPL_07 reason=recorded_on_the_card surface=narrow'});
+          this.setState({decided:'denied', armed:false}); },
+        outcome: decided === 'approved' ? 'APPROVED · 14 NODES, ROLLBACK TOKEN ISSUED' : 'DENIED · DRAFTS DISCARDED, REASON RECORDED',
+        outcomeNote: decided === 'approved'
+          ? 'The receipt came from citinel-mock-finacle v0.9. No production system was touched; the mock returns success unconditionally, so this proves the right call was made with the right arguments and nothing more.'
+          : 'The incident stays cited and open. Your reason is on the ledger and the drafts are gone; nothing was executed.'
+      },
+
+      headSeq: led.length ? led[led.length-1].seq : '88425',
+      ledgerNote: 'Timestamp, actor, action, outcome and sequence hold at every width. The sequence is what makes a gap visible. The hash falls back to its first seven characters and reveals in full on tap.',
+      frames: sessionFrames.concat(baseFrames).slice(0,6).map((fr,i)=>({
+        seq:fr.seq, t:fr.t, kind:fr.kind, actor:fr.actor, action:fr.action, outcome:fr.outcome,
+        hash: (fr.hash||'').replace('sha256:','').slice(0,7),
+        fullHash: fr.full || fr.hash,
+        open: !!s.open[fr.seq],
+        reveal: ()=>this.setState(x=>({open:{...x.open, [fr.seq]: !x.open[fr.seq]}}))
+      })),
+
+      exceptionIntro: 'Three instruments are not reflowed, each for a named reason rather than a blanket one. WCAG 1.4.10 excepts two-dimensional data visualisations from reflow. It does not excuse removing them, so each sits here at its natural width inside a panel you scroll in both directions. The link is an enhancement, not the only route.',
+      excepted: [
+        {name:'SEVEN-LANE INVESTIGATION RECORDER', href:'Replay.dc.html', natural:'760px', isRecorder:true,
+         why:'Four parallel channels against one shared time axis. Stacking the lanes destroys the comparison the instrument exists to make. The claim is simultaneity.',
+         scrollHint:'scroll sideways to follow the axis to 21:10. the lanes stay aligned to it',
+         lanes:[
+           {name:'INGEST · Sentinel', left:'0%', width:'100%', fill:'var(--ctn-color-text-secondary)', at:'20:55'},
+           {name:'MATCH · Sigma', left:'12%', width:'9%', fill:'var(--ctn-color-state-cited)', at:'21:00'},
+           {name:'CORRELATE · Correlator', left:'26%', width:'34%', fill:'var(--ctn-color-state-cited)', at:'21:03'},
+           {name:'PROPOSE · Marshal', left:'62%', width:'6%', fill:'var(--ctn-color-severity-high)', at:'21:08'}
+         ]},
+        {name:'BLAST-RADIUS PLOT', href:'Approvals.dc.html', natural:'430px', isBlast:true,
+         why:'Concentric rings sized to real node counts against the policy cap. A circle either fits or it does not, so it sits here at full size and scrollable rather than shrunk into illegibility.',
+         scrollHint:'the dashed outer ring is the 60-node policy cap; scroll to see it whole',
+         rings:[{n:'14', label:'staged beneficiaries'},{n:'14', label:'direct · payout template'},{n:'03', label:'downstream branches'},{n:'60', label:'policy cap (dashed)'}]},
+        {name:'SUPPORTS ‖ ARGUES-AGAINST LEDGER', href:'Confidence.dc.html', natural:'620px', isLedger:true,
+         why:'The whole argument is the two columns side by side. Stacked, a visibly empty counter-evidence column reads as an absent section. That weakens the claim instead of reflowing it.',
+         scrollHint:'both columns stay side by side at this width. scroll rather than stack.',
+         supports:['8 beneficiary adds in 41s on one session id','payout template modified with maker-checker bypassed','egress to 185.62.x.x, not a permitted destination'],
+         counters:['a standing exception exists for opr_kiosk batch adds','the June maintenance window allows template writes, though its scope stops short of CBS']}
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

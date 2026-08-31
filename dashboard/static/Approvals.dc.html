@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="vendor/resources.js"></script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/fonts.css">
+<link rel="stylesheet" href="vendor/fonts.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/colors.primitive.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/colors.semantic.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/typography.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/spacing.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/brand.flagship.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/component.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/base.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/styles.css">
+<link rel="stylesheet" href="a11y.css">
+<link rel="stylesheet" href="motion.css">
+<script src="motion.js"></script>
+<script src="reveal.js"></script>
+<script src="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/_ds_bundle.js"></script>
+<script src="role.js"></script>
+<script src="route.js"></script>
+<script src="ledger.js"></script>
+<style>html,body{height:100%;overflow-y:hidden;overflow-x:auto}</style>
+<script src="api.js"></script>
+</helmet>
+<div data-screen-label="Approval card" data-citinel-page="approvals" style="display:flex;flex-direction:column;height:100vh;min-width:1280px;background:var(--ctn-color-surface-shell)">
+
+  <header style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;padding:7px 18px;min-height:52px;flex:none;border-bottom:1px solid var(--ctn-color-border-strong);background:var(--ctn-color-surface-panel);min-width:0">
+    <img src="assets/mark-white.png" alt="CITINEL · caught, cited, gated, actioned, closed" style="height:34px;width:90px;display:block;flex:none">
+    <nav style="display:flex;gap:2px;min-width:0;overflow-x:auto;scrollbar-width:thin;flex:1">
+      <a href="Overview.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">OVERVIEW</a>
+      <a href="Queue.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">QUEUE</a>
+      <a href="Replay.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">REPLAY</a>
+      <a href="Confidence.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">CONFIDENCE</a>
+      <a href="Evidence.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">EVIDENCE</a>
+      <a href="Approvals.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-primary);background:var(--ctn-color-surface-raised);border-radius:6px;white-space:nowrap">APPROVALS</a>
+      <a href="Compliance.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">COMPLIANCE</a>
+      <a href="Audit.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">AUDIT</a>
+      <a href="Corpus.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">CORPUS</a>
+      <a href="Eval.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">EVAL</a>
+      <a href="Policy.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">POLICY</a>
+      <a href="Handover.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">HANDOVER</a>
+      <a href="Executive.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">EXEC</a>
+      <a href="Settings.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">CONNECTORS</a>
+      <a href="Demo.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">DEMO</a>
+      <a href="Shell.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">SHELL</a>
+      <a href="Entry.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">ENTRY</a>
+          <a href="Narrow.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">NARROW</a>
+</nav>
+    <div style="flex:none;display:flex;align-items:center;gap:1px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;padding:2px">
+      <button onClick="{{ setAnalyst }}" style="font-family:var(--ctn-font-display);font-size:8.5px;letter-spacing:0.1em;padding:6px 11px;border:none;border-radius:4px;cursor:pointer;background:{{ analystBg }};color:{{ analystFg }}">ANALYST</button>
+      <button onClick="{{ setCiso }}" style="font-family:var(--ctn-font-display);font-size:8.5px;letter-spacing:0.1em;padding:6px 11px;border:none;border-radius:4px;cursor:pointer;background:{{ cisoBg }};color:{{ cisoFg }}">CISO</button>
+    </div>
+    <span style="flex:none;font-size:11.5px;color:var(--ctn-color-text-muted);font-variant-caps:all-small-caps;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:260px">{{ enteredFrom }}</span>
+    <span style="flex:none;font-family:var(--ctn-font-mono);font-size:12px;color:var(--ctn-color-text-secondary);white-space:nowrap">on duty: a. deshmukh · L2</span>
+  </header>
+
+  <div style="display:flex;flex:1;min-height:0;min-width:0" data-reflow-band>
+
+    <aside data-reflow-rail style="width:clamp(216px, 9.66rem + 10.66vw, 308px);flex:none;box-sizing:border-box;border-right:1px solid var(--ctn-color-border-hairline);background:var(--ctn-color-surface-panel);display:flex;flex-direction:column;min-height:0">
+      <div style="flex:none;padding:14px 16px 10px">
+        <div style="display:flex;align-items:baseline;gap:9px">
+          <span style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.14em;color:var(--ctn-color-text-muted)">SHOT QUEUE</span>
+          <span style="font-family:var(--ctn-font-display);font-size:18px;color:var(--ctn-color-text-primary);font-variant-numeric:tabular-nums slashed-zero;margin-left:auto">{{ pendingCount }}</span>
+        </div>
+        <div style="font-size:11px;color:var(--ctn-color-text-muted);margin-top:3px;line-height:1.4">gated actions wait here. nothing in this list has fired.</div>
+      </div>
+      <div style="flex:1;min-height:0;overflow-y:auto;padding:0 12px 12px;display:flex;flex-direction:column;gap:7px">
+        <sc-for list="{{ queue }}" as="q" hint-placeholder-count="5">
+          <button onClick="{{ q.pick }}" style="display:block;width:100%;text-align:left;padding:10px 12px;background:{{ q.bg }};border:1px {{ q.borderStyle }} {{ q.border }};border-left:3px solid {{ q.edge }};border-radius:6px;cursor:pointer;min-width:0">
+            <div style="display:flex;align-items:center;gap:8px;min-width:0">
+              <span style="flex:none;width:14px;height:14px;display:flex;align-items:center;justify-content:center">{{ q.glyph }}</span>
+              <span data-token style="font-family:var(--ctn-font-mono);font-size:11.5px;color:var(--ctn-color-text-secondary);flex:none">{{ q.inc }}</span>
+              <span style="font-family:var(--ctn-font-display);font-size:7.5px;letter-spacing:0.1em;color:var(--ctn-color-text-muted);border:1px {{ q.borderStyle }} var(--ctn-color-border-strong);padding:2px 5px;border-radius:3px;margin-left:auto;flex:0 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ q.classTag }}</span>
+            </div>
+            <div style="font-family:var(--ctn-font-mono);font-size:11.5px;color:{{ q.fg }};margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ q.name }}</div>
+            <div style="display:flex;align-items:baseline;gap:8px;margin-top:4px;min-width:0">
+              <span style="font-size:10.5px;color:var(--ctn-color-text-muted);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ q.status }}</span>
+              <span style="font-family:var(--ctn-font-display);font-size:11.5px;color:{{ q.clockFg }};font-variant-numeric:tabular-nums slashed-zero;flex:none">{{ q.clock }}</span>
+            </div>
+          </button>
+        </sc-for>
+      </div>
+      <div style="flex:none;border-top:1px solid var(--ctn-color-border-hairline);padding:11px 16px;font-size:11px;color:var(--ctn-color-text-muted);line-height:1.5">reversible actions fire on their own and post a rollback token. consequential ones cannot fire without a name on this card.</div>
+    </aside>
+
+    <main style="flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;overflow:hidden">
+
+      <div style="flex:none;display:flex;align-items:center;gap:16px;padding:13px 24px;border-bottom:1px solid var(--ctn-color-border-hairline);background:var(--ctn-color-surface-panel);min-width:0">
+        <x-import component-from-global-scope="CITINELDesignSystem_fdfd66.SeverityBadge" level="{{ act.sev }}" size="sm" hint-size="86px,22px"></x-import>
+        <span data-token style="font-family:var(--ctn-font-mono);font-size:15px;color:var(--ctn-color-text-primary);flex:none">{{ act.inc }}</span>
+        <span data-reveal style="font-family:var(--ctn-font-mono);font-size:15px;color:var(--ctn-color-text-primary);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ act.name }}</span>
+        <span style="font-family:var(--ctn-font-display);font-size:8.5px;letter-spacing:0.12em;color:var(--ctn-color-text-primary);border:1px {{ classBorderStyle }} var(--ctn-color-border-strong);padding:4px 9px;border-radius:999px;flex:none">{{ classTag }}</span>
+        <span data-token style="font-family:var(--ctn-font-mono);font-size:11.5px;color:var(--ctn-color-text-muted);flex:none">CERT-In</span>
+        <span style="font-family:var(--ctn-font-display);font-size:15px;color:{{ clockFg }};font-variant-numeric:tabular-nums slashed-zero;flex:none">{{ clockDigits2 }}</span>
+      </div>
+
+      <div data-reflow-band style="flex:1;min-height:0;display:flex;min-width:0">
+
+        <section data-primary-instrument style="flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;padding:14px 20px 0;overflow:hidden">
+          <div style="flex:none;display:flex;align-items:baseline;gap:12px;min-width:0">
+            <span style="font-family:var(--ctn-font-display);font-size:10px;letter-spacing:0.14em;color:var(--ctn-color-text-muted);flex:none">SHOT PLAN</span>
+            <span style="font-size:11.5px;color:var(--ctn-color-text-muted);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ plotNote }}</span>
+          </div>
+          <div style="flex:1;min-height:0;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:4px 0;position:relative">
+            <svg data-radial-svg viewBox="0 0 460 460" style="width:100%;max-width:min(100%, 460px);max-height:100%;height:auto;aspect-ratio:1;min-width:0;display:block;flex:0 1 auto;margin-inline:auto">
+              <circle cx="230" cy="230" r="{{ capR }}" fill="none" stroke="var(--ctn-color-border-strong)" stroke-width="2" stroke-dasharray="6 5"></circle>
+              <text x="230" y="{{ capLabelY }}" text-anchor="middle" font-family="var(--ctn-font-display)" font-size="9" letter-spacing="1.6" fill="var(--ctn-color-text-muted)">OPA BLAST CAP · {{ act.cap }} NODES</text>
+              <g>{{ ringShapes }}</g>
+              <g>{{ nodeDots }}</g>
+              <circle cx="230" cy="230" r="46" fill="var(--ctn-color-surface-panel)" stroke="var(--ctn-color-border-strong)" stroke-width="1.5"></circle>
+              <line x1="230" y1="230" x2="230" y2="{{ sweepTip }}" stroke="var(--ctn-color-text-primary)" stroke-width="1.5" transform="rotate({{ sweepAngle }} 230 230)" opacity="{{ sweepOpacity }}"></line>
+            </svg>
+      <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;gap:2px">
+        <div style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.16em;color:var(--ctn-color-text-muted);text-align:center"></div>
+        <div style="font-family:var(--ctn-font-display);font-size:30px;line-height:1;color:{{ totalFg }};font-variant-numeric:tabular-nums slashed-zero">{{ totalNodes }}</div>
+        <div style="font-family:var(--ctn-font-mono);font-size:9px;color:var(--ctn-color-text-muted);text-align:center">nodes touched · {{ capPct }} of cap</div>
+      </div>
+          </div>
+          <div style="flex:none;display:flex;gap:16px;flex-wrap:wrap;padding:0 0 10px;min-width:0">
+            <sc-for list="{{ ringLegend }}" as="r" hint-placeholder-count="3">
+              <div style="display:flex;align-items:center;gap:8px;min-width:0">
+                <span style="flex:none;display:flex;align-items:center">{{ r.swatch }}</span>
+                <span data-reveal style="font-size:11.5px;color:var(--ctn-color-text-secondary);white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis">{{ r.label }}</span>
+                <span style="font-family:var(--ctn-font-display);font-size:12.5px;color:var(--ctn-color-text-primary);font-variant-numeric:tabular-nums slashed-zero">{{ r.count }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </section>
+
+        <section data-reflow-rail style="width:clamp(260px, 11.67rem + 12.87vw, 372px);flex:none;box-sizing:border-box;border-left:1px solid var(--ctn-color-border-hairline);display:flex;flex-direction:column;min-height:0;overflow-y:auto;padding:14px 18px 18px;gap:14px">
+          <div style="min-width:0">
+            <div style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.14em;color:var(--ctn-color-text-muted)">WHAT IT DOES, IN WORDS</div>
+            <div style="font-size:13px;color:var(--ctn-color-text-primary);margin-top:6px;line-height:1.5;text-wrap:pretty">{{ act.plain }}</div>
+          </div>
+          <div style="min-width:0;overflow:hidden">
+            <div style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.14em;color:var(--ctn-color-text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">ASSETS AFFECTED</div>
+            <div style="display:flex;flex-direction:column;margin-top:7px">
+              <sc-for list="{{ act.assets }}" as="a" hint-placeholder-count="4">
+                <div style="display:flex;align-items:baseline;flex-wrap:wrap;gap:3px 9px;padding:6px 0;border-bottom:1px solid var(--ctn-color-border-hairline);min-width:0">
+                  <span data-token data-reveal style="font-family:var(--ctn-font-mono);font-size:11.5px;color:var(--ctn-color-text-primary);flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ a.name }}</span>
+                  <span data-reveal style="font-size:11px;color:var(--ctn-color-text-muted);flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ a.note }}</span>
+                  <span style="font-family:var(--ctn-font-display);font-size:7.5px;letter-spacing:0.1em;color:var(--ctn-color-text-muted);border:1px solid var(--ctn-color-border-strong);padding:2px 5px;border-radius:3px;flex:none">{{ a.type }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          <div style="min-width:0">
+            <div style="display:flex;align-items:baseline;gap:10px;min-width:0">
+              <span style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.14em;color:var(--ctn-color-text-muted);flex:none">GOVERNING CLAUSE</span>
+              <span data-reveal style="font-family:var(--ctn-font-mono);font-size:11px;color:var(--ctn-color-text-muted);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ act.policyFile }}</span>
+            </div>
+            <sc-if value="{{ analyst }}" hint-placeholder-val="{{ true }}">
+              <div style="margin-top:7px">
+                <x-import component-from-global-scope="CITINELDesignSystem_fdfd66.LogWell" dense="{{ true }}" hint-size="100%,110px">{{ act.rego }}</x-import>
+              </div>
+            </sc-if>
+            <sc-if value="{{ ciso }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:7px;font-size:13px;color:var(--ctn-color-text-primary);line-height:1.5;text-wrap:pretty">{{ clausePlain }}</div>
+              <div style="margin-top:11px;border-top:1px solid var(--ctn-color-border-hairline);padding-top:10px">
+                <div style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.12em;color:var(--ctn-color-text-muted)">PRECEDENT AND AUTHORITY</div>
+                <div style="display:flex;flex-direction:column;gap:7px;margin-top:8px">
+                  <sc-for list="{{ precedent }}" as="p" hint-placeholder-count="3">
+                    <div style="display:flex;gap:11px;min-width:0"><span style="font-size:11px;color:var(--ctn-color-text-muted);width:104px;flex:none;line-height:1.4">{{ p.k }}</span><span style="font-size:12px;color:var(--ctn-color-text-primary);flex:1;min-width:0;line-height:1.45">{{ p.v }}</span></div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-if>
+            <div style="margin-top:7px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;min-width:0">
+              <x-import component-from-global-scope="CITINELDesignSystem_fdfd66.CitationChip" locator="{{ act.decisionLocator }}" size="sm" hint-size="220px,22px"></x-import>
+              <dc-import name="StandardRef" standard="OPA" version="rego v1" locator="{{ traceRef }}" size="sm" hint-size="280px,24px"></dc-import>
+              <button onClick="{{ toggleTrace }}" style="font-family:var(--ctn-font-display);font-size:8.5px;letter-spacing:0.1em;padding:6px 10px;border:1px {{ traceStyle }} var(--ctn-color-border-strong);border-radius:6px;background:none;color:var(--ctn-color-text-primary);cursor:pointer;white-space:nowrap">{{ traceLabel }}</button>
+            </div>
+            <sc-if value="{{ traceOpen }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:7px">
+                <x-import component-from-global-scope="CITINELDesignSystem_fdfd66.LogWell" dense="{{ true }}" hint-size="100%,180px">{{ trace }}</x-import>
+              </div>
+            </sc-if>
+          </div>
+          <div style="min-width:0">
+            <div style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.14em;color:var(--ctn-color-text-muted)">REVERSAL PATH</div>
+            <div style="font-size:12px;color:var(--ctn-color-text-secondary);margin-top:6px;line-height:1.45">{{ act.reversal }}</div>
+          </div>
+          <sc-if value="{{ hasToken }}" hint-placeholder-val="{{ false }}">
+            <div style="border:1px solid var(--ctn-color-border-strong);border-radius:6px;padding:12px 13px;min-width:0">
+              <div style="display:flex;align-items:center;gap:9px;min-width:0">
+                <span style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.12em;color:var(--ctn-color-text-primary);flex:none">ROLLBACK TOKEN</span>
+                <span style="font-family:var(--ctn-font-display);font-size:13px;color:var(--ctn-color-clock);font-variant-numeric:tabular-nums slashed-zero;margin-left:auto;flex:none">{{ tokenExpiry }}</span>
+              </div>
+              <div style="font-family:var(--ctn-font-mono);font-size:12px;color:var(--ctn-color-text-primary);margin-top:6px;overflow-wrap:anywhere">{{ tokenValue }}</div>
+              <div style="font-size:11px;color:var(--ctn-color-text-muted);margin-top:5px;line-height:1.45">{{ tokenNote }}</div>
+              <button onClick="{{ rollback }}" style="margin-top:9px;font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:8px 12px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;background:none;color:var(--ctn-color-text-primary);cursor:pointer">ROLL BACK NOW</button>
+            </div>
+          </sc-if>
+          <div style="border:1px solid var(--ctn-color-border-strong);border-radius:6px;min-width:0">
+            <div style="display:flex;align-items:baseline;gap:10px;padding:10px 13px 8px;border-bottom:1px solid var(--ctn-color-border-hairline);flex-wrap:wrap;min-width:0">
+              <span style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.12em;color:var(--ctn-color-text-primary);flex:none">INTENT PREVIEW</span>
+              <span style="font-size:11px;color:var(--ctn-color-text-muted);flex:1;min-width:0;line-height:1.4">{{ intentLead }}</span>
+            </div>
+            <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);min-width:0">
+              <div style="padding:10px 13px;border-right:1px solid var(--ctn-color-border-hairline);min-width:0">
+                <div style="font-family:var(--ctn-font-display);font-size:8px;letter-spacing:0.1em;color:var(--ctn-color-text-muted)">WILL DO</div>
+                <div style="display:flex;flex-direction:column;gap:6px;margin-top:7px">
+                  <sc-for list="{{ willDo }}" as="w" hint-placeholder-count="4">
+                    <div style="display:flex;align-items:baseline;gap:8px;min-width:0">
+                      <svg width="10" height="10" viewBox="0 0 12 12" style="flex:none;margin-top:3px"><rect x="2" y="2" width="8" height="8" transform="rotate(45 6 6)" fill="var(--ctn-color-state-node)" stroke="var(--ctn-color-state-stroke)" stroke-width="1.6"></rect></svg>
+                      <span style="font-size:12px;color:var(--ctn-color-text-primary);flex:1;min-width:0;line-height:1.45">{{ w }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+              <div style="padding:10px 13px;min-width:0">
+                <div style="font-family:var(--ctn-font-display);font-size:8px;letter-spacing:0.1em;color:var(--ctn-color-text-muted)">WILL NOT DO</div>
+                <div style="display:flex;flex-direction:column;gap:6px;margin-top:7px">
+                  <sc-for list="{{ willNot }}" as="w" hint-placeholder-count="4">
+                    <div style="display:flex;align-items:baseline;gap:8px;min-width:0">
+                      <svg width="10" height="10" viewBox="0 0 12 12" style="flex:none;margin-top:3px"><path d="M 2 6 H 10" stroke="var(--ctn-color-text-disabled)" stroke-width="1.8"></path></svg>
+                      <span style="font-size:12px;color:var(--ctn-color-text-muted);flex:1;min-width:0;line-height:1.45">{{ w }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </div>
+            <div style="padding:8px 13px;border-top:1px solid var(--ctn-color-border-hairline);font-size:11px;color:var(--ctn-color-text-muted);line-height:1.45;text-wrap:pretty">{{ intentNote }}</div>
+          </div>
+          <a href="Replay.dc.html?at={{ act.at }}" style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:9px 12px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;color:var(--ctn-color-text-primary);text-decoration:none;text-align:center">SEE WHY · REPLAY AT THE PROPOSAL</a>
+        </section>
+      </div>
+
+      <div style="flex:none;border-top:2px solid var(--ctn-color-border-strong);background:var(--ctn-color-surface-panel);padding:14px 24px;display:flex;align-items:center;gap:20px;min-width:0">
+        <div style="flex:none;display:flex;align-items:center;gap:12px">
+          <svg width="76" height="76" viewBox="0 0 76 76" style="flex:none">
+            <circle cx="38" cy="38" r="30" fill="none" stroke="var(--ctn-color-border-strong)" stroke-width="1.5"></circle>
+            <path d="{{ stateArc }}" fill="none" stroke="var(--ctn-color-state-cited)" stroke-width="{{ stateWeight }}"></path>
+            <g>{{ stateNodes }}</g>
+          </svg>
+          <div style="min-width:0">
+            <div style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.14em;color:var(--ctn-color-text-muted)">INCIDENT ARC</div>
+            <div style="font-family:var(--ctn-font-display);font-size:13px;color:var(--ctn-color-text-primary);margin-top:3px">{{ stateLabel }}</div>
+          </div>
+        </div>
+
+        <sc-if value="{{ isGated }}" hint-placeholder-val="{{ true }}">
+          <div style="flex:1;display:flex;align-items:center;gap:18px;min-width:0">
+            <button onClick="{{ toggleKey }}" style="display:flex;align-items:center;gap:11px;background:none;border:none;cursor:pointer;padding:0;flex:none">
+              <svg width="54" height="56" viewBox="0 0 54 56">
+                <circle cx="27" cy="27" r="22" fill="var(--ctn-color-surface-raised)" stroke="var(--ctn-color-border-strong)" stroke-width="1.5"></circle>
+                <g transform="rotate({{ keyAngle }} 27 27)" style="transition:transform 0.4s cubic-bezier(0.3,1.5,0.5,1)">
+                  <rect x="24.5" y="8" width="5" height="19" rx="2.5" fill="{{ keyColor }}"></rect>
+                  <circle cx="27" cy="27" r="7" fill="var(--ctn-color-surface-navy)" stroke="{{ keyColor }}" stroke-width="2"></circle>
+                </g>
+                <path d="M 13 47 A 22 22 0 0 0 41 47" fill="none" stroke="var(--ctn-color-border-strong)" stroke-width="1.2"></path>
+              </svg>
+              <div style="text-align:left">
+                <div style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.1em;color:{{ keyLabelFg }}">{{ keyLabel }}</div>
+                <div style="font-size:11px;color:var(--ctn-color-text-muted);margin-top:2px">{{ keyNote }}</div>
+              </div>
+            </button>
+            <div style="flex:1;min-width:0">
+              <div style="display:flex;align-items:center;gap:9px;min-width:0">
+                <span style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.12em;color:var(--ctn-color-text-muted);flex:none">FIRING LINE</span>
+                <span style="font-size:11.5px;color:var(--ctn-color-text-secondary);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ continuityNote }}</span>
+              </div>
+              <div style="height:5px;background:var(--ctn-color-surface-well);border:1px solid var(--ctn-color-border-hairline);border-radius:3px;margin-top:6px;overflow:hidden">
+                <div style="height:100%;width:{{ continuityPct }};background:{{ continuityFill }};transition:width 0.12s linear"></div>
+              </div>
+            </div>
+            <x-import component-from-global-scope="CITINELDesignSystem_fdfd66.Button" variant="approve" size="lg" disabled="{{ approveDisabled }}" on-click="{{ approve }}" hint-size="230px,44px">{{ approveLabel }}</x-import>
+            <x-import component-from-global-scope="CITINELDesignSystem_fdfd66.Button" variant="deny" size="lg" on-click="{{ deny }}" hint-size="110px,44px">DENY</x-import>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isFiring }}" hint-placeholder-val="{{ false }}">
+          <div style="flex:1;display:flex;align-items:center;gap:16px;min-width:0">
+            <span style="font-family:var(--ctn-font-display);font-size:12px;letter-spacing:0.1em;color:var(--ctn-color-text-primary);flex:none">EXECUTING</span>
+            <span style="font-family:var(--ctn-font-display);font-size:7.5px;letter-spacing:0.1em;color:var(--ctn-color-text-muted);border:1px dashed var(--ctn-color-border-strong);padding:3px 7px;border-radius:3px;flex:none">SIMULATED ENDPOINT</span>
+            <span style="font-size:12.5px;color:var(--ctn-color-text-secondary);flex:1;min-width:0">{{ firingNote }}</span>
+            <span data-motion-signal style="font-family:var(--ctn-font-display);font-size:22px;color:var(--ctn-color-text-primary);font-variant-numeric:tabular-nums slashed-zero;flex:none">{{ firedNodes }}/{{ totalNodes }}</span>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isDone }}" hint-placeholder-val="{{ false }}">
+          <div style="flex:1;display:flex;align-items:center;gap:16px;min-width:0">
+            <div style="flex:1;min-width:0">
+              <div style="font-size:13.5px;color:var(--ctn-color-text-primary)">{{ doneHeadline }}</div>
+              <div style="font-size:11.5px;color:var(--ctn-color-text-muted);margin-top:2px">{{ doneNote }}</div>
+              <div style="display:flex;align-items:center;gap:8px;margin-top:6px;min-width:0">
+                <span style="font-family:var(--ctn-font-display);font-size:7.5px;letter-spacing:0.1em;color:var(--ctn-color-text-muted);border:1px dashed var(--ctn-color-border-strong);padding:3px 7px;border-radius:3px;flex:none">SIMULATED ENDPOINT</span>
+                <span style="font-size:11px;color:var(--ctn-color-text-muted);flex:1;min-width:0;line-height:1.4">{{ simNote }}</span>
+              </div>
+            </div>
+            <span style="font-family:var(--ctn-font-display);font-size:8px;letter-spacing:0.1em;color:var(--ctn-color-text-muted);border:1px solid var(--ctn-color-border-strong);padding:5px 9px;border-radius:3px;flex:none;align-self:center">SEALED</span>
+            <a href="Audit.dc.html" style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:10px 14px;background:var(--ctn-color-surface-navy);color:var(--ctn-color-text-on-navy);border-radius:6px;text-decoration:none;flex:none">FIND IT IN THE LEDGER</a>
+            <a href="Queue.dc.html" style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:10px 14px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;color:var(--ctn-color-text-primary);text-decoration:none;flex:none">BACK TO THE QUEUE</a>
+            <a href="Audit.dc.html" style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:10px 14px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;color:var(--ctn-color-text-primary);text-decoration:none;flex:none">VIEW LEDGER ENTRY</a>
+            <button onClick="{{ reset }}" style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:10px 14px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;background:none;color:var(--ctn-color-text-primary);cursor:pointer;flex:none">RE-OPEN CARD</button>
+          </div>
+        </sc-if>
+      </div>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1600,&quot;height&quot;:900}}">
+class Component extends DCLogic {
+  constructor(p){
+    super(p);
+    this.actions = [
+      {id:'a1', inc:'INC-0417', sev:'critical', at:92, cls:'consequential',
+       name:'FREEZE:BULK_PAYOUT_TPL_07', waitS:761,
+       plain:'Holds all fourteen staged payouts on template BULK_PAYOUT_TPL_07, worth ₹18,40,000, before release. Teller counters and every other payout template keep running.',
+       assets:[
+         {name:'BULK_PAYOUT_TPL_07', type:'TEMPLATE', note:'14 beneficiaries appended 21:03'},
+         {name:'upi-sw-01', type:'HOST', note:'switch holds the batch, does not stop'},
+         {name:'br-kolh-04 · br-satara-02 · br-baram-01', type:'BRANCH', note:'destination branches of the staged payouts'},
+         {name:'finacle_batch', type:'ACCOUNT', note:'service account owning the template'}
+       ],
+       policyFile:'payout_freeze.rego · clause require_human_for_value',
+       rego:`package citinel.payout
+
+freeze_requires_approval {
+  input.action.kind == "FREEZE"
+  input.action.value_inr > 500000
+}
+
+deny[msg] {
+  freeze_requires_approval
+  not input.decision.human_approver
+  msg := "value above 5,00,000 · a named human must approve"
+}
+
+blast_cap := 250`,
+       decisionLocator:'opa/decision.log:5527',
+       rings:[
+         {label:'payout records held', count:14, note:'direct'},
+         {label:'accounts referenced', count:14, note:'beneficiary'},
+         {label:'branch systems notified', count:3, note:'downstream'}
+       ],
+       cap:250,
+       reversal:'reversible by any L2 within 24h with the rollback token; after 24h the freeze lapses on its own unless renewed. reversal is itself a ledger entry.'},
+
+      {id:'a2', inc:'INC-0417', sev:'critical', at:92, cls:'consequential',
+       name:'EGRESS_BLOCK:10.4.7.0/24', waitS:761,
+       plain:'Blocks outbound traffic from the branch kiosk segment at br-fw-01. Teller workstations sit on a different VLAN and are untouched; inbound branch banking continues.',
+       assets:[
+         {name:'10.4.7.0/24', type:'SEGMENT', note:'38 live hosts, kiosk VLAN'},
+         {name:'br-fw-01', type:'FIREWALL', note:'rule inserted at position 4'},
+         {name:'BR-KIOSK-07', type:'HOST', note:'the originating kiosk'},
+         {name:'kiosk-print-svc', type:'SERVICE', note:'loses cloud print, degrades gracefully'}
+       ],
+       policyFile:'network_containment.rego · clause segment_scope',
+       rego:`package citinel.network
+
+egress_block_allowed {
+  input.action.kind == "EGRESS_BLOCK"
+  net.cidr_contains("10.4.0.0/16", input.action.cidr)
+  count(input.action.affected_hosts) <= data.caps.segment
+}
+
+deny[msg] {
+  input.action.kind == "EGRESS_BLOCK"
+  not egress_block_allowed
+  msg := "outside branch supernet or over segment cap"
+}`,
+       decisionLocator:'opa/decision.log:5527',
+       rings:[
+         {label:'hosts in segment', count:38, note:'direct'},
+         {label:'services losing egress', count:6, note:'downstream'},
+         {label:'firewall rules touched', count:1, note:'config'}
+       ],
+       cap:250,
+       reversal:'rule carries a 24h expiry and a rollback token; removing it restores egress in under a minute. no config outside br-fw-01 is changed.'},
+
+      {id:'a3', inc:'INC-0846', sev:'high', at:92, cls:'consequential',
+       name:'DISABLE_ACCOUNT:svc_rdp_relay', waitS:1523,
+       plain:'Disables the production service account svc_rdp_relay in Active Directory. This account brokers RDP sessions for four branch jump hosts; disabling it will drop live sessions.',
+       assets:[
+         {name:'svc_rdp_relay', type:'ACCOUNT', note:'production service account, AD'},
+         {name:'br-jump-02', type:'HOST', note:'source of the lateral movement'},
+         {name:'br-jump-01 · 03 · 04', type:'HOST', note:'also brokered by this account'},
+         {name:'cbs-app-04', type:'HOST', note:'destination of the observed session'},
+         {name:'11 active RDP sessions', type:'SESSION', note:'will terminate immediately'}
+       ],
+       policyFile:'identity.rego · clause production_account_guard',
+       rego:`package citinel.identity
+
+production_account {
+  input.asset.tier == "production"
+  input.asset.kind == "service_account"
+}
+
+deny[msg] {
+  input.action.kind == "DISABLE_ACCOUNT"
+  production_account
+  not input.decision.human_approver
+  msg := "production service account · never automatic, at any autonomy detent"
+}`,
+       decisionLocator:'opa/decision.log:5531',
+       rings:[
+         {label:'accounts disabled', count:1, note:'direct'},
+         {label:'jump hosts losing broker', count:4, note:'downstream'},
+         {label:'live sessions dropped', count:11, note:'downstream'},
+         {label:'branch users affected', count:23, note:'blast'}
+       ],
+       cap:250,
+       reversal:'re-enabling is a second drafted action. AD group membership is restored from the pre-change snapshot referenced in the ledger entry.'},
+
+      {id:'a4', inc:'INC-0845', sev:'medium', at:92, cls:'reversible', executed:true,
+       name:'QUARANTINE_MAIL:msg-88213', waitS:0, firedAgo:1840, tokenTtl:86400,
+       token:'rbk_88213_7f2ac9e4',
+       plain:'Moved eleven copies of the phishing message from staff mailboxes into quarantine. Nothing was deleted; every message is restorable byte-for-byte.',
+       assets:[
+         {name:'msg-88213', type:'MESSAGE', note:'11 recipients, one sender'},
+         {name:'m365 tenant', type:'TENANT', note:'quarantine folder, 30-day retention'}
+       ],
+       policyFile:'mail.rego · clause reversible_autonomous',
+       rego:`package citinel.mail
+
+autonomous_allowed {
+  input.action.kind == "QUARANTINE_MAIL"
+  input.action.reversible == true
+  input.action.destructive == false
+}
+
+rollback_token_required {
+  autonomous_allowed
+}`,
+       decisionLocator:'opa/decision.log:5498',
+       rings:[
+         {label:'messages quarantined', count:11, note:'direct'},
+         {label:'mailboxes touched', count:11, note:'direct'},
+         {label:'rules changed', count:0, note:'none'}
+       ],
+       cap:250,
+       reversal:'one click with the token restores all eleven messages to their original folders. the token expires in 24h; after that a restore is a fresh drafted action.'},
+
+      {id:'a5', inc:'INC-0845', sev:'medium', at:92, cls:'reversible', executed:true,
+       name:'BLOCK_SENDER:billing@sahyadri-settlements.co', waitS:0, firedAgo:3120, tokenTtl:86400,
+       token:'rbk_88209_c14b7702',
+       plain:'Added the sender domain to the tenant block list. Mail from it is rejected at the edge with a bounce the sender can read; no existing message was altered.',
+       assets:[
+         {name:'sahyadri-settlements.co', type:'DOMAIN', note:'registered 9 days before the campaign'},
+         {name:'m365 edge policy', type:'POLICY', note:'one entry appended'}
+       ],
+       policyFile:'mail.rego · clause reversible_autonomous',
+       rego:`package citinel.mail
+
+autonomous_allowed {
+  input.action.kind == "BLOCK_SENDER"
+  input.action.reversible == true
+  not data.allowlist[input.action.domain]
+}`,
+       decisionLocator:'opa/decision.log:5491',
+       rings:[
+         {label:'domains blocked', count:1, note:'direct'},
+         {label:'policy entries added', count:1, note:'config'},
+         {label:'mailboxes affected', count:0, note:'none'}
+       ],
+       cap:250,
+       reversal:'removing the block list entry with the token restores delivery immediately. the domain stays on a watch list either way.'}
+    ];
+    this.actions.forEach(a=>{ a.total = a.rings.reduce((n,r)=>n+r.count,0); });
+    let sel = 'a1';
+    try{
+      const q = new URLSearchParams(window.location.search).get('action');
+      if(q && this.actions.some(a=>a.id===q)) sel = q;
+    }catch(e){}
+    this.state = {role:this.roleInit(), sel, now:Date.now(), armed:false, phase:{}, fired:0, denied:{}, rolled:{}, trace:false};
+  }
+  componentDidMount(){ this.roleMount();
+    this.base = Date.now();
+    this.t = setInterval(()=>this.setState({now:Date.now()}),1000);
+  }
+  componentWillUnmount(){ clearInterval(this.t); clearInterval(this.f); clearTimeout(this.fDone); }
+  arcPath(cx,cy,r,frac){
+    if(frac<=0) return '';
+    const a = Math.min(frac,0.9999)*2*Math.PI - Math.PI/2;
+    return `M ${cx} ${cy-r} A ${r} ${r} 0 ${frac>0.5?1:0} 1 ${(cx+r*Math.cos(a)).toFixed(1)} ${(cy+r*Math.sin(a)).toFixed(1)}`;
+  }
+  qGlyph(kind){
+    const R = React;
+    if(kind==='closed') return R.createElement('svg',{width:13,height:13,viewBox:'0 0 16 16'},[
+      R.createElement('circle',{key:'o',cx:8,cy:8,r:6.2,fill:'none',stroke:'var(--ctn-color-state-cited)',strokeWidth:1.7}),
+      R.createElement('circle',{key:'i',cx:8,cy:8,r:2.6,fill:'var(--ctn-color-state-node)',stroke:'var(--ctn-color-state-stroke)',strokeWidth:1})]);
+    if(kind==='actioned') return R.createElement('svg',{width:13,height:13,viewBox:'0 0 16 16'},
+      R.createElement('rect',{x:4,y:4,width:8,height:8,transform:'rotate(45 8 8)',fill:'var(--ctn-color-state-node)',stroke:'var(--ctn-color-state-stroke)',strokeWidth:2.4}));
+    if(kind==='denied') return R.createElement('svg',{width:12,height:12,viewBox:'0 0 12 12'},
+      R.createElement('rect',{x:2.5,y:2.5,width:7,height:7,fill:'var(--ctn-color-state-deny)'}));
+    return R.createElement('svg',{width:13,height:13,viewBox:'0 0 16 16'},
+      R.createElement('circle',{cx:8,cy:8,r:6,fill:'none',stroke:'var(--ctn-color-state-stroke)',strokeWidth:1.9,strokeDasharray:'3.5 3.5'}));
+  }
+  fmt(x){ x=Math.max(0,x); return [3600,60,1].map(u=>String(Math.floor(x/u)%60).padStart(2,'0')).join(':'); }
+  phaseOf(a){
+    const s = this.state;
+    if(s.denied[a.id]) return 'denied';
+    if(s.rolled[a.id]) return 'rolled';
+    if(s.phase[a.id]) return s.phase[a.id];
+    return a.executed ? 'done' : 'gated';
+  }
+  baseVals(){
+    const s = this.state, R = React;
+    const act = this.actions.find(a=>a.id===s.sel) || this.actions[0];
+    const phase = this.phaseOf(act);
+    const elapsed = Math.floor((s.now - (this.base||s.now))/1000);
+    const total = act.rings.reduce((n,r)=>n+r.count,0);
+    const capR = 196;
+    // radius reads magnitude, but scope order is concentric: a downstream ring can never sit
+    // inside or on top of the direct ring it follows, even when the node counts are equal.
+    const radii = [];
+    act.rings.forEach((ring, i) => {
+      let rr = 52 + (capR-58)*Math.sqrt(Math.max(ring.count,1)/act.cap);
+      if(i > 0) rr = Math.max(rr, radii[i-1] + 15);
+      radii.push(rr);
+    });
+    const rOf = (c, i) => radii[i];
+    const firedFrac = phase==='firing' ? s.fired/Math.max(total,1) : (phase==='done' ? 1 : 0);
+    const ringShapes = [], nodeDots = [];
+    let seen = 0;
+    act.rings.forEach((ring, ri)=>{
+      const rr = rOf(ring.count, ri);
+      ringShapes.push(R.createElement('circle',{key:'r'+ri, cx:230, cy:230, r:rr, fill:'none', stroke:'var(--ctn-color-border-hairline)', strokeWidth:1}));
+      // No text on the arcs. A label placed above its own ring at the centreline sits where
+      // every arc is flattest, and rings are only guaranteed 15 units apart while a 9.5px
+      // label needs ~16 — so the ring above always cut through the glyphs. The counts were
+      // already duplicated in the legend beneath the plot, so they move there entirely and
+      // each legend row is keyed to its ring by a scaled radius swatch. This is the shot-plan
+      // idiom anyway: a blasting plan tabulates charges beside the plot, never on the rings.
+      const shown = Math.min(ring.count, 44);
+      for(let i=0;i<shown;i++){
+        const ang = (i/Math.max(shown,1))*2*Math.PI - Math.PI/2 + ri*0.22;
+        const on = (seen + i) < Math.round(firedFrac*total);
+        nodeDots.push(R.createElement('circle',{key:'d'+ri+'_'+i,
+          cx: 230+rr*Math.cos(ang), cy: 230+rr*Math.sin(ang), r: 3.4,
+          fill: on ? 'var(--ctn-color-state-node)' : 'var(--ctn-color-surface-shell)',
+          stroke: on ? 'var(--ctn-color-state-cited)' : 'var(--ctn-color-border-strong)', strokeWidth: on?1.8:1.2}));
+      }
+      seen += ring.count;
+    });
+    const stateSeq = ['caught','cited','gated','actioned','closed'];
+    const reachedIdx = phase==='done' ? 3 : phase==='denied' ? 2 : 2;
+    const stateFrac = phase==='done' ? 0.75 : 0.5;
+    const stateNodes = stateSeq.map((k,i)=>{
+      const f = i/4, a = f*2*Math.PI - Math.PI/2, cx = 38+30*Math.cos(a), cy = 38+30*Math.sin(a);
+      const on = i <= reachedIdx;
+      const stroke = phase==='denied' && i===2 ? 'var(--ctn-color-state-deny)' : on ? 'var(--ctn-color-state-stroke)' : 'var(--ctn-color-text-disabled)';
+      if(k==='gated' && phase==='denied') return R.createElement('rect',{key:i,x:cx-4.5,y:cy-4.5,width:9,height:9,fill:'var(--ctn-color-state-deny)'});
+      if(k==='gated') return R.createElement('circle',{key:i,cx,cy,r:5,fill:'var(--ctn-color-surface-panel)',stroke,strokeWidth:1.9,strokeDasharray:'3 3'});
+      if(k==='actioned') return R.createElement('rect',{key:i,x:cx-4.5,y:cy-4.5,width:9,height:9,transform:`rotate(45 ${cx} ${cy})`,fill: on?'var(--ctn-color-state-node)':'var(--ctn-color-surface-panel)',stroke,strokeWidth:2.4});
+      if(k==='closed') return R.createElement('circle',{key:i,cx,cy,r:5.5,fill: on?'var(--ctn-color-state-node)':'var(--ctn-color-surface-panel)',stroke,strokeWidth:2.4});
+      return R.createElement('circle',{key:i,cx,cy,r:4.5,fill: on?'var(--ctn-color-state-node)':'var(--ctn-color-surface-panel)',stroke,strokeWidth:1.8});
+    });
+    const remainS = (3*3600+45*60) - elapsed;
+    const tokenLeft = act.token ? act.tokenTtl - (act.firedAgo||0) - elapsed : 0;
+    const gated = phase==='gated';
+    return {
+      enteredFrom: 'entered from the replay proposal · and the shell pending rail',
+      pendingCount: String(this.actions.filter(a=>this.phaseOf(a)==='gated').length).padStart(2,'0'),
+      queue: this.actions.map(a=>{
+        const ph = this.phaseOf(a), on = a.id===s.sel, rev = a.cls==='reversible';
+        const waited = (a.waitS||0) + elapsed;
+        return {
+          inc:a.inc, name:a.name, pick: ()=>this.setState({sel:a.id, armed:false}),
+          classTag: rev ? 'REVERSIBLE' : 'CONSEQUENTIAL',
+          borderStyle: rev ? 'dashed' : 'solid',
+          glyph: this.qGlyph(ph==='done' ? 'actioned' : ph==='denied' ? 'denied' : ph==='rolled' ? 'closed' : 'gated'),
+          status: ph==='gated' ? (waited>900 ? 'waiting · past normal hold time' : 'waiting for a human') : ph==='denied' ? 'denied, drafts discarded' : ph==='rolled' ? 'rolled back' : rev ? 'fired automatically' : 'executed on approval',
+          clock: ph==='gated' ? this.fmt(waited) : rev ? '—' : 'done',
+          clockFg: ph==='gated' && waited>900 ? 'var(--ctn-color-severity-critical-text)' : ph==='gated' ? 'var(--ctn-color-clock)' : 'var(--ctn-color-text-muted)',
+          edge: a.sev==='critical' ? 'var(--ctn-color-severity-critical)' : a.sev==='high' ? 'var(--ctn-color-severity-high)' : 'var(--ctn-color-border-strong)',
+          border: on ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-border-hairline)',
+          bg: on ? 'var(--ctn-color-surface-raised)' : 'transparent',
+          fg: on ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-text-secondary)'
+        };
+      }),
+      act, classTag: act.cls==='reversible' ? 'REVERSIBLE · FIRED AUTOMATICALLY' : 'CONSEQUENTIAL · HUMAN REQUIRED',
+      classBorderStyle: act.cls==='reversible' ? 'dashed' : 'solid',
+      clockDigits: this.fmt(remainS),
+      plotNote: act.cls==='reversible'
+        ? 'plotted after the fact · this is what the automatic action actually touched'
+        : 'every dot is one real node this action would touch; the dashed boundary is the policy cap, not a design flourish',
+      capR, capLabelY: 230-capR-8,
+      ringShapes, nodeDots,
+      ringLegend: act.rings.map((r,i)=>({label:r.label, count:r.count,
+        dot: firedFrac>0 ? 'var(--ctn-color-state-node)' : 'transparent',
+        ring: firedFrac>0 ? 'var(--ctn-color-state-cited)' : 'var(--ctn-color-border-strong)',
+        // the swatch IS the ring: its diameter is that ring's radius scaled to the row, so a
+        // reader ties row to arc by size order without a leader line or a label on the plot
+        swatch: R.createElement('svg',{width:18, height:18, viewBox:'0 0 18 18', style:{flex:'none'}},
+          R.createElement('circle',{cx:9, cy:9, r: 2.5 + 6 * (radii[i]-radii[0])/Math.max(1, radii[radii.length-1]-radii[0]),
+            fill:'none', stroke: firedFrac>0 ? 'var(--ctn-color-state-cited)' : 'var(--ctn-color-text-muted)', strokeWidth:1.4}))})),
+      totalNodes: total, firedNodes: phase==='firing' ? s.fired : total,
+      totalFg: total > act.cap ? 'var(--ctn-color-severity-critical-text)' : 'var(--ctn-color-text-primary)',
+      capPct: Math.round(total/act.cap*100)+'%',
+      sweepAngle: phase==='firing' ? (s.fired/Math.max(total,1)*360).toFixed(1) : 0,
+      sweepTip: 230-capR+6, sweepOpacity: phase==='firing' ? 1 : 0,
+      stateArc: this.arcPath(38,38,30, phase==='denied' ? 0.5 : stateFrac),
+      stateWeight: phase==='done' ? 3.4 : 2.6,
+      stateNodes,
+      stateLabel: phase==='done' ? 'ACTIONED' : phase==='denied' ? 'DENIED · DEAD END' : phase==='rolled' ? 'ROLLED BACK' : 'GATED',
+      isGated: gated, isFiring: phase==='firing', isDone: phase==='done' || phase==='denied' || phase==='rolled',
+      toggleKey: ()=>this.setState(x=>({armed:!x.armed})),
+      keyAngle: s.armed ? 90 : 0,
+      keyColor: s.armed ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-text-disabled)',
+      keyLabel: s.armed ? 'KEY ARMED' : 'KEY SAFE',
+      keyLabelFg: s.armed ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-text-muted)',
+      keyNote: s.armed ? 'approve is live' : 'turn to free the approve control',
+      continuityNote: s.armed
+        ? 'continuity good · '+total+' nodes reachable, '+act.cap+'-node cap not exceeded, clause satisfied except the human check'
+        : 'pre-flight held: policy clause requires a named approver before the line is live',
+      continuityPct: s.armed ? '100%' : '38%',
+      continuityFill: s.armed ? 'var(--ctn-color-ok)' : 'var(--ctn-color-border-strong)',
+      approveDisabled: !s.armed,
+      approveLabel: s.armed ? 'APPROVE AND FIRE' : 'ARM THE KEY FIRST',
+      approve: ()=>{
+        if(!this.state.armed) return;
+        {
+          window.__ledgerSafe({tag:'appr-'+act.id, kind:'HUMAN', actor:'a.deshmukh · L2', link:'approve', label:'HUMAN APPROVE',
+            record:'action=APPROVE incident='+act.inc+' object='+act.name+' nodes='+total+' interlock=key_armed decision_id='+act.decisionLocator.split(':')[1]});
+          window.__ledgerSafe({tag:'exec-'+act.id, kind:'TOOL RESULT', actor:'Response Marshal',
+            record:'status=APPLIED object='+act.name+' affected='+total+(act.token?' rollback_token='+act.token:' rollback_token=issued')});
+        }
+        const id = act.id, steps = 14, step = Math.max(1, Math.ceil(total/steps));
+        clearInterval(this.f); clearTimeout(this.fDone);
+        this.setState(x=>({phase:{...x.phase, [id]:'firing'}, fired:0, armed:false}));
+        this.f = setInterval(()=>{
+          this.setState(x=>{
+            const n = Math.min(total, x.fired + step);
+            return n >= total ? {fired:total} : {fired:n};
+          });
+        }, 80);
+        // the plot finishes on its own clock; the phase change never depends on the interval surviving
+        this.fDone = setTimeout(()=>{
+          clearInterval(this.f);
+          this.setState(x=>({fired:total, phase:{...x.phase, [id]:'done'}}));
+        }, 80*steps + 120);
+      },
+      deny: ()=>{
+        window.__ledgerSafe({tag:'deny-'+act.id, kind:'HUMAN', actor:'a.deshmukh · L2', link:'deny', label:'HUMAN DENY',
+          record:'action=DENY incident='+act.inc+' object='+act.name+' reason=cost_exceeds_benefit_at_this_hour drafts=discarded decision_id='+act.decisionLocator.split(':')[1]});
+        this.setState(x=>({denied:{...x.denied, [act.id]:true}, armed:false}));
+      },
+      reset: ()=>this.setState(x=>{
+        const ph = {...x.phase}, dn = {...x.denied}, rl = {...x.rolled};
+        delete ph[act.id]; delete dn[act.id]; delete rl[act.id];
+        return {phase:ph, denied:dn, rolled:rl, armed:false, fired:0};
+      }),
+      firingNote: 'applying to '+act.rings[0].label+' first, then downstream · the plot fills as each node acknowledges',
+      simNote: 'this receipt came from '+({a1:'citinel-mock-finacle v0.9',a2:'citinel-mock-firewall v0.9',a3:'citinel-mock-ad v0.7',a4:'citinel-mock-m365 v0.9',a5:'citinel-mock-m365 v0.9'}[act.id] || 'a simulator')+'. No production system was touched; the mock returns success unconditionally, so this proves the right call was made with the right arguments and nothing more.',
+      doneHeadline: phase==='denied'
+        ? 'denied at '+new Date(s.now).toISOString().slice(11,16)+' IST by a. deshmukh · drafts discarded, incident stays cited'
+        : phase==='rolled'
+          ? 'rolled back at '+new Date(s.now).toISOString().slice(11,16)+' IST · the reversal is its own ledger entry'
+          : (act.cls==='reversible' ? 'fired automatically ' : 'executed ')+'· '+total+' nodes acknowledged',
+      doneNote: phase==='denied'
+        ? 'the deny carries your reason and is chained into the ledger. a dead end on the record is still a record.'
+        : phase==='rolled'
+          ? 'the original action and its reversal both stand in the tape; neither was deleted.'
+          : act.reversal,
+      hasToken: !!act.token && phase!=='rolled' && phase!=='denied',
+      tokenValue: act.token || '',
+      tokenExpiry: this.fmt(tokenLeft),
+      tokenNote: 'issued at execution because the policy clause marked this action reversible. one use; expiry is enforced by the ledger, not the UI.',
+      rollback: ()=>this.setState(x=>({rolled:{...x.rolled, [act.id]:true}}))
+    };
+  }
+
+  roleInit(){ try{ return (window.CitinelRole && window.CitinelRole.get()) || 'analyst'; }catch(e){ return 'analyst'; } }
+  roleMount(){ if(window.CitinelRole) this.unsubRole = window.CitinelRole.subscribe(r=>{ if(r !== this.state.role) this.setState({role:r}); }); }
+  componentWillUnmount_role(){ if(this.unsubRole) this.unsubRole(); }
+  roleVals(){
+    const ciso = this.state.role === 'ciso';
+    return { ciso, analyst: !ciso,
+      setAnalyst: ()=>{ this.setState({role:'analyst'}); if(window.CitinelRole) window.CitinelRole.set('analyst'); },
+      setCiso: ()=>{ this.setState({role:'ciso'}); if(window.CitinelRole) window.CitinelRole.set('ciso'); },
+      analystBg: ciso ? 'transparent' : 'var(--ctn-color-surface-navy)',
+      analystFg: ciso ? 'var(--ctn-color-text-muted)' : 'var(--ctn-color-text-on-navy)',
+      cisoBg: ciso ? 'var(--ctn-color-surface-navy)' : 'transparent',
+      cisoFg: ciso ? 'var(--ctn-color-text-on-navy)' : 'var(--ctn-color-text-muted)' };
+  }
+  renderVals(){ const b = this.baseVals(); return Object.assign({}, b, this.roleVals(), this.traceVals(), this.intentVals(), this.depthVals ? this.depthVals(b) : {}, this.stateVals(b)); }
+
+  // Intent preview: the scope declaration a shot-firer reads back before the key turns.
+  // Its value is the right-hand column — an operator can only consent to a blast radius
+  // they have been told the edge of, and "what this will not touch" is the edge.
+  intentVals(){
+    const act = this.actions.find(a=>a.id===this.state.sel) || this.actions[0];
+    const spec = {
+      a1: {
+        will: ['Hold all 14 staged payouts on template BULK_PAYOUT_TPL_07, ₹18,40,000 total',
+               'Leave each payout in PENDING_RELEASE. The funds stay in the bank',
+               'Write one ledger frame naming you, the clause and the node count',
+               'Notify the payments desk on-call, no customer contact'],
+        wont: ['Reverse anything already settled. Nothing in this batch has settled',
+               'Touch the 340 payouts on other templates',
+               'Freeze the beneficiary accounts themselves, which is NPCI\'s call',
+               'File, or start, any regulatory clock'],
+        note: 'Reversible by an authorised release, but the money moves nowhere until someone releases it. That is the point of the hold.'
+      },
+      a2: {
+        will: ['Block egress from 38 hosts on branch supernet 10.42.0.0/18 for 24 hours',
+               'Keep internal branch traffic and CBS reachability intact',
+               'Expire on its own at 21:52 tomorrow unless renewed',
+               'Emit a rollback token good for the full window'],
+        wont: ['Block anything outside the branch supernet',
+               'Drop existing sessions. The block applies to new connections only',
+               'Touch the 11 jump-host sessions listed under downstream effects',
+               'Persist past the window without a second approval'],
+        note: 'The 23 branch users under blast radius keep working; they lose outbound internet, not the core banking system.'
+      },
+      a3: {
+        will: ['Disable service account svc_reconcile_prod in Active Directory',
+               'Kill its 6 active Kerberos tickets',
+               'Page the reconciliation team lead before the account drops'],
+        wont: ['Delete the account or its group memberships',
+               'Touch the 3 other service accounts on the same host',
+               'Execute at any autonomy detent without this signature. The clause is welded shut'],
+        note: 'Nightly reconciliation fails at 02:00 if this is still disabled. That consequence is the reason this class never runs unattended.'
+      },
+      a4: {
+        will: ['Quarantine 11 messages from the same sender across 11 mailboxes',
+               'Leave the messages restorable by token for 24 hours',
+               'Notify each mailbox owner with the reason'],
+        wont: ['Delete anything. Quarantine moves a message; it does not remove it',
+               'Touch messages from other senders in the same threads',
+               'Block the sender domain, which is a separate action on this queue'],
+        note: 'Already fired: reversible mail actions run unattended under mail.rego. This preview is the record of what it did.'
+      },
+      a5: {
+        will: ['Block the sender domain at the mail gateway',
+               'Apply to inbound only, tenant-wide',
+               'Emit a rollback token good for 24 hours'],
+        wont: ['Affect mail already delivered',
+               'Block the domain for outbound replies',
+               'Apply if the domain appears on the allowlist — it does not'],
+        note: 'Already fired: reversible and token-backed. Denying now records dissent and triggers the rollback.'
+      }
+    }[act.id];
+    return {
+      willDo: spec.will, willNot: spec.wont, intentNote: spec.note,
+      intentLead: 'read back before the key turns · this is the scope you are consenting to, and the scope you are not'
+    };
+  }
+
+  traceVals(){
+    const act = this.actions.find(a=>a.id===this.state.sel) || this.actions[0];
+    const open = !!this.state.trace;
+    const lines = [
+      'query:  data.citinel.'+(act.policyFile.split('.')[0])+'.deny',
+      'bundle: policy-bundle @ 7f31c0d  (loaded 22 Aug 04:10 IST)',
+      '',
+      'input:',
+      '  action.kind        = "'+act.name.split(':')[0]+'"',
+      '  action.value_inr   = '+(act.id==='a1' ? '1840000' : 'null'),
+      '  action.reversible  = '+(act.cls==='reversible'),
+      '  action.affected    = '+act.rings.reduce((n,r)=>n+r.count,0)+'  (cap '+act.cap+')',
+      '  asset.tier         = "'+(act.id==='a3' ? 'production' : 'branch')+'"',
+      '  decision.human_approver = '+(this.state.phase[act.id]==='done' ? '"a.deshmukh"' : 'null'),
+      '',
+      'rules evaluated:',
+      '  [1] data.caps.segment                       → '+act.cap+'          (data document)',
+      '  [2] '+act.policyFile.split(' · ')[1]+'  → '+(act.cls==='reversible' ? 'false  (not triggered)' : 'true'),
+      '  [3] deny[msg]                                → '+(act.cls==='reversible' ? 'undefined  (no deny)' : '1 binding'),
+      '',
+      'result: '+(act.cls==='reversible' ? 'ALLOW  (autonomous, rollback token required)' : 'REQUIRE_APPROVAL'),
+      'decision_id: '+act.decisionLocator.split(':')[1]+'   eval time: 4.1ms'
+    ];
+    return {
+      traceRef: 'decision '+act.decisionLocator.split(':')[1]+' · bundle 7f31c0d',
+      traceOpen: open,
+      trace: lines.join('\n'),
+      toggleTrace: ()=>this.setState(x=>({trace:!x.trace})),
+      traceLabel: open ? 'HIDE DECISION TRACE' : 'EXPAND DECISION TRACE',
+      traceStyle: open ? 'solid' : 'dashed'
+    };
+  }
+  depthVals(b){
+    if(this.state.role !== 'ciso') return {};
+    const act = this.actions.find(a=>a.id===this.state.sel) || this.actions[0];
+    const total = act.rings.reduce((n,r)=>n+r.count,0);
+    const plain = {
+      a1:'Any freeze above ₹5,00,000 requires a named human. This batch is ₹18,40,000, so no dial position could have fired it.',
+      a2:'Egress blocks are allowed inside the branch supernet up to the segment cap. This one is inside both, and still gated because the class sits at ASSIST.',
+      a3:'A production service account is never disabled automatically, at any autonomy detent. This clause is welded shut and cannot be changed from the policy screen.',
+      a4:'Reversible, non-destructive mail actions may run unattended and must issue a rollback token. This one did both.',
+      a5:'Reversible sender blocks may run unattended unless the domain is allowlisted. It was not.'
+    }[act.id];
+    return {
+      nodeDots: [],
+      plotNote: 'rings sized to the real affected-node count against the '+act.cap+'-node policy cap. node-level detail sits in the analyst depth',
+      clausePlain: plain,
+      precedent: [
+        {k:'this class', v:{a1:'payment freeze · 4 approvals this quarter, 1 rolled back, no customer complaint',a2:'network containment · 11 approvals, 2 rolled back, 1 branch disruption in June',a3:'identity · 3 approvals, 0 rolled back; the June drill is why this class sits at ASSIST',a4:'mail · 214 automatic, 3 restored by token, 0 escalations',a5:'mail · 214 automatic, 3 restored by token, 0 escalations'}[act.id]},
+        {k:'your limit', v: total > 60 ? 'within your delegated authority as sign-off officer; an L2 would need a second name above 60 nodes' : 'within both your authority and an L2\'s. this did not need to come to you'},
+        {k:'if you deny', v: act.cls==='reversible' ? 'the action has already run; denying here records dissent and triggers the rollback token' : 'the drafts are discarded and the incident stays cited with your reason on the ledger'}
+      ],
+      approveLabel: this.state.armed ? 'APPROVE AS SIGN-OFF AUTHORITY' : 'ARM THE KEY FIRST'
+    };
+  }
+
+  stateVals(b){
+    let m = 'normal';
+    try{ m = new URLSearchParams(window.location.search).get('state') || 'normal'; }catch(e){}
+    const f = x=>[3600,60,1].map(u=>String(Math.floor(x/u)%60).padStart(2,'0')).join(':');
+    if(m !== 'breached') return {clockFg:'var(--ctn-color-clock)', clockDigits2:b.clockDigits};
+    return {
+      clockFg:'var(--ctn-color-text-primary)', clockDigits2:'+'+f(41*60+12),
+      signGuidance: 'The CERT-In window closed 41 minutes ago. Containment is still worth doing while the money is staged, though approving now does not recover the filing deadline, and the delay is already recorded. Decide on the merits of the action, not to catch a clock that has stopped.',
+      continuityNote: this.state.armed
+        ? 'continuity good · the statutory window is closed, so nothing about this decision is time-pressured any more'
+        : 'pre-flight held: policy clause requires a named approver. The window has already closed; there is no longer a clock to beat.'
+    };
+  }
+}
+</script>
+</body>
+</html>
