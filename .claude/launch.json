@@ -4,7 +4,15 @@
     {
       "name": "citinel-dashboard",
       "runtimeExecutable": "backend/.venv/bin/python",
-      "runtimeArgs": ["-m", "uvicorn", "dashboard.app:app", "--host", "127.0.0.1", "--port", "8000"],
+      "runtimeArgs": [
+        "-m",
+        "uvicorn",
+        "citinel.web.app:app",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "8000"
+      ],
       "port": 8000
     }
   ]
