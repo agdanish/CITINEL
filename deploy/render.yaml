@@ -88,6 +88,50 @@ services:
     plan: free
     ipAllowList: []          # reachable only from other Render services
 
+  # --- n8n: the visible post-signoff automation (Best Use of n8n) -----------
+  # Self-hosted on Render rather than n8n Cloud, for one decisive reason: a
+  # laptop-local n8n sits at localhost:5678, and citinel-web (running on
+  # Render) cannot POST a webhook to localhost. Hosting n8n here gives it a
+  # public URL the deployed service can actually reach -- and it adds a fifth
+  # service to this Blueprint, so it strengthens the Render criterion
+  # ("use more than one Render service") at the same time.
+  #
+  # Plan note: `starter`, not `free`, and deliberately. Free web services
+  # cannot attach a persistent disk (Render docs, verified), and without one
+  # every restart wipes the Beat 5b workflow -- an unacceptable failure mode
+  # for the one live demo. Starter is ~$7/mo against the $50 hackathon credit.
+  - type: web
+    name: citinel-n8n
+    runtime: image
+    image:
+      url: docker.io/n8nio/n8n:latest
+    plan: starter
+    healthCheckPath: /healthz
+    disk:
+      name: n8n-data
+      mountPath: /home/node/.n8n     # n8n's own state dir: workflows + creds
+      sizeGB: 1
+    envVars:
+      # n8n listens on N8N_PORT; Render routes to whatever the service binds.
+      - key: N8N_PORT
+        value: "5678"
+      - key: N8N_PROTOCOL
+        value: https
+      # Encrypts stored credentials at rest. Render generates it once and
+      # keeps it stable across deploys -- regenerating it would orphan every
+      # credential already saved in the workflow.
+      - key: N8N_ENCRYPTION_KEY
+        generateValue: true
+      # n8n must know its own public origin to build correct webhook URLs;
+      # without this it advertises localhost and CITINEL's POSTs never land.
+      - key: WEBHOOK_URL
+        fromService:
+          name: citinel-n8n
+          type: web
+          property: host
+      - key: GENERIC_TIMEZONE
+        value: Asia/Kolkata
+
   # --- cron: keep the free web service warm before/through judging ----------
   - type: cron
     name: citinel-keepwarm
