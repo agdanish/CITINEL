@@ -148,9 +148,17 @@ class _FakeClient:
         self.beta.messages = _Messages(beta_script)
 
 
-def _transport(client, role=Role.REASONING, **kw) -> Transport:
+#: Default fake model reports full capabilities, so the shared helper stands in
+#: for a normal top-tier model. Capability-specific behaviour is exercised
+#: explicitly by the tests that build their own VerifiedModel (see the model
+#: capability gating section), rather than being an accident of this default.
+_FULL_CAPS = ("adaptive_thinking", "effort")
+
+
+def _transport(client, role=Role.REASONING, caps=_FULL_CAPS, **kw) -> Transport:
     return Transport(client, VerifiedModel("fake-model", role, "Fake", 200000,
-                                           64000, "2026-08-25"), **kw)
+                                           64000, "2026-08-25",
+                                           capabilities=caps), **kw)
 
 
 def _pipeline(tmp_path, script):
@@ -947,3 +955,66 @@ def test_pipeline_writes_to_the_ledger_only_through_the_mirroring_helper():
         f"expected exactly 1 direct self.ledger.append (inside _ledger); found "
         f"{direct}. Route ledger writes through self._ledger() so they mirror "
         "to the observer.")
+
+
+# --- model capability gating (cost-driven model choice must not 400) ---------
+
+def _model(role, caps=()):
+    return VerifiedModel("m", role, "M", 200000, 64000, "2026-08-31", capabilities=caps)
+
+
+def test_reasoning_role_on_a_model_without_thinking_omits_the_params():
+    """Regression guard for a real cost decision: pointing
+    CITINEL_REASONING_MODEL at a cheaper model used to send adaptive thinking
+    + effort to a model that rejects both, 400-ing every call. Capability now
+    gates it, not role."""
+    v = Verdict(headline="h", counter_evidence_searched=True, confidence=0.5,
+                benign_explanation_considered="b", claims=[])
+    client = _FakeClient(beta_script=[_ok(v)])
+    t = Transport(client, _model(Role.REASONING, caps=()))   # no capabilities reported
+    t.parse(agent="narrator", system="s", instruction="i",
+            output_format=Verdict, evidence=[])
+    kwargs = client.beta.messages.seen[0]
+    assert "thinking" not in kwargs
+    assert "effort" not in kwargs["output_config"]
+
+
+def test_reasoning_role_on_a_capable_model_still_sends_them():
+    v = Verdict(headline="h", counter_evidence_searched=True, confidence=0.5,
+                benign_explanation_considered="b", claims=[])
+    client = _FakeClient(beta_script=[_ok(v)])
+    t = Transport(client, _model(Role.REASONING,
+                                 caps=("adaptive_thinking", "effort")))
+    t.parse(agent="narrator", system="s", instruction="i",
+            output_format=Verdict, evidence=[])
+    kwargs = client.beta.messages.seen[0]
+    assert kwargs["thinking"] == {"type": "adaptive"}
+    assert kwargs["output_config"]["effort"] == "high"
+
+
+def test_triage_role_never_sends_them_even_on_a_capable_model():
+    """Capability is necessary, not sufficient -- the cheap high-volume lane
+    stays cheap even if it happens to be pointed at a top-tier model."""
+    client = _FakeClient(beta_script=[_ok(TriageDecision(
+        lane=Lane.ESCALATE, rationale="r", confidence=0.5))])
+    t = Transport(client, _model(Role.TRIAGE, caps=("adaptive_thinking", "effort")))
+    t.parse(agent="router", system="s", instruction="i",
+            output_format=TriageDecision, evidence=[])
+    kwargs = client.beta.messages.seen[0]
+    assert "thinking" not in kwargs
+    assert "effort" not in kwargs["output_config"]
+
+
+def test_capabilities_accepts_dict_shape_from_the_api():
+    """The API owns the field's shape; accept a mapping too rather than
+    guessing, and ignore anything unrecognised (fails safe)."""
+    import citinel.agents.models as M
+    fake = type("X", (), {"id": "m", "display_name": "M",
+                          "max_input_tokens": 1, "max_tokens": 1,
+                          "capabilities": {"effort": True, "vision": False}})()
+    client = type("C", (), {"models": type("Mo", (), {
+        "list": staticmethod(lambda: [fake])})()})()
+    M.settings.reasoning_model = "m"
+    vm = M.verify(client, Role.REASONING, now="t")
+    assert vm.supports_effort is True
+    assert vm.supports_adaptive_thinking is False

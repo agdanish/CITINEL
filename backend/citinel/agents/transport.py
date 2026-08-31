@@ -30,14 +30,20 @@ Concentrating every API call here buys four things that matter to this build:
   which can only be produced by a live check against `GET /v1/models`. There
   is no code path that sends a model id this process has not confirmed.
 
-Effort and adaptive thinking are REASONING-role-only (`EFFORT_BY_ROLE` has no
-TRIAGE entry). `output_config.effort` and `thinking: {"type": "adaptive"}` are
-4.5+/4.6+-generation features; the documented triage recommendation in
-`models.py` is `claude-haiku-4-5`, which accepts neither, and sending them
-unconditionally to whatever model an operator configures for the cheap
-high-volume role is a request-shape error the API returns as a 400 -- caught
-by adversarial review, not by assumption. The reasoning role's model
-(`claude-opus-5` by documented recommendation) supports both.
+Effort and adaptive thinking need BOTH conditions: the role wants deep
+reasoning (`EFFORT_BY_ROLE`, no TRIAGE entry) AND the configured model
+actually supports them (`VerifiedModel.supports_*`, from the live Models API).
+They are 4.5+/4.6+-generation features and sending them to a model that lacks
+them is a 400 on every call.
+
+Two separate facts, deliberately: the role is what the operator wants done
+here, the capability is what the chosen model can do. Gating on role alone
+assumed the reasoning role always runs a top-tier model -- but
+`CITINEL_REASONING_MODEL` is operator-set, and pointing it at a cheaper model
+to control cost is a legitimate decision that used to break every call with
+no clue why. The capability check fails safe: unconfirmed support means the
+parameter is omitted, which degrades quality quietly rather than failing the
+request outright.
 
 Not yet exercised against the live API: no Anthropic key exists in this repo
 yet (Step 7's blocker). `tests/test_agents_scaffold.py` drives every branch
@@ -207,7 +213,7 @@ class Transport:
         output_config: dict[str, Any] = {
             "format": {"type": "json_schema", "schema": transform_schema(output_format)},
         }
-        if self.model.role in EFFORT_BY_ROLE:
+        if self.model.supports_effort and self.model.role in EFFORT_BY_ROLE:
             output_config["effort"] = EFFORT_BY_ROLE[self.model.role]
 
         kwargs: dict[str, Any] = {
@@ -223,10 +229,12 @@ class Transport:
             "messages": [{"role": "user", "content": blocks}],
             "output_config": output_config,
         }
-        if self.model.role in EFFORT_BY_ROLE:
-            # Adaptive thinking is a 4.6+-generation feature, same floor as
-            # effort. Only sent for the role documented to use a model that
-            # supports it (see module docstring).
+        if self.model.supports_adaptive_thinking and self.model.role in EFFORT_BY_ROLE:
+            # Gated on the MODEL's reported capability, not on the role. The
+            # role says whether deep reasoning is wanted here; the model says
+            # whether it can be asked for at all. A cheaper model configured
+            # for the reasoning role now quietly runs without adaptive
+            # thinking instead of 400-ing every call.
             kwargs["thinking"] = {"type": "adaptive"}
 
         if self.use_refusal_fallback:

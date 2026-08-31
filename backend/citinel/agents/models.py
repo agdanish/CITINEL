@@ -53,7 +53,20 @@ class ModelNotVerified(Exception):
 
 @dataclass(frozen=True)
 class VerifiedModel:
-    """A model id the API confirmed exists, with what it told us about it."""
+    """A model id the API confirmed exists, with what it told us about it.
+
+    `capabilities` is whatever `GET /v1/models` reported. It drives whether
+    the transport may send adaptive thinking and `output_config.effort`, which
+    are NOT universal: they are 4.5+/4.6+-generation features, and sending
+    them to a model that lacks them is a 400 on every single call.
+
+    That gate used to key off the ROLE (reasoning = send them, triage =
+    don't), which silently assumed the reasoning role always runs a top-tier
+    model. It does not: `CITINEL_REASONING_MODEL` is operator-set, and
+    configuring a cheaper model there -- an entirely reasonable cost
+    decision -- broke every call with no hint as to why. Capability belongs
+    to the model, not to the job we hired it for.
+    """
 
     model_id: str
     role: Role
@@ -61,6 +74,26 @@ class VerifiedModel:
     max_input_tokens: int | None
     max_output_tokens: int | None
     verified_at: str
+    capabilities: tuple[str, ...] = ()
+
+    def _has(self, *names: str) -> bool:
+        """True only if the API positively reported one of these capabilities.
+
+        Fails SAFE: an unknown or absent capabilities field means we do not
+        send the parameter. Omitting adaptive thinking works on every model;
+        sending it to one that lacks it fails the request outright. When
+        uncertain, the quiet degradation is strictly better than the 400.
+        """
+        lowered = {c.lower() for c in self.capabilities}
+        return any(n.lower() in lowered for n in names)
+
+    @property
+    def supports_adaptive_thinking(self) -> bool:
+        return self._has("adaptive_thinking", "extended_thinking", "thinking")
+
+    @property
+    def supports_effort(self) -> bool:
+        return self._has("effort", "output_effort")
 
     def as_dict(self) -> dict[str, object]:
         return {
@@ -70,6 +103,9 @@ class VerifiedModel:
             "max_input_tokens": self.max_input_tokens,
             "max_output_tokens": self.max_output_tokens,
             "verified_at": self.verified_at,
+            "capabilities": list(self.capabilities),
+            "supports_adaptive_thinking": self.supports_adaptive_thinking,
+            "supports_effort": self.supports_effort,
         }
 
 
@@ -110,6 +146,16 @@ def verify(client, role: Role, *, now: str) -> VerifiedModel:
             "to catch exactly this before a run depends on it."
         )
     m = available[model_id]
+    raw_caps = getattr(m, "capabilities", None) or ()
+    # The field's exact shape is the API's to define; accept a plain sequence
+    # of names or a mapping of name -> enabled, and ignore anything else
+    # rather than guessing (the _has() gate then fails safe).
+    if isinstance(raw_caps, dict):
+        caps = tuple(str(k) for k, v in raw_caps.items() if v)
+    elif isinstance(raw_caps, (list, tuple, set)):
+        caps = tuple(str(c) for c in raw_caps)
+    else:
+        caps = ()
     return VerifiedModel(
         model_id=model_id,
         role=role,
@@ -117,4 +163,5 @@ def verify(client, role: Role, *, now: str) -> VerifiedModel:
         max_input_tokens=getattr(m, "max_input_tokens", None),
         max_output_tokens=getattr(m, "max_tokens", None),
         verified_at=now,
+        capabilities=caps,
     )
