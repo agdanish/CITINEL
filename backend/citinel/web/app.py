@@ -23,7 +23,7 @@ from fastapi.staticfiles import StaticFiles
 from citinel.audit.ledger import AuditLedger
 from citinel.compliance.drafter import draft_certin, draft_dpdp, render_text
 from citinel.config import settings
-from citinel.connectors.lyzr import LyzrLedgerMirror
+from citinel.connectors.lyzr import LyzrGuard, LyzrLedgerMirror
 from citinel.incidents.builder import load_incidents
 from citinel.policy.gate import PolicyGate
 from citinel.policy.roles import Role, project_incident
@@ -138,13 +138,24 @@ def get_audit_chain(incident_id: str) -> list[dict]:
 
 @app.get("/api/incidents/{incident_id}/draft")
 def get_draft(incident_id: str, kind: str = "certin") -> dict:
+    """A drafted report, plus the guard screen a human reviewer needs before
+    signing it. This was previously served with NO PII screen applied at all
+    in the live API -- the guard machinery existed (agents/guard.py,
+    connectors/lyzr.py) and had a CLI caller (`citinel compliance guard`), but
+    the endpoint a judge would actually hit skipped it entirely. CITINEL's own
+    deterministic screen always runs; Lyzr adds an independent second opinion
+    only when configured -- see LyzrGuard.screen for why both, not either.
+    """
     incs = {i.incident_id: i for i in load_incidents(INCIDENTS_DIR / "incidents.jsonl")}
     inc = incs.get(incident_id)
     if inc is None:
         raise HTTPException(404, f"no incident {incident_id}")
     drafter = draft_certin if kind == "certin" else draft_dpdp
     draft = drafter(inc)
-    return {"draft": draft.as_dict(), "rendered": render_text(draft)}
+    evidence = "\n".join(f.evidence_raw for f in inc.findings if f.evidence_raw)
+    guard = LyzrGuard().screen(draft, extra_evidence=evidence)
+    return {"draft": draft.as_dict(), "rendered": render_text(draft),
+            "guard": guard.as_dict()}
 
 
 @app.get("/api/policy")

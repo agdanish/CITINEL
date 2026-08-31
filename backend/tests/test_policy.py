@@ -128,3 +128,36 @@ def test_receipts_are_always_stamped_simulated(gate, executor):
         assert r.simulated is True
         if r.status == "executed" and cls != "enrich_ioc":
             assert "[SIMULATED]" in r.detail
+
+
+# --- Swytchcode wired in as the ticketing+comms side of an executed action --
+# (the `citinel policy execute` CLI command runs exactly this sequence)
+
+def test_swytchcode_receipts_land_in_the_same_ledger_as_the_action(gate, tmp_path):
+    from citinel.connectors.swytchcode import SwytchcodeExecutor
+
+    ledger = AuditLedger(tmp_path / "l.jsonl")
+    ex = ActionExecutor(MockEndpoints(), ledger)
+    d = gate.check("isolate_host", 1, "we8105desk")
+    receipt = ex.execute("INC-0417", d, "we8105desk")
+    assert receipt.status == "executed"
+
+    for r in SwytchcodeExecutor().execute_for_decision(d, "we8105desk", "INC-0417"):
+        ledger.append("INC-0417", "swytchcode", "tool_call", r.as_dict())
+
+    kinds = [e.kind for e in ledger.entries_for("INC-0417")]
+    assert kinds == ["policy_check", "action_executed", "tool_call", "tool_call"]
+    ok, _ = ledger.verify_chain()
+    assert ok
+
+
+def test_swytchcode_never_notifies_for_an_action_that_did_not_execute(gate, tmp_path):
+    """A held-for-approval or shadow-tier decision hasn't happened yet -- there
+    is nothing to ticket or notify about. The CLI command enforces this by only
+    calling Swytchcode when receipt.status == "executed"; this pins the
+    underlying fact that makes that gate correct."""
+    ledger = AuditLedger(tmp_path / "l.jsonl")
+    ex = ActionExecutor(MockEndpoints(), ledger)
+    d = gate.check("disable_account", 1, "svc-backup")  # REQUIRE_APPROVAL tier
+    receipt = ex.execute("INC-0417", d, "svc-backup")
+    assert receipt.status == "awaiting_approval"

@@ -32,8 +32,12 @@ def _fake_sender(status, body, calls):
     return send
 
 
-def test_missing_key_degrades_gracefully(cache):
-    # no key configured -> not_configured, no exception, no call attempted
+def test_missing_key_degrades_gracefully(cache, monkeypatch):
+    # no key configured -> not_configured, no exception, no call attempted.
+    # Pinned explicitly: a real key now lives in .env for the live deploy, so
+    # this can no longer rely on the key being absent by environment accident.
+    from citinel.config import settings
+    monkeypatch.setattr(settings, "virustotal_api_key", None)
     calls = []
     vt = VirusTotalConnector(cache, _fake_sender(200, {}, calls))
     r = vt.check_ip("185.151.160.15")

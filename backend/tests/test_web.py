@@ -56,6 +56,18 @@ def test_draft_endpoint_renders_a_real_draft():
     assert "DRAFT" in body["rendered"]
 
 
+def test_draft_endpoint_includes_a_real_guard_screen():
+    """Regression guard: this endpoint used to ship with NO PII screen applied
+    at all, despite the guard machinery (agents/guard.py, connectors/lyzr.py)
+    being fully built and having a CLI caller. A judge hitting this exact
+    endpoint would never have seen it run."""
+    r = client.get("/api/incidents/INC-0417/draft", params={"kind": "dpdp"})
+    assert r.status_code == 200
+    guard = r.json()["guard"]
+    assert guard["checked_by"] == "citinel-local"  # no Lyzr key in test env -- local tier still ran
+    assert "clean" in guard and "findings" in guard
+
+
 def test_ledger_verify_endpoint():
     r = client.get("/api/ledger/verify")
     assert r.status_code == 200

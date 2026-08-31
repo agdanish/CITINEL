@@ -557,6 +557,64 @@ def policy_check(
     ))
 
 
+@policy_app.command("execute")
+def policy_execute(
+    incident_id: str = typer.Argument(help="case id this executes under, e.g. INC-0417"),
+    action_class: str = typer.Argument(help="e.g. isolate_host, disable_account"),
+    assets: int = typer.Option(1, help="Assets the action would touch."),
+    target: str = typer.Option("demo-target", help="Human-readable target."),
+    policy: Path = typer.Option(REPO_ROOT / "policies/citinel-policy.yaml"),
+    incidents_dir: Path = typer.Option(REPO_ROOT / "data/incidents"),
+) -> None:
+    """Run a proposal through the gate and, if it clears, actually carry it out.
+
+    Two simulated backends, each doing a genuinely different job, both under
+    PIPE-F09 (mocks only, every receipt stamped SIMULATED): MockEndpoints
+    applies the infra-side action itself; Swytchcode's ticketing + comms APIs
+    handle the "tell the humans, leave a paper trail" side. Both write to the
+    audit ledger under the same case id, so `citinel ledger show` reconstructs
+    the whole thing from `incident_id` alone.
+    """
+    from citinel.audit.ledger import AuditLedger
+    from citinel.connectors.swytchcode import SwytchcodeExecutor
+    from citinel.policy.actions import ActionExecutor, ExecutionRefused, MockEndpoints
+    from citinel.policy.gate import PolicyGate
+
+    decision = PolicyGate(policy).check(action_class, assets, target)
+    ledger = AuditLedger(incidents_dir / "ledger.jsonl")
+    executor = ActionExecutor(MockEndpoints(), ledger)
+
+    try:
+        receipt = executor.execute(incident_id, decision, target)
+    except ExecutionRefused as e:
+        console.print(f"[red]refused: {e}[/red]")
+        raise typer.Exit(1)
+
+    colour = {"executed": "green", "proposed_only": "yellow",
+              "awaiting_approval": "yellow"}[receipt.status]
+    console.print(Panel.fit(
+        f"status: [{colour}]{receipt.status}[/{colour}]\n{receipt.detail}"
+        + (f"\nrollback token: {receipt.rollback_token}" if receipt.rollback_token else ""),
+        title=f"mock endpoints: {action_class} on {target}",
+        border_style=colour,
+    ))
+
+    if receipt.status != "executed":
+        return  # nothing actually happened yet -- no ticket, no notification to send
+
+    swytch_receipts = SwytchcodeExecutor().execute_for_decision(decision, target, incident_id)
+    table = Table(title="swytchcode: ticketing + comms", title_justify="left")
+    table.add_column("Ecosystem API")
+    table.add_column("Status")
+    table.add_column("Detail")
+    for r in swytch_receipts:
+        ledger.append(incident_id, "swytchcode", "tool_call", r.as_dict())
+        status_colour = {"executed": "green", "not_configured": "dim",
+                         "refused": "yellow", "error": "red"}[r.status]
+        table.add_row(r.ecosystem_api, f"[{status_colour}]{r.status}[/{status_colour}]", r.detail)
+    console.print(table)
+
+
 safety_app = typer.Typer(help="The untrusted-content plane: logs are data, never instructions.")
 app.add_typer(safety_app, name="safety")
 
