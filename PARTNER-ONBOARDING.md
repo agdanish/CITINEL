@@ -123,16 +123,18 @@ how completely the checklist above gets worked through.
 ### 8. Swytchcode
 - **URL:** https://forms.gle/vdNBiUvfKfz3H9zD8 (Google Form, not a referral link as previously assumed — this is the actual, correct mechanism)
 - **Offer:** $100 credits per team member, valid for the hackathon.
-- **To win the track specifically:** scaffold with the Swytchcode CLI (`swy`), not just call the API at runtime; ≥2 ecosystem APIs; AI agent; end-to-end app. Powers Response Marshal/Scribe agent→API execution.
+- **Confirmed live in the 26 Aug partner Q&A (not just the form's promise):** if the team form was already filled, credits are already allocated and usable through the 5 Sep finale — worth checking the account directly rather than assuming a separate claim step is still pending. Full notes: `PARTNER-SESSION-NOTES.md`.
+- **To win the track specifically:** scaffold with the Swytchcode CLI (`swy`), not just call the API at runtime; ≥2 ecosystem APIs; AI agent; end-to-end app. Powers Response Marshal/Scribe agent→API execution. The live demo's exact shape — policy guardrail blocking one specific action, zero code changes needed — maps directly onto the already-written but unwired `connectors/swytchcode.py: SwytchcodeExecutor`; wiring that in is the concrete path to the track, not a new integration.
 - Install: `curl -fsSL https://cli.swytchcode.com/install.sh | sh` → `swy login` → `CITINEL_SWYTCHCODE_API_KEY=…`.
 
 ### 9. Startuped.ai
 - **URL:** https://www.startuped.ai/events/decode-sih-2026 — sign up, they email required access.
 - **Use:** run CITINEL's locked positioning (persona, differentiation line, channel strategy) through the platform; export into deck material. No `.env` key. *(Deck work is currently deprioritized — do the signup now if convenient, the actual platform run can wait.)*
 
-### 10. Lyzr AI — code complete, credential still unconfirmed
+### 10. Lyzr AI — code complete, offer confirmed live (still no organizer PDF)
 - **URL:** https://studio.lyzr.ai/
-- Carried from the original research pass: $20/mo for registered participants. No organizer redemption PDF has surfaced for this one the way it has for the other 6 — confirm the offer is still live before relying on it for the build.
+- $20/mo for registered participants, **confirmed twice in the 25 Aug partner session by a Lyzr engineer live-demoing it** — "every month it resets to $20," and it resets again right around finale week, so the team gets a fresh $20 for the finale regardless of what's spent before. Still no organizer redemption PDF the way the other 6 partners have, but this is stronger evidence than the original research-pass guess.
+- **The Studio agent `CITINEL_LYZR_AGENT_ID` needs (answering `pii_guard` + `ledger_head`) now has a concrete recipe**, not just "this is Studio config": the 25 Aug demo walks through building a multi-agent system with exactly this shape (define role/goal/instructions per agent, expose a capability as a custom tool via its OpenAPI schema when it's not in the built-in catalog). Full notes: `PARTNER-SESSION-NOTES.md`.
 - **Integration status: all four SDD §15.3 attachment points now resolved**, and every one degrades to a no-op without a key, so nothing here blocks on the credential:
 
   | # | Attachment point | Status |
