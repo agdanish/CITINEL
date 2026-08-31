@@ -169,11 +169,24 @@ services:
       mountPath: /home/node/.n8n     # n8n's own state dir: workflows + creds
       sizeGB: 1
     envVars:
-      # n8n listens on N8N_PORT; Render routes to whatever the service binds.
+      # Render assigns the port via $PORT (10000 for Docker/image services)
+      # and health-checks THAT port. n8n binds N8N_PORT, whose own default is
+      # 5678 -- so leaving it at 5678 means n8n listens on one port while
+      # Render probes another, the check never passes, and the deploy is
+      # marked failed even though the container started cleanly. Pinning both
+      # sides to 10000 removes the mismatch.
       - key: N8N_PORT
-        value: "5678"
+        value: "10000"
+      - key: PORT
+        value: "10000"
+      # URL-generation only (how n8n writes its webhook URLs). It does not
+      # make n8n terminate TLS itself -- Render's proxy does that in front.
       - key: N8N_PROTOCOL
         value: https
+      # Render terminates TLS upstream, so n8n sees plain HTTP and would
+      # otherwise refuse to set secure cookies, breaking the editor login.
+      - key: N8N_SECURE_COOKIE
+        value: "false"
       # Encrypts stored credentials at rest. Render generates it once and
       # keeps it stable across deploys -- regenerating it would orphan every
       # credential already saved in the workflow.
