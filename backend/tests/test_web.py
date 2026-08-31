@@ -99,3 +99,45 @@ def test_unknown_role_defaults_to_more_detail_not_less():
     r = client.get("/api/incidents/INC-0417", headers={"X-Citinel-Role": "wat"})
     assert r.json()["_projection"]["role"] == "analyst"
     assert "findings" in r.json()
+
+
+# --- data-source honesty ------------------------------------------------------
+
+def test_source_endpoint_reports_which_corpus_is_answering():
+    """A seed-backed deployment must not pass as live. Regression guard for a
+    deploy bug where a fresh Render service served an empty list with a 200,
+    indistinguishable from a quiet night in the SOC."""
+    r = client.get("/api/source")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["source"] in {"live", "seed"}
+    assert body["description"]
+    assert isinstance(body["incidents_file_present"], bool)
+
+
+# --- eval harness: the credibility screen -------------------------------------
+
+def test_eval_endpoint_serves_measurements_with_denominators():
+    r = client.get("/api/eval")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["swarm_evaluated"] is False, "no swarm has run; must not claim otherwise"
+    # every rate-style measurement carries the count it came from
+    for m in body["measured"]:
+        if "rate" in m:
+            assert m.get("denominator"), f"{m['name']} published a rate with no denominator"
+
+
+def test_eval_endpoint_refuses_to_publish_an_unmeasured_fp_rate():
+    """The load-bearing one. CITINEL's <10% FP figure is a target that has
+    never been measured; the endpoint must say UNMEASURED rather than supply
+    a plausible number, and must say what is missing."""
+    body = client.get("/api/eval").json()
+    fp = [u for u in body["unmeasured"] if "false-positive" in u["name"]]
+    assert fp, "the FP rate must be explicitly listed as unmeasured, not omitted"
+    assert fp[0]["status"] == "UNMEASURED"
+    assert fp[0]["required_to_measure"]
+
+    # and it must not appear as a measurement anywhere
+    names = " ".join(m["name"].lower() for m in body["measured"])
+    assert "false-positive" not in names and "false positive" not in names

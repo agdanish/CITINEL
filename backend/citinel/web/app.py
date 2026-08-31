@@ -172,6 +172,29 @@ def verify_ledger() -> dict:
     }
 
 
+
+@app.get("/api/eval")
+def get_eval() -> dict:
+    """The credibility screen's data source (Eval.dc.html).
+
+    Deliberately serves the harness's UNMEASURED entries alongside its
+    measurements. The screen must render both: a false-positive rate the
+    system has not earned is exactly what this endpoint exists to refuse to
+    supply, and a UI that showed only the `measured` list would quietly
+    recreate the fabricated metric by omission.
+    """
+    import importlib.util
+    import sys as _sys
+
+    harness_path = REPO_ROOT / "evals" / "harness" / "run.py"
+    if not harness_path.exists():
+        raise HTTPException(503, "eval harness not available in this deployment")
+    spec = importlib.util.spec_from_file_location("citinel_eval_harness", harness_path)
+    harness = importlib.util.module_from_spec(spec)
+    _sys.modules[spec.name] = harness          # @dataclass needs this, see cli.py
+    spec.loader.exec_module(harness)
+    return harness.build_report().as_dict()
+
 # --- the glass-box UI ---------------------------------------------------------
 # Mounted last, deliberately: StaticFiles at "/" is a catch-all, so every
 # /api/* and /healthz route above must already be registered or the mount

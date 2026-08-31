@@ -665,5 +665,61 @@ def compliance_guard(
     ))
 
 
+@app.command()
+def eval_run(
+    json_out: bool = typer.Option(False, "--json", help="machine-readable report"),
+) -> None:
+    """Measure the deterministic layers. Reports what it cannot measure, too.
+
+    Wraps evals/harness/run.py. The harness deliberately reports the
+    false-positive rate as UNMEASURED rather than publishing a figure it
+    cannot compute -- the <10% number is a target and has never been
+    measured (CITINEL-STATE.md Section 5.1).
+    """
+    import importlib.util
+    import json as _json
+    # Loaded by path rather than by name: the harness lives outside the
+    # installed package (evals/ is not shipped in the wheel), and importing a
+    # module called "run" by name would be ambiguous with anything else on the
+    # path. Spec-from-file keeps it unambiguous and avoids mutating sys.path.
+    harness_path = REPO_ROOT / "evals" / "harness" / "run.py"
+    if not harness_path.exists():
+        console.print(f"[red]eval harness not found at {harness_path}[/red]")
+        raise typer.Exit(1)
+    spec = importlib.util.spec_from_file_location("citinel_eval_harness", harness_path)
+    harness = importlib.util.module_from_spec(spec)
+    # Register before exec: @dataclass resolves its annotations through
+    # sys.modules[cls.__module__], which is None for a spec-loaded module that
+    # was never registered -- and fails with an opaque AttributeError.
+    import sys as _sys
+    _sys.modules[spec.name] = harness
+    spec.loader.exec_module(harness)
+    report = harness.build_report()
+
+    if json_out:
+        console.print_json(_json.dumps(report.as_dict()))
+        return
+
+    table = Table(title="measured  (every rate carries its denominator)",
+                  title_justify="left")
+    table.add_column("Metric")
+    table.add_column("Value", justify="right")
+    table.add_column("Note", style="dim")
+    for m in report.measured:
+        if m.denominator:
+            val = f"{m.value:,} / {m.denominator:,}  ({m.value / m.denominator * 100:.2f}%)"
+        elif m.unit == "sha256":
+            val = m.note[:34]
+        else:
+            val = f"{m.value:,} {m.unit}".strip()
+        table.add_row(m.name, val, "" if m.unit == "sha256" else m.note)
+    console.print(table)
+
+    for u in report.unmeasured:
+        console.print(Panel.fit(
+            f"[yellow]{u.reason}[/yellow]\n\n[dim]needs: {u.required_to_measure}[/dim]",
+            title=f"NOT MEASURED: {u.name}", border_style="yellow"))
+
+
 if __name__ == "__main__":
     app()
