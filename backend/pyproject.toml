@@ -19,7 +19,9 @@ dependencies = [
 [project.optional-dependencies]
 # Stage 2: the swarm, the gate, persistence.
 swarm = [
-    "anthropic>=0.40",
+    # 1.x: httpx2 HTTP layer, no temperature/top_p/top_k, output_config.
+    # The Step 7 code uses 1.x call shapes, so the floor is not optional.
+    "anthropic>=1,<2",
     "httpx>=0.27",
     "tenacity>=9.0",
 ]

@@ -29,6 +29,7 @@ from typing import Any
 
 from citinel.agents.guard import GuardResult, PIIFinding, screen_draft
 from citinel.agents.quarantine import EGRESS_ALLOW, check_egress
+from citinel.audit.ledger import LedgerSink
 from citinel.config import settings
 
 
@@ -134,3 +135,137 @@ class LyzrObserver(AgentObserver):
             self.forwarded += 1
         except Exception:
             return    # observability must never break the pipeline
+
+
+# ---------------------------------------------------------------------------
+# Attachment point 4 of 4 (SDD 15.3): the immutable audit log, as an external
+# witness to CITINEL's own -- "fulfill, not duplicate".
+# ---------------------------------------------------------------------------
+
+@dataclass
+class MirrorComparison:
+    """The result of asking the witness whether it still agrees with us."""
+
+    status: str          # agreed | diverged | unavailable | not_configured
+    local_head: str
+    remote_head: str = ""
+    local_count: int = 0
+    remote_count: int = 0
+    detail: str = ""
+
+    @property
+    def tamper_suspected(self) -> bool:
+        return self.status == "diverged"
+
+    def as_dict(self) -> dict[str, Any]:
+        return {"status": self.status, "local_head": self.local_head,
+                "remote_head": self.remote_head, "local_count": self.local_count,
+                "remote_count": self.remote_count,
+                "tamper_suspected": self.tamper_suspected, "detail": self.detail}
+
+
+class LyzrLedgerMirror(LedgerSink):
+    """Mirrors each audit entry to Lyzr, and can ask it what it remembers.
+
+    The mirroring half is the cheap half. `compare` is where the value is:
+    a witness nobody ever queries proves nothing, so this class is only
+    honestly "an immutable audit log" if something actually reconciles the
+    two chains. `citinel ledger-witness` (CLI) and /api/ledger/verify's
+    witness field are the callers that make it real.
+
+    What a divergence does and does not mean, because the distinction matters
+    to anyone reading the output under pressure:
+
+      diverged     the two chains disagree at the head. Either the local file
+                   was replaced wholesale (the attack a self-contained chain
+                   cannot see), or entries were mirrored and then the local
+                   ledger was rolled back, or the mirror is simply behind.
+                   It is a signal to investigate, never a proof of tampering
+                   on its own.
+      unavailable  the witness could not be reached. This says nothing at all
+                   about the local chain's integrity -- it is a statement
+                   about network reachability, and is deliberately NOT
+                   reported as agreement.
+
+    Never the system of record: `LedgerSink`'s contract is that the local
+    append already committed before this is called, and that anything raised
+    here is swallowed.
+    """
+
+    def __init__(self, sender=None) -> None:
+        self._sender = sender
+        self.mirrored = 0
+
+    # -- the witness side ---------------------------------------------------
+
+    def record(self, entry) -> None:
+        """Forward one committed entry. Called by AuditLedger.append."""
+        if not (settings.lyzr_api_key and settings.lyzr_guard_url):
+            return
+        if not check_egress(settings.lyzr_guard_url, _lyzr_allow()).allowed:
+            return
+        payload = {"type": "ledger_entry", **entry.as_dict()}
+        if self._sender is not None:
+            self._sender(settings.lyzr_guard_url,
+                         {"x-api-key": settings.lyzr_api_key}, payload)
+        else:
+            import httpx
+            with httpx.Client(timeout=10) as c:
+                c.post(settings.lyzr_guard_url,
+                       headers={"x-api-key": settings.lyzr_api_key}, json=payload)
+        self.mirrored += 1
+
+    # -- the half that makes it worth having --------------------------------
+
+    def compare(self, ledger) -> MirrorComparison:
+        """Reconcile the local chain head against the witness's.
+
+        Detects wholesale replacement of the local ledger, which
+        `verify_chain` structurally cannot: a rewritten file with recomputed
+        hashes verifies perfectly against itself.
+        """
+        local_head = ledger.head
+        local_count = sum(1 for _ in ledger.entries())
+
+        if not (settings.lyzr_api_key and settings.lyzr_guard_url):
+            return MirrorComparison(
+                "not_configured", local_head, local_count=local_count,
+                detail="no Lyzr witness configured; the local chain stands alone "
+                       "and wholesale replacement would not be detectable")
+
+        decision = check_egress(settings.lyzr_guard_url, _lyzr_allow())
+        if not decision.allowed:
+            return MirrorComparison("unavailable", local_head,
+                                    local_count=local_count, detail=decision.reason)
+        try:
+            status, body = self._head_request()
+        except Exception as e:
+            return MirrorComparison("unavailable", local_head,
+                                    local_count=local_count,
+                                    detail=f"witness unreachable: {e}")
+        if status // 100 != 2 or not isinstance(body, dict):
+            return MirrorComparison("unavailable", local_head,
+                                    local_count=local_count,
+                                    detail=f"witness returned HTTP {status}")
+
+        remote_head = str(body.get("head", ""))
+        remote_count = int(body.get("count", 0) or 0)
+        if remote_head and remote_head == local_head:
+            return MirrorComparison(
+                "agreed", local_head, remote_head, local_count, remote_count,
+                detail=f"witness agrees at {local_count} entries")
+        return MirrorComparison(
+            "diverged", local_head, remote_head, local_count, remote_count,
+            detail=("local and witness chain heads differ -- investigate: "
+                    "wholesale local replacement, a rollback, or mirror lag. "
+                    "Not proof of tampering on its own."))
+
+    def _head_request(self) -> tuple[int, Any]:
+        headers = {"x-api-key": settings.lyzr_api_key, "Content-Type": "application/json"}
+        payload = {"agent_id": settings.lyzr_agent_id, "task": "ledger_head"}
+        if self._sender is not None:
+            return self._sender(settings.lyzr_guard_url, headers, payload)
+        import httpx
+        with httpx.Client(timeout=15) as c:
+            r = c.post(settings.lyzr_guard_url, headers=headers, json=payload)
+            return r.status_code, (r.json() if r.content else {})

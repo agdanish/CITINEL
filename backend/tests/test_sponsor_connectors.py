@@ -31,6 +31,23 @@ def test_n8n_degrades_gracefully_without_a_webhook(monkeypatch):
     assert d.status == "not_configured"
 
 
+def test_n8n_refuses_a_plain_http_webhook(monkeypatch):
+    """No static egress allow-list applies here (the URL is operator-set, not
+    attacker-influenced -- see the module docstring), but https-only still
+    must hold so the signed incident payload can't leak in clear text."""
+    from citinel.config import settings
+    monkeypatch.setattr(settings, "n8n_webhook_url",
+                        "http://aerofyta.app.n8n.cloud/webhook/citinel-incident-signed")
+    called = {"sender_invoked": False}
+    def sender(url, body):
+        called["sender_invoked"] = True
+        return 200, {}
+    d = dispatch_signed(_incident(), "ciso@bank", sender=sender)
+    assert d.status == "error"
+    assert "https" in d.detail
+    assert called["sender_invoked"] is False, "must refuse before ever sending"
+
+
 def test_n8n_dispatches_signed_incident(monkeypatch):
     from citinel.config import settings
     monkeypatch.setattr(settings, "n8n_webhook_url",

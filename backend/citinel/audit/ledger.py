@@ -56,6 +56,42 @@ class LedgerError(Exception):
     pass
 
 
+class LedgerSink:
+    """An optional external witness that receives every appended entry.
+
+    Why this seam exists, stated precisely, because the security property is
+    narrow and easy to overclaim:
+
+    A self-contained hash chain detects *edits*. Change one entry and every
+    subsequent hash stops matching, which `verify_chain` catches. What it
+    cannot catch is *wholesale replacement*: an attacker who rewrites the
+    entire file and recomputes every hash from GENESIS produces a chain that
+    verifies perfectly. The chain proves internal consistency, not that it is
+    the same chain that existed yesterday.
+
+    An external witness closes exactly that gap and nothing else. A copy held
+    somewhere the attacker does not control cannot be retroactively rewritten
+    with the local file, so comparing the local chain head against the
+    witness's head detects a replacement the local check is blind to.
+
+    Non-negotiable: the local ledger stays canonical (SDD 15.3's "fulfill, not
+    duplicate"). A sink is a witness, never the record. `append` therefore
+    swallows every sink failure -- a bank's SOC must not stop recording
+    because a third-party service is down, and a mirror that could block an
+    append would be a liability rather than a safeguard.
+    """
+
+    def record(self, entry: "Entry") -> None:  # pragma: no cover - interface
+        raise NotImplementedError
+
+
+class NullSink(LedgerSink):
+    """Default. No external witness; the local chain stands alone."""
+
+    def record(self, entry: "Entry") -> None:
+        return None
+
+
 def _canonical(payload: dict[str, Any]) -> str:
     return json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
 
@@ -88,10 +124,19 @@ class Entry:
 class AuditLedger:
     """One append-only JSONL file. No update, no delete, no reorder."""
 
-    def __init__(self, path: Path) -> None:
+    def __init__(self, path: Path, sink: LedgerSink | None = None) -> None:
         self.path = path
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self._seq, self._tip = self._load_tip()
+        self.sink = sink or NullSink()
+        #: Sink failures are counted, not raised -- so "the witness is down"
+        #: is observable rather than silent, without ever blocking an append.
+        self.sink_failures = 0
+
+    @property
+    def head(self) -> str:
+        """The current chain head hash. What an external witness compares."""
+        return self._tip
 
     def _load_tip(self) -> tuple[int, str]:
         if not self.path.exists() or self.path.stat().st_size == 0:
@@ -120,6 +165,13 @@ class AuditLedger:
         with self.path.open("a", encoding="utf-8") as fh:
             fh.write(json.dumps(entry.as_dict(), ensure_ascii=False) + "\n")
         self._seq, self._tip = seq, h
+        # The local write is committed above and is canonical. Everything past
+        # this point is best-effort: a witness that raises, hangs or is simply
+        # absent must not turn a recorded decision into an unrecorded one.
+        try:
+            self.sink.record(entry)
+        except Exception:
+            self.sink_failures += 1
         return entry
 
     def entries(self) -> Iterator[Entry]:
@@ -136,7 +188,23 @@ class AuditLedger:
         return [e for e in self.entries() if e.case_id == case_id]
 
     def verify_chain(self) -> tuple[bool, str]:
-        """Recompute every hash. Any edit, deletion or reorder breaks it."""
+        """Recompute every hash. Any edit, deletion or reorder breaks it.
+
+        A ledger file that does not exist is NOT "intact" -- it is absent, and
+        those are different facts. Returning True here would be a fabricated
+        verification: the caller asked whether the chain verifies, and the
+        honest answer for a missing file is "there is no chain to verify," not
+        a green checkmark. This matters because a missing data directory in a
+        fresh deployment used to surface as `{"intact": true, "chain intact: 0
+        entries"}` -- an integrity claim the system had not earned, on the one
+        endpoint whose entire purpose is proving integrity.
+
+        An empty-but-present ledger is genuinely, trivially intact and still
+        returns True: nothing has been written, nothing has been tampered.
+        """
+        if not self.path.exists():
+            return False, (f"no ledger at {self.path}: nothing to verify "
+                           "(this is absence, not integrity)")
         prev = GENESIS
         expected_seq = 0
         for e in self.entries():

@@ -151,3 +151,31 @@ def test_low_score_anomaly_does_not_open_incident(tmp_path):
 
 def test_to_utc_normalizes_offsets():
     assert _to_utc("2016-08-24T10:48:41-06:00") == "2016-08-24T16:48:41+00:00"
+
+
+def test_missing_ledger_is_not_reported_as_intact(tmp_path):
+    """A ledger file that does not exist is absent, not verified.
+
+    Regression guard for a real deploy bug: a fresh Render service with no
+    data directory returned {"intact": true, "chain intact: 0 entries"} from
+    /api/ledger/verify -- a green integrity claim on the one endpoint whose
+    entire job is proving integrity, for a chain that did not exist.
+    """
+    from citinel.audit.ledger import AuditLedger
+    led = AuditLedger(tmp_path / "subdir" / "absent.jsonl")
+    (tmp_path / "subdir" / "absent.jsonl").unlink(missing_ok=True)
+    ok, msg = led.verify_chain()
+    assert ok is False
+    assert "nothing to verify" in msg
+
+
+def test_empty_but_present_ledger_is_genuinely_intact(tmp_path):
+    """The other half of the distinction: an empty ledger that EXISTS has
+    nothing written and nothing tampered, so it is trivially intact."""
+    from citinel.audit.ledger import AuditLedger
+    path = tmp_path / "empty.jsonl"
+    AuditLedger(path)          # constructor creates the parent dir only
+    path.touch()               # now the file genuinely exists, zero entries
+    ok, msg = AuditLedger(path).verify_chain()
+    assert ok is True
+    assert "0 entries" in msg

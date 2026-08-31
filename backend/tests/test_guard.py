@@ -106,3 +106,131 @@ def test_lyzr_observer_degrades_without_config(monkeypatch):
     obs = LyzrObserver(sender=lambda *a: (_ for _ in ()).throw(AssertionError("called")))
     obs.observe(AgentEvent("INC-0417", "sentinel", "start", {}))
     assert obs.forwarded == 0
+
+
+# --- Lyzr attachment point 4: the audit-log external witness ------------------
+
+def _configured_lyzr(monkeypatch):
+    from citinel.config import settings
+    monkeypatch.setattr(settings, "lyzr_api_key", "lyzr-test-key")
+    monkeypatch.setattr(settings, "lyzr_guard_url", "https://agent.lyzr.ai/v1/guard")
+    monkeypatch.setattr(settings, "lyzr_agent_id", "agent-123")
+
+
+def test_a_failing_witness_never_blocks_an_append(tmp_path, monkeypatch):
+    """The load-bearing guarantee: the local ledger is canonical. A bank's SOC
+    must not stop recording because a third-party mirror is down."""
+    from citinel.audit.ledger import AuditLedger
+    from citinel.connectors.lyzr import LyzrLedgerMirror
+    _configured_lyzr(monkeypatch)
+
+    def exploding_sender(url, headers, payload):
+        raise ConnectionError("witness is down")
+
+    led = AuditLedger(tmp_path / "l.jsonl", sink=LyzrLedgerMirror(sender=exploding_sender))
+    entry = led.append("INC-0417", "sentinel", "note", {"n": 1})
+
+    assert entry.seq == 1, "the append must have succeeded"
+    assert led.sink_failures == 1, "and the failure must be counted, not silent"
+    ok, _ = led.verify_chain()
+    assert ok, "the local chain is unaffected by the witness failing"
+
+
+def test_entries_are_mirrored_when_the_witness_is_configured(tmp_path, monkeypatch):
+    from citinel.audit.ledger import AuditLedger
+    from citinel.connectors.lyzr import LyzrLedgerMirror
+    _configured_lyzr(monkeypatch)
+    seen = []
+
+    def sender(url, headers, payload):
+        seen.append(payload)
+        return 200, {}
+
+    mirror = LyzrLedgerMirror(sender=sender)
+    led = AuditLedger(tmp_path / "l.jsonl", sink=mirror)
+    led.append("INC-0417", "sentinel", "note", {"n": 1})
+    led.append("INC-0417", "router", "decision", {"lane": "escalate"})
+
+    assert mirror.mirrored == 2
+    assert [p["type"] for p in seen] == ["ledger_entry", "ledger_entry"]
+    assert seen[1]["entry_hash"] == led.head, "the witness sees the real chain head"
+
+
+def test_witness_agreement_is_reported_when_heads_match(tmp_path, monkeypatch):
+    from citinel.audit.ledger import AuditLedger
+    from citinel.connectors.lyzr import LyzrLedgerMirror
+    _configured_lyzr(monkeypatch)
+    led = AuditLedger(tmp_path / "l.jsonl")
+    led.append("INC-0417", "sentinel", "note", {"n": 1})
+
+    mirror = LyzrLedgerMirror(sender=lambda u, h, p: (200, {"head": led.head, "count": 1}))
+    c = mirror.compare(led)
+    assert c.status == "agreed"
+    assert c.tamper_suspected is False
+
+
+def test_wholesale_local_replacement_is_caught_by_the_witness(tmp_path, monkeypatch):
+    """The exact gap a self-contained hash chain cannot see: rewrite the whole
+    file with recomputed hashes and verify_chain passes. The witness does not."""
+    from citinel.audit.ledger import AuditLedger
+    from citinel.connectors.lyzr import LyzrLedgerMirror
+    _configured_lyzr(monkeypatch)
+
+    path = tmp_path / "l.jsonl"
+    real = AuditLedger(path)
+    real.append("INC-0417", "sentinel", "note", {"decision": "escalated to human"})
+    witnessed_head = real.head
+
+    # Attacker rewrites the ledger from scratch, recomputing every hash.
+    path.unlink()
+    forged = AuditLedger(path)
+    forged.append("INC-0417", "sentinel", "note", {"decision": "auto-closed, benign"})
+
+    ok, msg = forged.verify_chain()
+    assert ok, "the forged chain verifies against itself -- this is the blind spot"
+
+    mirror = LyzrLedgerMirror(
+        sender=lambda u, h, p: (200, {"head": witnessed_head, "count": 1}))
+    c = mirror.compare(forged)
+    assert c.status == "diverged"
+    assert c.tamper_suspected is True
+    assert "investigate" in c.detail
+
+
+def test_unreachable_witness_is_never_reported_as_agreement(tmp_path, monkeypatch):
+    """'I could not check' must not render as 'I checked and it is fine.'"""
+    from citinel.audit.ledger import AuditLedger
+    from citinel.connectors.lyzr import LyzrLedgerMirror
+    _configured_lyzr(monkeypatch)
+    led = AuditLedger(tmp_path / "l.jsonl")
+    led.append("INC-0417", "sentinel", "note", {"n": 1})
+
+    def dead(url, headers, payload):
+        raise TimeoutError("no route to host")
+
+    c = LyzrLedgerMirror(sender=dead).compare(led)
+    assert c.status == "unavailable"
+    assert c.tamper_suspected is False
+    assert "unreachable" in c.detail
+
+
+def test_unconfigured_witness_says_the_chain_stands_alone(tmp_path, monkeypatch):
+    from citinel.audit.ledger import AuditLedger
+    from citinel.connectors.lyzr import LyzrLedgerMirror
+    from citinel.config import settings
+    monkeypatch.setattr(settings, "lyzr_api_key", None)
+    led = AuditLedger(tmp_path / "l.jsonl")
+    led.append("INC-0417", "sentinel", "note", {"n": 1})
+
+    c = LyzrLedgerMirror().compare(led)
+    assert c.status == "not_configured"
+    assert "stands alone" in c.detail
+    assert c.tamper_suspected is False
+
+
+def test_default_ledger_has_a_null_sink_and_is_unaffected(tmp_path):
+    from citinel.audit.ledger import AuditLedger, NullSink
+    led = AuditLedger(tmp_path / "l.jsonl")
+    assert isinstance(led.sink, NullSink)
+    led.append("INC-0417", "sentinel", "note", {"n": 1})
+    assert led.sink_failures == 0

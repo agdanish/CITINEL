@@ -7,10 +7,19 @@ orchestration glue, never the gate. This connector is the CITINEL side: on human
 sign-off it POSTs the signed incident to the n8n webhook, and the flow
 (connectors/n8n/citinel-beat5b.json) fans it out.
 
-The webhook URL is the only integration point and it is egress-checked like any
-other outbound call. If CITINEL_N8N_WEBHOOK_URL is unset the connector reports
-not_configured and the pipeline is unaffected -- n8n improves the workflow, it
-is never load-bearing for correctness.
+The webhook URL is the only integration point. It does NOT go through the
+Step 9 static egress allow-list (EGRESS_ALLOW) the way enrichment lookups
+do, and that is a deliberate difference, not an oversight: EGRESS_ALLOW is
+an exact-host match with no wildcards, because enrichment indicators are
+attacker-influenced (a poisoned log could try to steer where a "lookup"
+goes) and a fixed list is the right defense for that threat. The n8n
+webhook host is operator-configured in `.env`, never attacker-reachable --
+there is nothing for a poisoned log to redirect, since the destination
+never comes from parsed content. What this module DOES enforce: https-only,
+so a misconfigured plain-http URL can't leak the signed incident payload in
+clear text. If CITINEL_N8N_WEBHOOK_URL is unset the connector reports
+not_configured and the pipeline is unaffected -- n8n improves the workflow,
+it is never load-bearing for correctness.
 """
 
 from __future__ import annotations
@@ -57,9 +66,13 @@ def dispatch_signed(incident, signed_by: str, sender=None) -> N8nDispatch:
     if not url:
         return N8nDispatch("not_configured", [],
                            "CITINEL_N8N_WEBHOOK_URL unset; post-signoff automation skipped")
-    host = urlparse(url).hostname or ""
-    if not host:
+    parsed = urlparse(url)
+    if not parsed.hostname:
         return N8nDispatch("error", [], f"unparseable n8n webhook URL: {url!r}")
+    if parsed.scheme != "https":
+        return N8nDispatch("error", [],
+                           f"refusing non-https n8n webhook URL (scheme {parsed.scheme!r}); "
+                           "the signed incident payload must not travel in clear text")
 
     body = _payload(incident, signed_by)
     try:
