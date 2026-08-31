@@ -1,15 +1,26 @@
 # CITINEL on Render -- multi-service Blueprint (Best Use of Render).
 #
 # The "Best Use of Render" criterion is "deploy on Render" + "use more than one
-# Render service". This Blueprint defines FOUR service types, which is the full
-# runtime architecture from deck slide 8, not a minimal two-service token
-# gesture: a web service (the glass-box UI + API), a background worker (the
-# detection/agent pipeline), managed PostgreSQL (incidents, audit ledger,
-# verdicts), and managed Key Value / Redis (enrichment cache + dedup).
+# Render service". This Blueprint defines four resources, every one of which
+# the codebase actually uses:
+#
+#   citinel-web       the glass-box console + read API (serves dashboard/static)
+#   citinel-pipeline  background worker: the detection pipeline
+#   citinel-n8n       self-hosted n8n, so the deployed app has a reachable
+#                     webhook target (also the Best-Use-of-n8n integration)
+#   citinel-postgres  managed PostgreSQL
+#
+# An earlier version of this file also claimed a "managed Key Value / Redis
+# (enrichment cache + dedup)" service. That was never true: nothing in the
+# codebase connects to Redis and the enrichment cache is disk-backed. It also
+# broke the deploy, since Render permits one free Key Value per workspace and
+# the failure cancelled every other resource in the sync. Removed rather than
+# demoted -- infrastructure this project does not use should not appear in a
+# Blueprint that argues for how well it uses infrastructure.
 #
 # Render auto-injects RENDER_EXTERNAL_URL; the demo QR code points at the web
-# service's public URL. Free-tier web services cold-start after 15 min idle, so
-# a cron pre-warms it before judging (see the keep-warm cron below).
+# service's public URL. citinel-web runs on a paid plan precisely so it never
+# cold-starts (see its own note below).
 #
 # Secrets (Anthropic/Tavily/VirusTotal/AbuseIPDB keys) are set in the Render
 # dashboard as environment variables, never committed. sync:false marks them as
@@ -49,11 +60,6 @@ services:
         fromDatabase:
           name: citinel-postgres
           property: connectionString
-      - key: CITINEL_REDIS_URL
-        fromService:
-          name: citinel-redis
-          type: keyvalue
-          property: connectionString
 
   # --- worker: the detection + agent pipeline -------------------------------
   - type: worker
@@ -83,17 +89,15 @@ services:
         fromDatabase:
           name: citinel-postgres
           property: connectionString
-      - key: CITINEL_REDIS_URL
-        fromService:
-          name: citinel-redis
-          type: keyvalue
-          property: connectionString
 
-  # --- redis / key value: enrichment cache + hash dedup ---------------------
-  - type: keyvalue
-    name: citinel-redis
-    plan: free
-    ipAllowList: []          # reachable only from other Render services
+  # (Removed: citinel-redis. Nothing in the codebase connects to Redis --
+  # it appears in no setting in config.py, no module imports it, and the
+  # enrichment cache is disk-backed (connectors/base.py EnrichmentCache).
+  # The worker's own docstring says Redis-backed queueing is "tracked
+  # separately rather than half-built here". Provisioning it anyway hit
+  # Render's one-free-Key-Value-per-workspace limit and cancelled the whole
+  # sync, so an unused dependency was blocking the services that are real.
+  # Restore it in the same commit that actually uses it.)
 
   # --- n8n: the visible post-signoff automation (Best Use of n8n) -----------
   # Self-hosted on Render rather than n8n Cloud, for one decisive reason: a
