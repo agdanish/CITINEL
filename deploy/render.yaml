@@ -113,7 +113,11 @@ services:
     image:
       url: docker.io/n8nio/n8n:latest
     plan: starter
-    healthCheckPath: /healthz
+    # No healthCheckPath, deliberately. Render falls back to checking that the
+    # service is listening on its port, which is what we actually care about.
+    # Naming a path here would be a guess at n8n's internal routes, and a
+    # wrong guess is not a soft failure: Render marks the service unhealthy
+    # and restart-loops it. A port check cannot be wrong in that way.
     disk:
       name: n8n-data
       mountPath: /home/node/.n8n     # n8n's own state dir: workflows + creds
@@ -129,13 +133,22 @@ services:
       # credential already saved in the workflow.
       - key: N8N_ENCRYPTION_KEY
         generateValue: true
-      # n8n must know its own public origin to build correct webhook URLs;
-      # without this it advertises localhost and CITINEL's POSTs never land.
-      - key: WEBHOOK_URL
-        fromService:
-          name: citinel-n8n
-          type: web
-          property: host
+      # WEBHOOK_URL is deliberately NOT set here, and this is the one manual
+      # step in the whole Blueprint.
+      #
+      # n8n needs its own full public origin -- scheme included --  to print
+      # webhook URLs that CITINEL can actually POST to. Render's
+      # `fromService: property: host` yields a bare hostname
+      # ("citinel-n8n.onrender.com"), with no https:// on the front, so wiring
+      # it here would hand n8n a value that looks plausible and silently
+      # produces unreachable webhook URLs. Composing scheme + host is not
+      # something the Blueprint syntax can do.
+      #
+      # So: after the first deploy, set it once in the Render dashboard
+      #     citinel-n8n -> Environment -> Add
+      #     WEBHOOK_URL = https://citinel-n8n.onrender.com
+      # (use the service's real URL from the dashboard header). Render
+      # redeploys automatically and the value persists across future deploys.
       - key: GENERIC_TIMEZONE
         value: Asia/Kolkata
 
