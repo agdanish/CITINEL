@@ -17,5 +17,9 @@ COPY policies /app/policies
 # from raw is a local operation, not something a Render worker does.
 COPY data/seed /app/data/seed
 
+# See Dockerfile.web: pip-installed code cannot derive these from __file__.
+ENV CITINEL_DATA_DIR=/app/data \
+    CITINEL_POLICY_DIR=/app/policies
+
 ENV CITINEL_ROLE=worker
 CMD ["python", "-m", "citinel.worker.run"]

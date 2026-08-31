@@ -17,20 +17,26 @@ from __future__ import annotations
 from pathlib import Path
 
 from fastapi import FastAPI, Header, HTTPException
+from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
 from citinel.audit.ledger import AuditLedger
 from citinel.compliance.drafter import draft_certin, draft_dpdp, render_text
+from citinel.config import settings
 from citinel.connectors.lyzr import LyzrLedgerMirror
 from citinel.incidents.builder import load_incidents
 from citinel.policy.gate import PolicyGate
 from citinel.policy.roles import Role, project_incident
 
-REPO_ROOT = Path(__file__).resolve().parents[3]
-LIVE_DIR = REPO_ROOT / "data" / "incidents"
-SEED_DIR = REPO_ROOT / "data" / "seed"
-POLICY_PATH = REPO_ROOT / "policies" / "citinel-policy.yaml"
-STATIC_DIR = REPO_ROOT / "dashboard" / "static"
+# Paths come from settings, never from __file__. Deriving them here broke the
+# first real deployment: pip installs this package into site-packages, so
+# parents[3] resolved to the interpreter's lib directory and every data path
+# pointed somewhere that does not exist. settings carries the same defaults
+# for local use and lets a container state the truth (CITINEL_DATA_DIR etc).
+LIVE_DIR = settings.data_dir / "incidents"
+SEED_DIR = settings.data_dir / "seed"
+POLICY_PATH = settings.policy_dir / "citinel-policy.yaml"
+STATIC_DIR = settings.static_dir
 
 
 def _resolve_data_dir() -> tuple[Path, str]:
@@ -186,7 +192,7 @@ def get_eval() -> dict:
     import importlib.util
     import sys as _sys
 
-    harness_path = REPO_ROOT / "evals" / "harness" / "run.py"
+    harness_path = settings.evals_dir / "harness" / "run.py"
     if not harness_path.exists():
         raise HTTPException(503, "eval harness not available in this deployment")
     spec = importlib.util.spec_from_file_location("citinel_eval_harness", harness_path)
@@ -202,4 +208,13 @@ def get_eval() -> dict:
 # is what makes the deployed Render service actually show the console rather
 # than only answering JSON.
 if STATIC_DIR.is_dir():
+    # "/" must be an explicit route, registered BEFORE the mount below.
+    # StaticFiles(html=True) serves index.html at a directory root, and this
+    # console has no index.html -- its entry point is Entry.dc.html. Without
+    # this redirect the root URL 404s, which is precisely the URL the deck's
+    # QR code points at: a judge scanning it would get a blank error page.
+    @app.get("/", include_in_schema=False)
+    def _root() -> RedirectResponse:
+        return RedirectResponse(url="/Entry.dc.html")
+
     app.mount("/", StaticFiles(directory=STATIC_DIR, html=True), name="ui")

@@ -26,12 +26,15 @@ import time
 from pathlib import Path
 
 from citinel.audit.ledger import AuditLedger
+from citinel.config import settings
 from citinel.incidents.builder import build_incidents
 
-REPO_ROOT = Path(__file__).resolve().parents[3]
-DETECTIONS_PATH = REPO_ROOT / "data" / "cache" / "detections.jsonl"
-ANOMALIES_PATH = REPO_ROOT / "data" / "cache" / "anomalies.jsonl"
-INCIDENTS_DIR = REPO_ROOT / "data" / "incidents"
+# Paths from settings, not __file__: once pip-installed, this module lives in
+# site-packages and a __file__-derived root points at the interpreter's own
+# directory. The first real deployment hit exactly that.
+DETECTIONS_PATH = settings.data_dir / "cache" / "detections.jsonl"
+ANOMALIES_PATH = settings.data_dir / "cache" / "anomalies.jsonl"
+INCIDENTS_DIR = settings.data_dir / "incidents"
 
 POLL_INTERVAL_S = 300  # re-check for new detections/escalations every 5 min
 

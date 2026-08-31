@@ -141,3 +141,55 @@ def test_eval_endpoint_refuses_to_publish_an_unmeasured_fp_rate():
     # and it must not appear as a measurement anywhere
     names = " ".join(m["name"].lower() for m in body["measured"])
     assert "false-positive" not in names and "false positive" not in names
+
+
+def test_paths_come_from_settings_not_from_file_location(monkeypatch, tmp_path):
+    """Regression guard for the first live-deploy failure.
+
+    app.py used to derive its paths from __file__. That holds in a source
+    checkout and breaks the moment the package is pip-installed: the code
+    then lives in site-packages, so the derived root pointed at
+    /usr/local/lib/python3.11/ and the deployed service reported zero
+    incidents, a 500 on /api/policy, and a 404 on the console -- while
+    /healthz stayed green, so nothing looked wrong from the outside.
+
+    Paths must track settings (CITINEL_DATA_DIR etc), which a container can
+    state explicitly, rather than the module's own location on disk.
+    """
+    import importlib
+    import citinel.config as config
+
+    fake_root = tmp_path / "somewhere-else"
+    (fake_root / "data").mkdir(parents=True)
+    (fake_root / "policies").mkdir()
+
+    monkeypatch.setenv("CITINEL_DATA_DIR", str(fake_root / "data"))
+    monkeypatch.setenv("CITINEL_POLICY_DIR", str(fake_root / "policies"))
+    importlib.reload(config)
+    import citinel.web.app as app_mod
+    importlib.reload(app_mod)
+
+    assert app_mod.SEED_DIR == fake_root / "data" / "seed"
+    assert app_mod.POLICY_PATH == fake_root / "policies" / "citinel-policy.yaml"
+    assert "python3" not in str(app_mod.SEED_DIR), "path derived from interpreter location"
+
+    # Restore for the rest of the suite.
+    monkeypatch.undo()
+    importlib.reload(config)
+    importlib.reload(app_mod)
+
+
+def test_root_redirects_to_the_console_entry_point():
+    """The deck's QR code points at "/". StaticFiles(html=True) serves
+    index.html at a root and this console has none -- its entry point is
+    Entry.dc.html -- so without an explicit redirect the QR code lands a
+    judge on a 404."""
+    from fastapi.testclient import TestClient
+    import citinel.web.app as app_mod
+
+    if not app_mod.STATIC_DIR.is_dir():
+        import pytest
+        pytest.skip("console not present in this checkout")
+    r = TestClient(app_mod.app).get("/", follow_redirects=False)
+    assert r.status_code in (307, 308)
+    assert r.headers["location"].endswith("Entry.dc.html")

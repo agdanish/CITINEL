@@ -22,6 +22,21 @@ COPY data/seed /app/data/seed
 # The console itself. Without this the service answers JSON and shows no UI.
 COPY dashboard/static /app/dashboard/static
 
+# The eval harness. /api/eval executes run.py to build its report, so the file
+# has to be in the image -- otherwise the endpoint 503s with "harness not
+# available", which is honest but needlessly empty.
+COPY evals /app/evals
+
+# The package is pip-installed into site-packages, so any path this code
+# derives from __file__ lands in the interpreter's own directory, not /app.
+# These four say where things actually are. Without them the service starts,
+# answers /healthz, and reports zero incidents from a path that does not
+# exist -- which is how the first deploy failed.
+ENV CITINEL_DATA_DIR=/app/data \
+    CITINEL_POLICY_DIR=/app/policies \
+    CITINEL_STATIC_DIR=/app/dashboard/static \
+    CITINEL_EVALS_DIR=/app/evals
+
 # Render provides $PORT; the web role binds it.
 ENV CITINEL_ROLE=web
 EXPOSE 8000

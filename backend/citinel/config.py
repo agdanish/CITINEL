@@ -41,8 +41,18 @@ class Settings(BaseSettings):
     )
 
     # --- paths -------------------------------------------------------------
+    # These defaults assume the repo layout, which holds for local runs and
+    # tests. They do NOT hold once the package is pip-installed: the code then
+    # lives in site-packages and any path derived from __file__ points into
+    # the interpreter's own directory, not the project. That is a real bug
+    # this deployment hit -- the container looked for its corpus under
+    # /usr/local/lib/python3.11/data/. Every deployment therefore sets these
+    # explicitly (CITINEL_DATA_DIR / CITINEL_POLICY_DIR / CITINEL_STATIC_DIR,
+    # see deploy/Dockerfile.*) rather than trusting the derived default.
     data_dir: Path = REPO_ROOT / "data"
     policy_dir: Path = REPO_ROOT / "policies"
+    static_dir: Path = REPO_ROOT / "dashboard" / "static"
+    evals_dir: Path = REPO_ROOT / "evals"
 
     # --- safety rails (defaults are the safe end, by design) ---------------
     # PIPE-F09: response actions run only against simulated endpoints. This
