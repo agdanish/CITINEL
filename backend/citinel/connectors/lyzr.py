@@ -24,6 +24,7 @@ ledger remains canonical).
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from typing import Any
 
@@ -31,6 +32,63 @@ from citinel.agents.guard import GuardResult, PIIFinding, screen_draft
 from citinel.agents.quarantine import EGRESS_ALLOW, check_egress
 from citinel.audit.ledger import LedgerSink
 from citinel.config import settings
+
+# Lyzr's real REST contract (docs.lyzr.ai/enterprise/get-started/quickstart,
+# verified live -- not guessed) is chat-shaped: POST {"message", "session_id"}
+# to an agent's endpoint, get back {"response": "<text>"}. There is no
+# generic task-dispatch API. So the three things CITINEL needs from one Lyzr
+# agent (screen for PII, remember a ledger entry, report the last one) all
+# ride inside `message` as JSON, and the agent must reply with pure JSON text
+# in `response` -- which only works if the Studio agent is instructed to do
+# exactly that. Paste this as the agent's instructions in Lyzr Studio:
+#
+#   You will always receive a message that is a single JSON object with a
+#   "task" field. Reply with ONLY a JSON object matching the task below --
+#   no prose, no markdown fences, nothing else. Any other text breaks the
+#   caller.
+#
+#   task "pii_guard": {"task": "pii_guard", "input": "<text>"}
+#     Screen <text> for personally identifiable information (names, emails,
+#     phone numbers, government IDs, etc -- NOT IP addresses, hashes, or
+#     hostnames; those are legitimate security evidence, not PII).
+#     Reply: {"pii": [{"type": "<kind>", "confidence": "high|medium|low",
+#                       "masked": "<partially masked value>"}]}
+#     Empty list if nothing found.
+#
+#   task "ledger_record": {"task": "ledger_record", "entry": {...}}
+#     Remember this as the latest ledger entry for this session (its
+#     "entry_hash" is the new head; keep a running count in session memory).
+#     Reply: {"ok": true}
+#
+#   task "ledger_head": {"task": "ledger_head"}
+#     Reply with the latest entry_hash and count you were told about in THIS
+#     session so far: {"head": "<entry_hash, or \"\" if none yet>",
+#     "count": <integer>}
+#
+# ledger_record and ledger_head deliberately share one fixed session_id
+# (see LyzrLedgerMirror below) so Lyzr's own session memory is what ties them
+# together across calls -- pii_guard does not need that continuity, so it
+# uses its own.
+
+
+def _parse_agent_reply(body: Any) -> dict[str, Any]:
+    """Unwrap {"response": "<json text>"} and parse the inner JSON.
+
+    The agent not replying in the instructed format must degrade, never
+    raise or crash the caller -- it is a prompt-following failure, not a
+    CITINEL bug, and the callers below treat an empty dict as "got nothing
+    usable" rather than trusting absent keys.
+    """
+    if not isinstance(body, dict):
+        return {}
+    raw = body.get("response", "")
+    if not isinstance(raw, str) or not raw.strip():
+        return {}
+    try:
+        parsed = json.loads(raw)
+    except (json.JSONDecodeError, TypeError):
+        return {}
+    return parsed if isinstance(parsed, dict) else {}
 
 
 def _lyzr_allow() -> frozenset[str]:
@@ -70,8 +128,9 @@ class LyzrGuard:
             result.note += f" (Lyzr second-check unavailable: {e})"
             return result
 
-        if status // 100 == 2 and isinstance(body, dict):
-            extra = body.get("pii", []) or []
+        reply = _parse_agent_reply(body)
+        if status // 100 == 2 and reply:
+            extra = reply.get("pii", []) or []
             for item in extra:
                 result.findings.append(PIIFinding(
                     pii_type=f"lyzr:{item.get('type', 'flagged')}",
@@ -84,7 +143,8 @@ class LyzrGuard:
 
     def _call(self, text: str) -> tuple[int, Any]:
         headers = {"x-api-key": settings.lyzr_api_key, "Content-Type": "application/json"}
-        payload = {"agent_id": settings.lyzr_agent_id, "task": "pii_guard", "input": text}
+        message = json.dumps({"task": "pii_guard", "input": text})
+        payload = {"message": message, "session_id": "citinel-lyzr-guard"}
         if self._sender is not None:
             return self._sender(settings.lyzr_guard_url, headers, payload)
         import httpx
@@ -192,6 +252,11 @@ class LyzrLedgerMirror(LedgerSink):
     here is swallowed.
     """
 
+    #: record() and _head_request() share this fixed session id so Lyzr's own
+    #: session memory is what ties "what was I told" to "what do I now report"
+    #: across separate HTTP calls -- see the module-level docstring above.
+    _SESSION_ID = "citinel-lyzr-ledger"
+
     def __init__(self, sender=None) -> None:
         self._sender = sender
         self.mirrored = 0
@@ -204,7 +269,8 @@ class LyzrLedgerMirror(LedgerSink):
             return
         if not check_egress(settings.lyzr_guard_url, _lyzr_allow()).allowed:
             return
-        payload = {"type": "ledger_entry", **entry.as_dict()}
+        message = json.dumps({"task": "ledger_record", "entry": entry.as_dict()})
+        payload = {"message": message, "session_id": self._SESSION_ID}
         if self._sender is not None:
             self._sender(settings.lyzr_guard_url,
                          {"x-api-key": settings.lyzr_api_key}, payload)
@@ -248,8 +314,19 @@ class LyzrLedgerMirror(LedgerSink):
                                     local_count=local_count,
                                     detail=f"witness returned HTTP {status}")
 
-        remote_head = str(body.get("head", ""))
-        remote_count = int(body.get("count", 0) or 0)
+        reply = _parse_agent_reply(body)
+        if not reply:
+            # The agent answered (2xx) but not in the instructed JSON shape --
+            # a misconfigured/mis-prompted agent, not a security signal. This
+            # must not silently fall into "diverged" (a real investigate-this
+            # claim) just because remote_head defaulted to "".
+            return MirrorComparison(
+                "unavailable", local_head, local_count=local_count,
+                detail="witness replied but not in the expected JSON format "
+                       "(check the Studio agent's instructions)")
+
+        remote_head = str(reply.get("head", ""))
+        remote_count = int(reply.get("count", 0) or 0)
         if remote_head and remote_head == local_head:
             return MirrorComparison(
                 "agreed", local_head, remote_head, local_count, remote_count,
@@ -262,7 +339,8 @@ class LyzrLedgerMirror(LedgerSink):
 
     def _head_request(self) -> tuple[int, Any]:
         headers = {"x-api-key": settings.lyzr_api_key, "Content-Type": "application/json"}
-        payload = {"agent_id": settings.lyzr_agent_id, "task": "ledger_head"}
+        message = json.dumps({"task": "ledger_head"})
+        payload = {"message": message, "session_id": self._SESSION_ID}
         if self._sender is not None:
             return self._sender(settings.lyzr_guard_url, headers, payload)
         import httpx

@@ -83,6 +83,11 @@ class Settings(BaseSettings):
     # hardcoded; the connector adds this host to the egress allow-list only
     # when it is explicitly set.
     lyzr_guard_url: str | None = Field(default=None)
+    # Lyzr's real REST contract bakes the agent id into the endpoint path
+    # itself (.../v3/agent/{agent_id}/chat -- see lyzr_guard_url above), so
+    # this is not sent in any request body. Kept as a separate setting purely
+    # so an operator reading .env can tell which agent lyzr_guard_url points
+    # at without having to parse the URL.
     lyzr_agent_id: str | None = Field(default=None)
 
     @property

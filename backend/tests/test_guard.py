@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+
 import pytest
 
 from citinel.agents.guard import GuardResult, screen_draft, screen_text
@@ -89,11 +91,27 @@ def test_lyzr_second_check_merges_findings_when_configured(monkeypatch):
     called = []
     def sender(url, headers, payload):
         called.append(url)
-        return 200, {"pii": [{"type": "name", "confidence": "medium", "masked": "J***"}]}
+        # the real Lyzr contract: chat-shaped in, {"response": "<json text>"} out
+        assert set(payload) == {"message", "session_id"}
+        assert json.loads(payload["message"])["task"] == "pii_guard"
+        reply = {"pii": [{"type": "name", "confidence": "medium", "masked": "J***"}]}
+        return 200, {"response": json.dumps(reply)}
     result = LyzrGuard(sender=sender).screen(draft_dpdp(_incident_with_pii_evidence()))
     assert called == ["https://api.lyzr.ai/guard"]      # only the configured host
     assert result.checked_by == "citinel-local + lyzr"
     assert any(f.pii_type == "lyzr:name" for f in result.findings)
+
+
+def test_lyzr_second_check_degrades_when_agent_replies_off_contract(monkeypatch):
+    """The Studio agent not following its instructions (plain prose instead of
+    JSON) must degrade to local-only, never raise or silently misread."""
+    from citinel.config import settings
+    monkeypatch.setattr(settings, "lyzr_api_key", "k")
+    monkeypatch.setattr(settings, "lyzr_guard_url", "https://api.lyzr.ai/guard")
+    monkeypatch.setattr(settings, "lyzr_agent_id", "a")
+    sender = lambda url, h, p: (200, {"response": "Sure, here is the answer: no PII found."})
+    result = LyzrGuard(sender=sender).screen(draft_dpdp(_incident_with_pii_evidence()))
+    assert result.checked_by == "citinel-local"          # second check never merged in
 
 
 def test_null_observer_never_touches_the_network():
@@ -143,8 +161,10 @@ def test_entries_are_mirrored_when_the_witness_is_configured(tmp_path, monkeypat
     seen = []
 
     def sender(url, headers, payload):
-        seen.append(payload)
-        return 200, {}
+        assert set(payload) == {"message", "session_id"}
+        assert payload["session_id"] == LyzrLedgerMirror._SESSION_ID
+        seen.append(json.loads(payload["message"]))
+        return 200, {"response": json.dumps({"ok": True})}
 
     mirror = LyzrLedgerMirror(sender=sender)
     led = AuditLedger(tmp_path / "l.jsonl", sink=mirror)
@@ -152,8 +172,8 @@ def test_entries_are_mirrored_when_the_witness_is_configured(tmp_path, monkeypat
     led.append("INC-0417", "router", "decision", {"lane": "escalate"})
 
     assert mirror.mirrored == 2
-    assert [p["type"] for p in seen] == ["ledger_entry", "ledger_entry"]
-    assert seen[1]["entry_hash"] == led.head, "the witness sees the real chain head"
+    assert [m["task"] for m in seen] == ["ledger_record", "ledger_record"]
+    assert seen[1]["entry"]["entry_hash"] == led.head, "the witness sees the real chain head"
 
 
 def test_witness_agreement_is_reported_when_heads_match(tmp_path, monkeypatch):
@@ -163,7 +183,8 @@ def test_witness_agreement_is_reported_when_heads_match(tmp_path, monkeypatch):
     led = AuditLedger(tmp_path / "l.jsonl")
     led.append("INC-0417", "sentinel", "note", {"n": 1})
 
-    mirror = LyzrLedgerMirror(sender=lambda u, h, p: (200, {"head": led.head, "count": 1}))
+    mirror = LyzrLedgerMirror(sender=lambda u, h, p: (
+        200, {"response": json.dumps({"head": led.head, "count": 1})}))
     c = mirror.compare(led)
     assert c.status == "agreed"
     assert c.tamper_suspected is False
@@ -190,7 +211,7 @@ def test_wholesale_local_replacement_is_caught_by_the_witness(tmp_path, monkeypa
     assert ok, "the forged chain verifies against itself -- this is the blind spot"
 
     mirror = LyzrLedgerMirror(
-        sender=lambda u, h, p: (200, {"head": witnessed_head, "count": 1}))
+        sender=lambda u, h, p: (200, {"response": json.dumps({"head": witnessed_head, "count": 1})}))
     c = mirror.compare(forged)
     assert c.status == "diverged"
     assert c.tamper_suspected is True
