@@ -48,26 +48,45 @@ this order:
   small amount — this project's whole session history treats every dollar
   and every model-tier choice as a real decision, not a rounding error.
 
-## What to actually do
+## This session's task: start wiring the dashboard to live data
 
 Run `cd /Users/danish/CITINEL/backend && ./.venv/bin/citinel status` first —
-ground truth for build state, more current than this prompt will be. Then
-read HANDOFF-MEMORY.md §17's numbered list in full — it's the current,
-honest open-items list, in a rough priority order already reasoned through:
+ground truth for build state, more current than this prompt will be.
 
-1. **Step 7's last open question is closed** — the final prompt-fix
-   verification run completed live and succeeded (real counter-evidence,
-   calibrated confidence, three real action-class proposals, no
-   hallucinated ones). Nothing left to check here; don't re-run it as a
-   verification step, only if you're actually working the pipeline.
-2. The dashboard-to-live-data wiring is now the single highest-value piece
-   of unfinished work — Step 7 gives several previously-impossible pages
-   (Replay, Confidence) something real to show. Scope carefully per the
-   warning above.
-3. Manual items only Danish can do: n8n webhook URL into `.env`, the Lyzr
-   Studio agent (recipe is in `connectors/lyzr.py`'s docstring), the
-   Swytchcode credit claim.
-4. Step 14 (demo fallback capture) is the one remaining unbuilt ladder step.
+**This is the explicit task for this session, chosen by Danish 2 Sep 2026.**
+Do not re-litigate whether it's the right next thing to do — it's already
+decided. Read HANDOFF-MEMORY.md §15 (the audit's findings) and §17 item 2
+before touching any page, then work it properly, not as a blanket pass:
+
+- **The audit already ran** (`citinel-full-wiring-audit`, §15) — don't
+  re-run it. Verdict: 11 of 18 pages are `PARTIAL` (real data exists but is
+  entangled with fictional demo content that needs cutting cleanly, not
+  crudely), 7 are `NOT_WIREABLE_TODAY` (Replay, Confidence, Approvals,
+  Corpus, Executive, Demo, Policy). Some of the `NOT_WIREABLE_TODAY` pages —
+  Replay, Confidence — may have moved to wireable now that Step 7 produces
+  real verdicts/citations/proposals; check before assuming the audit's verdict
+  on those two is still current, but trust it for the rest.
+- **The seam already exists and is unused.** `api.js` has `live: true` flags
+  on 7 real backend endpoints that no page's script actually calls yet.
+  Wiring means calling what's already there, not inventing a new seam.
+- **Most pages are hand-crafted narrative prototypes, not thin templates**
+  (confirmed by reading Overview, Audit, Policy in full — §15). A naive
+  data-swap breaks layout math and replaces a polished demo with a thinner
+  real one. Pick one `PARTIAL` page, read it in full before editing, wire it,
+  verify it renders correctly in the browser preview, then move to the next.
+  Don't attempt all 11 in one pass.
+- The pages are local, hand-editable files (`dashboard/static/*.dc.html` +
+  `api.js`) — wiring is a code change, not a design change, so no Claude
+  Design canvas round-trip is normally needed. Only if a page genuinely needs
+  a layout/visual change beyond swapping in live data, say so and give Danish
+  the exact prompt to paste into that canvas instead of guessing at layout
+  changes yourself (§8 for how that canvas relates to this repo).
+
+Once dashboard wiring is genuinely underway or a natural stopping point is
+reached, the rest of §17's list is still open in this order: manual items
+only Danish can do (n8n webhook URL into `.env`, the Lyzr Studio agent —
+recipe in `connectors/lyzr.py`'s docstring, the Swytchcode credit claim), then
+Step 14 (demo fallback capture), the one remaining unbuilt ladder step.
 
 Don't guess at anything time-sensitive (shortlist status, event dates,
 credit-claim deadlines) — recompute or ask rather than trusting a number
