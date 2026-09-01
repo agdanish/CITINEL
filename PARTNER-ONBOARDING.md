@@ -135,6 +135,7 @@ how completely the checklist above gets worked through.
 - **URL:** https://studio.lyzr.ai/
 - $20/mo for registered participants, **confirmed twice in the 25 Aug partner session by a Lyzr engineer live-demoing it** — "every month it resets to $20," and it resets again right around finale week, so the team gets a fresh $20 for the finale regardless of what's spent before. Still no organizer redemption PDF the way the other 6 partners have, but this is stronger evidence than the original research-pass guess.
 - **The Studio agent `CITINEL_LYZR_AGENT_ID` needs (answering `pii_guard` + `ledger_head`) now has a concrete recipe**, not just "this is Studio config": the 25 Aug demo walks through building a multi-agent system with exactly this shape (define role/goal/instructions per agent, expose a capability as a custom tool via its OpenAPI schema when it's not in the built-in catalog). Full notes: `PARTNER-SESSION-NOTES.md`.
+- **The exact copy-paste Role/Goal/Instructions, which Studio toggles to set, and a known open gap in the memory design are in `LYZR-AGENT-CONFIG.md`** — produced by a research + red-team pass (1 Sep) once it became clear `pii_guard`'s "input" is untrusted attacker telemetry, not trusted text, and needed hardening against prompt injection specifically.
 - **Integration status: all four SDD §15.3 attachment points now resolved**, and every one degrades to a no-op without a key, so nothing here blocks on the credential:
 
   | # | Attachment point | Status |

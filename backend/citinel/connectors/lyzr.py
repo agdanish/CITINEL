@@ -40,35 +40,22 @@ from citinel.config import settings
 # agent (screen for PII, remember a ledger entry, report the last one) all
 # ride inside `message` as JSON, and the agent must reply with pure JSON text
 # in `response` -- which only works if the Studio agent is instructed to do
-# exactly that. Paste this as the agent's instructions in Lyzr Studio:
+# exactly that.
 #
-#   You will always receive a message that is a single JSON object with a
-#   "task" field. Reply with ONLY a JSON object matching the task below --
-#   no prose, no markdown fences, nothing else. Any other text breaks the
-#   caller.
-#
-#   task "pii_guard": {"task": "pii_guard", "input": "<text>"}
-#     Screen <text> for personally identifiable information (names, emails,
-#     phone numbers, government IDs, etc -- NOT IP addresses, hashes, or
-#     hostnames; those are legitimate security evidence, not PII).
-#     Reply: {"pii": [{"type": "<kind>", "confidence": "high|medium|low",
-#                       "masked": "<partially masked value>"}]}
-#     Empty list if nothing found.
-#
-#   task "ledger_record": {"task": "ledger_record", "entry": {...}}
-#     Remember this as the latest ledger entry for this session (its
-#     "entry_hash" is the new head; keep a running count in session memory).
-#     Reply: {"ok": true}
-#
-#   task "ledger_head": {"task": "ledger_head"}
-#     Reply with the latest entry_hash and count you were told about in THIS
-#     session so far: {"head": "<entry_hash, or \"\" if none yet>",
-#     "count": <integer>}
+# The exact Role/Goal/Instructions to paste into Studio -- including the
+# injection-hardening this needed once we accounted for pii_guard's "input"
+# being untrusted attacker telemetry, not trusted user text, plus which
+# Studio toggles to set and a known open gap in the memory design -- live in
+# LYZR-AGENT-CONFIG.md at the repo root. That is the single source of truth;
+# duplicating a long, security-relevant prompt inline here would just create
+# a second copy to drift out of sync with the first.
 #
 # ledger_record and ledger_head deliberately share one fixed session_id
 # (see LyzrLedgerMirror below) so Lyzr's own session memory is what ties them
 # together across calls -- pii_guard does not need that continuity, so it
-# uses its own.
+# uses its own. LYZR-AGENT-CONFIG.md's "Known follow-up" section covers a
+# real, still-open gap in that design: Lyzr's memory is not confirmed to
+# guarantee exact-hash recall over the hours/days between calls.
 
 
 def _parse_agent_reply(body: Any) -> dict[str, Any]:
