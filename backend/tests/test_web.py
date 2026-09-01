@@ -234,3 +234,21 @@ def test_root_redirects_to_the_console_entry_point():
     r = TestClient(app_mod.app).get("/", follow_redirects=False)
     assert r.status_code in (307, 308)
     assert r.headers["location"].endswith("Entry.dc.html")
+
+
+def test_console_files_are_always_revalidated_but_api_is_left_alone():
+    """DEPLOY.md's stale-file defect, closed at the server: every console file
+    is served `Cache-Control: no-cache` so a browser revalidates it on each
+    load (a 304 via ETag, not a re-download), while JSON routes carry no such
+    header. Without this, a browser that saw yesterday's api.js keeps it for
+    hours after a deploy and silently renders the old wiring."""
+    import citinel.web.app as app_mod
+
+    if not app_mod.STATIC_DIR.is_dir():
+        pytest.skip("dashboard/static not present in this checkout")
+    ui = client.get("/api.js")
+    assert ui.status_code == 200
+    assert ui.headers.get("cache-control") == "no-cache"
+    api = client.get("/api/policy")
+    assert api.status_code == 200
+    assert "cache-control" not in api.headers

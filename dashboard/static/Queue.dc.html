@@ -53,14 +53,14 @@
       <a href="Entry.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">ENTRY</a>
           <a href="Narrow.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">NARROW</a>
 </nav>
-    <span style="flex:none;font-size:11.5px;color:var(--ctn-color-text-muted);font-variant-caps:all-small-caps;white-space:nowrap">sorting line · watch 14:00–02:00 IST</span>
+    <span style="flex:none;font-size:11.5px;color:var(--ctn-color-text-muted);font-variant-caps:all-small-caps;white-space:nowrap">{{ lineLabel }}</span>
     <span style="flex:none;font-family:var(--ctn-font-display);font-size:13px;color:var(--ctn-color-text-primary);font-variant-numeric:tabular-nums slashed-zero">{{ utc }} UTC</span>
   </header>
 
   <div data-reflow-band style="flex:none;display:flex;align-items:stretch;border-bottom:1px solid var(--ctn-color-border-strong);background:var(--ctn-color-surface-panel);min-width:0">
     <div data-reflow-rail style="flex:none;display:flex;align-items:center;gap:16px;padding:12px 22px;border-right:1px solid var(--ctn-color-border-hairline)">
       <div>
-        <div style="font-family:var(--ctn-font-display);font-size:8.5px;letter-spacing:0.13em;color:var(--ctn-color-text-muted)">INTAKE THIS WATCH</div>
+        <div style="font-family:var(--ctn-font-display);font-size:8.5px;letter-spacing:0.13em;color:var(--ctn-color-text-muted)">{{ intakeLabel }}</div>
         <div style="font-family:var(--ctn-font-display);font-size:30px;line-height:1.1;color:var(--ctn-color-text-primary);font-variant-numeric:tabular-nums slashed-zero">{{ totalCaught }}</div>
       </div>
     </div>
@@ -71,13 +71,13 @@
         <g>{{ beltDots }}</g>
         <line x1="238" y1="38" x2="300" y2="14" stroke="var(--ctn-color-text-primary)" stroke-width="3" stroke-linecap="round"></line>
         <circle cx="238" cy="38" r="5" fill="var(--ctn-color-surface-navy)" stroke="var(--ctn-color-text-secondary)" stroke-width="1.6"></circle>
-        <text x="238" y="66" text-anchor="middle" font-family="var(--ctn-font-display)" font-size="8" letter-spacing="1.2" fill="var(--ctn-color-text-muted)">SIGMA DIVERTER · 3,000 @ 7f31c0d</text>
+        <text x="238" y="66" text-anchor="middle" font-family="var(--ctn-font-display)" font-size="8" letter-spacing="1.2" fill="var(--ctn-color-text-muted)">{{ diverterLabel }}</text>
         <line x1="300" y1="14" x2="560" y2="14" stroke="var(--ctn-color-border-strong)" stroke-width="2"></line>
         {{ heldLabel }}
         <line x1="300" y1="46" x2="440" y2="76" stroke="var(--ctn-color-border-hairline)" stroke-width="2"></line>
         {{ postedLabel }}
       </svg>
-      <div style="flex:none;font-size:11.5px;color:var(--ctn-color-text-muted);line-height:1.5;max-width:38ch;text-wrap:pretty">the diverter is deterministic: a rule either explains a package or it stays on the belt. {{ postedPctLine }}</div>
+      <div style="flex:none;font-size:11.5px;color:var(--ctn-color-text-muted);line-height:1.5;max-width:38ch;text-wrap:pretty">{{ diverterProse }} {{ postedPctLine }}</div>
     </div>
   </div>
 
@@ -90,7 +90,7 @@
 
     <sc-if value="{{ isQuiet }}" hint-placeholder-val="{{ false }}">
       <div style="margin:0 22px 16px;border:1px dashed var(--ctn-color-border-strong);border-radius:6px;padding:18px 20px;min-width:0">
-        <div style="font-family:var(--ctn-font-display);font-size:10px;letter-spacing:0.12em;color:var(--ctn-color-text-primary)">THE BELT IS EMPTY AND STILL TURNING</div>
+        <div style="font-family:var(--ctn-font-display);font-size:10px;letter-spacing:0.12em;color:var(--ctn-color-text-primary)">{{ quietTitle }}</div>
         <div style="font-size:13px;color:var(--ctn-color-text-secondary);margin-top:8px;line-height:1.55;max-width:88ch;text-wrap:pretty">{{ quietBody }}</div>
         <div style="display:flex;gap:26px;margin-top:12px;flex-wrap:wrap">
           <sc-for list="{{ quietProof }}" as="x" hint-placeholder-count="4">
@@ -103,7 +103,7 @@
 
     <div style="display:flex;gap:12px;padding:0 22px 6px;overflow-x:auto;min-width:0;align-items:stretch" data-keys="1" tabindex="0">
       <sc-for list="{{ escalated }}" as="e" hint-placeholder-count="7">
-        <a href="Replay.dc.html" style="flex:none;width:242px;display:flex;flex-direction:column;text-decoration:none;color:inherit;background:var(--ctn-color-surface-panel);border:1px solid var(--ctn-color-border-hairline);border-top:3px solid {{ e.edge }};border-radius:6px;min-width:0" style-hover="background:var(--ctn-color-surface-raised)">
+        <a href="Replay.dc.html?id={{ e.id }}" style="flex:none;width:242px;display:flex;flex-direction:column;text-decoration:none;color:inherit;background:var(--ctn-color-surface-panel);border:1px solid var(--ctn-color-border-hairline);border-top:3px solid {{ e.edge }};border-radius:6px;min-width:0" style-hover="background:var(--ctn-color-surface-raised)">
           <div style="display:flex;align-items:center;gap:8px;padding:10px 12px 0;min-width:0;overflow:hidden">
             <x-import component-from-global-scope="CITINELDesignSystem_fdfd66.SeverityBadge" level="{{ e.sev }}" size="sm" hint-size="80px,20px"></x-import>
             <span data-token style="font-family:var(--ctn-font-mono);font-size:11.5px;color:var(--ctn-color-text-primary);margin-left:auto;flex:none">{{ e.id }}</span>
@@ -114,7 +114,7 @@
             <span style="width:6px;height:6px;border-radius:50%;background:{{ e.holderDot }};flex:none"></span>
             <span style="font-family:var(--ctn-font-display);font-size:7.5px;letter-spacing:0.09em;color:var(--ctn-color-text-primary);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ e.holder }}</span>
           </div>
-          <div style="font-size:10.5px;color:var(--ctn-color-text-muted);padding:3px 12px 0;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ e.holderNote }}</div>
+          <div style="font-size:10.5px;color:var(--ctn-color-text-muted);padding:3px 12px 0;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="{{ e.holderNote }}">{{ e.holderNote }}</div>
           <div style="margin-top:auto;display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px;padding:10px 12px 11px;border-top:1px solid var(--ctn-color-border-hairline);min-width:0">
             <span style="font-family:var(--ctn-font-display);font-size:17px;color:{{ e.ageColor }};font-variant-numeric:tabular-nums slashed-zero;flex:none">{{ e.age }}</span>
             <span style="font-family:var(--ctn-font-display);font-size:7px;letter-spacing:0.1em;color:{{ e.ageColor }};flex:none">{{ e.ageMark }}</span>
@@ -130,15 +130,15 @@
     <div style="flex:none;display:flex;align-items:baseline;gap:12px;padding:11px 22px 7px;min-width:0">
       <span style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.14em;color:var(--ctn-color-text-muted);flex:none">THE BIN · POSTED BY SIGMA, NO MODEL INVOLVED</span>
       <span style="font-family:var(--ctn-font-display);font-size:17px;color:var(--ctn-color-text-primary);font-variant-numeric:tabular-nums slashed-zero;flex:none">{{ postedCount }}</span>
-      <span data-reveal style="font-family:var(--ctn-font-mono);font-size:11px;color:var(--ctn-color-text-muted);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">deterministic rule + citation · falls out of the diverter and settles here in columns, newest on top of each pile</span>
+      <span data-reveal style="font-family:var(--ctn-font-mono);font-size:11px;color:var(--ctn-color-text-muted);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ binSubhead }}</span>
     </div>
     <div style="flex:1;min-height:0;overflow-y:auto;padding:0 22px 16px;min-width:0">
       <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 26px;align-items:start">
         <sc-for list="{{ postedGroups }}" as="g" hint-placeholder-count="4">
           <div style="padding-bottom:14px;min-width:0">
-            <div style="font-family:var(--ctn-font-display);font-size:8.5px;letter-spacing:0.13em;color:var(--ctn-color-text-muted);border-bottom:1px solid var(--ctn-color-border-strong);padding-bottom:4px">{{ g.hour }} · {{ g.n }} POSTED</div>
+            <div style="font-family:var(--ctn-font-display);font-size:8.5px;letter-spacing:0.13em;color:var(--ctn-color-text-muted);border-bottom:1px solid var(--ctn-color-border-strong);padding-bottom:4px">{{ g.hour }} · {{ g.n }} POSTED{{ g.drawn }}</div>
             <sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="8">
-              <a href="Replay.dc.html" style="display:flex;align-items:baseline;gap:8px;padding:5px 0;border-bottom:1px solid var(--ctn-color-border-hairline);text-decoration:none;font-family:var(--ctn-font-mono);font-size:11px;line-height:15px;letter-spacing:0;min-width:0" style-hover="background:var(--ctn-color-surface-panel)">
+              <a href="Replay.dc.html?id={{ r.inc }}" style="display:flex;align-items:baseline;gap:8px;padding:5px 0;border-bottom:1px solid var(--ctn-color-border-hairline);text-decoration:none;font-family:var(--ctn-font-mono);font-size:11px;line-height:15px;letter-spacing:0;min-width:0" style-hover="background:var(--ctn-color-surface-panel)">
                 <span style="color:var(--ctn-color-text-muted);font-variant-numeric:tabular-nums;flex:none">{{ r.t }}</span>
                 <span style="font-family:var(--ctn-font-display);font-size:7.5px;letter-spacing:0.08em;color:{{ r.sevFg }};flex:none;width:28px">{{ r.sev }}</span>
                 <span style="color:var(--ctn-color-text-secondary);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.what }}</span>
@@ -158,8 +158,15 @@ class Component extends DCLogic {
     super(p);
     const t = Date.now();
     const E = (id,sev,what,rule,host,holder,holderNote,ageS)=>({id,sev,what,rule,host,holder,holderNote,born:t-ageS*1000});
+    // Pinned in backend/citinel/detect/sigma_engine.py (SIGMA_RELEASE) and counted from
+    // data/raw/sigma/rules. Build-time facts no route serves yet, so constants, not fetches.
+    this.sigma = { rules: '3,302', release: 'r2026-07-01' };
     this.state = {
       now:t, posted: 371,
+      // live: null = reading from citinel-web · true = real incident records on screen ·
+      // false = service not reached, or a ?state= demo panel: the authored fallback below.
+      // The two never blend: a scripted card is never drawn beside a real one.
+      live: null, liveError: null, incidents: [], trails: {},
       escalated: [
         E('INC-0417','critical','UPI mule cashout chain · ₹18.4L staged across 14 beneficiaries','upi_beneficiary_burst','upi-sw-01','AT THE GATE','freeze + egress block await approval',761),
         E('INC-0846','high','lateral movement from branch jump host toward CBS segment','rdp_lateral_cbs','br-jump-02','AT THE GATE','isolation drafted, undecided',1523),
@@ -178,35 +185,204 @@ class Component extends DCLogic {
       ['MED','sigma proc_creation benign parent MsMpEng.exe'],
       ['LOW','tls cert mismatch · expired internal cert']
     ];
+    this.demoState = 'normal';
+    try { this.demoState = new URLSearchParams(window.location.search).get('state') || 'normal'; } catch(e) {}
   }
   componentDidMount(){
-    this.t = setInterval(()=>{
-      this.setState(s=>{
-        const st = {now: Date.now()};
-        if(Math.random()<0.3) st.posted = s.posted+1;
-        return st;
+    this.t = setInterval(()=>{ this.setState({now: Date.now()}); }, 1000);
+    // ?state=quiet|firstrun are authored demo panels. They never read the service, so api.js
+    // keeps the header badge at DEMO DATA for them by construction.
+    const API = window.CITINEL_API;
+    if (this.demoState !== 'normal' || !API) {
+      this.setState({live:false, liveError: API ? 'demo state ' + this.demoState : 'api.js not loaded'});
+      return;
+    }
+    API.incidents().then(r => {
+      if (!r.ok) { this.setState({live:false, liveError:r.error}); return; }
+      const incs = Array.isArray(r.data) ? r.data : [];
+      const open = incs.filter(i => !/^closed/.test(String(i.state)));
+      // one audit chain per open incident: the last actor on the chain is the honest "who holds it"
+      return Promise.all(open.map(i => API.auditFor(i.incident_id))).then(chains => {
+        const trails = {};
+        open.forEach((i,k) => { trails[i.incident_id] = chains[k] && chains[k].ok ? chains[k].data : null; });
+        this.setState({live:true, incidents:incs, trails});
       });
-    },1000);
+    });
   }
   componentWillUnmount(){ clearInterval(this.t); }
+
+  /* ── helpers ─────────────────────────────────────────────────────────────── */
+  fmtN(n){ return Number(n || 0).toLocaleString('en-IN'); }
+  pad2(n){ return String(n).padStart(2,'0'); }
+  fmtAge(s){
+    if (s >= 86400) return Math.floor(s/86400) + 'd ' + this.pad2(Math.floor(s % 86400 / 3600)) + 'h';
+    if (s >= 3600) return Math.floor(s/3600) + 'h ' + this.pad2(Math.floor(s % 3600 / 60)) + 'm';
+    return this.pad2(Math.floor(s/60)) + ':' + this.pad2(s % 60);
+  }
+  ageing(ageS){
+    return {
+      ageMark: ageS>1200 ? 'AGED' : ageS>600 ? 'WATCH' : 'IN TIME',
+      ageColor: ageS>1200 ? 'var(--ctn-color-severity-critical-text)' : ageS>600 ? 'var(--ctn-color-clock)' : 'var(--ctn-color-text-primary)'
+    };
+  }
+  spanLabel(lo, hi){
+    if (!lo || !hi) return 'corpus';
+    const M = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+    const a = new Date(lo), b = new Date(hi);
+    if (isNaN(a) || isNaN(b)) return 'corpus';
+    const d = x => x.getUTCDate(), m = x => M[x.getUTCMonth()], y = x => x.getUTCFullYear();
+    if (y(a) === y(b) && m(a) === m(b)) return d(a) + '–' + d(b) + ' ' + m(a) + ' ' + y(a) + ' utc';
+    return d(a) + ' ' + m(a) + (y(a) !== y(b) ? ' ' + y(a) : '') + ' – ' + d(b) + ' ' + m(b) + ' ' + y(b) + ' utc';
+  }
+  beltDots(R){
+    const dots = [];
+    for(let i=0;i<9;i++) dots.push(R.createElement('circle',{key:i,cx:14+i*26,cy:38,r:4,fill:'var(--ctn-color-surface-raised)',stroke:'var(--ctn-color-border-hairline)',strokeWidth:1}));
+    return dots;
+  }
+  sevEdge(){
+    return {critical:'var(--ctn-color-severity-critical)',high:'var(--ctn-color-severity-high)',medium:'var(--ctn-color-border-strong)',low:'var(--ctn-color-border-hairline)'};
+  }
+
+  /* Who holds the package, read off the real audit chain: the last actor that is neither a
+     deterministic layer nor a downstream notifier. Nothing here is inferred from the model's
+     reasoning, only from the facts the ledger records (actor, kind, payload, time). */
+  holderFor(inc, chain){
+    const hosts = (inc.hosts || []).length, count = (inc.findings || []).length;
+    const dot = { gate:'var(--ctn-color-clock)', ok:'var(--ctn-color-ok)', warm:'var(--ctn-color-severity-high)', muted:'var(--ctn-color-text-muted)' };
+    const none = { holder:'AWAITING SWARM', note: this.fmtN(count) + ' findings attached · no model call on the ledger', dot: dot.muted };
+    if (!Array.isArray(chain) || !chain.length) return none;
+    const SKIP = {'sigma-layer':1, 'anomaly-layer':1, 'incident-builder':1, 'n8n':1, 'swytchcode':1};
+    let last = null, cited = null, note = null;
+    chain.forEach(e => {
+      if (e.actor === 'sentinel' && e.kind === 'note') { note = e; return; }
+      if (e.actor === 'sentinel' && e.kind === 'state_transition') cited = e;
+      if (!SKIP[e.actor]) last = e;
+    });
+    if (!last) return none;
+    const p = last.payload || {}, ts = String(last.ts || '');
+    const when = ts.length >= 16 ? ts.slice(11,16) + 'Z ' + ts.slice(8,10) + '/' + ts.slice(5,7) : '';
+    const np = note && note.payload;
+    const seen = np && np.evidence_truncated ? ' · ' + this.fmtN(np.findings_examined) + '/' + this.fmtN(np.findings_total) + ' examined' : '';
+    const cp = cited && cited.payload;
+    const citedNote = cp ? 'cited · ' + cp.claims_verified + ' claims verified' + (cp.counter_evidence_searched ? ' · counter-evidence searched' : '') : null;
+    switch (last.actor) {
+      case 'router': case 'triage-router':
+        return { holder:'TRIAGE ROUTER', note: (p.lane ? 'lane ' + p.lane + ' · confidence ' + Number(p.confidence).toFixed(2) : 'triage call') + seen + ' · ' + when, dot: dot.ok };
+      case 'enricher':
+        return { holder:'ENRICHMENT SQUAD', note: 'reputation + osint lookups' + seen + ' · ' + when, dot: dot.warm };
+      case 'correlator':
+        return { holder:'CORRELATOR', note: 'joining the chain across ' + hosts + (hosts === 1 ? ' host' : ' hosts') + seen + ' · ' + when, dot: dot.ok };
+      case 'narrator': case 'sentinel':
+        return { holder:'VERDICT NARRATOR', note: (citedNote || 'drafting the cited verdict') + seen + ' · ' + when, dot: dot.ok };
+      case 'marshal':
+        return { holder:'RESPONSE MARSHAL', note: 'proposals drafted · no policy check on the ledger yet' + seen + ' · ' + when, dot: dot.gate };
+      case 'policy-gate':
+        return { holder:'AT THE GATE', note: [p.action_class, p.verdict, p.clause_ref ? 'clause ' + p.clause_ref : ''].filter(Boolean).join(' · ') + ' · ' + when, dot: dot.gate };
+      case 'response-marshal':
+        return { holder:'RESPONSE MARSHAL', note: (p.simulated ? '[simulated] ' : '') + p.action_class + ' → ' + p.target + ' · ' + when, dot: dot.gate };
+      default:
+        if (last.kind === 'human_signoff') return { holder:'SIGNED OFF', note: 'by ' + (p.signed_by || 'unknown') + ' · ' + when, dot: dot.muted };
+        return { holder: String(last.actor).toUpperCase(), note: String(last.kind) + ' · ' + when, dot: dot.muted };
+    }
+  }
+
+  /* ── live: derived once per incidents payload, ages recomputed per tick ─────── */
+  liveDerived(){
+    const s = this.state;
+    if (this._dSrc === s.incidents && this._d) return this._d;
+    const incs = s.incidents, sevEdge = this.sevEdge();
+    const open = incs.filter(i => !/^closed/.test(String(i.state)));
+    const belt = open.map(i => {
+      const fs = i.findings || [], tally = {};
+      fs.forEach(f => { if (f.source === 'sigma') tally[f.title] = (tally[f.title] || 0) + 1; });
+      const top = Object.keys(tally).sort((a,b)=> tally[b]-tally[a])[0] || (fs[0] && fs[0].title) || 'no findings attached';
+      const hosts = i.hosts || [], tech = i.techniques || [];
+      const h = this.holderFor(i, s.trails[i.incident_id]);
+      return {
+        id: i.incident_id, sev: i.severity || 'medium',
+        what: top + (tally[top] ? ' ×' + this.fmtN(tally[top]) : '') + ' · ' + this.fmtN(fs.length) + ' findings · ' + hosts.length + (hosts.length === 1 ? ' host' : ' hosts'),
+        rule: tech.length ? tech.slice(0,2).join(' ') + (tech.length > 2 ? ' +' + (tech.length - 2) : '') : 'no technique ids',
+        host: String(hosts[0] || 'no host').split('.')[0],
+        holder: h.holder, holderNote: h.note, holderDot: h.dot,
+        opened: Date.parse(i.opened_ts), count: fs.length,
+        edge: sevEdge[i.severity] || sevEdge.medium
+      };
+    });
+    // the bin: every sigma detection with its log line, by the hour it happened, newest hour first
+    const rows = [];
+    incs.forEach(i => (i.findings || []).forEach(f => {
+      if (f.source === 'sigma') rows.push({inc: i.incident_id, ts: String(f.timestamp || ''), title: f.title, level: f.level});
+    }));
+    rows.sort((a,b)=> a.ts < b.ts ? 1 : a.ts > b.ts ? -1 : 0);
+    const sevMap = {critical:'CRIT', high:'HIGH', medium:'MED', low:'LOW', informational:'INFO'};
+    const sevFg = {CRIT:'var(--ctn-color-severity-critical-text)', HIGH:'var(--ctn-color-severity-high)', MED:'var(--ctn-color-text-secondary)', LOW:'var(--ctn-color-text-muted)', INFO:'var(--ctn-color-text-muted)'};
+    const CAP = 12, byHour = {}, order = [];
+    rows.forEach(r => { const k = r.ts.slice(0,13); if (!byHour[k]) { byHour[k] = []; order.push(k); } byHour[k].push(r); });
+    const groups = order.map(k => {
+      const list = byHour[k];
+      const shown = list.slice(0, CAP).map(r => { const sv = sevMap[r.level] || 'LOW'; return { t: r.ts.slice(11,16), sev: sv, sevFg: sevFg[sv], what: r.title, inc: r.inc }; });
+      return { hour: k.slice(0,10) + ' ' + k.slice(11,13) + ':00 UTC', n: this.fmtN(list.length),
+               drawn: list.length > shown.length ? ' · ' + shown.length + ' DRAWN' : '', rows: shown };
+    });
+    const total = incs.reduce((n,i)=> n + (i.findings || []).length, 0);
+    let lo = '', hi = '';
+    incs.forEach(i => {
+      if (i.first_event_ts && (!lo || i.first_event_ts < lo)) lo = i.first_event_ts;
+      if (i.last_event_ts && (!hi || i.last_event_ts > hi)) hi = i.last_event_ts;
+    });
+    this._dSrc = s.incidents;
+    this._d = { belt, groups, total, sigmaN: rows.length, span: this.spanLabel(lo, hi) };
+    return this._d;
+  }
+  liveVals(){
+    const s = this.state, R = React, d = this.liveDerived();
+    const esc = d.belt.map(e => {
+      const ageS = isFinite(e.opened) ? Math.max(0, Math.floor((s.now - e.opened)/1000)) : 0;
+      return Object.assign({}, e, {ageS, age: this.fmtAge(ageS)}, this.ageing(ageS));
+    }).sort((a,b)=> (b.ageS - a.ageS) || (b.count - a.count))
+      .map((e,i)=> Object.assign({}, e, {pos: i===0 ? 'DISCHARGE · WORK THIS' : 'POSITION ' + this.pad2(i+1)}));
+    const pct = d.total ? Math.round(d.sigmaN / d.total * 100) : 0;
+    const anomN = d.total - d.sigmaN;
+    const quiet = esc.length === 0;
+    return {
+      utc: new Date(s.now).toISOString().slice(11,19),
+      lineLabel: 'sorting line · replay ' + d.span,
+      intakeLabel: 'INTAKE · REPLAY',
+      diverterLabel: 'SIGMA DIVERTER · ' + this.sigma.rules + ' @ ' + this.sigma.release,
+      diverterProse: 'the diverter is deterministic: sigma posts a detection with its exact log line, or the anomaly scorer escalates it, before any model is involved.',
+      totalCaught: this.fmtN(d.total),
+      postedPctLine: pct + '% of everything caught is a sigma detection with its log line attached; the other ' + this.fmtN(anomN) + ' are anomaly-scorer escalations. all of it is grouped into the ' + esc.length + (esc.length === 1 ? ' incident' : ' incidents') + ' on the belt.',
+      beltDots: this.beltDots(R),
+      escCount: this.pad2(esc.length),
+      openNow: this.pad2(esc.length),
+      escalated: esc,
+      postedVerb: 'posted by sigma',
+      postedCount: this.fmtN(d.sigmaN),
+      postedGroups: d.groups,
+      binSubhead: 'deterministic rule + exact log line · by the hour the event happened, newest hour first, newest on top of each pile',
+      isQuiet: quiet,
+      quietTitle: 'THE BELT IS EMPTY AND STILL TURNING',
+      quietBody: quiet ? 'No open incident in the records citinel-web serves. Every finding sigma and the anomaly scorer attached sits on a closed record.' : '',
+      quietProof: quiet ? [{v: this.fmtN(d.total), k:'caught'},{v: this.fmtN(d.sigmaN), k:'sigma detections'},{v: this.fmtN(anomN), k:'anomaly escalations'},{v:'00', k:'open'}] : [],
+      quietCaveat: quiet ? 'An empty belt is only as trustworthy as the intake behind it. This screen reads the incident records the service serves and nothing else; it cannot see a source that went silent.' : ''
+    };
+  }
+
+  /* ── scripted fallback: authored demo data, shown only when the service is not read ── */
   baseVals(){
-    const s = this.state, R = React;
+    const s = this.state, R = React, sevEdge = this.sevEdge();
     const holderDots = {'AT THE GATE':'var(--ctn-color-clock)','CORRELATOR':'var(--ctn-color-ok)','ENRICHMENT SQUAD':'var(--ctn-color-severity-high)','VERDICT NARRATOR':'var(--ctn-color-ok)'};
-    const sevEdge = {critical:'var(--ctn-color-severity-critical)',high:'var(--ctn-color-severity-high)',medium:'var(--ctn-color-border-strong)',low:'var(--ctn-color-border-hairline)'};
     const esc = s.escalated.map(e=>{
       const ageS = Math.max(0, Math.floor((s.now-e.born)/1000));
-      return {...e, ageS,
+      return Object.assign({}, e, {ageS,
         edge: sevEdge[e.sev],
         holderDot: holderDots[e.holder] || 'var(--ctn-color-text-muted)',
-        age: String(Math.floor(ageS/60)).padStart(2,'0')+':'+String(ageS%60).padStart(2,'0'),
-        ageMark: ageS>1200 ? 'AGED' : ageS>600 ? 'WATCH' : 'IN TIME',
-        ageColor: ageS>1200 ? 'var(--ctn-color-severity-critical-text)' : ageS>600 ? 'var(--ctn-color-clock)' : 'var(--ctn-color-text-primary)'
-      };
-    }).sort((a,b)=> b.ageS - a.ageS).map((e,i,arr)=>({...e, pos: i===0 ? 'DISCHARGE · WORK THIS' : 'POSITION '+String(i+1).padStart(2,'0')}));
+        age: this.fmtAge(ageS)}, this.ageing(ageS));
+    }).sort((a,b)=> b.ageS - a.ageS).map((e,i)=> Object.assign({}, e, {pos: i===0 ? 'DISCHARGE · WORK THIS' : 'POSITION ' + this.pad2(i+1)}));
     const sevFg = {CRIT:'var(--ctn-color-severity-critical-text)', HIGH:'var(--ctn-color-severity-high)', MED:'var(--ctn-color-text-secondary)', LOW:'var(--ctn-color-text-muted)'};
     const mkRow = (t,i)=>{
       const p = this.postedPool[i % this.postedPool.length];
-      return {t, sev:p[0], sevFg: sevFg[p[0]], what:p[1]};
+      return {t, sev:p[0], sevFg: sevFg[p[0]], what:p[1], inc:''};
     };
     const groups = [
       {hour:'21:00 IST', n:'38', count:13},
@@ -215,26 +391,41 @@ class Component extends DCLogic {
       {hour:'18:00 IST', n:'61', count:12},
       {hour:'17:00 IST', n:'44', count:11},
       {hour:'16:00 IST', n:'58', count:11}
-    ].map((g,gi)=>({hour:g.hour, n:g.n, rows: Array.from({length:g.count},(_,i)=>mkRow(
-      String(21-gi).padStart(2,'0')+':'+String(57-i*4).padStart(2,'0'), gi*20+i))}));
+    ].map((g,gi)=>({hour:g.hour, n:g.n, drawn:'', rows: Array.from({length:g.count},(_,i)=>mkRow(
+      this.pad2(21-gi)+':'+this.pad2(57-i*4), gi*20+i))}));
     const total = s.posted + esc.length;
-    const beltDots = [];
-    for(let i=0;i<9;i++) beltDots.push(R.createElement('circle',{key:i,cx:14+i*26,cy:38,r:4,fill:'var(--ctn-color-surface-raised)',stroke:'var(--ctn-color-border-hairline)',strokeWidth:1}));
     return {
       utc: new Date(s.now).toISOString().slice(11,19),
-      totalCaught: total.toLocaleString('en-IN'),
+      lineLabel: 'sorting line · watch 14:00–02:00 IST',
+      intakeLabel: 'INTAKE THIS WATCH',
+      diverterLabel: 'SIGMA DIVERTER · ' + this.sigma.rules + ' @ ' + this.sigma.release,
+      diverterProse: 'the diverter is deterministic: a rule either explains a package or it stays on the belt.',
+      totalCaught: this.fmtN(total),
       postedPctLine: Math.round(s.posted/total*100)+'% of the watch fell straight through to the bin with a citation attached.',
-      beltDots,
-      escCount: String(esc.length).padStart(2,'0'),
-      openNow: String(esc.length).padStart(2,'0'),
+      beltDots: this.beltDots(R),
+      escCount: this.pad2(esc.length),
+      openNow: this.pad2(esc.length),
       escalated: esc,
-      postedCount: s.posted.toLocaleString('en-IN'),
-      postedGroups: groups
+      postedVerb: 'closed on citation',
+      postedCount: this.fmtN(s.posted),
+      postedGroups: groups,
+      binSubhead: 'deterministic rule + citation · falls out of the diverter and settles here in columns, newest on top of each pile',
+      isQuiet: false,
+      quietTitle: 'THE BELT IS EMPTY AND STILL TURNING'
+    };
+  }
+  loadingVals(b){
+    return {
+      isQuiet: true, escalated: [], escCount: '··', openNow: '··', postedCount: '··', totalCaught: '··', postedGroups: [],
+      postedPctLine: 'reading incident records from citinel-web.',
+      quietTitle: 'READING THE LINE FROM CITINEL-WEB',
+      quietBody: 'The belt is drawn from the incident records the service serves and from each record\'s audit chain. Nothing authored is shown while they load, so a scripted card is never mistaken for a real one.',
+      quietProof: [],
+      quietCaveat: 'If the service does not answer, this screen falls back to authored demo data and the header badge says DEMO DATA.'
     };
   }
   stateVals(b){
-    let m = 'normal';
-    try{ m = new URLSearchParams(window.location.search).get('state') || 'normal'; }catch(e){}
+    const m = this.demoState;
     if(m === 'firstrun') return {
       isQuiet: true, escalated: [], escCount: '00', openNow: '00', postedCount: '0', totalCaught: '0',
       postedPctLine: 'nothing has crossed the diverter yet.',
@@ -253,10 +444,16 @@ class Component extends DCLogic {
   svgLabels(b){
     return {
       heldLabel: this.svgText(308, 8, b.escCount+' held for the swarm · the belt below', {anchor:'start', mono:true, fill:'var(--ctn-color-text-primary)'}),
-      postedLabel: this.svgText(330, 80, b.postedCount+' closed on citation → the bin', {anchor:'start', mono:true})
+      postedLabel: this.svgText(330, 80, b.postedCount+' ' + (b.postedVerb || 'closed on citation') + ' → the bin', {anchor:'start', mono:true})
     };
   }
-  renderVals(){ const b = this.baseVals(); return Object.assign({}, b, this.stateVals(b), this.svgLabels(b)); }
+  renderVals(){
+    const s = this.state;
+    if (s.live === true) { const b = this.liveVals(); return Object.assign(b, this.svgLabels(b)); }
+    const b = this.baseVals();
+    const merged = Object.assign({}, b, s.live === null ? this.loadingVals(b) : this.stateVals(b));
+    return Object.assign(merged, this.svgLabels(merged));
+  }
 
   svgText(x,y,str,opts){
     const o = opts || {};

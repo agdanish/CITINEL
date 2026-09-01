@@ -212,6 +212,28 @@ def get_eval() -> dict:
     spec.loader.exec_module(harness)
     return harness.build_report().as_dict()
 
+@app.middleware("http")
+async def _never_serve_a_stale_console(request, call_next):
+    """Revalidate every console file on every load.
+
+    The dashboard is plain files served straight from disk, and StaticFiles
+    sends no Cache-Control. A browser then applies heuristic freshness (about
+    ten percent of the file's age since Last-Modified), so a judge who opened
+    the console yesterday keeps yesterday's api.js and screens for hours after
+    a deploy -- dashboard/static/DEPLOY.md names this exact defect, and the
+    first live-wiring pass hit it locally within minutes. `no-cache` means
+    "revalidate before use", not "never cache": StaticFiles' ETag and
+    Last-Modified turn that into a 304 round trip, never a re-download. The
+    JSON routes are left alone; they are fetched by the pages with their own
+    timeouts and are not what goes stale.
+    """
+    response = await call_next(request)
+    path = request.url.path
+    if not path.startswith("/api/") and path != "/healthz":
+        response.headers.setdefault("Cache-Control", "no-cache")
+    return response
+
+
 # --- the glass-box UI ---------------------------------------------------------
 # Mounted last, deliberately: StaticFiles at "/" is a catch-all, so every
 # /api/* and /healthz route above must already be registered or the mount

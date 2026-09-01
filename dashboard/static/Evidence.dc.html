@@ -112,7 +112,7 @@
           <div style="font-family:var(--ctn-font-mono);font-size:15px;line-height:1.7;letter-spacing:0;color:var(--ctn-color-text-primary);white-space:pre;min-width:{{ ruleWidth }};padding-bottom:6px">{{ pre }}<span style="background:var(--ctn-color-surface-well);border-bottom:2px solid {{ spanColor }};padding:2px 0">{{ mid }}</span>{{ post }}</div>
           <div style="position:relative;height:20px;min-width:{{ ruleWidth }}">
             <span style="position:absolute;left:{{ spanLeft }};width:{{ spanWidth }};top:0;border-top:1px solid {{ spanColor }};height:5px;border-left:1px solid {{ spanColor }};border-right:1px solid {{ spanColor }}"></span>
-            <span style="position:absolute;left:{{ spanMid }};top:6px;transform:translateX(-50%);font-family:var(--ctn-font-mono);font-size:10px;color:var(--ctn-color-text-muted);white-space:nowrap">cited span · bytes {{ spanFrom }}–{{ spanTo }}</span>
+            <span style="position:absolute;left:{{ spanMid }};top:6px;transform:translateX(-50%);font-family:var(--ctn-font-mono);font-size:10px;color:var(--ctn-color-text-muted);white-space:nowrap">{{ spanLabel }} · bytes {{ spanFrom }}–{{ spanTo }}</span>
           </div>
         </div>
       </div>
@@ -133,24 +133,24 @@
       </sc-if>
 
       <div style="flex:none;margin-top:14px;display:flex;gap:6px;flex-wrap:wrap;min-width:0">
-        <dc-import name="StandardRef" standard="OCSF" version="1.4.0" locator="{{ ocsfLocator }}" size="sm" hint-size="310px,24px"></dc-import>
+        <dc-import name="StandardRef" standard="OCSF" version="1.9.0" locator="{{ ocsfLocator }}" size="sm" hint-size="310px,24px"></dc-import>
         <sc-if value="{{ hasRule }}" hint-placeholder-val="{{ true }}">
           <dc-import name="RuleRef" source="SIGMA" name="{{ ruleName }}" id="{{ ruleId }}" size="sm" hint-size="340px,24px"></dc-import>
         </sc-if>
         <dc-import name="StandardRef" standard="MITRE ATT&amp;CK" version="v16.1" locator="{{ ev.technique }}" size="sm" hint-size="290px,24px"></dc-import>
       </div>
       <div style="flex:none;margin-top:16px;min-width:0">
-        <div style="font-family:var(--ctn-font-display);font-size:10px;letter-spacing:0.14em;color:var(--ctn-color-text-muted)">WHAT THIS EXHIBIT WAS CITED FOR</div>
+        <div style="font-family:var(--ctn-font-display);font-size:10px;letter-spacing:0.14em;color:var(--ctn-color-text-muted)">{{ claimTitle }}</div>
         <div style="font-size:14px;color:var(--ctn-color-text-primary);margin-top:7px;line-height:1.55;max-width:92ch;text-wrap:pretty">{{ ev.claim }}</div>
         <div style="display:flex;gap:10px;align-items:center;margin-top:9px;flex-wrap:wrap">
           <span data-token style="font-family:var(--ctn-font-mono);font-size:11.5px;color:var(--ctn-color-text-muted)">{{ ev.technique }}</span>
-          <a href="{{ returnHref }}" style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:7px 11px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;color:var(--ctn-color-text-primary);text-decoration:none">SEE THE CLAIM IN CONTEXT</a>
+          <a href="{{ returnHref }}" style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:7px 11px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;color:var(--ctn-color-text-primary);text-decoration:none">{{ claimLink }}</a>
         </div>
       </div>
 
       <div style="flex:none;margin-top:auto;padding-top:20px;min-width:0">
         <div style="display:flex;align-items:baseline;gap:14px;min-width:0">
-          <span style="font-family:var(--ctn-font-display);font-size:10px;letter-spacing:0.14em;color:var(--ctn-color-text-muted);flex:none">EXHIBITS CITED BY {{ incId }}</span>
+          <span style="font-family:var(--ctn-font-display);font-size:10px;letter-spacing:0.14em;color:var(--ctn-color-text-muted);flex:none">{{ stripTitle }}</span>
           <span style="font-size:11.5px;color:var(--ctn-color-text-muted);flex:1;min-width:0">{{ mixNote }}</span>
         </div>
         <div style="display:flex;gap:8px;margin-top:9px;overflow-x:auto;padding-bottom:4px">
@@ -218,7 +218,7 @@
       </div>
 
       <div style="padding:16px 20px 20px;margin-top:auto;display:flex;flex-direction:column;gap:8px">
-        <a href="Audit.dc.html" style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:9px 12px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;color:var(--ctn-color-text-primary);text-decoration:none;text-align:center">FIND THIS ENTRY IN THE LEDGER</a>
+        <a href="{{ ledgerHref }}" style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:9px 12px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;color:var(--ctn-color-text-primary);text-decoration:none;text-align:center">FIND THIS ENTRY IN THE LEDGER</a>
         <div style="font-size:11px;color:var(--ctn-color-text-muted);line-height:1.5">{{ exportNote }}</div>
       </div>
     </aside>
@@ -229,6 +229,8 @@
 class Component extends DCLogic {
   constructor(p){
     super(p);
+    // Authored fallback exhibits: drawn only when the service is not read (live === false).
+    // They narrate a fictional UPI case and never mix with real findings; badge says DEMO DATA.
     this.exhibits = [
       {id:'e1', kind:'internal', at:14, ts:'2026-08-23 20:57:06.412 IST', file:'upi-switch/2026-08-23.log', line:'41113',
        locator:'upi-switch/2026-08-23.log:41113', source:'upi-sw-01 · UPI switch application log', hash:'sha256:1b77d2…8a41',
@@ -294,13 +296,53 @@ class Component extends DCLogic {
        claim:'Policy drafted two containment actions and required a named human before either could execute.'}
     ];
     let start = 'e3';
+    this.incId = 'INC-0417'; this.startIndex = null;
     try{
-      const q = new URLSearchParams(window.location.search).get('exhibit');
+      const P = new URLSearchParams(window.location.search);
+      const q = P.get('exhibit');
       if(q && this.exhibits.some(e=>e.id===q)) start = q;
+      if(q && /^\d+$/.test(q)) this.startIndex = Number(q);
+      const id = P.get('id'); if (id && /^INC-\d+$/.test(id)) this.incId = id;
     }catch(err){}
-    this.state = {role:this.roleInit(), sel:start, verifying:false, vpos:0, verified:true};
+    this.state = {role:this.roleInit(), sel:start, verifying:false, vpos:0, verified:true,
+      // live: null = reading the record from citinel-web · true = a real finding on the platen ·
+      // false = service not reached, authored fallback. The three never blend.
+      live:null, liveError:null, incident:null, chain:null, liveSel:0, digest:null, digesting:false};
   }
-  componentWillUnmount(){ clearInterval(this.v); }
+  componentWillUnmount(){ clearInterval(this.v); if(this.unsubRole) this.unsubRole(); }
+  componentDidMount(){
+    this.roleMount();
+    const API = window.CITINEL_API;
+    if (!API) { this.setState({live:false, liveError:'api.js not loaded'}); return; }
+    API.incident(this.incId).then(r => {
+      if (!r.ok) { this.setState({live:false, liveError:r.error}); return; }
+      const inc = r.data || {}, fs = inc.findings || [];
+      if (!fs.length) { this.setState({live:false, liveError:'no findings on ' + this.incId}); return; }
+      const sel = this.startIndex != null && this.startIndex < fs.length ? this.startIndex : 0;
+      this.setState({live:true, incident:inc, liveSel:sel});
+      this.digestFor(sel);
+      // the case's audit chain gives the finding its real ledger entry and says whether the swarm saw it
+      API.auditFor(this.incId).then(a => this.setState({chain: a.ok && Array.isArray(a.data) ? a.data : []}));
+    });
+  }
+  /* sha-256 of the bytes on the platen, computed in this browser. Nothing upstream records a
+     digest of the line yet, so this is disclosed as "computed here", never as a verification. */
+  digestFor(idx){
+    const inc = this.state.incident; if (!inc) return;
+    const f = (inc.findings || [])[idx]; if (!f) return;
+    clearInterval(this.v);
+    this.setState({digesting:true, digest:null, verifying:true, vpos:0, verified:false});
+    const done = hex => { clearInterval(this.v); this.setState({digesting:false, digest:hex, verifying:false, vpos:100, verified:!!hex}); };
+    this.v = setInterval(()=>this.setState(x=> x.vpos >= 100 ? {} : {vpos: x.vpos + 10}), 40);
+    try {
+      const bytes = new TextEncoder().encode(String(f.evidence_raw || ''));
+      if (window.crypto && crypto.subtle) {
+        crypto.subtle.digest('SHA-256', bytes)
+          .then(buf => done([...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('')))
+          .catch(()=>done(null));
+      } else done(null);
+    } catch(e) { done(null); }
+  }
   arc(frac){
     if(frac<=0) return '';
     const a = Math.min(frac,0.9999)*2*Math.PI - Math.PI/2;
@@ -317,9 +359,177 @@ class Component extends DCLogic {
     if(kind==='external') return R.createElement('svg',{width:14,height:14,viewBox:'0 0 14 14'},[
       R.createElement('path',{key:'b',d:'M 5.5 2.5 H 2.5 V 11.5 H 11.5 V 8.5',fill:'none',stroke:'var(--ctn-color-text-muted)',strokeWidth:1.3}),
       R.createElement('path',{key:'a',d:'M 7.5 6.5 L 11.5 2.5 M 8.5 2.5 H 11.5 V 5.5',fill:'none',stroke:'var(--ctn-color-text-secondary)',strokeWidth:1.3})]);
+    if(kind==='muted') return R.createElement('svg',{width:14,height:14,viewBox:'0 0 16 16'},
+      R.createElement('circle',{cx:8,cy:8,r:5.6,fill:'none',stroke:'var(--ctn-color-text-disabled)',strokeWidth:1.4,strokeDasharray:'2.5 2.5'}));
     return R.createElement('svg',{width:14,height:14,viewBox:'0 0 16 16'},
       R.createElement('circle',{cx:8,cy:8,r:5.6,fill:'var(--ctn-color-state-node)',stroke:'var(--ctn-color-state-stroke)',strokeWidth:1.4}));
   }
+  fmtN(n){ return Number(n || 0).toLocaleString('en-IN'); }
+  ist(ts){ const d = new Date(ts); if (isNaN(d)) return String(ts||'—'); return new Date(d.getTime()+330*60000).toISOString().slice(11,19); }
+
+  /* ── live: one real finding on the platen ────────────────────────────────── */
+  ledgerEntryFor(f){
+    const ch = this.state.chain; if (!Array.isArray(ch)) return null;
+    if (this._le && this._le.chain === ch && this._le.f === f) return this._le.val;
+    const kinds = {detection_added:1, escalation_added:1};
+    const val = ch.find(e => kinds[e.kind] && e.payload && e.payload.title === f.title && e.payload.event_ts === f.timestamp && e.payload.host === f.host) || null;
+    this._le = {chain: ch, f, val};
+    return val;
+  }
+  swarmNote(){
+    const ch = this.state.chain; if (!Array.isArray(ch)) return null;
+    let n = null; ch.forEach(e => { if (e.actor === 'sentinel' && e.kind === 'note' && e.payload && e.payload.findings_examined != null) n = e.payload; });
+    return n;
+  }
+  liveVals(){
+    const s = this.state, inc = s.incident, fs = inc.findings || [];
+    const idx = Math.max(0, Math.min(s.liveSel || 0, fs.length - 1)), f = fs[idx];
+    const raw = String(f.evidence_raw || ''), multi = raw.indexOf('\n') >= 0;
+    const nf = (f.detail && f.detail.native_fields) || {};
+    // the highlighted span is the first field the rule keyed on that appears in the line, as bytes
+    let from = -1, to = -1, spanWhat = '';
+    const tryFind = (needle, label) => { if (from >= 0 || !needle) return; const i = raw.indexOf(needle); if (i >= 0) { from = i; to = i + needle.length; spanWhat = label; } };
+    Object.keys(nf).forEach(k => { const v = String(nf[k]); tryFind(k + '=' + v, k); tryFind(v, k); });
+    if (from < 0 && f.source === 'anomaly') {
+      ((f.detail && f.detail.reasons) || []).forEach(r => {
+        const m = /image '([^']+)'/.exec(r.detail || ''); if (!m || from >= 0) return;
+        const base = m[1].split('\\').pop(); const i = raw.toLowerCase().indexOf(base.toLowerCase());
+        if (i >= 0) { from = i; to = i + base.length; spanWhat = r.feature || 'image'; }
+      });
+    }
+    if (from < 0) { from = 0; to = 0; }
+    const CH = 9.02;
+    const rule = []; if (!multi) for(let n=0;n<=raw.length;n+=20) rule.push({n:String(n), left:(n*CH)+'px'});
+    const longest = multi ? Math.max.apply(null, raw.split('\n').map(l=>l.length)) : raw.length;
+    const host = String(f.host || ''), shortHost = host.split('.')[0] || 'unknown-host';
+    const logName = (/LogName=([^\r\n]+)/.exec(raw) || [])[1];
+    const recNo = (/RecordNumber=(\d+)/.exec(raw) || [])[1];
+    const provider = (/Provider Name='([^']+)'/.exec(raw) || [])[1];
+    const sourceDesc = logName ? 'WinEventLog:' + logName.trim() : provider ? provider : (f.source === 'anomaly' ? 'sysmon event' : 'event');
+    const locator = shortHost + ' · ' + sourceDesc + (recNo ? ' · record ' + recNo : ' · finding #' + idx);
+    const le = this.ledgerEntryFor(f), note = this.swarmNote();
+    const examinedN = note ? Number(note.findings_examined) : null;
+    const examined = examinedN == null ? null : idx < examinedN;
+    const tech = f.techniques || [];
+    const bytes = (function(){ try { return new TextEncoder().encode(raw).length; } catch(e) { return raw.length; } })();
+    const digestShort = s.digest ? 'sha256:' + s.digest.slice(0,6) + '…' + s.digest.slice(-4) : (s.digesting ? 'computing…' : 'unavailable');
+    const ruleId = f.detail && f.detail.rule_id;
+    const reasons = ((f.detail && f.detail.reasons) || []).map(r => r.detail).filter(Boolean);
+    const claim = f.source === 'sigma'
+      ? 'Sigma rule "' + f.title + '" (level ' + f.level + ') fired on this line at ' + f.timestamp + '. It is finding ' + this.fmtN(idx+1) + ' of ' + this.fmtN(fs.length) + ' attached to ' + this.incId + '. No verdict claim is stored against it: the swarm\'s verdicts are printed by the CLI, not persisted.'
+      : 'The anomaly scorer escalated this line (' + f.level + ')' + (reasons.length ? ': ' + reasons.join('; ') : '') + '. It is finding ' + this.fmtN(idx+1) + ' of ' + this.fmtN(fs.length) + ' attached to ' + this.incId + '. No verdict claim is stored against it.';
+    // one card per distinct detection, first occurrence, capped and disclosed
+    const CAP = 30, seen = {}, distinct = [];
+    fs.forEach((x, i) => { if (!seen[x.title]) { seen[x.title] = true; distinct.push(i); } });
+    const exhibits = distinct.slice(0, CAP).map(i => {
+      const x = fs[i], on = i === idx;
+      return {
+        ts: String(x.timestamp || '').slice(11,19),
+        label: '§' + String(x.host||'').split('.')[0] + ' · ' + x.title,
+        kindTag: x.source === 'sigma' ? 'SIGMA' : 'ANOMALY',
+        glyph: this.ringGlyph('caught'), borderStyle: 'solid',
+        pick: ()=>{ this.setState({liveSel:i}); this.digestFor(i); },
+        border: on ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-border-hairline)',
+        bg: on ? 'var(--ctn-color-surface-panel)' : 'transparent',
+        fg: on ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-text-muted)'
+      };
+    });
+    const frac = s.verifying ? s.vpos/100 : (s.digest ? 1 : 0);
+    const mutedFg = 'var(--ctn-color-text-muted)';
+    const labelRows = [
+      {k:'event time', v: String(f.timestamp || '—') + ' utc'},
+      {k:'source', v: locator},
+      {k:'sha-256', v: s.digest ? s.digest : digestShort},
+      {k:'attached by', v: f.source === 'sigma' ? 'sigma-layer · rule ' + (ruleId || '—') : 'anomaly-layer · ' + f.level},
+      {k:'ledger entry', v: le ? '#' + le.seq : (s.chain === null ? 'reading the chain…' : 'not matched on the chain')}
+    ];
+    const custody = [
+      {t: String(f.timestamp||'').slice(11,19), who:'source system wrote the line', what: host + ' · ' + sourceDesc + ' · CITINEL was not in the write path', glyph:this.ringGlyph('caught')},
+      {t:'replay', who:'telemetry replay', what:'replayed from the BOTS v1 corpus (CC0), normalized to OCSF 1.9.0 before any rule ran', glyph:this.ringGlyph('caught')},
+      {t: le ? this.ist(le.ts) : '—', who: f.source === 'sigma' ? 'sigma-layer' : 'anomaly-layer',
+       what: le ? String(le.kind).replace('_',' ') + ' · ledger entry #' + le.seq + ' · sha256:' + String(le.entry_hash||'').slice(0,6) + '…' + String(le.entry_hash||'').slice(-4) : (s.chain === null ? 'reading the chain…' : 'no matching ledger entry found'), glyph:this.ringGlyph('cited')},
+      {t:'—', who:'the swarm', what: examined === null ? 'no swarm run on this record yet'
+          : examined ? 'this finding was among the first ' + this.fmtN(examinedN) + ' of ' + this.fmtN(note.findings_total) + ' the model was shown'
+          : 'not shown to the model: only the first ' + this.fmtN(examinedN) + ' of ' + this.fmtN(note.findings_total) + ' findings were examined', glyph:this.ringGlyph(examined ? 'cited' : 'muted')},
+      {t:'—', who:'close-out', what:'ring completes when the incident closes · ' + this.incId + ' is ' + String(inc.state||'unknown').replace('_',' '), glyph:this.ringGlyph('closed')}
+    ];
+    return {
+      openedFrom: 'opened from the queue · ' + this.incId + ' · finding ' + this.fmtN(idx+1) + ' of ' + this.fmtN(fs.length),
+      returnHref: 'Queue.dc.html', returnLabel: 'QUEUE',
+      incId: this.incId,
+      isInternal: true, isExternal: false,
+      kindLabel: 'EXAMINATION PLATEN', kindLabelFg: mutedFg,
+      kindNote: 'byte-for-byte as the source system wrote it; CITINEL has never rewritten this line',
+      platenTag: 'READ ONLY', spanColor: 'var(--ctn-color-state-cited)',
+      ev: { locator, meta1: shortHost,
+            meta2: nf._EventID ? 'EventID ' + nf._EventID : nf.EventCode ? 'EventCode ' + nf.EventCode : f.source,
+            encoding: multi ? raw.split('\n').length + ' lines, utf-8' : 'one line, utf-8',
+            ts: String(f.timestamp||''), technique: tech.length ? tech[0] + (tech.length > 1 ? ' +' + (tech.length-1) : '') : 'no technique id',
+            claim, hash: digestShort, extSource:'', extUrl:'', extFetched:'', method:'', status:'',
+            untrusted:'', untrustedSource:'', untrustedWhy:'', untrustedExplain:'' },
+      bytes,
+      pre: raw.slice(0, from), mid: raw.slice(from, to), post: raw.slice(to),
+      spanFrom: from, spanTo: to,
+      spanLabel: to > from ? 'matched field · ' + spanWhat : 'no field highlighted',
+      byteRule: rule, ruleWidth: (longest*CH+20)+'px',
+      spanLeft: multi ? '0px' : (from*CH)+'px', spanWidth: multi ? '0px' : ((to-from)*CH)+'px', spanMid: multi ? '160px' : ((from+(to-from)/2)*CH)+'px',
+      hasUntrusted: false,
+      ocsfLocator: 'normalized upstream · class id not carried on the finding',
+      hasRule: f.source === 'sigma' && !!ruleId, ruleName: f.title || '', ruleId: ruleId || '',
+      claimTitle: 'WHAT THIS EXHIBIT IS', claimLink: 'OPEN THE CASE IN THE QUEUE',
+      custodyLabelTitle: 'CUSTODY LABEL', labelRows, custody,
+      stripTitle: 'EXHIBITS ATTACHED TO ' + this.incId,
+      mixNote: this.fmtN(fs.length) + ' findings on the record · ' + this.fmtN(distinct.length) + ' distinct detections · one card per detection, first occurrence' + (distinct.length > CAP ? ', ' + CAP + ' drawn' : '') + ' · every card is the source system\'s own log line; nothing here was fetched externally',
+      exhibits,
+      verifyArc: this.arc(frac), verifyArcColor: 'var(--ctn-color-text-secondary)',
+      verifyHand: (frac*360).toFixed(1),
+      verifyBytes: s.verifying ? Math.round(s.vpos/100*bytes)+'/'+bytes+' B' : bytes+' B',
+      verifyState: s.digesting ? 'COMPUTING DIGEST' : s.digest ? 'DIGEST COMPUTED HERE' : 'DIGEST UNAVAILABLE',
+      verifyFg: s.digesting ? 'var(--ctn-color-text-primary)' : mutedFg,
+      verifyNote: s.digesting ? 'reading the bytes on this platen and computing sha-256 in this browser.'
+        : s.digest ? 'sha-256 of the bytes on this platen, computed here just now. The ledger records this detection (title, level, host, time) but not a digest of the line, so there is nothing recorded to compare against yet.'
+        : 'this browser could not compute a digest (crypto.subtle needs a secure context). Nothing upstream records one either.',
+      verifyCta: 'RECOMPUTE DIGEST',
+      runVerify: ()=>this.digestFor(idx),
+      exportNote: 'no export is built. the record is served whole at /api/incidents/' + this.incId + '; this exhibit is findings[' + idx + '].',
+      ledgerHref: 'Audit.dc.html?id=' + this.incId + (le ? '&q=' + le.seq : '')
+    };
+  }
+  liveDepthVals(b){
+    if(this.state.role !== 'ciso') return {};
+    const s = this.state, fs = s.incident.findings || [], idx = Math.max(0, Math.min(s.liveSel || 0, fs.length-1)), f = fs[idx];
+    const le = this.ledgerEntryFor(f), note = this.swarmNote();
+    const examinedN = note ? Number(note.findings_examined) : null, examined = examinedN == null ? null : idx < examinedN;
+    const ok = (v,label)=>({label, border: v ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-border-strong)', bg: v ? 'var(--ctn-color-text-primary)' : 'transparent'});
+    return {
+      kindNote: 'a finding resting on the operator\'s own record. the strongest class of exhibit here; no verdict claim is attached to it yet',
+      admissibility: [
+        ok(true, 'Source is a system the operator owns and runs: ' + String(f.host||'')),
+        ok(false, 'No digest was recorded at collection; the ledger records the detection, not the bytes. The digest on this page was computed here'),
+        ok(examined === true, examined === true ? 'Shown to the swarm: within the first ' + this.fmtN(examinedN) + ' findings examined' : examined === false ? 'Not shown to the swarm: outside the first ' + this.fmtN(examinedN) + ' findings examined' : 'No swarm run on this record yet'),
+        ok(!!le, le ? 'Attached to the append-only ledger at entry #' + le.seq : 'No matching ledger entry found for this finding')
+      ],
+      admissibilityNote: 'The line itself is the operator\'s own record and can be handed over as is. What is missing is a digest recorded at collection; until the pipeline records one, this page can only show a digest computed now, which proves nothing about the past.'
+    };
+  }
+  loadingVals(){
+    const mutedFg = 'var(--ctn-color-text-muted)';
+    return {
+      openedFrom: 'reading ' + this.incId + ' from citinel-web', returnHref: 'Queue.dc.html', returnLabel: 'QUEUE', incId: this.incId,
+      isInternal: true, isExternal: false, kindLabel: 'EXAMINATION PLATEN', kindLabelFg: mutedFg, kindNote: 'reading the record; nothing authored is shown while it loads',
+      platenTag: 'READING', spanColor: 'var(--ctn-color-state-cited)',
+      ev: {locator:'reading…', meta1:'', meta2:'', encoding:'', ts:'', technique:'', claim:'', hash:'', extSource:'', extUrl:'', extFetched:'', method:'', status:'', untrusted:'', untrustedSource:'', untrustedWhy:'', untrustedExplain:''},
+      bytes: 0, pre:'', mid:'', post:'', spanFrom: 0, spanTo: 0, spanLabel: '', byteRule: [], ruleWidth: '0px', spanLeft: '0px', spanWidth: '0px', spanMid: '0px',
+      hasUntrusted: false, ocsfLocator: '', hasRule: false, ruleName: '', ruleId: '',
+      claimTitle: 'WHAT THIS EXHIBIT IS', claimLink: 'OPEN THE CASE IN THE QUEUE',
+      custodyLabelTitle: 'CUSTODY LABEL', labelRows: [], custody: [],
+      stripTitle: 'EXHIBITS ATTACHED TO ' + this.incId, mixNote: 'reading…', exhibits: [],
+      verifyArc: '', verifyArcColor: mutedFg, verifyHand: '0', verifyBytes: '', verifyState: 'WAITING FOR THE RECORD', verifyFg: mutedFg, verifyNote: '', verifyCta: 'RECOMPUTE DIGEST', runVerify: ()=>{},
+      exportNote: '', ledgerHref: 'Audit.dc.html?id=' + this.incId, admissibility: [], admissibilityNote: ''
+    };
+  }
+
+  /* ── authored fallback ───────────────────────────────────────────────────── */
   baseVals(){
     const s = this.state;
     const ev = this.exhibits.find(e=>e.id===s.sel) || this.exhibits[0];
@@ -373,12 +583,14 @@ class Component extends DCLogic {
       ev: {...ev, meta1: external ? ev.method+' '+ev.status : ev.file, meta2: external ? 'extracted fields' : 'line '+ev.line},
       bytes: ev.raw.length,
       pre: ev.raw.slice(0, from), mid: ev.raw.slice(from, to), post: ev.raw.slice(to),
-      spanFrom: from, spanTo: to,
+      spanFrom: from, spanTo: to, spanLabel: 'cited span',
       byteRule: rule, ruleWidth: (ev.raw.length*CH+20)+'px',
       spanLeft: (from*CH)+'px', spanWidth: ((to-from)*CH)+'px', spanMid: ((from+(to-from)/2)*CH)+'px',
       hasUntrusted: !!ev.untrusted,
+      claimTitle: 'WHAT THIS EXHIBIT WAS CITED FOR', claimLink: 'SEE THE CLAIM IN CONTEXT',
       custodyLabelTitle: external ? 'RETRIEVAL LABEL' : 'CUSTODY LABEL',
       labelRows, custody,
+      stripTitle: 'EXHIBITS CITED BY INC-0417',
       mixNote: '6 internal · 2 external · dashed border means CITINEL fetched it, gold means the bank logged it',
       exhibits: this.exhibits.map(x=>{
         const ext = x.kind === 'external';
@@ -419,22 +631,9 @@ class Component extends DCLogic {
       },
       exportNote: external
         ? 'export carries the pinned snapshot, the request line, and the fetch timestamp. The regulator sees exactly the bytes the agent saw, never a live re-fetch.'
-        : 'export reproduces this exhibit with its hash chain and the two neighbouring ledger entries. no field is reformatted for the regulator.'
+        : 'export reproduces this exhibit with its hash chain and the two neighbouring ledger entries. no field is reformatted for the regulator.',
+      ledgerHref: 'Audit.dc.html'
     };
-  }
-
-  roleInit(){ try{ return (window.CitinelRole && window.CitinelRole.get()) || 'analyst'; }catch(e){ return 'analyst'; } }
-  roleMount(){ if(window.CitinelRole) this.unsubRole = window.CitinelRole.subscribe(r=>{ if(r !== this.state.role) this.setState({role:r}); }); }
-  componentWillUnmount_role(){ if(this.unsubRole) this.unsubRole(); }
-  roleVals(){
-    const ciso = this.state.role === 'ciso';
-    return { ciso, analyst: !ciso,
-      setAnalyst: ()=>{ this.setState({role:'analyst'}); if(window.CitinelRole) window.CitinelRole.set('analyst'); },
-      setCiso: ()=>{ this.setState({role:'ciso'}); if(window.CitinelRole) window.CitinelRole.set('ciso'); },
-      analystBg: ciso ? 'transparent' : 'var(--ctn-color-surface-navy)',
-      analystFg: ciso ? 'var(--ctn-color-text-muted)' : 'var(--ctn-color-text-on-navy)',
-      cisoBg: ciso ? 'var(--ctn-color-surface-navy)' : 'transparent',
-      cisoFg: ciso ? 'var(--ctn-color-text-on-navy)' : 'var(--ctn-color-text-muted)' };
   }
   ocsfVals(){
     const ev = this.exhibits.find(e=>e.id===this.state.sel) || this.exhibits[0];
@@ -450,10 +649,6 @@ class Component extends DCLogic {
     }[ev.id] || {cls:'class 3001 · Application Activity', rule:null, id:null};
     return {ocsfLocator: map.cls, hasRule: !!map.rule, ruleName: map.rule || '', ruleId: map.id || ''};
   }
-  svgLabels(b){ return {verifyBytesLabel: this.svgText(52, 76, b.verifyBytes, {mono:true, tab:true})}; }
-  renderVals(){ const b = this.baseVals(); return Object.assign({}, b, this.roleVals(), this.ocsfVals(), this.depthVals ? this.depthVals(b) : {}, this.svgLabels(b)); }
-  componentDidMount(){ this.roleMount(); }
-
   depthVals(b){
     if(this.state.role !== 'ciso') return {};
     const ev = this.exhibits.find(e=>e.id===this.state.sel) || this.exhibits[0];
@@ -477,6 +672,27 @@ class Component extends DCLogic {
     };
   }
 
+  /* ── shared ──────────────────────────────────────────────────────────────── */
+  roleInit(){ try{ return (window.CitinelRole && window.CitinelRole.get()) || 'analyst'; }catch(e){ return 'analyst'; } }
+  roleMount(){ if(window.CitinelRole) this.unsubRole = window.CitinelRole.subscribe(r=>{ if(r !== this.state.role) this.setState({role:r}); }); }
+  roleVals(){
+    const ciso = this.state.role === 'ciso';
+    return { ciso, analyst: !ciso,
+      setAnalyst: ()=>{ this.setState({role:'analyst'}); if(window.CitinelRole) window.CitinelRole.set('analyst'); },
+      setCiso: ()=>{ this.setState({role:'ciso'}); if(window.CitinelRole) window.CitinelRole.set('ciso'); },
+      analystBg: ciso ? 'transparent' : 'var(--ctn-color-surface-navy)',
+      analystFg: ciso ? 'var(--ctn-color-text-muted)' : 'var(--ctn-color-text-on-navy)',
+      cisoBg: ciso ? 'var(--ctn-color-surface-navy)' : 'transparent',
+      cisoFg: ciso ? 'var(--ctn-color-text-on-navy)' : 'var(--ctn-color-text-muted)' };
+  }
+  svgLabels(b){ return {verifyBytesLabel: this.svgText(52, 76, b.verifyBytes, {mono:true, tab:true})}; }
+  renderVals(){
+    const s = this.state;
+    if (s.live === true) { const b = this.liveVals(); return Object.assign({}, b, this.roleVals(), this.liveDepthVals(b), this.svgLabels(b)); }
+    if (s.live === null) { const b = this.loadingVals(); return Object.assign({}, b, this.roleVals(), this.svgLabels(b)); }
+    const b = this.baseVals();
+    return Object.assign({}, b, this.roleVals(), this.ocsfVals(), this.depthVals(b), this.svgLabels(b));
+  }
   svgText(x,y,str,opts){
     const o = opts || {};
     return React.createElement('text', {x, y, textAnchor:o.anchor||'middle',

@@ -14,38 +14,44 @@ Entry point: **`Entry.dc.html`** (splash/auth) → **`Overview.dc.html`** (landi
 | Task | Change |
 | --- | --- |
 | Backend not same-origin | `API.BASE = 'http://localhost:8000'` |
-| Second real corpus incident id | `API.INCIDENT_SECONDARY` (currently the placeholder `INC-0418`) |
-| Turn on a route once it exists | flip that entry's `live: false` → `true` in `API.ENDPOINTS` |
+| Second real corpus incident id | `API.INCIDENT_SECONDARY` (`INC-0416`, real) |
+| Turn on a route once it exists | flip that entry's `live: false` → `true` in `API.ENDPOINTS` **and** make the page's script read it |
 
 `API.get(name, ...args)` **always resolves** — never throws into a render. It returns
 `{ok, data, source: 'live'|'scripted', error}`. An endpoint marked `live: false` short-circuits
-with `source:'scripted'` and makes **no network call**, so flipping the flag is the entire
-integration for that surface.
+with `source:'scripted'` and makes **no network call**. Flipping the flag is **not** the whole
+integration: the page's own `<script data-dc-script>` must read the endpoint through `API.get`
+(or a wrapper), because the header badge is derived from what the page actually read on this
+load (`API.consumed`), never from the registry alone. The 1 Sep 2026 wiring audit found every
+page declared endpoints in `API.PAGES` that no page script called; the old badge would have read
+LIVE over scripted fiction the moment `/healthz` answered. Reads of large bodies (incidents,
+audit chains, drafts, ledger verify) use `API.BULK_TIMEOUT_MS`, not the 6 s probe timeout.
 
 Wrappers: `API.incidents()`, `API.incident(id)`, `API.auditFor(id)`, `API.draftFor(id, kind)`,
-`API.policy()`, `API.verifyLedger()`, `API.probe()`.
+`API.policy()`, `API.verifyLedger()`, `API.evalReport()`, `API.probe()`.
 
 ### Endpoints — live today
 
 | Endpoint key | Path | Returns |
 | --- | --- | --- |
 | `health` | `GET /healthz` | `{status, service}` |
-| `incidents` | `GET /api/incidents` | `Incident[]` |
+| `source` | `GET /api/source` | `{source: live\|seed, incident_count, ...}` · which corpus this deployment answers from |
+| `incidents` | `GET /api/incidents` | `Incident[]` · full bodies, every finding (~4 MB for the two-incident corpus) |
 | `incident` | `GET /api/incidents/{id}` | `Incident` · 404 unknown |
 | `audit` | `GET /api/incidents/{id}/audit` | `AuditEntry[]` · 404 none |
-| `draft` | `GET /api/incidents/{id}/draft?kind=certin\|dpdp` | `{draft, rendered}` |
+| `draft` | `GET /api/incidents/{id}/draft?kind=certin\|dpdp` | `{draft, rendered, guard}` |
 | `policy` | `GET /api/policy` | `{name, version, policy_sha256, clauses[]}` |
-| `ledgerVerify` | `GET /api/ledger/verify` | `{intact, message}` |
+| `ledgerVerify` | `GET /api/ledger/verify` | `{intact, message, witness}` · waits on the Lyzr witness, can take several seconds |
+| `evalRuns` | `GET /api/eval` | `{measured[], unmeasured[], ...}` · harness report with denominators |
 
 ### Endpoints — seam built, route does not exist
 
 | Endpoint key | Intended path | Blocked on |
 | --- | --- | --- |
-| `verdict` | `GET /api/incidents/{id}/verdict` | agent swarm (step 7) not running |
-| `proposals` | `GET /api/incidents/{id}/proposals` | Response Marshal not running |
+| `verdict` | `GET /api/incidents/{id}/verdict` | swarm runs live (step 7) but its verdict is printed by the CLI, not persisted or served |
+| `proposals` | `GET /api/incidents/{id}/proposals` | same: produced live, not persisted or served |
 | `execute` | `POST /api/actions/execute` | mocks only, no route |
 | `rollback` | `POST /api/actions/rollback/{token}` | no route |
-| `evalRuns` | `GET /api/eval/runs` | eval harness not exposed |
 | `corpusRules` | `GET /api/corpus/rules` | corpus not exposed |
 
 Paths in the second table are the intended shape, not a contract the service keeps. Rename
@@ -63,16 +69,16 @@ freely — one `path` function each.
 | `Entry.dc.html` | — | — | statutory clock; first-run vs returning session |
 | `Shell.dc.html` | `incidents` | — | nav counts; annunciator strip |
 | `Overview.dc.html` | `incidents`, `policy` | — | agent fleet traces; autonomy mandate; disposition feed |
-| `Queue.dc.html` | `incidents` | — | lane A/B split reasoning |
+| `Queue.dc.html` | `incidents`, `audit` **· wired 2 Sep 2026** | — | belt-dot decoration; `?state=quiet\|firstrun` demo panels |
 | `Replay.dc.html` | `incident`, `audit` | `verdict` | citation chips; agent timeline; kill-chain narrative |
 | `Confidence.dc.html` | — | `verdict` | supporting/counter ledger; retired-evidence trail |
-| `Evidence.dc.html` | `incident` | — | external-source provenance; quarantine well |
+| `Evidence.dc.html` | `incident`, `audit` **· wired 2 Sep 2026** | — | nothing authored in live mode: the external-source and quarantine panels are cut (no route carries either), the integrity dial computes a digest here and says so because none is recorded upstream |
 | `Approvals.dc.html` | `policy` | `proposals`, `execute`, `rollback` | blast rings; intent preview; rollback tokens |
 | `Corpus.dc.html` | — | `corpusRules` | accession bench; export packet |
-| `Eval.dc.html` | — | `evalRuns` | FP rate + denominators; inferred cost |
+| `Eval.dc.html` | `evalRuns` (route exists; page does not read it yet) | — | FP rate + denominators; inferred cost |
 | `Policy.dc.html` | `policy` | — | autonomy dials; change history |
 | `Compliance.dc.html` | `draft`, `incident` | — | press mechanics; DPDP artifacts |
-| `Audit.dc.html` | `audit`, `ledgerVerify` | — | detect→sign ribbon geometry |
+| `Audit.dc.html` | `audit`, `ledgerVerify` **· wired 2 Sep 2026** | — | nothing: the ribbon is placed by real elapsed time; an authored fallback reel shows only when the service is not reached |
 | `Handover.dc.html` | `incidents`, `audit` | — | watch register; exceptions |
 | `Executive.dc.html` | `incidents`, `policy`, `ledgerVerify` | — | board narrative; quarter figures |
 | `Settings.dc.html` | `health` | — | connector roster; enrichment quota; mock endpoints |
@@ -82,14 +88,27 @@ freely — one `path` function each.
 This table is the human-readable form of `API.PAGES` in `api.js`. **Keep them in step** — the
 on-screen badge is derived from the code, not from this file.
 
+**Wiring status, 2 Sep 2026.** `Queue.dc.html`, `Audit.dc.html` and `Evidence.dc.html` read the service. Every other
+page still renders authored data and, because the badge follows actual reads, correctly says
+`DEMO DATA` even with the backend up. The pattern to copy is in both wired pages: three states that
+never blend (`live: null` reading → `true` real records → `false` authored fallback), the badge left
+to `api.js`, only content values swapped, never layout, and `?id=INC-xxxx` honoured so a card on one
+screen opens the same record on the next. Audit also shows the shape for a slow read: `ledgerVerify`
+waits on the external witness, so the badge reads `MIXED` until it answers and `LIVE` after.
+
 ### The data-source badge
 
 Every page shows a small placard in its header, injected by `api.js` and **derived, never
-authored**:
+authored** — from what the page's own script actually read on this load (`API.consumed`), not
+from the registry:
 
-- `DEMO DATA` — page has no live endpoint, or `/healthz` did not answer
-- `MIXED · n LIVE / m SCRIPTED` — some routes wired, some not
-- `LIVE · <endpoints>` — all of the page's endpoints exist and the service answered
+- `DEMO DATA` — the page read nothing live this load: no live endpoint, the page's script has not
+  been wired to read one, a read failed, or `/healthz` did not answer
+- `MIXED · n LIVE / m SCRIPTED` — some declared endpoints were read live; others are unbuilt,
+  unread, or failed
+- `LIVE · <endpoints>` — every declared endpoint was read live from the service (hover shows
+  which corpus answered, `live` pipeline output or the committed `seed` slice, and what stays
+  scripted)
 
 Hover for detail. Do not hand-edit it: once some pages are wired and others aren't, an
 unmarked mix misrepresents which numbers are real.

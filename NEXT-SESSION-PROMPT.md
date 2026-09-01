@@ -1,92 +1,83 @@
 You're picking up CITINEL — Autonomous Cyber SOC, a Decode SIH 2026 hackathon
 project (Team AeroFyta, Chennai Institute of Technology), finale 5 Sep 2026.
-**Step 7 (the agent swarm) is done and confirmed live as of 1 Sep 2026** —
-this is the biggest change since any earlier handoff. If you inherit a stale
-memory saying Step 7 is "blocked" or "pending," it's wrong; verify against
-`citinel status`, not memory.
+Step 7 (the agent swarm) is done and confirmed live (1 Sep). **As of 2 Sep the
+dashboard has started reading the live service: Queue, Audit and Evidence are
+wired and browser-verified; the other 15 pages are not.** If you inherit a memory saying
+"the dashboard is not wired at all" or "Step 7 is blocked," both are stale;
+verify against `citinel status` and `git status`, not memory.
 
 Before doing anything else, read these files in `/Users/danish/CITINEL/` in
 this order:
-1. `HANDOFF-MEMORY.md` — read it in full. **§16 (Step 7) and §17 (current
-   open items) matter most; §15 covers everything else the 31 Aug–1 Sep
-   session touched.** §1's status line is current as of 1 Sep. Sections 1–14
-   are historical record, still true, mostly superseded by §15–§17 where they
-   overlap — the doc marks this explicitly, follow the "supersedes" notes
-   rather than trusting section order.
-2. `git log --oneline` in the repo, then `git log -1 <hash>` on the most
-   recent 5-10 commits — the engineering detail (the exact bugs found, the
-   exact fix, real live-tested numbers) lives in commit messages at the same
-   density as the handoff doc. Don't re-derive facts already established.
-3. `CITINEL-SDD.md` / `CITINEL-PROPOSAL.md` if you need the original spec —
-   lower priority than the above for picking up current work.
-4. `PARTNER-ONBOARDING.md` and `PARTNER-SESSION-NOTES.md` (new 1 Sep) for
-   sponsor-track status; `STARTUPED-GTM-PLAYBOOK.md` for the GTM award.
+1. `HANDOFF-MEMORY.md` — read it in full. **§18 (the 2 Sep dashboard-wiring
+   session), §16 (Step 7) and §17 (open items) matter most.** Sections 1–15
+   are historical record, still true, superseded where §16–§18 say so —
+   follow the "supersedes" notes rather than section order.
+2. `dashboard/static/HANDOFF.md` — the wiring manifest for the console. Its
+   §1 explains the seam (`api.js`) and why the badge is derived from what a
+   page *actually read* (`API.consumed`), its §2 table says which pages are
+   wired. Keep it in step with `API.PAGES` when you wire a page.
+3. `git log --oneline` — the 2 Sep work is committed and pushed. Render
+   auto-deploys `build/stage-1`, so **every push is a deploy**; that is
+   Danish's standing instruction since 2 Sep ("hereafter we will deploy
+   online"). After a push, confirm with
+   `curl -s https://citinel-web.onrender.com/api/source`.
+4. `CITINEL-SDD.md` / `CITINEL-PROPOSAL.md` only if you need the original spec.
+5. `PARTNER-ONBOARDING.md`, `PARTNER-SESSION-NOTES.md`, `STARTUPED-GTM-PLAYBOOK.md`
+   for sponsor-track and GTM-award status.
 
 ## What NOT to do
 
-- **Do not re-run the dashboard-wiring audit, the deep-research passes, or
-  re-derive OCSF/Sigma/BOTS-extraction facts, or the adversarial partner-track
-  audit.** All recorded once, expensively. HANDOFF-MEMORY §12–§13/§15 has the
-  numbers.
-- **Do not offer a "guaranteed win" on any judged prize.** Refused before,
-  refused again if asked. Rubric-completeness honesty instead.
-- **Do not re-litigate the "Best Use of Gemini"/"Best Use of CodeMate" tracks'
-  existence**, or Danish's shortlist/eligibility status — all resolved,
-  HANDOFF-MEMORY §9/§10.
-- **Do not assume Step 7 is still blocked or unverified, and do not
-  re-verify the Anthropic key from scratch** — it's confirmed working live
-  end-to-end, including the final prompt-fix run (§16, §17 item 1). Do check
-  `citinel status` for current build-ladder state before making any claim
-  about what's built, since that's the one thing genuinely worth re-checking
-  every session (it reads real files on disk).
-- **Do not blindly wire the dashboard to live data as a blanket pass.**
-  HANDOFF-MEMORY §15 found that most pages are elaborately hand-crafted
-  narrative prototypes, not thin templates — a naive data-swap breaks
-  layout math and replaces a polished demo with a thinner real one. If this
-  work resumes, scope it page-by-page, verify each one, don't rush all 18.
-- **Do not raise Render/Anthropic spend without asking first**, even for a
-  small amount — this project's whole session history treats every dollar
-  and every model-tier choice as a real decision, not a rounding error.
+- **Do not re-run the dashboard-wiring audit, the deep-research passes, the
+  adversarial partner-track audit, or the Queue-wiring review.** All recorded
+  (HANDOFF-MEMORY §12–§13, §15, §18). The audit's per-page detail is in the
+  workflow journal named in §15; §18 says which verdicts still stand.
+- **Do not assume Replay/Confidence became wireable because Step 7 runs.**
+  §18's first bullet: the swarm's verdict/claims/citations/proposals are
+  printed and discarded; the ledger records facts only. Wiring those pages
+  needs a persistence decision plus a paid re-run — Danish's call, ask first.
+- **Do not raise Render/Anthropic spend without asking first**, even a small
+  amount. Every swarm run is real money; every model-tier choice is a decision.
+- **Do not offer a "guaranteed win" on any judged prize.** Rubric-completeness
+  honesty instead.
+- **Do not re-litigate** the Gemini/CodeMate tracks, shortlist status, or
+  eligibility — all resolved (§9/§10).
+- **Do not blanket-wire the remaining pages.** They are hand-crafted narrative
+  prototypes (§15). One page at a time: read it in full, map every rendered
+  value to a real field or cut it, keep the three states that never blend
+  (reading → live → authored fallback), leave the badge to `api.js`, swap
+  content not layout, honour `?id=`, verify in the browser preview. Queue,
+  Audit and Evidence are the worked examples.
+- **Do not trust a browser screenshot over a DOM read** for verification this
+  console; the pane's screenshot tooling was flaky on 2 Sep. Read the badge,
+  `window.CITINEL_API.consumed`, and the rendered text through
+  `javascript_tool`. And bust the HTTP cache once for any URL the browser had
+  loaded before the `Cache-Control: no-cache` middleware went in
+  (`fetch(url, {cache:'reload'})`).
 
-## This session's task: start wiring the dashboard to live data
+## This session's task: continue wiring, one page at a time
 
-Run `cd /Users/danish/CITINEL/backend && ./.venv/bin/citinel status` first —
-ground truth for build state, more current than this prompt will be.
+Run `cd /Users/danish/CITINEL/backend && ./.venv/bin/citinel status` first,
+then start the preview server (`.claude/launch.json` → `citinel-dashboard`,
+port 8000) and open a page with `?force=console` — the hidden browser pane
+reports zero width and `route.js` would otherwise bounce you to Narrow.
 
-**This is the explicit task for this session, chosen by Danish 2 Sep 2026.**
-Do not re-litigate whether it's the right next thing to do — it's already
-decided. Read HANDOFF-MEMORY.md §15 (the audit's findings) and §17 item 2
-before touching any page, then work it properly, not as a blanket pass:
+Recommended order for the remaining PARTIAL pages, by value ÷ risk:
+1. **Shell** (`uses: ['incidents']` → add `policy`, `ledgerVerify`) — state
+   and severity tallies, clause count, ledger entry count are clean reads
+   (the audit's diff is in §15's journal, entry 9); label the eps meter and
+   statutory clocks as authored or cut them.
+2. **Overview** — highest visibility, most elaborate; read §15's warning first.
+3. **Compliance** (`draft`, `incident`) — the draft endpoint is real and now
+   returns the guard screen too; "we draft, we never file" must survive.
+4. Then Handover, Narrow, Settings, Entry. Eval already has a live route
+   (`/api/eval`) that its page does not read yet.
 
-- **The audit already ran** (`citinel-full-wiring-audit`, §15) — don't
-  re-run it. Verdict: 11 of 18 pages are `PARTIAL` (real data exists but is
-  entangled with fictional demo content that needs cutting cleanly, not
-  crudely), 7 are `NOT_WIREABLE_TODAY` (Replay, Confidence, Approvals,
-  Corpus, Executive, Demo, Policy). Some of the `NOT_WIREABLE_TODAY` pages —
-  Replay, Confidence — may have moved to wireable now that Step 7 produces
-  real verdicts/citations/proposals; check before assuming the audit's verdict
-  on those two is still current, but trust it for the rest.
-- **The seam already exists and is unused.** `api.js` has `live: true` flags
-  on 7 real backend endpoints that no page's script actually calls yet.
-  Wiring means calling what's already there, not inventing a new seam.
-- **Most pages are hand-crafted narrative prototypes, not thin templates**
-  (confirmed by reading Overview, Audit, Policy in full — §15). A naive
-  data-swap breaks layout math and replaces a polished demo with a thinner
-  real one. Pick one `PARTIAL` page, read it in full before editing, wire it,
-  verify it renders correctly in the browser preview, then move to the next.
-  Don't attempt all 11 in one pass.
-- The pages are local, hand-editable files (`dashboard/static/*.dc.html` +
-  `api.js`) — wiring is a code change, not a design change, so no Claude
-  Design canvas round-trip is normally needed. Only if a page genuinely needs
-  a layout/visual change beyond swapping in live data, say so and give Danish
-  the exact prompt to paste into that canvas instead of guessing at layout
-  changes yourself (§8 for how that canvas relates to this repo).
-
-Once dashboard wiring is genuinely underway or a natural stopping point is
-reached, the rest of §17's list is still open in this order: manual items
-only Danish can do (n8n webhook URL into `.env`, the Lyzr Studio agent —
-recipe in `connectors/lyzr.py`'s docstring, the Swytchcode credit claim), then
-Step 14 (demo fallback capture), the one remaining unbuilt ladder step.
+Manual items only Danish can do, still open (§17): n8n webhook URL into
+`.env`/Render, the Lyzr Studio agent (recipe in `connectors/lyzr.py`'s
+docstring), the Swytchcode credit claim. After any swarm run that should show online,
+copy `data/incidents/ledger.jsonl` over `data/seed/ledger.jsonl` and push
+(§18 deploy caveat). Then
+Step 14 (demo fallback capture), the one unbuilt ladder step.
 
 Don't guess at anything time-sensitive (shortlist status, event dates,
 credit-claim deadlines) — recompute or ask rather than trusting a number

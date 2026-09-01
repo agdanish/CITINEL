@@ -58,14 +58,14 @@
       <button onClick="{{ setAnalyst }}" style="font-family:var(--ctn-font-display);font-size:8.5px;letter-spacing:0.1em;padding:6px 11px;border:none;border-radius:4px;cursor:pointer;background:{{ analystBg }};color:{{ analystFg }}">ANALYST</button>
       <button onClick="{{ setCiso }}" style="font-family:var(--ctn-font-display);font-size:8.5px;letter-spacing:0.1em;padding:6px 11px;border:none;border-radius:4px;cursor:pointer;background:{{ cisoBg }};color:{{ cisoFg }}">CISO</button>
     </div>
-    <span style="flex:none;font-family:var(--ctn-font-mono);font-size:11.5px;color:var(--ctn-color-text-muted);white-space:nowrap">reel 2026-08 · frames {{ firstSeq }}–{{ headSeq }} · 3 nodes in agreement</span>
+    <span style="flex:none;font-family:var(--ctn-font-mono);font-size:11.5px;color:var(--ctn-color-text-muted);white-space:nowrap">{{ reelLabel }}</span>
   </header>
 
   <section data-reflow-yield style="flex:none;border-bottom:1px solid var(--ctn-color-border-strong);background:var(--ctn-color-surface-panel);padding:13px 22px 15px;min-width:0">
     <div style="display:flex;align-items:baseline;gap:8px 16px;flex-wrap:wrap;min-width:0">
-      <span style="font-family:var(--ctn-font-display);font-size:11px;letter-spacing:0.14em;color:var(--ctn-color-text-primary);flex:none">DETECT → SIGN RIBBON · INC-0417</span>
+      <span style="font-family:var(--ctn-font-display);font-size:11px;letter-spacing:0.14em;color:var(--ctn-color-text-primary);flex:none">DETECT → SIGN RIBBON · {{ incId }}</span>
       <span style="font-family:var(--ctn-font-display);font-size:30px;line-height:1;color:var(--ctn-color-text-primary);font-variant-numeric:tabular-nums slashed-zero;flex:none;margin-right:auto">{{ span }}</span>
-      <span data-token style="font-family:var(--ctn-font-mono);font-size:11.5px;color:var(--ctn-color-text-muted);flex:none">{{ chainCount }} links · no gaps in sequence</span>
+      <span data-token style="font-family:var(--ctn-font-mono);font-size:11.5px;color:var(--ctn-color-text-muted);flex:none">{{ chainNote }}</span>
       <span style="flex:1 1 100%;font-size:12.5px;color:var(--ctn-color-text-secondary);min-width:0;max-width:110ch;line-height:1.5;text-wrap:pretty">{{ ribbonNote }}</span>
     </div>
 
@@ -177,20 +177,20 @@
         <sc-for list="{{ rows }}" as="r" hint-placeholder-count="14">
           <div style="display:grid;grid-template-columns:64px 84px 106px 128px 1fr;gap:0 14px;align-items:start;padding:9px 0;border-bottom:1px solid var(--ctn-color-border-hairline);background:{{ r.bg }};min-width:0">
             <span data-token style="font-family:var(--ctn-font-mono);font-size:11.5px;color:{{ r.seqFg }};font-variant-numeric:tabular-nums">{{ r.seq }}</span>
-            <span data-token style="font-family:var(--ctn-font-mono);font-size:11.5px;color:var(--ctn-color-text-muted);font-variant-numeric:tabular-nums">{{ r.t }}</span>
+            <span data-token style="font-family:var(--ctn-font-mono);font-size:11.5px;color:var(--ctn-color-text-muted);font-variant-numeric:tabular-nums" title="{{ r.tFull }}">{{ r.t }}</span>
             <span style="display:flex;align-items:center;gap:7px;min-width:0">
               <span style="flex:none;width:13px;height:13px;display:flex;align-items:center;justify-content:center">{{ r.glyph }}</span>
               <span style="font-family:var(--ctn-font-display);font-size:7.5px;letter-spacing:0.09em;color:var(--ctn-color-text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.kind }}</span>
             </span>
             <span data-reveal style="font-family:var(--ctn-font-mono);font-size:11px;color:var(--ctn-color-text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.actor }}</span>
             <div style="min-width:0">
-              <div style="font-family:var(--ctn-font-mono);font-size:12px;letter-spacing:0;color:var(--ctn-color-text-primary);line-height:1.5;overflow-wrap:anywhere">{{ r.record }}</div>
-              <div style="font-family:var(--ctn-font-mono);font-size:10.5px;letter-spacing:0;color:var(--ctn-color-text-muted);margin-top:3px;overflow-wrap:anywhere">{{ r.prev }} → {{ r.hash }}</div>
+              <div style="font-family:var(--ctn-font-mono);font-size:12px;letter-spacing:0;color:var(--ctn-color-text-primary);line-height:1.5;overflow-wrap:anywhere" title="{{ r.payloadFull }}">{{ r.record }}</div>
+              <div style="font-family:var(--ctn-font-mono);font-size:10.5px;letter-spacing:0;color:var(--ctn-color-text-muted);margin-top:3px;overflow-wrap:anywhere" title="{{ r.hashFull }}">{{ r.prev }} → {{ r.hash }}</div>
             </div>
           </div>
         </sc-for>
         <sc-if value="{{ noRows }}" hint-placeholder-val="{{ false }}">
-          <div style="padding:22px 0;font-size:12.5px;color:var(--ctn-color-text-muted);line-height:1.5">No frame on this reel matches the query. Sequence {{ firstSeq }} to {{ headSeq }} is intact and contiguous; the query simply matches none of it. Clear the query to see it.</div>
+          <div style="padding:22px 0;font-size:12.5px;color:var(--ctn-color-text-muted);line-height:1.5">No frame on this reel matches the query. {{ noRowsNote }} Clear the query to see it.</div>
         </sc-if>
       </div>
 
@@ -214,6 +214,8 @@ class Component extends DCLogic {
     const H = n=>'sha256:'+((n*2654435761>>>0).toString(16).padStart(8,'0')).slice(0,6)+'…'+(((n*40503+17)>>>0).toString(16).slice(0,4));
     this.H = H;
     const E = (seq,t,kind,actor,record,opts)=>Object.assign({seq:String(seq),t,kind,actor,record,hash:H(seq),prev:H(seq-1),ms:0},opts||{});
+    // Authored fallback reel: drawn only when the service is not read (live === false). Its
+    // hashes are synthetic and it never mixes with real frames; the header badge says DEMO DATA.
     this.entries = [
       E(88401,'20:57:06','INGEST','Sentinel','source=upi-sw-01 stream=syslog event=BENEF_ADD ocsf_version=1.4.0 ocsf_class=3001 normalized=true locator=upi-switch/2026-08-23.log:41113'),
       E(88402,'20:57:06','DECISION','Sigma','rule=upi_beneficiary_burst rule_id=9f21c4a8-7b02-4e11-b3d1-0c4471aa2210 sigma_spec=2.0 corpus=7f31c0d match=true severity=critical technique=T1657 attack_version=v16.1 incident=INC-0417 verdict=CAUGHT', {link:'detect', label:'DETECT', state:'caught'}),
@@ -243,14 +245,57 @@ class Component extends DCLogic {
       E(88426,'23:14:40','HUMAN','a.deshmukh · L2','action=SEAL_DRAFT artifact=certin_6hr_INC-0417_draft3 fields_machine=12 fields_human=4 signature_hash=sha256:e11c04…7a92', {link:'sign', label:'HUMAN SIGN', state:'sign'}),
       E(88427,'23:14:41','EXPORT','Scribe','artifact=certin_6hr_INC-0417_draft3_sealed.pdf written_to=\\\\sahyadri-fs01\\compliance\\certin\\2026-08\\ transmitted=false portal_credential=none filed_by=pending_bank')
     ];
-    this.state = {role:this.roleInit(), q:'', kinds:{}, actors:{}, focus:null, verifying:false, vpos:0, verified:false};
+    this.incId = 'INC-0417';
+    let q0 = '';
+    try { const P = new URLSearchParams(window.location.search); const id = P.get('id'); if (id && /^INC-\d+$/.test(id)) this.incId = id; const qq = P.get('q'); if (qq) q0 = String(qq).slice(0, 80); } catch(e) {}
+    this.state = {role:this.roleInit(), q:q0, kinds:{}, actors:{}, focus:null, verifying:false, vpos:0, verified:false,
+      // live: null = reading this case's chain from citinel-web · true = real frames on the reel ·
+      // false = service not reached, authored fallback. The three never blend.
+      live: null, liveError: null, chain: [], verifyResult: null, verifyError: null};
   }
   componentWillUnmount(){ clearInterval(this.v); if(this.unsubLed) this.unsubLed(); if(this.unsubRole) this.unsubRole();
     if(this.ro) this.ro.disconnect(); if(this.onResize) window.removeEventListener('resize', this.onResize); }
+  componentDidMount(){
+    this.ribbonRef = this.ribbonRef || React.createRef();
+    const measure = () => {
+      const el = this.ribbonRef.current;
+      if(el){ const w = Math.round(el.getBoundingClientRect().width);
+        if(w > 0 && w !== this.state.ribbonW) this.setState({ribbonW: w}); }
+    };
+    measure();
+    if(window.ResizeObserver && this.ribbonRef.current){
+      this.ro = new ResizeObserver(measure);
+      this.ro.observe(this.ribbonRef.current);
+    } else { window.addEventListener('resize', measure); this.onResize = measure; }
+    this.roleMount();
+    if(window.CitinelLedger) this.unsubLed = window.CitinelLedger.subscribe(()=>this.forceUpdate());
+
+    // The reel is this case's chain from the service's append-only ledger. The chain walk
+    // (/api/ledger/verify) runs once on load and again on the button; it waits on the external
+    // witness, so it can take several seconds and the badge reads MIXED until it answers.
+    const API = window.CITINEL_API;
+    if (!API) { this.setState({live:false, liveError:'api.js not loaded'}); return; }
+    API.auditFor(this.incId).then(r => {
+      if (!r.ok) { this.setState({live:false, liveError:r.error}); return; }
+      this.setState({live:true, chain: Array.isArray(r.data) ? r.data : []});
+      this.walk();
+    });
+  }
+  walk(){
+    const API = window.CITINEL_API;
+    if (!API || this.state.verifying) return;
+    this.setState({verifying:true, verifyResult:null, verifyError:null, verified:false});
+    API.verifyLedger().then(r => {
+      this.setState({verifying:false, verified: !!r.ok, verifyResult: r.ok ? r.data : null, verifyError: r.ok ? null : r.error});
+    });
+  }
+
+  /* ── glyph vocabulary (shared by both reels) ─────────────────────────────── */
   glyph(kind, dim){
     const R = React;
     const c = dim ? 'var(--ctn-color-text-disabled)' : 'var(--ctn-color-text-secondary)';
     const S = ch => R.createElement('svg',{width:13,height:13,viewBox:'0 0 14 14'}, ch);
+    kind = this.glyphKind(kind);
     if(kind==='DECISION') return S(R.createElement('rect',{x:3.4,y:3.4,width:7.2,height:7.2,transform:'rotate(45 7 7)',fill:dim?'transparent':'var(--ctn-color-state-node)',stroke:c,strokeWidth:1.8}));
     if(kind==='TOOL CALL') return S(R.createElement('path',{d:'M 5.5 2.5 H 2.5 V 11.5 H 5.5 M 8.5 2.5 H 11.5 V 11.5 H 8.5',fill:'none',stroke:c,strokeWidth:1.5}));
     if(kind==='TOOL RESULT') return S(R.createElement('path',{d:'M 2.5 7 H 11.5 M 8.5 4 L 11.5 7 L 8.5 10',fill:'none',stroke:c,strokeWidth:1.5}));
@@ -258,6 +303,12 @@ class Component extends DCLogic {
     if(kind==='HUMAN') return S([R.createElement('circle',{key:'a',cx:7,cy:4.6,r:2.2,fill:'none',stroke:dim?c:'var(--ctn-color-text-primary)',strokeWidth:1.6}),R.createElement('path',{key:'b',d:'M 2.8 11.6 a 4.2 4.2 0 0 1 8.4 0',fill:'none',stroke:dim?c:'var(--ctn-color-text-primary)',strokeWidth:1.6})]);
     if(kind==='EXPORT') return S(R.createElement('path',{d:'M 7 10 V 2.6 M 4.2 5.4 L 7 2.6 L 9.8 5.4 M 2.5 11.5 H 11.5',fill:'none',stroke:c,strokeWidth:1.5}));
     return S(R.createElement('circle',{cx:7,cy:7,r:3.4,fill:dim?'transparent':'var(--ctn-color-state-node)',stroke:c,strokeWidth:1.5}));
+  }
+  // The real ledger's entry kinds, mapped onto the reel's glyph vocabulary.
+  glyphKind(k){
+    const M = {'DETECTION ADDED':'INGEST', 'ESCALATION ADDED':'INGEST', 'INCIDENT OPENED':'INGEST', 'NOTE':'INGEST',
+               'STATE TRANSITION':'DECISION', 'ACTION EXECUTED':'TOOL RESULT', 'POLICY CHECK':'POLICY', 'HUMAN SIGNOFF':'HUMAN'};
+    return M[k] || k;
   }
   stateGlyph(kind){
     const R = React;
@@ -269,48 +320,42 @@ class Component extends DCLogic {
     if(kind==='sign') return S([R.createElement('circle',{key:'o',cx:10,cy:10,r:7,fill:'none',stroke:'var(--ctn-color-state-cited)',strokeWidth:2,strokeDasharray:'11 4'}),R.createElement('circle',{key:'i',cx:10,cy:10,r:3,fill:'var(--ctn-color-state-node)',stroke:'var(--ctn-color-state-stroke)',strokeWidth:1.5})]);
     return S(R.createElement('circle',{cx:10,cy:10,r:4,fill:'none',stroke:'var(--ctn-color-text-secondary)',strokeWidth:1.8}));
   }
+  // A cluster stands for frames that share an instant. It reads as one mark carrying a
+  // count, never as a single event — a reader must never see fewer marks than the reel has.
+  clusterGlyph(n){
+    const R = React;
+    return R.createElement('svg',{width:19,height:19,viewBox:'0 0 19 19'},[
+      R.createElement('circle',{key:'o',cx:9.5,cy:9.5,r:8.4,fill:'var(--ctn-color-surface-panel)',
+        stroke:'var(--ctn-color-text-primary)',strokeWidth:1.5,strokeDasharray:'2.6 2.2'}),
+      R.createElement('text',{key:'n',x:9.5,y:13,textAnchor:'middle',fontFamily:'var(--ctn-font-display)',
+        fontSize:9.5,fill:'var(--ctn-color-text-primary)'}, String(n))
+    ]);
+  }
   mins(t){ const [h,m,s] = t.split(':').map(Number); return h*3600+m*60+s; }
-  baseVals(){
-    const st = this.state;
-    const kindsAll = ['INGEST','DECISION','TOOL CALL','TOOL RESULT','POLICY','HUMAN','EXPORT'];
-    const actorsAll = [...new Set(this.entries.map(e=>e.actor))];
-    const anyKind = Object.values(st.kinds).some(Boolean);
-    const anyActor = Object.values(st.actors).some(Boolean);
-    const q = st.q.trim().toLowerCase();
-    const match = e => (!anyKind || st.kinds[e.kind]) && (!anyActor || st.actors[e.actor]) &&
-      (!q || (e.record+' '+e.actor+' '+e.kind+' '+e.seq+' '+e.hash).toLowerCase().includes(q));
-    const rows = this.entries.filter(match);
+  pad2(n){ return String(n).padStart(2,'0'); }
+  fmtN(n){ return Number(n || 0).toLocaleString('en-IN'); }
+  spanText(spanS){
+    if (spanS >= 86400) return Math.floor(spanS/86400) + 'd ' + this.pad2(Math.floor(spanS % 86400 / 3600)) + 'h';
+    return Math.floor(spanS/3600) + 'h ' + this.pad2(Math.floor(spanS/60) % 60) + 'm';
+  }
 
-    const chainEntries = this.entries.filter(e=>e.link);
-    const t0 = this.mins(chainEntries[0].t);
-    const t1 = this.mins(chainEntries[chainEntries.length-1].t);
-    const span = t1 - t0;
+  /* ── the ribbon, in absolute time (both reels) ────────────────────────────── */
+  // Marks are placed by true elapsed time, so frames minutes apart on a multi-day ribbon land
+  // within a few pixels and their labels paint through each other. The glyph keeps its true
+  // position (that is the data); the label drops to the next lane when it would collide, and
+  // marks that cannot be separated at any width are MERGED into one marker carrying a count:
+  // one position, truthfully labelled as N frames, rather than N frames silently drawn as one.
+  ribbonVals(chainEntries, tOf){
+    if (!chainEntries.length) return {span:'—', spanS:0, chainCount:0, ribbonH:'82px', chain:[], gaps:[], labelledGaps:[]};
+    const t0 = tOf(chainEntries[0]), t1 = tOf(chainEntries[chainEntries.length-1]);
+    const spanS = Math.max(0, Math.round((t1 - t0)/1000));
     // the plot inhabits 6–92% so a mark's centred label at either end stays inside the ribbon
-    const pos = e => 6 + ((this.mins(e.t)-t0)/span)*86;
-    // Marks are placed by true elapsed time, so frames minutes apart on a multi-hour
-    // ribbon land within a few pixels and their labels — far wider than the gap — paint
-    // through each other. The glyph keeps its true position (that is the data); the
-    // label drops to the next lane when it would collide with one already placed.
-    // 52px is the measured height of a mark's block (time + glyph + label) plus clearance;
-    // at 44 the next lane's timestamp grazes the previous lane's label.
-    // 52px is the measured height of a mark's block (time + glyph + label) plus clearance;
-    // at 44 the next lane's timestamp grazes the previous lane's label.
-    // The gap a label needs is a PIXEL extent (timestamp + label + clearance), so it must be
-    // converted against the ribbon's real width at render — a fixed percentage is a
-    // width-independent constant and staggered identically at 720 and 2560, spending 342px
-    // of a 27" workstation to separate labels already 256px apart.
-    // 4 lanes, not 3: at 3 the cluster swallowed CITED — one of the five arc states — and
-    // relabelled it as a frame count. 82 + 4*52 = 290px, still 15% under the original 342,
-    // and only the genuinely inseparable pair (one second apart) now merges.
+    const pos = e => t1 > t0 ? 6 + ((tOf(e)-t0)/(t1-t0))*86 : 49;
+    // 52px is the measured height of a mark's block (time + glyph + label) plus clearance; the
+    // gap a label needs is a PIXEL extent, converted against the ribbon's real width at render.
     const LANE_H = 52, LABEL_PX = 104, MAX_LANES = 4;
     const ribbonW = this.state.ribbonW || 1200;
     const MIN_GAP = (LABEL_PX / ribbonW) * 100;
-    // Two frames one second apart on a 2h17m ribbon sit 0.012% apart — sub-pixel at every
-    // viewport, so no width-derived gap can ever separate them and suppressing their labels
-    // left two glyphs drawn on top of each other, under-reporting the reel's own event count.
-    // Marks that cannot be separated are therefore MERGED at placement: one marker at the
-    // cluster's instant, carrying how many frames it stands for. One position, truthfully
-    // labelled as two events, rather than two events silently drawn as one.
     const marks = [];
     for(const e of chainEntries){
       const p = pos(e);
@@ -324,11 +369,11 @@ class Component extends DCLogic {
     const chain = marks.map(m=>{
       const e = m.members[0], n = m.members.length;
       return {
-        t: n > 1 ? e.t.slice(0,5) : e.t,
+        t: n > 1 ? (e.tRibbon || e.t.slice(0,5)) : (e.tRibbon || e.t),
         label: n > 1 ? n + ' FRAMES' : e.label,
         lane: (m.lane * LANE_H) + 'px',
         left: m.p + '%',
-        title: m.members.map(x=>x.t+' · '+x.kind+' · '+x.record.slice(0,70)).join('\n'),
+        title: m.members.map(x=>(x.tFull || x.t)+' · '+x.kind+' · '+x.record.slice(0,70)).join('\n'),
         glyph: n > 1 ? this.clusterGlyph(n) : (e.state ? this.stateGlyph(e.state) : this.glyph(e.kind, false)),
         fg: 'var(--ctn-color-text-primary)',
         tFg: e.state || n > 1 ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-text-muted)',
@@ -338,28 +383,238 @@ class Component extends DCLogic {
     const gaps = [];
     for(let i=0;i<chainEntries.length-1;i++){
       const a = chainEntries[i], b = chainEntries[i+1];
-      const d = this.mins(b.t) - this.mins(a.t);
-      // one unit, not two: '44m' fits whole where '43m 48s' cannot, and is honest at this scale
-      const lbl = d >= 3600 ? Math.round(d/3600*10)/10+'h' : d >= 60 ? Math.round(d/60)+'m' : d+'s';
-      // an interval label is a measurement: it renders whole or not at all. Only intervals with
-      // room for their own label carry one; the rest keep their true width and stay unlabelled.
+      const d = Math.round((tOf(b) - tOf(a))/1000);
+      // one unit, whole: an interval label is a measurement and renders whole or not at all
+      const lbl = d >= 86400 ? Math.round(d/86400*10)/10+'d' : d >= 3600 ? Math.round(d/3600*10)/10+'h' : d >= 60 ? Math.round(d/60)+'m' : d+'s';
       const wpct = pos(b) - pos(a);
-      gaps.push({left:pos(a)+'%', width:wpct+'%', label:lbl, show: wpct >= 9, labelW: lbl.length});
+      gaps.push({left:pos(a)+'%', width:wpct+'%', label:lbl, show: wpct >= 9});
     }
-    // The ribbon has to be as tall as the lanes it actually used, or the staggered
-    // labels paint over the frame table below it.
     const lanesUsed = marks.length ? Math.max(...marks.map(m=>m.lane)) : 0;
-    const ribbonH = (82 + lanesUsed * LANE_H) + 'px';
-    const spanH = Math.floor(span/3600), spanM = Math.floor(span/60)%60;
+    return { span: this.spanText(spanS), spanS, chainCount: chainEntries.length,
+             ribbonH: (82 + lanesUsed * LANE_H) + 'px', chain, gaps, labelledGaps: gaps.filter(g=>g.show) };
+  }
 
+  /* ── what the ledger records, stated the same way in every mode ─────────── */
+  asideVals(recorded){
     return {
-      firstSeq:'88401', headSeq:'88427',
-      span: spanH+'h '+String(spanM).padStart(2,'0')+'m',
-      chainCount: chainEntries.length, ribbonH,
+      separationBody: 'This reel records structured decisions and tool calls. It does not record how a model arrived at them. A model\'s narration of its own reasoning is a summary written after the fact, and a summary is not evidence. It can be fluent and wrong, and nothing downstream can check it.',
+      recorded: recorded || ['actor, kind, timestamp, case id', 'the structured payload each kind carries', 'per model call: model id, tokens, stop reason, refusal flag', 'prev_hash → entry_hash, sha-256 chained'],
+      notRecorded: ['chain-of-thought', 'the model\'s narrative, beyond a one-sentence triage rationale', 'the verdict or proposal text', 'anything that cannot be hash-chained'],
+      separationConsequence: 'A regulator can replay every frame here against the bank\'s own logs. Nothing on this page requires trusting what a model said about itself.',
+      cannot: [
+        'edit a frame · no field on this page is writable',
+        'delete a frame · the reel appends and never removes',
+        're-order or re-sort · sequence order is the only order',
+        'record a model\'s reasoning · prose is a summary, not evidence',
+        'show a verdict\'s text · the swarm prints it, the ledger records only that it was produced and verified'
+      ]
+    };
+  }
+
+  /* ── live reel: this case's chain from the service ───────────────────────── */
+  milestone(e){
+    const p = e.payload || {};
+    switch (e.kind) {
+      case 'incident_opened': return {link:'open', label:'OPENED', state:'caught'};
+      case 'decision': return p.lane ? {link:'route', label:'ROUTE ' + String(p.lane).toUpperCase()} : null;
+      case 'state_transition': return {link:'state', label:String(p.to || 'STATE').toUpperCase(), state:p.to};
+      case 'policy_check': return {link:'policy', label:'POLICY EVAL'};
+      case 'action_executed': return {link:'act', label:'ACTIONED', state:'actioned'};
+      case 'human_signoff': return {link:'sign', label:'HUMAN SIGN', state:'sign'};
+      case 'tool_call':
+        if (e.actor === 'enricher' && p.lookups) return {link:'enrich', label:'ENRICHMENT'};
+        if (e.actor === 'correlator') return {link:'corr', label:'CORRELATED'};
+        if (e.actor === 'marshal') return {link:'prop', label:'PROPOSALS'};
+        return null;
+      default: return null;
+    }
+  }
+  flatten(p){
+    if (p == null) return '';
+    if (typeof p !== 'object') return String(p);
+    const parts = [];
+    Object.keys(p).forEach(k => {
+      const v = p[k];
+      let s = v == null ? 'null' : typeof v === 'object' ? JSON.stringify(v) : String(v);
+      if (/\s/.test(s) && !/^[\[{]/.test(s)) s = JSON.stringify(s);
+      parts.push(k + '=' + s);
+    });
+    let out = parts.join(' ');
+    if (out.length > 360) out = out.slice(0, 357) + '…';
+    return out;
+  }
+  liveDerived(){
+    const s = this.state;
+    if (this._src === s.chain && this._d) return this._d;
+    const IST = 330*60000;
+    const stamp = ts => {
+      const d = new Date(ts);
+      if (isNaN(d)) return {short: String(ts||''), full: String(ts||''), ribbon: String(ts||'').slice(11,16)};
+      const i = new Date(d.getTime()+IST).toISOString();
+      return {short: i.slice(8,10)+'/'+i.slice(5,7)+' '+i.slice(11,16), ribbon: i.slice(8,10)+'/'+i.slice(5,7)+' '+i.slice(11,16),
+              full: i.slice(0,19).replace('T',' ')+' IST · '+String(ts)};
+    };
+    const shortHash = h => h ? 'sha256:' + String(h).slice(0,6) + '…' + String(h).slice(-4) : '—';
+    const entries = s.chain.map(e => {
+      const st = stamp(e.ts), m = this.milestone(e);
+      return { seq:String(e.seq), seqN:Number(e.seq), ms: Date.parse(e.ts) || 0,
+        t: st.short, tFull: st.full, tRibbon: st.ribbon,
+        kind: String(e.kind||'').replace(/_/g,' ').toUpperCase(), rawKind: e.kind, actor: String(e.actor||''),
+        record: this.flatten(e.payload), payloadFull: (function(j){ return j.length > 600 ? j.slice(0, 597) + '…' : j; })(JSON.stringify(e.payload || {})),
+        hash: shortHash(e.entry_hash), prev: shortHash(e.prev_hash),
+        hashFull: 'prev ' + (e.prev_hash || '—') + '\nthis ' + (e.entry_hash || '—'),
+        link: m ? m.link : null, label: m ? m.label : null, state: m ? m.state : null, payload: e.payload || {} };
+    });
+    const count = k => entries.filter(e => e.rawKind === k).length;
+    this._src = s.chain;
+    const kindCounts = {}, actorCounts = {}, keysByKind = {};
+    entries.forEach(e => {
+      kindCounts[e.kind] = (kindCounts[e.kind] || 0) + 1;
+      actorCounts[e.actor] = (actorCounts[e.actor] || 0) + 1;
+      const ks = keysByKind[e.kind] || (keysByKind[e.kind] = {});
+      Object.keys(e.payload || {}).forEach(k => { ks[k] = true; });
+    });
+    const kindsAll = Object.keys(kindCounts), actorsAll = Object.keys(actorCounts);
+    // what this chain actually records, per kind: the union of payload keys present, read off the data --
+    // never an authored inventory, which the first review caught overclaiming fields this case never carries
+    const recorded = kindsAll.map(k => {
+      const ks = Object.keys(keysByKind[k] || {});
+      return k.toLowerCase() + ' · ' + (ks.length ? ks.slice(0, 7).join(', ') + (ks.length > 7 ? ' +' + (ks.length - 7) : '') : 'no payload');
+    }).concat(['every frame · actor, kind, ts, case_id, prev_hash → entry_hash, sha-256 chained']);
+    this._d = { entries, opened: count('incident_opened'), signoffs: count('human_signoff'), policyChecks: count('policy_check'),
+                actions: count('action_executed'), transitions: count('state_transition'),
+                runs: entries.filter(e => e.actor === 'sentinel' && e.rawKind === 'note').length,
+                kindsAll, actorsAll, kindCounts, actorCounts, recorded };
+    return this._d;
+  }
+  liveVals(){
+    const st = this.state, d = this.liveDerived(), entries = d.entries;
+    const anyKind = Object.values(st.kinds).some(Boolean);
+    const anyActor = Object.values(st.actors).some(Boolean);
+    const q = st.q.trim().toLowerCase();
+    const match = e => (!anyKind || st.kinds[e.kind]) && (!anyActor || st.actors[e.actor]) &&
+      (!q || (e.record+' '+e.actor+' '+e.kind+' '+e.seq+' '+e.hash).toLowerCase().includes(q));
+    const rows = entries.filter(match);
+    const rv = this.ribbonVals(entries.filter(e=>e.link), e => e.ms);
+    const firstSeq = entries.length ? String(Math.min(...entries.map(e=>e.seqN))) : '—';
+    const headSeq = entries.length ? String(Math.max(...entries.map(e=>e.seqN))) : '—';
+    const led = window.CitinelLedger ? window.CitinelLedger.all() : [];
+    const sessionNote = led.length ? ' · ' + led.length + ' demo-screen action' + (led.length===1?'':'s') + ' this session are not on this reel: never written to the service ledger' : '';
+    const vr = st.verifyResult, w = vr && vr.witness;
+    const witnessNote = w ? ' · witness ' + String(w.status||'unknown').replace(/_/g,' ') +
+      (w.status === 'diverged' ? ' (' + this.fmtN(w.remote_count) + ' of ' + this.fmtN(w.local_count) + ' mirrored)' : '') : '';
+    return Object.assign({
+      incId: this.incId,
+      reelLabel: 'reel · ' + this.incId + ' · frames ' + firstSeq + '–' + headSeq + ' · ' + this.fmtN(entries.length) + ' on this case',
+      firstSeq, headSeq,
+      span: rv.span, chainCount: rv.chainCount, ribbonH: rv.ribbonH,
+      chainNote: rv.chainCount + ' milestone frames · ' + this.fmtN(entries.length) + ' frames on this reel',
       ribbonRef: (this.ribbonRef = this.ribbonRef || React.createRef()),
-      gapNote: 'intervals under 9% of the span keep their true width and go unlabelled. every figure printed here is whole',
+      ribbonNote: 'From the incident builder opening ' + this.incId + ' to the latest frame on its chain, ' + rv.span + ' later. Every gap on this ribbon is real elapsed time.' +
+        (d.opened > 1 ? ' The record was opened ' + d.opened + ' times, once per incidents build; the ledger keeps every opening and rewrites none.' : '') +
+        (d.runs ? ' The swarm started ' + d.runs + ' run' + (d.runs===1?'':'s') + ' on this case; those frames cluster where they happened.' : ' No swarm run is on this chain yet.'),
+      chain: rv.chain, gaps: rv.gaps, labelledGaps: rv.labelledGaps,
+
+      q: st.q, onQ: e=>this.setState({q:e.target.value}),
+      resultNote: (rows.length === entries.length
+        ? this.fmtN(entries.length) + ' frames · whole reel for ' + this.incId
+        : this.fmtN(rows.length) + ' of ' + this.fmtN(entries.length) + ' frames match') + sessionNote,
+      kindFilters: d.kindsAll.map(k=>{
+        const on = !!st.kinds[k];
+        return {name:k, n:d.kindCounts[k] || 0, glyph:this.glyph(k, !on && anyKind),
+          toggle: ()=>this.setState(x=>({kinds:{...x.kinds, [k]: !x.kinds[k]}})),
+          bg: on ? 'var(--ctn-color-surface-raised)' : 'transparent',
+          edge: on ? 'var(--ctn-color-text-primary)' : 'transparent',
+          fg: on ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-text-secondary)'};
+      }),
+      actorFilters: d.actorsAll.map(a=>{
+        const on = !!st.actors[a];
+        return {name:a, n:d.actorCounts[a] || 0,
+          toggle: ()=>this.setState(x=>({actors:{...x.actors, [a]: !x.actors[a]}})),
+          bg: on ? 'var(--ctn-color-surface-raised)' : 'transparent',
+          edge: on ? 'var(--ctn-color-text-primary)' : 'transparent',
+          fg: on ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-text-secondary)'};
+      }),
+      clearAll: ()=>this.setState({q:'', kinds:{}, actors:{}, focus:null}),
+
+      rows: rows.map(e=>({
+        seq:e.seq, t:e.t, tFull:e.tFull, kind:e.kind, actor:e.actor, record:e.record, payloadFull:e.payloadFull,
+        hash:e.hash, prev:e.prev, hashFull:e.hashFull,
+        glyph:this.glyph(e.kind, false),
+        bg: st.focus === e.seq ? 'var(--ctn-color-surface-raised)' : 'transparent',
+        seqFg: e.link ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-text-muted)'
+      })),
+      noRows: rows.length === 0,
+      noRowsNote: 'The reel holds ' + this.fmtN(entries.length) + ' frames, sequence ' + firstSeq + ' to ' + headSeq + '; the query simply matches none of them.',
+
+      verify: ()=>this.walk(),
+      verifyPct: st.verifying ? '50%' : (vr || st.verifyError) ? '100%' : '0%',
+      verifyMsg: st.verifying ? 'walking the chain on the service…'
+        : vr ? String(vr.message || (vr.intact ? 'chain intact' : 'chain broken')) + witnessNote
+        : st.verifyError ? 'chain walk failed · ' + st.verifyError
+        : 'chain not walked yet',
+      verifyFg: st.verifying ? 'var(--ctn-color-text-muted)'
+        : vr ? (vr.intact ? (w && w.status === 'diverged' ? 'var(--ctn-color-clock)' : 'var(--ctn-color-ok)') : 'var(--ctn-color-severity-critical-text)')
+        : st.verifyError ? 'var(--ctn-color-severity-critical-text)' : 'var(--ctn-color-text-muted)'
+    }, this.asideVals(d.recorded));
+  }
+  liveDepthVals(b){
+    if(this.state.role !== 'ciso') return {};
+    const d = this.liveDerived();
+    const keep = {'DECISION':1, 'STATE TRANSITION':1, 'POLICY CHECK':1, 'ACTION EXECUTED':1, 'HUMAN SIGNOFF':1, 'INCIDENT OPENED':1};
+    const rows = b.rows.filter(r=>keep[r.kind]);
+    const total = d.entries.length, kept = d.entries.filter(e=>keep[e.kind]).length;
+    return {
+      rows,
+      resultNote: this.fmtN(rows.length) + ' decision frames · ' + this.fmtN(total - kept) + ' detection, escalation and model-call frames collapsed',
+      cannot: b.cannot.concat(['collapse a frame permanently · the machine record is one depth away']),
+      exceptions: [
+        {v:this.pad2(d.signoffs), k:'HUMAN SIGN-OFFS'},
+        {v:this.pad2(d.policyChecks), k:'POLICY CHECKS'},
+        {v:this.pad2(d.actions), k:'ACTIONS EXECUTED'},
+        {v:this.pad2(d.runs), k:'SWARM RUNS STARTED'}
+      ],
+      exceptionNote: 'At this depth the reel shows the ' + this.fmtN(kept) + ' frames that carry accountability: openings, decisions, state transitions, policy checks, executed actions and human sign-offs. The ' + this.fmtN(total - kept) + ' detection, escalation and model-call frames underneath are not hidden or removed: switch to analyst depth and the same reel plays back complete, with the same sequence numbers and the same hash chain.'
+    };
+  }
+  loadingVals(){
+    return Object.assign({
+      incId: this.incId,
+      reelLabel: 'reel · ' + this.incId + ' · reading the ledger from citinel-web',
+      firstSeq:'··', headSeq:'··', span:'··', chainCount:0, ribbonH:'82px',
+      chainNote: 'reading this case\'s chain from the service',
+      ribbonRef: (this.ribbonRef = this.ribbonRef || React.createRef()),
+      ribbonNote: 'The reel is read from the service\'s append-only ledger. Nothing authored is drawn while it loads, so a scripted frame is never mistaken for a real one.',
+      chain: [], gaps: [], labelledGaps: [],
+      q: this.state.q, onQ: e=>this.setState({q:e.target.value}), resultNote: 'reading…',
+      kindFilters: [], actorFilters: [], clearAll: ()=>this.setState({q:'', kinds:{}, actors:{}, focus:null}),
+      rows: [], noRows: false, noRowsNote: '', exceptions: [], exceptionNote: '',
+      verify: ()=>{}, verifyPct: '0%', verifyMsg: 'waiting for the reel', verifyFg: 'var(--ctn-color-text-muted)'
+    }, this.asideVals());
+  }
+
+  /* ── authored fallback reel ──────────────────────────────────────────────── */
+  baseVals(){
+    const st = this.state;
+    const kindsAll = ['INGEST','DECISION','TOOL CALL','TOOL RESULT','POLICY','HUMAN','EXPORT'];
+    const actorsAll = [...new Set(this.entries.map(e=>e.actor))];
+    const anyKind = Object.values(st.kinds).some(Boolean);
+    const anyActor = Object.values(st.actors).some(Boolean);
+    const q = st.q.trim().toLowerCase();
+    const match = e => (!anyKind || st.kinds[e.kind]) && (!anyActor || st.actors[e.actor]) &&
+      (!q || (e.record+' '+e.actor+' '+e.kind+' '+e.seq+' '+e.hash).toLowerCase().includes(q));
+    const rows = this.entries.filter(match);
+    const rv = this.ribbonVals(this.entries.filter(e=>e.link), e => this.mins(e.t)*1000);
+
+    return Object.assign({
+      incId: 'INC-0417',
+      reelLabel: 'reel 2026-08 · frames 88401–88427 · 3 nodes in agreement',
+      firstSeq:'88401', headSeq:'88427',
+      span: rv.span, chainCount: rv.chainCount, ribbonH: rv.ribbonH,
+      chainNote: rv.chainCount + ' links · no gaps in sequence',
+      ribbonRef: (this.ribbonRef = this.ribbonRef || React.createRef()),
       ribbonNote: 'From the first byte Sigma matched to the moment a named human sealed the CERT-In draft. Every gap on this ribbon is a real elapsed interval. The 44 minutes before approval is how long the gate actually held.',
-      chain, gaps, labelledGaps: gaps.filter(g=>g.show),
+      chain: rv.chain, gaps: rv.gaps, labelledGaps: rv.labelledGaps,
 
       q: st.q, onQ: e=>this.setState({q:e.target.value}),
       resultNote: rows.length === this.entries.length
@@ -382,24 +637,16 @@ class Component extends DCLogic {
           fg: on ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-text-secondary)'};
       }),
       clearAll: ()=>this.setState({q:'', kinds:{}, actors:{}, focus:null}),
-      separationBody: 'This reel records structured decisions and tool calls. It does not record how a model arrived at them. A model\'s narration of its own reasoning is a summary written after the fact, and a summary is not evidence. It can be fluent and wrong, and nothing downstream can check it.',
-      recorded: ['decision_id, inputs, clause', 'tool name, arguments, result', 'actor, timestamp, hash chain', 'the cited log locator'],
-      notRecorded: ['chain-of-thought', 'model narration of why', 'confidence prose', 'anything unverifiable'],
-      separationConsequence: 'A regulator can replay every frame here against the bank\'s own logs. Nothing on this page requires trusting what a model said about itself.',
-      cannot: [
-        'edit a frame · no field on this page is writable',
-        'delete a frame · the reel appends and never removes',
-        're-order or re-sort · sequence order is the only order',
-        'record a model\'s reasoning · prose is a summary, not evidence'
-      ],
 
       rows: rows.map(e=>({
-        seq:e.seq, t:e.t, kind:e.kind, actor:e.actor, record:e.record, hash:e.hash, prev:e.prev,
+        seq:e.seq, t:e.t, tFull:e.t+' IST', kind:e.kind, actor:e.actor, record:e.record, payloadFull:e.record,
+        hash:e.hash, prev:e.prev, hashFull:e.prev+' → '+e.hash,
         glyph:this.glyph(e.kind, false),
         bg: st.focus === e.seq ? 'var(--ctn-color-surface-raised)' : 'transparent',
         seqFg: e.link ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-text-muted)'
       })),
       noRows: rows.length === 0,
+      noRowsNote: 'Sequence 88401 to 88427 is intact and contiguous; the query simply matches none of it.',
 
       verify: ()=>{
         if(this.state.verifying) return;
@@ -416,46 +663,15 @@ class Component extends DCLogic {
       verifyMsg: st.verifying ? 'walking '+Math.round(st.vpos/100*this.entries.length)+'/'+this.entries.length+' links…'
         : st.verified ? 'chain intact · 27 links, no gap, no re-write' : 'last walked 23:15 IST',
       verifyFg: st.verified ? 'var(--ctn-color-ok)' : 'var(--ctn-color-text-muted)'
-    };
+    }, this.asideVals());
   }
-
-  roleInit(){ try{ return (window.CitinelRole && window.CitinelRole.get()) || 'analyst'; }catch(e){ return 'analyst'; } }
-  roleMount(){ if(window.CitinelRole) this.unsubRole = window.CitinelRole.subscribe(r=>{ if(r !== this.state.role) this.setState({role:r}); }); }
-  componentWillUnmount_role(){ if(this.unsubRole) this.unsubRole(); }
-  roleVals(){
-    const ciso = this.state.role === 'ciso';
-    return { ciso, analyst: !ciso,
-      setAnalyst: ()=>{ this.setState({role:'analyst'}); if(window.CitinelRole) window.CitinelRole.set('analyst'); },
-      setCiso: ()=>{ this.setState({role:'ciso'}); if(window.CitinelRole) window.CitinelRole.set('ciso'); },
-      analystBg: ciso ? 'transparent' : 'var(--ctn-color-surface-navy)',
-      analystFg: ciso ? 'var(--ctn-color-text-muted)' : 'var(--ctn-color-text-on-navy)',
-      cisoBg: ciso ? 'var(--ctn-color-surface-navy)' : 'transparent',
-      cisoFg: ciso ? 'var(--ctn-color-text-on-navy)' : 'var(--ctn-color-text-muted)' };
-  }
-  renderVals(){ const b = this.baseVals(); return Object.assign({}, b, this.roleVals(), this.depthVals ? this.depthVals(b) : {}, this.sessionVals(b)); }
-  componentDidMount(){
-    this.ribbonRef = this.ribbonRef || React.createRef();
-    const measure = () => {
-      const el = this.ribbonRef.current;
-      if(el){ const w = Math.round(el.getBoundingClientRect().width);
-        if(w > 0 && w !== this.state.ribbonW) this.setState({ribbonW: w}); }
-    };
-    measure();
-    if(window.ResizeObserver && this.ribbonRef.current){
-      this.ro = new ResizeObserver(measure);
-      this.ro.observe(this.ribbonRef.current);
-    } else { window.addEventListener('resize', measure); this.onResize = measure; }
-    this.roleMount();
-    if(window.CitinelLedger) this.unsubLed = window.CitinelLedger.subscribe(()=>this.forceUpdate());
-  }
-
   depthVals(b){
     if(this.state.role !== 'ciso') return {};
     const keep = {DECISION:1, HUMAN:1, POLICY:1, EXPORT:1};
     const rows = b.rows.filter(r=>keep[r.kind]);
     return {
       rows,
-      resultNote: rows.length+' decision frames · '+(this.entries.length-rows.length)+' ingest and tool frames collapsed',
+      resultNote: rows.length+' decision frames · '+(b.rows.length-rows.length)+' ingest and tool frames collapsed',
       cannot: b.cannot.concat(['collapse a frame permanently · the machine record is one depth away']),
       exceptions: [
         {v:'44m', k:'LONGEST GATE HOLD'},
@@ -466,24 +682,12 @@ class Component extends DCLogic {
       exceptionNote: 'At this depth the reel shows decisions, policy evaluations, human actions and exports: the 21 frames that carry accountability. The 16 ingest and tool-call frames underneath are not hidden or removed: switch to analyst depth and the same reel plays back complete, with the same sequence numbers and the same hash chain.'
     };
   }
-
-  // A cluster stands for frames that share an instant. It reads as one mark carrying a
-  // count, never as a single event — a reader must never see fewer marks than the reel has.
-  clusterGlyph(n){
-    const R = React;
-    return R.createElement('svg',{width:19,height:19,viewBox:'0 0 19 19'},[
-      R.createElement('circle',{key:'o',cx:9.5,cy:9.5,r:8.4,fill:'var(--ctn-color-surface-panel)',
-        stroke:'var(--ctn-color-text-primary)',strokeWidth:1.5,strokeDasharray:'2.6 2.2'}),
-      R.createElement('text',{key:'n',x:9.5,y:13,textAnchor:'middle',fontFamily:'var(--ctn-font-display)',
-        fontSize:9.5,fill:'var(--ctn-color-text-primary)'}, String(n))
-    ]);
-  }
   sessionVals(b){
     const led = window.CitinelLedger ? window.CitinelLedger.all() : [];
     if(!led.length) return {};
     const rows = led.slice().reverse().map(e=>({
-      seq:e.seq, t:new Date(e.at+330*60000).toISOString().slice(11,19), kind:e.kind, actor:e.actor,
-      record:e.record, hash:this.H(Number(e.seq)), prev:this.H(Number(e.seq)-1),
+      seq:e.seq, t:new Date(e.at+330*60000).toISOString().slice(11,19), tFull:'this session', kind:e.kind, actor:e.actor,
+      record:e.record, payloadFull:e.record, hash:this.H(Number(e.seq)), prev:this.H(Number(e.seq)-1), hashFull:'session ledger · synthetic hash',
       glyph:this.glyph(e.kind,false), bg:'var(--ctn-color-surface-panel)',
       seqFg: e.link ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-text-muted)'
     }));
@@ -503,6 +707,28 @@ class Component extends DCLogic {
       ribbonNote: 'From the first byte Sigma matched to the last decision taken in this session. The marks past 23:14 were added by what you just did on the approval card, the compliance desk or the close-out · the same reel, appended. append-only.',
       resultNote: (rows.length + b.rows.length) + ' frames · ' + rows.length + ' appended this session'
     };
+  }
+
+  /* ── role depth (shared) ─────────────────────────────────────────────────── */
+  roleInit(){ try{ return (window.CitinelRole && window.CitinelRole.get()) || 'analyst'; }catch(e){ return 'analyst'; } }
+  roleMount(){ if(window.CitinelRole) this.unsubRole = window.CitinelRole.subscribe(r=>{ if(r !== this.state.role) this.setState({role:r}); }); }
+  roleVals(){
+    const ciso = this.state.role === 'ciso';
+    return { ciso, analyst: !ciso,
+      setAnalyst: ()=>{ this.setState({role:'analyst'}); if(window.CitinelRole) window.CitinelRole.set('analyst'); },
+      setCiso: ()=>{ this.setState({role:'ciso'}); if(window.CitinelRole) window.CitinelRole.set('ciso'); },
+      analystBg: ciso ? 'transparent' : 'var(--ctn-color-surface-navy)',
+      analystFg: ciso ? 'var(--ctn-color-text-muted)' : 'var(--ctn-color-text-on-navy)',
+      cisoBg: ciso ? 'var(--ctn-color-surface-navy)' : 'transparent',
+      cisoFg: ciso ? 'var(--ctn-color-text-on-navy)' : 'var(--ctn-color-text-muted)' };
+  }
+  renderVals(){
+    const s = this.state;
+    if (s.live === true) { const b = this.liveVals(); return Object.assign({}, b, this.roleVals(), this.liveDepthVals(b)); }
+    if (s.live === null) return Object.assign({}, this.loadingVals(), this.roleVals());
+    const b0 = this.baseVals();
+    const b = Object.assign({}, b0, this.sessionVals(b0));   // session rows join the reel first...
+    return Object.assign({}, b, this.roleVals(), this.depthVals(b));   // ...so CISO depth filters them too
   }
 }
 </script>
