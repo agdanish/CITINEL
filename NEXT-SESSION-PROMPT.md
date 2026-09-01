@@ -72,6 +72,15 @@ Recommended order for the remaining PARTIAL pages, by value ÷ risk:
 4. Then Handover, Narrow, Settings, Entry. Eval already has a live route
    (`/api/eval`) that its page does not read yet.
 
+**Standing direction from Danish (2 Sep, HANDOFF-MEMORY §19): deploy online,
+use all partner credits effectively, many agents in Lyzr AI.** Before
+designing any new Lyzr agent, ask Danish for the list of agents already built
+in Studio (name, role, what each answers) and wire each to a real call site
+or say plainly it would be decorative. Three Lyzr seams are already live
+locally (guard, observer, ledger witness); on Render they run
+`not_configured` until Danish sets `CITINEL_LYZR_API_KEY`,
+`CITINEL_LYZR_GUARD_URL` and `CITINEL_LYZR_AGENT_ID` in the Render dashboard.
+
 Manual items only Danish can do, still open (§17): n8n webhook URL into
 `.env`/Render, the Lyzr Studio agent (recipe in `connectors/lyzr.py`'s
 docstring), the Swytchcode credit claim. After any swarm run that should show online,
