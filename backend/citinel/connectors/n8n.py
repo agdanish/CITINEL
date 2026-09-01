@@ -24,7 +24,7 @@ it is never load-bearing for correctness.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any
 from urllib.parse import urlparse
@@ -34,12 +34,14 @@ from citinel.config import settings
 
 @dataclass
 class N8nDispatch:
-    status: str                  # dispatched | not_configured | error
+    status: str                  # dispatched | partially_dispatched | not_configured | error
     channels: list[str]
     detail: str
+    failed_channels: list[str] = field(default_factory=list)
 
     def as_dict(self) -> dict[str, Any]:
-        return {"status": self.status, "channels": self.channels, "detail": self.detail}
+        return {"status": self.status, "channels": self.channels,
+                "failed_channels": self.failed_channels, "detail": self.detail}
 
 
 def _payload(incident, signed_by: str) -> dict[str, Any]:
@@ -87,7 +89,22 @@ def dispatch_signed(incident, signed_by: str, sender=None) -> N8nDispatch:
         return N8nDispatch("error", [], f"n8n dispatch failed: {e}")
     if status // 100 != 2:
         return N8nDispatch("error", [], f"n8n HTTP {status}")
-    channels = resp.get("channels", ["ciso", "compliance_drive", "ticket"]) \
-        if isinstance(resp, dict) else ["ciso", "compliance_drive", "ticket"]
-    return N8nDispatch("dispatched", channels,
-                       f"signed {incident.incident_id} escalated via n8n to {', '.join(channels)}")
+
+    if not isinstance(resp, dict) or "channels" not in resp:
+        # A response that doesn't say which channels actually succeeded is
+        # not evidence of success -- reporting one anyway would be the exact
+        # class of fabricated claim CITINEL exists to refuse (see
+        # verify_chain's "absence, not integrity"). Prior versions of this
+        # function defaulted to claiming all three channels dispatched here;
+        # that was wrong, and the SHA-256-chained audit ledger recorded it.
+        return N8nDispatch("error", [],
+                           f"n8n response did not report which channels succeeded "
+                           f"(got: {resp!r}); nothing can be honestly claimed as dispatched")
+
+    channels = list(resp.get("channels", []))
+    failed = list(resp.get("failed_channels", []))
+    status_word = "partially_dispatched" if failed else "dispatched"
+    detail = f"signed {incident.incident_id} escalated via n8n to {', '.join(channels) or 'no channels'}"
+    if failed:
+        detail += f"; FAILED: {', '.join(failed)}"
+    return N8nDispatch(status_word, channels, detail, failed_channels=failed)

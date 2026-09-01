@@ -1,7 +1,7 @@
 {
   "name": "CITINEL - Beat 5b: post-signoff automation",
   "meta": {
-    "description": "Fires when a human signs a CITINEL CERT-In draft. Fans the signed incident out to CISO comms, a compliance-drive export, and a follow-up ticket -- the post-signoff work the core pipeline deliberately does NOT do itself (we draft, we never file). n8n owns this VISIBLE escalation/export flow; OPA remains the sole policy authority. Best Use of n8n: the automation demonstrably improves the post-signoff UX by removing four manual handoffs."
+    "description": "Fires when a human signs a CITINEL CERT-In draft. Fans the signed incident out to CISO comms, a compliance-drive export, and a follow-up ticket -- the post-signoff work the core pipeline deliberately does NOT do itself (we draft, we never file). n8n owns this VISIBLE escalation/export flow; OPA remains the sole policy authority. Best Use of n8n: the automation demonstrably improves the post-signoff UX by removing four manual handoffs. The ack this flow returns is computed from what actually happened on each branch, not assumed -- a branch that fails still lets the other two through and is reported by name, never silently folded into a false 'all succeeded'."
   },
   "nodes": [
     {
@@ -46,9 +46,14 @@
       "name": "Notify CISO (Slack)",
       "type": "n8n-nodes-base.slack",
       "typeVersion": 2.2,
-      "position": [680, 180],
+      "position": [680, 140],
       "notesInFlow": true,
-      "notes": "Swap for Send Email if the bank uses email; either satisfies the criterion. Comms only -- never a policy decision."
+      "notes": "Swap for Send Email if the bank uses email; either satisfies the criterion. Comms only -- never a policy decision.",
+      "onError": "continueRegularOutput",
+      "continueOnFail": true,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
     },
     {
       "parameters": {
@@ -62,7 +67,12 @@
       "typeVersion": 3,
       "position": [680, 300],
       "notesInFlow": true,
-      "notes": "Exports the signed draft to the bank's compliance archive. Export only -- CITINEL never machine-files to CERT-In (no API exists)."
+      "notes": "Exports the signed draft to the bank's compliance archive. Export only -- CITINEL never machine-files to CERT-In (no API exists).",
+      "onError": "continueRegularOutput",
+      "continueOnFail": true,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
     },
     {
       "parameters": {
@@ -74,21 +84,51 @@
       "name": "Create Follow-up Ticket",
       "type": "n8n-nodes-base.jira",
       "typeVersion": 1,
-      "position": [680, 420],
+      "position": [680, 460],
       "notesInFlow": true,
-      "notes": "Opens the recurrence-prevention / RCA follow-up ticket the DPDP report references."
+      "notes": "Opens the recurrence-prevention / RCA follow-up ticket the DPDP report references.",
+      "onError": "continueRegularOutput",
+      "continueOnFail": true,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "mode": "append",
+        "numberInputs": 3
+      },
+      "id": "merge-branches",
+      "name": "Merge Branch Results",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 2,
+      "position": [900, 300],
+      "notesInFlow": true,
+      "notes": "Waits for all three branches (success or handled failure) before anything is acknowledged. Append mode: outputs each branch's result as a separate item, in input-slot order (0=Slack, 1=Drive, 2=Jira) -- Compute Delivery Status relies on that ordering."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Input order is fixed by the connections block: item 0 = Slack, item 1 = Drive, item 2 = Jira.\n// A branch that failed (with onError: continueRegularOutput) surfaces as json.error on its item.\nconst items = $input.all();\nconst names = [\"ciso\", \"compliance_drive\", \"ticket\"];\nconst channels = [];\nconst failed_channels = [];\n\nitems.forEach((item, i) => {\n  const name = names[i] || `branch_${i}`;\n  if (item.json && item.json.error) {\n    failed_channels.push(name);\n  } else {\n    channels.push(name);\n  }\n});\n\nreturn [{ json: { channels, failed_channels } }];"
+      },
+      "id": "compute-delivery-status",
+      "name": "Compute Delivery Status",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1120, 300],
+      "notesInFlow": true,
+      "notes": "The honesty seam: turns three branch outcomes into the channels/failed_channels lists the ack actually reports, instead of a hardcoded 'all three succeeded'."
     },
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={\"status\":\"escalated\",\"incident_id\":\"{{$json.incident_id}}\",\"channels\":[\"ciso\",\"compliance_drive\",\"ticket\"]}",
+        "responseBody": "={{ JSON.stringify({ status: $json.failed_channels.length ? \"partially_escalated\" : \"escalated\", incident_id: $('Format Notification').item.json.incident_id, channels: $json.channels, failed_channels: $json.failed_channels }) }}",
         "options": {}
       },
       "id": "respond",
       "name": "Ack to CITINEL",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [900, 300]
+      "position": [1340, 300]
     }
   ],
   "connections": {
@@ -98,7 +138,11 @@
       {"node": "Export to Compliance Drive", "type": "main", "index": 0},
       {"node": "Create Follow-up Ticket", "type": "main", "index": 0}
     ]]},
-    "Notify CISO (Slack)": {"main": [[{"node": "Ack to CITINEL", "type": "main", "index": 0}]]}
+    "Notify CISO (Slack)": {"main": [[{"node": "Merge Branch Results", "type": "main", "index": 0}]]},
+    "Export to Compliance Drive": {"main": [[{"node": "Merge Branch Results", "type": "main", "index": 1}]]},
+    "Create Follow-up Ticket": {"main": [[{"node": "Merge Branch Results", "type": "main", "index": 2}]]},
+    "Merge Branch Results": {"main": [[{"node": "Compute Delivery Status", "type": "main", "index": 0}]]},
+    "Compute Delivery Status": {"main": [[{"node": "Ack to CITINEL", "type": "main", "index": 0}]]}
   },
   "settings": {"executionOrder": "v1"},
   "pinData": {}

@@ -56,12 +56,47 @@ def test_n8n_dispatches_signed_incident(monkeypatch):
     def sender(url, body):
         seen["url"] = url
         seen["body"] = body
-        return 200, {"status": "escalated", "channels": ["ciso", "compliance_drive", "ticket"]}
+        return 200, {"status": "escalated", "channels": ["ciso", "compliance_drive", "ticket"],
+                     "failed_channels": []}
     d = dispatch_signed(_incident(), "ciso@bank", sender=sender)
     assert d.status == "dispatched"
     assert set(d.channels) == {"ciso", "compliance_drive", "ticket"}
+    assert d.failed_channels == []
     assert seen["body"]["incident_id"] == "INC-0417"
     assert seen["body"]["signed_by"] == "ciso@bank"
+
+
+def test_n8n_reports_a_partial_failure_honestly(monkeypatch):
+    """The bug this pins against: the Beat 5b flow's ack node used to hardcode
+    'all three channels succeeded' regardless of what actually happened. Now
+    the flow computes real per-branch outcomes (citinel-beat5b.json's Compute
+    Delivery Status node) and this must pass that through untouched, not
+    paper over it."""
+    from citinel.config import settings
+    monkeypatch.setattr(settings, "n8n_webhook_url",
+                        "https://aerofyta.app.n8n.cloud/webhook/citinel-incident-signed")
+    def sender(url, body):
+        return 200, {"status": "partially_escalated", "channels": ["ciso", "ticket"],
+                     "failed_channels": ["compliance_drive"]}
+    d = dispatch_signed(_incident(), "ciso@bank", sender=sender)
+    assert d.status == "partially_dispatched"
+    assert set(d.channels) == {"ciso", "ticket"}
+    assert d.failed_channels == ["compliance_drive"]
+    assert "FAILED: compliance_drive" in d.detail
+
+
+def test_n8n_refuses_to_fabricate_success_from_a_malformed_response(monkeypatch):
+    """A response with no 'channels' key is not evidence anything was
+    dispatched. The old behavior defaulted to claiming all three channels
+    succeeded here -- that fabricated claim is exactly what got written into
+    the SHA-256-chained audit ledger. Must now report error, not success."""
+    from citinel.config import settings
+    monkeypatch.setattr(settings, "n8n_webhook_url",
+                        "https://aerofyta.app.n8n.cloud/webhook/citinel-incident-signed")
+    d = dispatch_signed(_incident(), "ciso@bank", sender=lambda url, body: (200, {"status": "ok"}))
+    assert d.status == "error"
+    assert d.channels == []
+    assert "did not report which channels succeeded" in d.detail
 
 
 # --- Swytchcode -------------------------------------------------------------

@@ -59,7 +59,12 @@ def test_screen_draft_skips_placeholder_fields():
     assert result.clean                   # placeholders carry no PII
 
 
-def test_guard_flags_pii_in_evidence_the_signer_reads():
+def test_guard_flags_pii_in_evidence_the_signer_reads(monkeypatch):
+    # pinned no-Lyzr-key: this test is about the local deterministic screen,
+    # not the Lyzr second-check -- a real key in .env would otherwise make
+    # this a live, slow network test for no reason relevant to the assertion.
+    from citinel.config import settings
+    monkeypatch.setattr(settings, "lyzr_api_key", None)
     inc = _incident_with_pii_evidence()
     draft = draft_dpdp(inc)
     evidence = "\n".join(f.evidence_raw for f in inc.findings)

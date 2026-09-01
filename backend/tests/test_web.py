@@ -48,7 +48,12 @@ def test_audit_endpoint_reconstructs_the_chain():
     assert all(e["case_id"] == "INC-0417" for e in entries)
 
 
-def test_draft_endpoint_renders_a_real_draft():
+def test_draft_endpoint_renders_a_real_draft(monkeypatch):
+    # pinned no-Lyzr-key: a real key now lives in .env, and this test isn't
+    # about the Lyzr second-check -- letting it leak in just makes this test
+    # slow (a real network call) for no reason relevant to what it asserts.
+    from citinel.config import settings
+    monkeypatch.setattr(settings, "lyzr_api_key", None)
     r = client.get("/api/incidents/INC-0417/draft", params={"kind": "certin"})
     assert r.status_code == 200
     body = r.json()
@@ -56,19 +61,31 @@ def test_draft_endpoint_renders_a_real_draft():
     assert "DRAFT" in body["rendered"]
 
 
-def test_draft_endpoint_includes_a_real_guard_screen():
+def test_draft_endpoint_includes_a_real_guard_screen(monkeypatch):
     """Regression guard: this endpoint used to ship with NO PII screen applied
     at all, despite the guard machinery (agents/guard.py, connectors/lyzr.py)
     being fully built and having a CLI caller. A judge hitting this exact
-    endpoint would never have seen it run."""
+    endpoint would never have seen it run.
+
+    Pinned to no Lyzr key explicitly -- a real key now lives in .env for the
+    live deploy, and without this the test made an actual network call to
+    Lyzr (visible in a 30s+ runtime instead of ~instant), which is not what
+    this test is checking and makes it flaky/slow for the wrong reason.
+    """
+    from citinel.config import settings
+    monkeypatch.setattr(settings, "lyzr_api_key", None)
     r = client.get("/api/incidents/INC-0417/draft", params={"kind": "dpdp"})
     assert r.status_code == 200
     guard = r.json()["guard"]
-    assert guard["checked_by"] == "citinel-local"  # no Lyzr key in test env -- local tier still ran
+    assert guard["checked_by"] == "citinel-local"  # no Lyzr key -- local tier still ran
     assert "clean" in guard and "findings" in guard
 
 
-def test_ledger_verify_endpoint():
+def test_ledger_verify_endpoint(monkeypatch):
+    # pinned no-Lyzr-key: this endpoint's witness field calls LyzrLedgerMirror
+    # for real once a key is configured -- not what this test checks.
+    from citinel.config import settings
+    monkeypatch.setattr(settings, "lyzr_api_key", None)
     r = client.get("/api/ledger/verify")
     assert r.status_code == 200
     assert r.json()["intact"] is True

@@ -531,7 +531,8 @@ def incidents_sign_off(
     result = dispatch_signed(inc, signer)
     ledger.append(incident_id, "n8n", "tool_call", result.as_dict())
 
-    colour = {"dispatched": "green", "not_configured": "dim", "error": "red"}[result.status]
+    colour = {"dispatched": "green", "partially_dispatched": "yellow",
+              "not_configured": "dim", "error": "red"}[result.status]
     console.print(Panel.fit(
         f"[{colour}]{result.status}[/{colour}]\n{result.detail}",
         title=f"n8n: sign-off for {incident_id}", border_style=colour))
