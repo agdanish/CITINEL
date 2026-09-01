@@ -33,8 +33,9 @@ this order:
 - **Do not re-litigate the "Best Use of Gemini"/"Best Use of CodeMate" tracks'
   existence**, or Danish's shortlist/eligibility status — all resolved,
   HANDOFF-MEMORY §9/§10.
-- **Do not assume Step 7 is still blocked, and do not re-verify the Anthropic
-  key from scratch** — it's confirmed working live (§16). Do check
+- **Do not assume Step 7 is still blocked or unverified, and do not
+  re-verify the Anthropic key from scratch** — it's confirmed working live
+  end-to-end, including the final prompt-fix run (§16, §17 item 1). Do check
   `citinel status` for current build-ladder state before making any claim
   about what's built, since that's the one thing genuinely worth re-checking
   every session (it reads real files on disk).
@@ -54,12 +55,13 @@ ground truth for build state, more current than this prompt will be. Then
 read HANDOFF-MEMORY.md §17's numbered list in full — it's the current,
 honest open-items list, in a rough priority order already reasoned through:
 
-1. Confirm whether the last Step 7 prompt-fix verification run (in progress
-   when the prior session ended) actually completed successfully — check the
-   audit ledger's most recent `marshal` entry, or just run
-   `citinel swarm run INC-0417` again live.
-2. The dashboard-to-live-data wiring is the single highest-value piece of
-   unfinished work — Step 7 now gives several previously-impossible pages
+1. **Step 7's last open question is closed** — the final prompt-fix
+   verification run completed live and succeeded (real counter-evidence,
+   calibrated confidence, three real action-class proposals, no
+   hallucinated ones). Nothing left to check here; don't re-run it as a
+   verification step, only if you're actually working the pipeline.
+2. The dashboard-to-live-data wiring is now the single highest-value piece
+   of unfinished work — Step 7 gives several previously-impossible pages
    (Replay, Confidence) something real to show. Scope carefully per the
    warning above.
 3. Manual items only Danish can do: n8n webhook URL into `.env`, the Lyzr
