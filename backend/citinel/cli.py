@@ -501,6 +501,42 @@ def incidents_audit(
     console.print(f"\nchain: [{'green' if ok else 'red'}]{msg}[/{'green' if ok else 'red'}]")
 
 
+@incidents_app.command("sign-off")
+def incidents_sign_off(
+    incident_id: str = typer.Argument(help="e.g. INC-0417"),
+    signer: str = typer.Option(..., help="e.g. ciso@bank"),
+    incidents_dir: Path = typer.Option(REPO_ROOT / "data/incidents"),
+) -> None:
+    """The human sign-off moment: log it, then fire n8n's Beat 5b flow
+    (notify CISO, export the signed draft, open a follow-up ticket).
+
+    n8n is glue, never the gate -- this command does not touch OPA or change
+    the incident's state; it is the visible automation that follows a human
+    decision already made elsewhere.
+    """
+    from citinel.audit.ledger import AuditLedger
+    from citinel.connectors.n8n import dispatch_signed
+    from citinel.incidents.builder import load_incidents
+
+    incs = {i.incident_id: i for i in load_incidents(incidents_dir / "incidents.jsonl")}
+    inc = incs.get(incident_id)
+    if inc is None:
+        console.print(f"[red]no incident {incident_id}[/red]")
+        raise typer.Exit(1)
+
+    ledger = AuditLedger(incidents_dir / "ledger.jsonl")
+    ledger.append(incident_id, signer, "human_signoff",
+                  {"incident_id": incident_id, "signed_by": signer})
+
+    result = dispatch_signed(inc, signer)
+    ledger.append(incident_id, "n8n", "tool_call", result.as_dict())
+
+    colour = {"dispatched": "green", "not_configured": "dim", "error": "red"}[result.status]
+    console.print(Panel.fit(
+        f"[{colour}]{result.status}[/{colour}]\n{result.detail}",
+        title=f"n8n: sign-off for {incident_id}", border_style=colour))
+
+
 policy_app = typer.Typer(help="The readable response policy and its gate.")
 app.add_typer(policy_app, name="policy")
 
@@ -613,6 +649,89 @@ def policy_execute(
                          "refused": "yellow", "error": "red"}[r.status]
         table.add_row(r.ecosystem_api, f"[{status_colour}]{r.status}[/{status_colour}]", r.detail)
     console.print(table)
+
+
+enrich_app = typer.Typer(help="The Enrichment Squad: Tavily OSINT + VirusTotal + AbuseIPDB.")
+app.add_typer(enrich_app, name="enrich")
+
+
+def _print_enrichment(r) -> None:
+    colour = {"ok": "green", "not_configured": "dim",
+              "error": "red", "egress_refused": "red"}[r.status]
+    body = f"[{colour}]{r.status}[/{colour}]"
+    if r.verdict:
+        body += f"\n{r.verdict}"
+    if r.score is not None:
+        body += f"\nscore: {r.score}"
+    if r.source_url:
+        body += f"\n[dim]{r.source_url}[/dim]"
+    if r.cached:
+        body += "\n[dim](answered from cache -- zero calls spent)[/dim]"
+    console.print(Panel.fit(body, title=f"{r.provider}: {r.indicator}", border_style=colour))
+
+
+@enrich_app.command("ip")
+def enrich_ip(ip: str = typer.Argument(help="e.g. 185.151.160.15")) -> None:
+    """VirusTotal + AbuseIPDB reputation for one IP. Cache-first, egress-guarded."""
+    from citinel.connectors.base import EnrichmentCache
+    from citinel.connectors.enrichment import EnrichmentSquad
+
+    squad = EnrichmentSquad(EnrichmentCache(settings.data_dir / "cache" / "enrichment"))
+    for r in squad.enrich_ip(ip):
+        _print_enrichment(r)
+
+
+@enrich_app.command("hash")
+def enrich_hash(file_hash: str = typer.Argument(help="a SHA-256 file hash")) -> None:
+    """VirusTotal reputation for one file hash."""
+    from citinel.connectors.base import EnrichmentCache
+    from citinel.connectors.enrichment import EnrichmentSquad
+
+    squad = EnrichmentSquad(EnrichmentCache(settings.data_dir / "cache" / "enrichment"))
+    for r in squad.enrich_hash(file_hash):
+        _print_enrichment(r)
+
+
+@enrich_app.command("context")
+def enrich_context(
+    query: str = typer.Argument(help='e.g. "T1490 ransomware recovery inhibition"'),
+) -> None:
+    """Real-time OSINT search via Tavily (Best Use of Tavily) -- cache-first.
+
+    Turns an invisible backend call into visible, judge-legible provenance:
+    every result carries its source_url and fetched_at (SDD Section 15.3).
+    """
+    from citinel.connectors.base import EnrichmentCache
+    from citinel.connectors.enrichment import EnrichmentSquad
+
+    squad = EnrichmentSquad(EnrichmentCache(settings.data_dir / "cache" / "enrichment"))
+    for r in squad.enrich_context(query):
+        _print_enrichment(r)
+
+
+@enrich_app.command("incident")
+def enrich_incident(
+    incident_id: str = typer.Argument(help="e.g. INC-0417"),
+    incidents_dir: Path = typer.Option(REPO_ROOT / "data/incidents"),
+) -> None:
+    """OSINT context for a real incident: Tavily search built from its own
+    hosts and MITRE techniques -- no indicator to type by hand."""
+    from citinel.connectors.base import EnrichmentCache
+    from citinel.connectors.enrichment import EnrichmentSquad
+    from citinel.incidents.builder import load_incidents
+
+    incs = {i.incident_id: i for i in load_incidents(incidents_dir / "incidents.jsonl")}
+    inc = incs.get(incident_id)
+    if inc is None:
+        console.print(f"[red]no incident {incident_id}[/red]")
+        raise typer.Exit(1)
+
+    squad = EnrichmentSquad(EnrichmentCache(settings.data_dir / "cache" / "enrichment"))
+    techniques = ", ".join(inc.techniques[:3]) or "suspicious activity"
+    query = f"MITRE ATT&CK {techniques} threat intelligence"
+    console.print(f"[dim]query: {query}[/dim]")
+    for r in squad.enrich_context(query):
+        _print_enrichment(r)
 
 
 safety_app = typer.Typer(help="The untrusted-content plane: logs are data, never instructions.")
