@@ -149,16 +149,22 @@ services:
   # service to this Blueprint, so it strengthens the Render criterion
   # ("use more than one Render service") at the same time.
   #
-  # Plan note: `starter`, not `free`, and deliberately. Free web services
-  # cannot attach a persistent disk (Render docs, verified), and without one
-  # every restart wipes the Beat 5b workflow -- an unacceptable failure mode
-  # for the one live demo. Starter is ~$7/mo against the $50 hackathon credit.
+  # Plan note: `standard`, not `starter` or `free`. Free web services cannot
+  # attach a persistent disk (Render docs, verified), and without one every
+  # restart wipes the Beat 5b workflow -- unacceptable for the one live demo.
+  # Starter's 512MB RAM turned out to be a second, harder blocker: n8n's own
+  # startup (license SDK, package loading, DB init) reliably hits Node's heap
+  # ceiling on 512MB and OOM-crashes in a loop -- confirmed directly from
+  # Render's logs ("JavaScript heap out of memory"), not inferred. Standard's
+  # 2GB is what n8n's own docs recommend as a minimum. ~$25/mo against the
+  # $50 hackathon credit, prorated for the days remaining -- a few dollars,
+  # not a real budget risk.
   - type: web
     name: citinel-n8n
     runtime: image
     image:
       url: docker.io/n8nio/n8n:latest
-    plan: starter
+    plan: standard
     # No healthCheckPath, deliberately. Render falls back to checking that the
     # service is listening on its port, which is what we actually care about.
     # Naming a path here would be a guess at n8n's internal routes, and a
