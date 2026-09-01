@@ -63,8 +63,25 @@ class Settings(BaseSettings):
     # engineering posture, not a hackathon compromise to relax later.
     default_autonomy: AutonomyTier = AutonomyTier.SHADOW
 
+    # Off by default, deliberately -- see worker/run.py's own comment at the
+    # call site. build_incidents() rebuilds incidents.jsonl from scratch every
+    # cycle with no persisted memory of which incidents the swarm already
+    # investigated; auto-running unconditionally risks silently re-billing
+    # every incident every time detections.jsonl changes. A lightweight
+    # already-processed marker file mitigates but does not eliminate this
+    # (see _already_processed() in worker/run.py) -- explicit opt-in and a
+    # hard per-cycle cap are the real safety rails here, chosen over
+    # unconditional auto-run.
+    auto_swarm: bool = Field(default=False)
+    auto_swarm_max_per_cycle: int = Field(default=3)
+
     # --- credentials (names only; values come from the environment) --------
     anthropic_api_key: str | None = Field(default=None)
+    # Required by newer identity-linked API keys -- confirmed live, 1 Sep 2026:
+    # the API rejects such a key with 400 invalid_request_error unless every
+    # request names the workspace it acts in. Optional here because a classic
+    # (non-identity-linked) key does not need it; sent as a header only when set.
+    anthropic_workspace_id: str | None = Field(default=None)
     tavily_api_key: str | None = Field(default=None)
     virustotal_api_key: str | None = Field(default=None)
     abuseipdb_api_key: str | None = Field(default=None)

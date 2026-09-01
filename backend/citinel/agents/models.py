@@ -23,6 +23,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
+from typing import Any
 
 from citinel.config import settings
 
@@ -89,7 +90,12 @@ class VerifiedModel:
 
     @property
     def supports_adaptive_thinking(self) -> bool:
-        return self._has("adaptive_thinking", "extended_thinking", "thinking")
+        # "thinking.supported" alone is not enough -- verified live, 1 Sep
+        # 2026: Haiku 4.5 reports thinking.supported=true but only its
+        # "enabled" type, not "adaptive" (Sonnet 5 supports both). Sending
+        # {"type": "adaptive"} to a model that only implements "enabled" is
+        # the exact 400 this capability check exists to prevent.
+        return self._has("thinking.types.adaptive", "adaptive_thinking", "extended_thinking")
 
     @property
     def supports_effort(self) -> bool:
@@ -129,6 +135,49 @@ def configured(role: Role) -> str:
     )
 
 
+def _flatten_capabilities(raw: Any) -> tuple[str, ...]:
+    """Turn the API's nested capabilities object into flat dotted names.
+
+    Verified live, 1 Sep 2026: `GET /v1/models`'s `capabilities` field is not
+    a flat list or a name->bool mapping -- both assumed by an earlier version
+    of this function, which meant `VerifiedModel.capabilities` silently
+    resolved to empty for every model, always, and `supports_effort` /
+    `supports_adaptive_thinking` never fired even for a model (Sonnet 5) that
+    genuinely supports both. The real shape is nested, e.g.
+    `capabilities.effort.high.supported`,
+    `capabilities.thinking.types.adaptive.supported`.
+
+    One name is emitted per node whose OWN `supported` is `true`, at every
+    depth (so both "effort" and "effort.high" can be present, or just
+    "thinking" without "thinking.types.adaptive" when the group is on but a
+    specific variant is not -- Haiku 4.5's actual shape). `.model_dump()` is
+    used when available (the real SDK response object); a plain dict is
+    accepted too so this stays testable with a fake.
+    """
+    if raw is None:
+        return ()
+    if hasattr(raw, "model_dump"):
+        raw = raw.model_dump()
+    if not isinstance(raw, dict):
+        return ()
+
+    names: list[str] = []
+
+    def walk(node: Any, prefix: str) -> None:
+        if not isinstance(node, dict):
+            return
+        if node.get("supported") is True:
+            names.append(prefix)
+        for key, value in node.items():
+            if key == "supported":
+                continue
+            walk(value, f"{prefix}.{key}")
+
+    for top_key, top_value in raw.items():
+        walk(top_value, top_key)
+    return tuple(names)
+
+
 def verify(client, role: Role, *, now: str) -> VerifiedModel:
     """Confirm the configured id against the live model list. L9 in one call.
 
@@ -146,16 +195,7 @@ def verify(client, role: Role, *, now: str) -> VerifiedModel:
             "to catch exactly this before a run depends on it."
         )
     m = available[model_id]
-    raw_caps = getattr(m, "capabilities", None) or ()
-    # The field's exact shape is the API's to define; accept a plain sequence
-    # of names or a mapping of name -> enabled, and ignore anything else
-    # rather than guessing (the _has() gate then fails safe).
-    if isinstance(raw_caps, dict):
-        caps = tuple(str(k) for k, v in raw_caps.items() if v)
-    elif isinstance(raw_caps, (list, tuple, set)):
-        caps = tuple(str(c) for c in raw_caps)
-    else:
-        caps = ()
+    caps = _flatten_capabilities(getattr(m, "capabilities", None))
     return VerifiedModel(
         model_id=model_id,
         role=role,

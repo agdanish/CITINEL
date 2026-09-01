@@ -58,6 +58,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Sequence, TypeVar
 
+import anthropic
 from anthropic import transform_schema
 from pydantic import BaseModel
 
@@ -237,17 +238,39 @@ class Transport:
             # thinking instead of 400-ing every call.
             kwargs["thinking"] = {"type": "adaptive"}
 
-        if self.use_refusal_fallback:
-            # Cyber telemetry is exactly the workload that can trip a policy
-            # decline. Opting in means the API re-runs the request on a
-            # fallback model inside the same call rather than returning empty.
-            kwargs["betas"] = [FALLBACK_BETA]
-            kwargs["fallbacks"] = "default"
-            response = self.client.beta.messages.create(**kwargs)
-        else:
-            response = self.client.messages.create(**kwargs)
+        response = self._create(kwargs)
 
         return self._to_call(agent, response, provenance, output_format)
+
+    def _create(self, kwargs: dict[str, Any]) -> Any:
+        """Issue the call, degrading the refusal-fallback beta on this model
+        rather than crashing.
+
+        Verified live, 1 Sep 2026: the fallback beta is not universally
+        supported and, unlike effort/adaptive-thinking, `GET /v1/models`
+        reports no capability field for it at all -- there is nothing to
+        check in advance the way `supports_effort` does. `fallbacks` is a
+        request-shape error (400, not a refusal or a transport failure), so
+        catching it here and retrying once without the beta path is the same
+        "handle it, don't ignore it" standard this module applies to refusals
+        and truncation -- an unsupported beta parameter is a discoverable,
+        routine mismatch between what was requested and what this specific
+        model can do, not broken plumbing.
+        """
+        if not self.use_refusal_fallback:
+            return self.client.messages.create(**kwargs)
+        # Cyber telemetry is exactly the workload that can trip a policy
+        # decline. Opting in means the API re-runs the request on a fallback
+        # model inside the same call rather than returning empty -- when the
+        # model supports it.
+        beta_kwargs = {**kwargs, "betas": [FALLBACK_BETA], "fallbacks": "default"}
+        try:
+            return self.client.beta.messages.create(**beta_kwargs)
+        except anthropic.BadRequestError as e:
+            if "fallbacks" not in str(e).lower():
+                raise
+            self.use_refusal_fallback = False  # this model: don't retry the beta path again
+            return self.client.messages.create(**kwargs)
 
     def _to_call(
         self, agent: str, response: Any, provenance: list[str], output_format: type[T],

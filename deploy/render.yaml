@@ -48,7 +48,23 @@ services:
         value: "true"
       - key: CITINEL_DEFAULT_AUTONOMY
         value: shadow
+      # Off by default, deliberately: the worker auto-running the swarm on
+      # every CAUGHT incident risks silently re-billing already-investigated
+      # incidents on a rebuild (see worker/run.py's own comment). Opt in only
+      # once that's understood. Declared on both services for config
+      # completeness even though only the worker actually reads it.
+      - key: CITINEL_AUTO_SWARM
+        value: "false"
+      - key: CITINEL_AUTO_SWARM_MAX_PER_CYCLE
+        value: "3"
       - key: CITINEL_ANTHROPIC_API_KEY
+        sync: false
+      # Only needed for an identity-linked API key (confirmed live, 1 Sep
+      # 2026: such a key is rejected with 400 unless every request names the
+      # workspace it acts in). Find it at platform.claude.com -> Settings ->
+      # Workspaces. Leave blank for a classic key; the header is only sent
+      # when this is set.
+      - key: CITINEL_ANTHROPIC_WORKSPACE_ID
         sync: false
       - key: CITINEL_TAVILY_API_KEY
         sync: false
@@ -98,7 +114,19 @@ services:
         value: worker
       - key: CITINEL_SIMULATED_ENDPOINTS_ONLY
         value: "true"
+      # Was missing entirely on this service (coherence-audit finding, fixed
+      # here rather than left as a note) -- the worker is the service that
+      # actually executes autonomy-gated actions, so relying on the
+      # in-code default matching by coincidence was the wrong call.
+      - key: CITINEL_DEFAULT_AUTONOMY
+        value: shadow
+      - key: CITINEL_AUTO_SWARM
+        value: "false"
+      - key: CITINEL_AUTO_SWARM_MAX_PER_CYCLE
+        value: "3"
       - key: CITINEL_ANTHROPIC_API_KEY
+        sync: false
+      - key: CITINEL_ANTHROPIC_WORKSPACE_ID
         sync: false
       - key: CITINEL_TAVILY_API_KEY
         sync: false

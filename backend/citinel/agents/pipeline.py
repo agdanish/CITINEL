@@ -5,16 +5,32 @@ Marshal -> Scribe. Sentinel and Scribe are deterministic code, not model
 calls, by design: orchestration and recording are jobs a model would only
 make less reliable.
 
-**Currently wired: four model calls, not five.** `run()` calls Router,
-Correlator, Narrator, Marshal. Enricher's system prompt exists
-(`prompts.py`) but nothing in this module invokes it yet -- it needs a
-tool-use loop over the enrichment connectors (Tavily/VirusTotal/AbuseIPDB,
-`connectors/enrichment.py`), a materially different shape than the other four
-agents' single structured-output calls, and is out of scope for this pass.
-Naming this precisely rather than claiming "seven agents" or "five agents
-think" here is this project's own "a target is never reported as an
-achievement" rule applied to its own docstring -- flagged by adversarial
-review of an earlier draft that made exactly that unearned claim.
+**All five thinking agents are wired.** `run()` calls Router, then (if the
+lane escalates) Enricher, Correlator, Narrator, Marshal in sequence. Enricher
+is the one genuinely different shape: a multi-turn tool-use conversation
+(`agents/enricher.py`) over the real enrichment connectors
+(Tavily/VirusTotal/AbuseIPDB, `connectors/enrichment.py`), not a single
+structured-output call like the other four. Its findings become one more
+quarantined evidence block for the Correlator/Narrator to read -- deliberately
+NOT a source claims can cite (see `enricher.py`'s own docstring for why: the
+citation contract stays anchored to `incident.findings`, unchanged and
+unwidened). Enrichment is additive and optional: `SwarmPipeline(enrichment=
+None)` (the default) skips the stage entirely, which is not a degradation --
+see `SwarmPipeline`'s own docstring.
+
+Confirmed against the live API, 1 Sep 2026, not merely written and hoped to
+work: Router -> Correlator -> Narrator -> Marshal ran end-to-end on a real
+2,487-finding incident, produced a citation-verified CITED verdict, and two
+real containment proposals. Three real first-contact bugs surfaced and were
+fixed in the process (an identity-linked API key needing an explicit
+workspace header, `models.py`'s capability-parsing silently resolving to
+empty for every model because the real API shape is nested rather than flat,
+and the refusal-fallback beta not being universal across models) -- exactly
+the kind of thing "never yet exercised against the live API" was flagging as
+still unconfirmed. The Enricher stage above is new code, live-tested only
+against its own connectors' existing coverage (Tavily/VirusTotal/AbuseIPDB
+already have real API tests), not yet run end-to-end inside a full swarm
+pass against the live Anthropic API the way the other four have been.
 
 Two properties are enforced here rather than hoped for:
 
@@ -78,11 +94,13 @@ from citinel.agents.contracts import (
     Lane,
     verify_citations,
 )
+from citinel.agents.enricher import run_enricher
 from citinel.agents.models import Role
 from citinel.agents.prompts import BY_AGENT
 from citinel.agents.quarantine import Provenance, TaintedText, quarantine
 from citinel.agents.transport import AgentCall, Transport
 from citinel.audit.ledger import AuditLedger
+from citinel.connectors.enrichment import EnrichmentSquad
 from citinel.connectors.lyzr import AgentEvent, AgentObserver, NullObserver
 from citinel.incidents.model import Incident, State
 
@@ -247,6 +265,12 @@ class SwarmPipeline:
     Constructed with transports per role. `None` for either means no
     credentials, and the pipeline reports NO_CREDENTIALS rather than failing --
     Stage 1's findings are real work and survive the swarm being unavailable.
+
+    All five thinking agents now run: Router, Enricher, Correlator, Narrator,
+    Marshal. `enrichment=None` (the default) skips the Enricher stage
+    entirely rather than degrading the run -- enrichment is additive context,
+    never required for a valid investigation, so its absence is not one of
+    `Mode`'s degradation states.
     """
 
     def __init__(
@@ -255,11 +279,13 @@ class SwarmPipeline:
         *,
         triage: Transport | None = None,
         reasoning: Transport | None = None,
+        enrichment: EnrichmentSquad | None = None,
         observer: AgentObserver | None = None,
     ) -> None:
         self.ledger = ledger
         self.triage_transport = triage
         self.reasoning_transport = reasoning
+        self.enrichment = enrichment
         # Fleet-observability seam (SDD 15.3 -- Lyzr attachment point 1 of 4).
         # NullObserver by default: the pipeline's correctness never depends on
         # this. Pass a real LyzrObserver from the caller (e.g. the CLI/web
@@ -325,11 +351,37 @@ class SwarmPipeline:
             result.note = "closed by triage; the deterministic rules and anomaly scoring fully explained this alert"
             return result
 
-        # 2. Correlator -------------------------------------------------------
+        # 2. Enricher -----------------------------------------------------------
+        # Additive, never required: no enrichment squad configured (no Tavily/
+        # VirusTotal/AbuseIPDB keys) skips this stage entirely rather than
+        # degrading the run -- see the class docstring. A configured squad
+        # that finds nothing worth checking is also a normal, silent no-op
+        # (run.evidence stays None; nothing is appended below).
+        correlator_evidence = evidence
+        if self.enrichment is not None:
+            enrich_run = run_enricher(
+                self.reasoning_transport, self.enrichment,
+                system=BY_AGENT["enricher"], instruction=_enricher_instruction(incident),
+                evidence=evidence, case_id=case,
+            )
+            for c in enrich_run.calls:
+                self._record(case, c)
+                result.calls.append(c)
+            if enrich_run.lookups:
+                self._ledger(case, "enricher", "tool_call", {
+                    "lookups": [{"tool": l["tool"], "input": l["input"],
+                               "providers": [r.get("provider") for r in l["results"]]}
+                              for l in enrich_run.lookups],
+                    "stopped_reason": enrich_run.stopped_reason,
+                })
+            if enrich_run.evidence is not None:
+                correlator_evidence = list(evidence) + [enrich_run.evidence]
+
+        # 3. Correlator -------------------------------------------------------
         call = self.reasoning_transport.parse(
             agent="correlator", system=BY_AGENT["correlator"],
             instruction=_correlator_instruction(incident),
-            output_format=Correlation, evidence=evidence,
+            output_format=Correlation, evidence=correlator_evidence,
         )
         self._record(case, call)
         if not call.usable:
@@ -337,7 +389,7 @@ class SwarmPipeline:
         result.correlation = call.parsed
         result.calls.append(call)
 
-        # 3. Narrator ---------------------------------------------------------
+        # 4. Narrator ---------------------------------------------------------
         # The correlator's summary is derived from quarantined evidence but is
         # itself model-generated text; it travels fenced too, appended after
         # the incident evidence, rather than interpolated into the trusted
@@ -375,7 +427,7 @@ class SwarmPipeline:
             "counter_evidence_searched": verdict.counter_evidence_searched,
         })
 
-        # 4. Marshal ----------------------------------------------------------
+        # 5. Marshal ----------------------------------------------------------
         call = self.reasoning_transport.parse(
             agent="marshal", system=BY_AGENT["marshal"],
             instruction=_marshal_instruction(incident, verdict),
@@ -505,6 +557,18 @@ def _router_instruction(inc: Incident) -> str:
         f"You are shown a sample of up to {ROUTER_EVIDENCE_FINDINGS} findings "
         "below, not all of them -- decide the lane from what a fast triage "
         "pass can tell from that sample plus the counts above."
+    )
+
+
+def _enricher_instruction(inc: Incident) -> str:
+    n = min(len(inc.findings), MAX_EVIDENCE_FINDINGS)
+    return (
+        f"Incident {inc.incident_id}. Below are {n} fenced evidence blocks, "
+        f"indexed 0..{n - 1}. Identify any IP addresses, file hashes, or "
+        "domains that genuinely appear in that evidence and are worth "
+        "checking, and use the tools to look them up. If nothing in the "
+        "evidence is worth enriching, say so and stop -- do not invent an "
+        "indicator to justify calling a tool."
     )
 
 

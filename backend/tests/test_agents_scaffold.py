@@ -1005,16 +1005,104 @@ def test_triage_role_never_sends_them_even_on_a_capable_model():
     assert "effort" not in kwargs["output_config"]
 
 
-def test_capabilities_accepts_dict_shape_from_the_api():
-    """The API owns the field's shape; accept a mapping too rather than
-    guessing, and ignore anything unrecognised (fails safe)."""
+def test_capabilities_matches_the_real_nested_api_shape():
+    """Verified live against GET /v1/models, 1 Sep 2026: capabilities is a
+    nested object (capabilities.effort.supported,
+    capabilities.thinking.types.adaptive.supported), not a flat name->bool
+    mapping -- an earlier version of this test encoded that wrong assumption,
+    which is exactly why the code under test silently never detected any
+    capability on any real model until this was caught on first live contact.
+
+    This fixture mirrors Sonnet 5's real response shape (effort + adaptive
+    thinking both on) and Haiku 4.5's (thinking group on, but only the
+    "enabled" type -- not "adaptive" -- and effort fully off)."""
     import citinel.agents.models as M
-    fake = type("X", (), {"id": "m", "display_name": "M",
-                          "max_input_tokens": 1, "max_tokens": 1,
-                          "capabilities": {"effort": True, "vision": False}})()
-    client = type("C", (), {"models": type("Mo", (), {
-        "list": staticmethod(lambda: [fake])})()})()
-    M.settings.reasoning_model = "m"
-    vm = M.verify(client, Role.REASONING, now="t")
-    assert vm.supports_effort is True
-    assert vm.supports_adaptive_thinking is False
+
+    sonnet_shaped = {
+        "effort": {"supported": True, "high": {"supported": True}},
+        "thinking": {"supported": True,
+                     "types": {"adaptive": {"supported": True},
+                               "enabled": {"supported": False}}},
+        "vision": {"supported": False},
+    }
+    haiku_shaped = {
+        "effort": {"supported": False, "high": {"supported": False}},
+        "thinking": {"supported": True,
+                     "types": {"adaptive": {"supported": False},
+                               "enabled": {"supported": True}}},
+    }
+
+    def _verify(caps):
+        fake = type("X", (), {"id": "m", "display_name": "M",
+                              "max_input_tokens": 1, "max_tokens": 1,
+                              "capabilities": caps})()
+        client = type("C", (), {"models": type("Mo", (), {
+            "list": staticmethod(lambda: [fake])})()})()
+        M.settings.reasoning_model = "m"
+        return M.verify(client, Role.REASONING, now="t")
+
+    sonnet = _verify(sonnet_shaped)
+    assert sonnet.supports_effort is True
+    assert sonnet.supports_adaptive_thinking is True
+
+    haiku = _verify(haiku_shaped)
+    assert haiku.supports_effort is False, \
+        "thinking.supported=true must not be mistaken for effort support"
+    assert haiku.supports_adaptive_thinking is False, \
+        "thinking group being on does not mean the ADAPTIVE type specifically is"
+
+
+def test_capabilities_accepts_plain_dict_not_just_a_model_dump_object():
+    """.model_dump() is used when available (the real SDK object); a plain
+    nested dict -- as tests and any non-SDK caller would pass -- must work
+    identically, not silently resolve to no capabilities."""
+    import citinel.agents.models as M
+    caps = M._flatten_capabilities(
+        {"effort": {"supported": True}, "thinking": {"supported": False}})
+    assert caps == ("effort",)
+
+
+# --- Enricher wired into the real pipeline (agent #5) ------------------------
+# Regression coverage for a real bug caught on the second live run: the
+# Enricher's AgentCalls were recorded to the ledger (_record) but never
+# appended to result.calls, so the pipeline's own reported call_count/token
+# totals silently undercounted real spend by however much the Enricher cost --
+# exactly the class of honesty gap this project has spent tonight closing
+# everywhere else.
+
+def test_enricher_calls_are_counted_in_the_result_not_just_the_ledger(tmp_path):
+    from citinel.connectors.base import EnrichmentCache
+    from citinel.connectors.enrichment import EnrichmentSquad
+
+    triage = TriageDecision(lane=Lane.ESCALATE, rationale="multi-host", confidence=0.9)
+    corr = Correlation(stages=[], summary="s", hosts_involved=[])
+    verdict = Verdict(headline="h", claims=[Claim(
+        text="t", support=Support.SUPPORTING,
+        citations=[Citation(finding_index=0, quoted_span=RANSOM[:20])])],
+        counter_evidence_searched=True, confidence=0.5, benign_explanation_considered="n/a")
+
+    beta_script = [_ok(triage), _ok(corr), _ok(verdict), _ProposalsResponse([])]
+    # The Enricher decides there is nothing worth checking and stops --
+    # exactly the outcome the real live run produced.
+    plain_script = [_Response(content=[_TextBlock("nothing here worth enriching")],
+                              stop_reason="end_turn")]
+
+    client = _FakeClient(beta_script=beta_script, plain_script=plain_script)
+    triage_t = _transport(client, Role.TRIAGE)
+    reasoning_t = _transport(client, Role.REASONING)
+    squad = EnrichmentSquad(EnrichmentCache(tmp_path / "cache"))  # no keys -> degrades gracefully
+    ledger = AuditLedger(tmp_path / "l.jsonl")
+    pipeline = SwarmPipeline(ledger, triage=triage_t, reasoning=reasoning_t,
+                             enrichment=squad)
+
+    result = pipeline.run(_incident())
+
+    assert result.mode.value == "full"
+    # router + enricher + correlator + narrator + marshal = 5, not 4
+    assert len(result.calls) == 5
+    assert [c.agent for c in result.calls] == \
+        ["router", "enricher", "correlator", "narrator", "marshal"]
+
+    enricher_ledger_entries = [e for e in ledger.entries() if e.actor == "enricher"]
+    assert len(enricher_ledger_entries) == 1
+    assert enricher_ledger_entries[0].kind == "tool_call"

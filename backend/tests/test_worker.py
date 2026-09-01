@@ -120,3 +120,113 @@ def test_no_input_files_is_a_clean_noop(tmp_path, monkeypatch):
     monkeypatch.setattr(worker, "INCIDENTS_DIR", tmp_path / "incidents")
     worker.run_once()  # must not raise
     assert not (tmp_path / "incidents").exists()
+
+
+# --- auto-swarm: opt-in, capped, and doesn't re-bill already-processed -------
+
+class _FakePipeline:
+    """available=True by construction; .run() is a spy, never a real call."""
+
+    def __init__(self):
+        self.available = True
+        self.ran: list[str] = []
+
+    def run(self, incident):
+        self.ran.append(incident.incident_id)
+        from citinel.agents.pipeline import Mode, SwarmResult
+        return SwarmResult(incident.incident_id, Mode.FULL)
+
+
+def _build_incidents_dir(tmp_path, ids_and_states):
+    """A real incidents.jsonl with the given (id, state) pairs -- exercises
+    the real load_incidents()/State parsing, not a mock of it."""
+    from citinel.incidents.model import Incident
+    incidents_dir = tmp_path / "incidents"
+    incidents_dir.mkdir(exist_ok=True)
+    with (incidents_dir / "incidents.jsonl").open("w") as fh:
+        for iid, state in ids_and_states:
+            inc = Incident(incident_id=iid, state=state)
+            fh.write(json.dumps(inc.as_dict()) + "\n")
+    return incidents_dir
+
+
+def test_auto_swarm_off_by_default_never_calls_the_pipeline(tmp_path, monkeypatch):
+    from citinel.incidents.model import State
+    incidents_dir = _build_incidents_dir(tmp_path, [("INC-0001", State.CAUGHT)])
+    monkeypatch.setattr(worker, "INCIDENTS_DIR", incidents_dir)
+    monkeypatch.setattr(worker, "SWARM_PROCESSED_PATH", incidents_dir / ".swarm_processed")
+    from citinel.config import settings
+    monkeypatch.setattr(settings, "auto_swarm", False)
+
+    fake = _FakePipeline()
+    worker._run_auto_swarm(fake)
+    assert fake.ran == [], "auto_swarm=False must be a hard no-op, opt-in only"
+
+
+def test_auto_swarm_respects_the_per_cycle_cap(tmp_path, monkeypatch):
+    from citinel.incidents.model import State
+    incidents_dir = _build_incidents_dir(
+        tmp_path, [(f"INC-000{i}", State.CAUGHT) for i in range(5)])
+    monkeypatch.setattr(worker, "INCIDENTS_DIR", incidents_dir)
+    monkeypatch.setattr(worker, "SWARM_PROCESSED_PATH", incidents_dir / ".swarm_processed")
+    from citinel.config import settings
+    monkeypatch.setattr(settings, "auto_swarm", True)
+    monkeypatch.setattr(settings, "auto_swarm_max_per_cycle", 2)
+
+    fake = _FakePipeline()
+    worker._run_auto_swarm(fake)
+    assert len(fake.ran) == 2, "the cap is a real ceiling, not a suggestion"
+
+
+def test_auto_swarm_never_reruns_an_already_processed_incident(tmp_path, monkeypatch):
+    """The real mitigation this exists for: a rebuild resets every incident
+    back to CAUGHT with no memory of prior swarm runs (see config.py's
+    auto_swarm comment) -- the marker file is what stops that from silently
+    re-billing the same incident every cycle."""
+    from citinel.incidents.model import State
+    incidents_dir = _build_incidents_dir(tmp_path, [("INC-0001", State.CAUGHT)])
+    monkeypatch.setattr(worker, "INCIDENTS_DIR", incidents_dir)
+    monkeypatch.setattr(worker, "SWARM_PROCESSED_PATH", incidents_dir / ".swarm_processed")
+    from citinel.config import settings
+    monkeypatch.setattr(settings, "auto_swarm", True)
+    monkeypatch.setattr(settings, "auto_swarm_max_per_cycle", 3)
+
+    fake = _FakePipeline()
+    worker._run_auto_swarm(fake)
+    assert fake.ran == ["INC-0001"]
+
+    # Simulate the real failure mode: a rebuild puts the SAME incident back
+    # at CAUGHT (incidents.jsonl is rewritten from scratch every cycle).
+    _build_incidents_dir(tmp_path, [("INC-0001", State.CAUGHT)])
+    worker._run_auto_swarm(fake)
+    assert fake.ran == ["INC-0001"], \
+        "an already-processed incident must not run again even though it's CAUGHT again"
+
+
+def test_auto_swarm_skips_non_caught_incidents(tmp_path, monkeypatch):
+    from citinel.incidents.model import State
+    incidents_dir = _build_incidents_dir(
+        tmp_path, [("INC-0001", State.CITED), ("INC-0002", State.CAUGHT)])
+    monkeypatch.setattr(worker, "INCIDENTS_DIR", incidents_dir)
+    monkeypatch.setattr(worker, "SWARM_PROCESSED_PATH", incidents_dir / ".swarm_processed")
+    from citinel.config import settings
+    monkeypatch.setattr(settings, "auto_swarm", True)
+    monkeypatch.setattr(settings, "auto_swarm_max_per_cycle", 5)
+
+    fake = _FakePipeline()
+    worker._run_auto_swarm(fake)
+    assert fake.ran == ["INC-0002"]
+
+
+def test_auto_swarm_skips_when_pipeline_unavailable(tmp_path, monkeypatch):
+    from citinel.incidents.model import State
+    incidents_dir = _build_incidents_dir(tmp_path, [("INC-0001", State.CAUGHT)])
+    monkeypatch.setattr(worker, "INCIDENTS_DIR", incidents_dir)
+    monkeypatch.setattr(worker, "SWARM_PROCESSED_PATH", incidents_dir / ".swarm_processed")
+    from citinel.config import settings
+    monkeypatch.setattr(settings, "auto_swarm", True)
+
+    fake = _FakePipeline()
+    fake.available = False  # e.g. no Anthropic key configured
+    worker._run_auto_swarm(fake)
+    assert fake.ran == []

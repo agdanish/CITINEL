@@ -34,7 +34,7 @@ LADDER: list[tuple[str, str, str]] = [
     ("4",  "Sigma engine",                 "backend/citinel/detect/sigma_engine.py"),
     ("5",  "Anomaly scorer",               "backend/citinel/detect/anomaly.py"),
     ("6",  "Incident record + audit log",  "backend/citinel/audit/ledger.py"),
-    ("7",  "Agent swarm",                  "backend/citinel/agents/sentinel.py"),
+    ("7",  "Agent swarm",                  "backend/citinel/agents/pipeline.py"),
     ("8",  "OPA gate + autonomy dial",     "backend/citinel/policy/gate.py"),
     ("9",  "Injection hardening",          "backend/citinel/agents/quarantine.py"),
     ("10", "Compliance drafter",           "backend/citinel/compliance/drafter.py"),
@@ -900,6 +900,87 @@ def eval_run(
         console.print(Panel.fit(
             f"[yellow]{u.reason}[/yellow]\n\n[dim]needs: {u.required_to_measure}[/dim]",
             title=f"NOT MEASURED: {u.name}", border_style="yellow"))
+
+
+swarm_app = typer.Typer(help="The agent swarm: Router -> Correlator -> Narrator -> Marshal.")
+app.add_typer(swarm_app, name="swarm")
+
+
+@swarm_app.command("run")
+def swarm_run(
+    incident_id: str = typer.Argument(help="e.g. INC-0417"),
+    incidents_dir: Path = typer.Option(REPO_ROOT / "data/incidents"),
+) -> None:
+    """Run one incident through the swarm for real -- Anthropic, live.
+
+    Requires CITINEL_ANTHROPIC_API_KEY, CITINEL_TRIAGE_MODEL,
+    CITINEL_REASONING_MODEL. Every stage lands in the audit ledger under this
+    incident's case id (\`citinel ledger show\`), and a CITED transition is
+    recorded only if at least one claim survives citation verification.
+    """
+    from citinel.agents.build import build_pipeline
+    from citinel.agents.models import ModelNotConfigured, ModelNotVerified
+    from citinel.audit.ledger import AuditLedger
+    from citinel.incidents.builder import load_incidents
+
+    incs = {i.incident_id: i for i in load_incidents(incidents_dir / "incidents.jsonl")}
+    inc = incs.get(incident_id)
+    if inc is None:
+        console.print(f"[red]no incident {incident_id}[/red]")
+        raise typer.Exit(1)
+
+    ledger = AuditLedger(incidents_dir / "ledger.jsonl")
+    try:
+        pipeline = build_pipeline(ledger)
+    except (ModelNotConfigured, ModelNotVerified) as e:
+        console.print(f"[red]{e}[/red]")
+        raise typer.Exit(1)
+
+    if not pipeline.available:
+        console.print("[yellow]no Anthropic credentials configured -- "
+                       "the swarm cannot run, deterministic findings stand alone[/yellow]")
+        raise typer.Exit(1)
+
+    console.print(f"[dim]running {incident_id} ({len(inc.findings)} findings) "
+                  f"through the swarm, live...[/dim]")
+    result = pipeline.run(inc)
+
+    colour = {"full": "green", "no_credentials": "dim", "model_refused": "red",
+              "citations_failed": "yellow", "partial": "yellow"}[result.mode.value]
+    console.print(Panel.fit(
+        f"mode: [{colour}]{result.mode.value}[/{colour}]\n{result.banner() or '(no degradation)'}",
+        title=f"swarm result: {incident_id}", border_style=colour,
+    ))
+
+    if result.triage:
+        console.print(f"\n[bold]triage[/bold]  lane={result.triage.lane.value}  "
+                      f"confidence={result.triage.confidence:.2f}\n  {result.triage.rationale}")
+
+    if result.correlation:
+        console.print(f"\n[bold]correlation[/bold]  {len(result.correlation.stages)} stage(s), "
+                      f"{len(result.correlation.hosts_involved)} host(s)")
+        console.print(f"  {result.correlation.summary}")
+
+    if result.verdict:
+        v = result.verdict
+        console.print(f"\n[bold]verdict[/bold]  confidence={v.confidence:.2f}  "
+                      f"counter_evidence_searched={v.counter_evidence_searched}")
+        console.print(f"  {v.headline}")
+        for c in v.claims:
+            tag = "[green]supporting[/green]" if c.support.value == "supporting" else "[yellow]counter[/yellow]"
+            console.print(f"    {tag}  {c.text}  [dim]({len(c.citations)} citation(s))[/dim]")
+        if result.dropped_claims:
+            console.print(f"  [dim]{len(result.dropped_claims)} claim(s) dropped, citation failed[/dim]")
+
+    if result.proposals:
+        console.print(f"\n[bold]proposals[/bold]  {len(result.proposals)} action(s)")
+        for p in result.proposals:
+            console.print(f"    {p.action_class} -> {p.target} "
+                          f"(assets_affected={p.assets_affected})")
+
+    console.print(f"\n[dim]{len(result.calls)} model call(s) -- "
+                  f"{sum(c.input_tokens for c in result.calls)} input / "
+                  f"{sum(c.output_tokens for c in result.calls)} output tokens[/dim]")
 
 
 if __name__ == "__main__":

@@ -25,10 +25,12 @@ import sys
 import time
 from pathlib import Path
 
+from citinel.agents.pipeline import SwarmPipeline
 from citinel.audit.ledger import AuditLedger
 from citinel.config import settings
 from citinel.connectors.lyzr import LyzrLedgerMirror
-from citinel.incidents.builder import build_incidents
+from citinel.incidents.builder import build_incidents, load_incidents
+from citinel.incidents.model import State
 
 # Paths from settings, not __file__: once pip-installed, this module lives in
 # site-packages and a __file__-derived root points at the interpreter's own
@@ -36,6 +38,12 @@ from citinel.incidents.builder import build_incidents
 DETECTIONS_PATH = settings.data_dir / "cache" / "detections.jsonl"
 ANOMALIES_PATH = settings.data_dir / "cache" / "anomalies.jsonl"
 INCIDENTS_DIR = settings.data_dir / "incidents"
+#: Persists ACROSS incidents.jsonl rebuilds (a separate file), unlike incident
+#: state itself -- see config.py's auto_swarm comment for why this exists.
+#: Real, meaningful mitigation of the re-billing risk; not a full fix for
+#: incident identity not surviving a rebuild, which is a separate, larger
+#: change.
+SWARM_PROCESSED_PATH = INCIDENTS_DIR / ".swarm_processed"
 
 POLL_INTERVAL_S = 300  # re-check for new detections/escalations every 5 min
 
@@ -55,6 +63,52 @@ def _handle_shutdown(signum, frame) -> None:
     _running = False
 
 
+def _already_processed() -> set[str]:
+    if not SWARM_PROCESSED_PATH.exists():
+        return set()
+    return {line.strip() for line in SWARM_PROCESSED_PATH.read_text().splitlines() if line.strip()}
+
+
+def _mark_processed(incident_id: str) -> None:
+    SWARM_PROCESSED_PATH.parent.mkdir(parents=True, exist_ok=True)
+    with SWARM_PROCESSED_PATH.open("a", encoding="utf-8") as fh:
+        fh.write(incident_id + "\n")
+
+
+def _run_auto_swarm(pipeline: SwarmPipeline) -> None:
+    """Run at most `settings.auto_swarm_max_per_cycle` not-yet-processed
+    CAUGHT incidents through the swarm. Real API cost per incident -- the
+    cap and the opt-in setting are the safety rails, not a suggestion; see
+    config.py's auto_swarm comment for the re-billing risk this exists
+    against.
+    """
+    if not settings.auto_swarm or not pipeline.available:
+        return
+    processed = _already_processed()
+    incidents = load_incidents(INCIDENTS_DIR / "incidents.jsonl")
+    candidates = [i for i in incidents
+                  if i.state is State.CAUGHT and i.incident_id not in processed]
+    if not candidates:
+        return
+    batch = candidates[:settings.auto_swarm_max_per_cycle]
+    log.info("auto-swarm: %d candidate(s), running %d this cycle (cap %d)",
+             len(candidates), len(batch), settings.auto_swarm_max_per_cycle)
+    for inc in batch:
+        try:
+            result = pipeline.run(inc)
+            log.info("auto-swarm: %s -> mode=%s", inc.incident_id, result.mode.value)
+        except Exception:
+            log.exception("auto-swarm: %s failed; will retry next cycle "
+                          "(not marked processed)", inc.incident_id)
+            continue
+        # Marked processed regardless of mode (including NO_CREDENTIALS/
+        # MODEL_REFUSED) -- a run that completed without raising is not a
+        # transient failure worth burning tokens on again next cycle. Only an
+        # exception (network error, etc.) skips the mark, so that case does
+        # retry.
+        _mark_processed(inc.incident_id)
+
+
 def _input_signature() -> tuple[float, float]:
     """(mtime, mtime) of the two input files, 0.0 for a file that doesn't
     exist yet. Used to detect whether there is genuinely new work."""
@@ -64,9 +118,11 @@ def _input_signature() -> tuple[float, float]:
     )
 
 
-def run_once() -> None:
+def run_once(pipeline: SwarmPipeline | None = None) -> None:
     """One pipeline cycle: rebuild incidents from whatever detections/
-    escalations exist on disk, and verify the audit ledger stayed intact.
+    escalations exist on disk, verify the audit ledger stayed intact, and
+    (only if `pipeline` is passed and `settings.auto_swarm` is on) run a
+    capped batch of not-yet-processed incidents through the swarm.
 
     build_incidents() unconditionally rewrites incidents.jsonl and APPENDS
     fresh ledger entries every call -- correct for a one-shot CLI rebuild, but
@@ -105,15 +161,36 @@ def run_once() -> None:
         log.error("AUDIT LEDGER INTEGRITY FAILURE: %s", message)
     _last_built_signature = signature
 
+    if pipeline is not None:
+        _run_auto_swarm(pipeline)
+
 
 def main() -> int:
     signal.signal(signal.SIGTERM, _handle_shutdown)
     signal.signal(signal.SIGINT, _handle_shutdown)
     log.info("citinel worker starting (poll interval %ss)", POLL_INTERVAL_S)
 
+    # Built once, outside the loop: constructing a SwarmPipeline verifies
+    # both model ids live (L9, GET /v1/models) -- doing that every 5-minute
+    # cycle would be a repeated, avoidable call. auto_swarm defaults to False
+    # (config.py), so this is a no-op client-less pipeline unless explicitly
+    # opted into.
+    pipeline = None
+    if settings.auto_swarm:
+        from citinel.agents.build import build_pipeline
+        try:
+            pipeline = build_pipeline(AuditLedger(INCIDENTS_DIR / "ledger.jsonl",
+                                                  sink=LyzrLedgerMirror()))
+            log.info("auto-swarm enabled: up to %d incident(s)/cycle",
+                     settings.auto_swarm_max_per_cycle)
+        except Exception:
+            log.exception("auto-swarm enabled but pipeline construction failed "
+                          "(check CITINEL_TRIAGE_MODEL/REASONING_MODEL); "
+                          "continuing without it")
+
     while _running:
         try:
-            run_once()
+            run_once(pipeline)
         except Exception:
             log.exception("worker cycle failed; will retry next interval")
         for _ in range(POLL_INTERVAL_S):
