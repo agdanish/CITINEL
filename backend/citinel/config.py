@@ -82,12 +82,12 @@ class Settings(BaseSettings):
     # Lyzr Studio (it is set per deployment), so it is configured rather than
     # hardcoded; the connector adds this host to the egress allow-list only
     # when it is explicitly set.
+    # The real chat endpoint (confirmed against a deployed agent's own "Agent
+    # API" tab, not the docs -- see connectors/lyzr.py's _chat_payload) is a
+    # fixed https://agent-prod.studio.lyzr.ai/v3/inference/chat/, the same
+    # for every agent; lyzr_agent_id below (sent in the request body) is what
+    # actually selects which agent answers.
     lyzr_guard_url: str | None = Field(default=None)
-    # Lyzr's real REST contract bakes the agent id into the endpoint path
-    # itself (.../v3/agent/{agent_id}/chat -- see lyzr_guard_url above), so
-    # this is not sent in any request body. Kept as a separate setting purely
-    # so an operator reading .env can tell which agent lyzr_guard_url points
-    # at without having to parse the URL.
     lyzr_agent_id: str | None = Field(default=None)
 
     @property

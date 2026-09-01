@@ -33,14 +33,20 @@ from citinel.agents.quarantine import EGRESS_ALLOW, check_egress
 from citinel.audit.ledger import LedgerSink
 from citinel.config import settings
 
-# Lyzr's real REST contract (docs.lyzr.ai/enterprise/get-started/quickstart,
-# verified live -- not guessed) is chat-shaped: POST {"message", "session_id"}
-# to an agent's endpoint, get back {"response": "<text>"}. There is no
-# generic task-dispatch API. So the three things CITINEL needs from one Lyzr
-# agent (screen for PII, remember a ledger entry, report the last one) all
-# ride inside `message` as JSON, and the agent must reply with pure JSON text
-# in `response` -- which only works if the Studio agent is instructed to do
-# exactly that.
+# Lyzr's real REST contract is chat-shaped: POST a body to a chat endpoint,
+# get back {"response": "<text>"}. There is no generic task-dispatch API.
+# The exact request shape (see _chat_payload below) was first taken from
+# docs.lyzr.ai's quickstart page and was WRONG in two ways a docs page alone
+# couldn't have caught -- confirmed only once a real agent was deployed and
+# its own "Agent API" tab showed the actual generated integration snippet.
+# _chat_payload's docstring has the specifics and the correction. The lesson
+# generalizes: for this connector, the platform's own generated snippet for
+# a live agent outranks its docs when the two disagree.
+#
+# So the three things CITINEL needs from one Lyzr agent (screen for PII,
+# remember a ledger entry, report the last one) all ride inside `message` as
+# JSON, and the agent must reply with pure JSON text in `response` -- which
+# only works if the Studio agent is instructed to do exactly that.
 #
 # The exact Role/Goal/Instructions to paste into Studio -- including the
 # injection-hardening this needed once we accounted for pii_guard's "input"
@@ -76,6 +82,33 @@ def _parse_agent_reply(body: Any) -> dict[str, Any]:
     except (json.JSONDecodeError, TypeError):
         return {}
     return parsed if isinstance(parsed, dict) else {}
+
+
+def _chat_payload(task_message: str, session_id: str) -> dict[str, Any]:
+    """Build a request body against Lyzr's REAL wire format.
+
+    Confirmed against the live "Agent API" tab for a deployed agent (the
+    platform's own generated integration snippet, not a docs page) --
+    verified 1 Sep 2026 after the docs-derived version below turned out to
+    be wrong in two ways: the endpoint is a fixed
+    https://agent-prod.studio.lyzr.ai/v3/inference/chat/, not
+    /v3/agent/{agent_id}/chat, and agent_id travels in the JSON body
+    (alongside a user_id) rather than being baked into the URL path. Lyzr's
+    own docs are known to be inconsistent across doc trees (see
+    LYZR-AGENT-CONFIG.md's research notes) -- this is the source that
+    actually matters when the two disagree.
+
+    `user_id` is set to a fixed, non-personal identifier rather than any
+    real account's email -- observed examples used the account owner's own
+    login email, but nothing suggests that specific value is required
+    rather than just illustrative. If Lyzr rejects this, the fix is here.
+    """
+    return {
+        "user_id": "citinel-backend",
+        "agent_id": settings.lyzr_agent_id,
+        "session_id": session_id,
+        "message": task_message,
+    }
 
 
 def _lyzr_allow() -> frozenset[str]:
@@ -131,7 +164,7 @@ class LyzrGuard:
     def _call(self, text: str) -> tuple[int, Any]:
         headers = {"x-api-key": settings.lyzr_api_key, "Content-Type": "application/json"}
         message = json.dumps({"task": "pii_guard", "input": text})
-        payload = {"message": message, "session_id": "citinel-lyzr-guard"}
+        payload = _chat_payload(message, "citinel-lyzr-guard")
         if self._sender is not None:
             return self._sender(settings.lyzr_guard_url, headers, payload)
         import httpx
@@ -257,7 +290,7 @@ class LyzrLedgerMirror(LedgerSink):
         if not check_egress(settings.lyzr_guard_url, _lyzr_allow()).allowed:
             return
         message = json.dumps({"task": "ledger_record", "entry": entry.as_dict()})
-        payload = {"message": message, "session_id": self._SESSION_ID}
+        payload = _chat_payload(message, self._SESSION_ID)
         if self._sender is not None:
             self._sender(settings.lyzr_guard_url,
                          {"x-api-key": settings.lyzr_api_key}, payload)
@@ -327,7 +360,7 @@ class LyzrLedgerMirror(LedgerSink):
     def _head_request(self) -> tuple[int, Any]:
         headers = {"x-api-key": settings.lyzr_api_key, "Content-Type": "application/json"}
         message = json.dumps({"task": "ledger_head"})
-        payload = {"message": message, "session_id": self._SESSION_ID}
+        payload = _chat_payload(message, self._SESSION_ID)
         if self._sender is not None:
             return self._sender(settings.lyzr_guard_url, headers, payload)
         import httpx

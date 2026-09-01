@@ -92,7 +92,7 @@ def test_lyzr_second_check_merges_findings_when_configured(monkeypatch):
     def sender(url, headers, payload):
         called.append(url)
         # the real Lyzr contract: chat-shaped in, {"response": "<json text>"} out
-        assert set(payload) == {"message", "session_id"}
+        assert set(payload) == {"user_id", "agent_id", "session_id", "message"}
         assert json.loads(payload["message"])["task"] == "pii_guard"
         reply = {"pii": [{"type": "name", "confidence": "medium", "masked": "J***"}]}
         return 200, {"response": json.dumps(reply)}
@@ -161,7 +161,7 @@ def test_entries_are_mirrored_when_the_witness_is_configured(tmp_path, monkeypat
     seen = []
 
     def sender(url, headers, payload):
-        assert set(payload) == {"message", "session_id"}
+        assert set(payload) == {"user_id", "agent_id", "session_id", "message"}
         assert payload["session_id"] == LyzrLedgerMirror._SESSION_ID
         seen.append(json.loads(payload["message"]))
         return 200, {"response": json.dumps({"ok": True})}

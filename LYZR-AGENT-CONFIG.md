@@ -97,6 +97,33 @@ task "ledger_head": {"task": "ledger_head"}
 
 ---
 
+## Filling in the three `.env` values
+
+Once deployed, open the **Deploy → Agent API** tab — it shows a real, working
+`curl` example for this specific agent:
+
+```
+curl -X POST 'https://agent-prod.studio.lyzr.ai/v3/inference/chat/' \
+  -H 'x-api-key: sk-...' \
+  -d '{"user_id": "...", "agent_id": "<your agent's id>", "session_id": "...", "message": ""}'
+```
+
+*(This is the platform's real wire format — confirmed 1 Sep 2026 from a
+live deployed agent's own generated snippet, which turned out to disagree
+with docs.lyzr.ai's quickstart page in two ways: a fixed endpoint rather
+than one with `{agent_id}` baked into the path, and `agent_id`/`user_id`
+sent in the JSON body instead. `connectors/lyzr.py`'s `_chat_payload` was
+corrected to match this. Trust the live snippet over the docs if they ever
+disagree again.)*
+
+```
+CITINEL_LYZR_GUARD_URL=https://agent-prod.studio.lyzr.ai/v3/inference/chat/
+CITINEL_LYZR_AGENT_ID=<the agent_id shown in that curl example>
+```
+
+`CITINEL_LYZR_API_KEY` is the same account-level key from Account → API Keys
+you already copied earlier — same key regardless of which agent you call.
+
 ## Studio settings checklist
 
 - **Expected Output Format / Structured Output** → **OFF**
