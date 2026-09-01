@@ -31,6 +31,7 @@ from citinel.config import settings
 from citinel.connectors.base import EnrichmentCache
 from citinel.connectors.enrichment import EnrichmentSquad
 from citinel.connectors.lyzr import AgentObserver, LyzrObserver, NullObserver
+from citinel.policy.gate import PolicyGate
 
 
 def _observer() -> AgentObserver:
@@ -70,6 +71,26 @@ def build_pipeline(ledger: AuditLedger) -> SwarmPipeline:
     reasoning_model = verify(client, Role.REASONING, now=now)
 
     triage = Transport(client, triage_model)
-    reasoning = Transport(client, reasoning_model)
+    # Headroom over Transport's 16000 default: confirmed live, 1 Sep 2026 --
+    # the Narrator hit max_tokens (truncated, unusable) on a genuinely
+    # complex 40-finding incident even after the prompt itself was tightened
+    # for conciseness. Billed by actual output tokens used, not this ceiling,
+    # so the margin costs nothing on a typical run and only matters on the
+    # incidents that need it.
+    #
+    # 20000, not higher: the SDK itself refuses a non-streaming call above
+    # ~21333 tokens for this model (anthropic._base_client's own
+    # _calculate_nonstreaming_timeout -- max_tokens * 3600 / 128000 must stay
+    # under its 600s default timeout budget), confirmed by hitting that
+    # ValueError live at 24000. Streaming would lift this ceiling but is a
+    # bigger change than this pass takes on; 20000 leaves real margin under
+    # the SDK's own limit while still well above what truncated.
+    reasoning = Transport(client, reasoning_model, max_tokens=20000)
+    # Grounds the Marshal's instruction in the real, live action classes --
+    # see pipeline.py's _marshal_instruction docstring note for the live
+    # failure this closes (the model proposing "block_source_ip" instead of
+    # the real "block_ip" with no list to check itself against).
+    policy_gate = PolicyGate(settings.policy_dir / "citinel-policy.yaml")
     return SwarmPipeline(ledger, triage=triage, reasoning=reasoning,
-                         enrichment=_enrichment_squad(), observer=_observer())
+                         enrichment=_enrichment_squad(), policy_gate=policy_gate,
+                         observer=_observer())

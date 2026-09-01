@@ -280,12 +280,20 @@ class SwarmPipeline:
         triage: Transport | None = None,
         reasoning: Transport | None = None,
         enrichment: EnrichmentSquad | None = None,
+        policy_gate: Any = None,
         observer: AgentObserver | None = None,
     ) -> None:
         self.ledger = ledger
         self.triage_transport = triage
         self.reasoning_transport = reasoning
         self.enrichment = enrichment
+        # Grounds the Marshal's instruction in the real, live policy action
+        # classes rather than a hardcoded list that could drift from
+        # policies/citinel-policy.yaml. None -> the instruction falls back to
+        # stating the rule without enumerating classes (see
+        # _marshal_instruction) -- degraded grounding, not a failure; the
+        # gate itself still denies anything invented either way.
+        self.policy_gate = policy_gate
         # Fleet-observability seam (SDD 15.3 -- Lyzr attachment point 1 of 4).
         # NullObserver by default: the pipeline's correctness never depends on
         # this. Pass a real LyzrObserver from the caller (e.g. the CLI/web
@@ -430,7 +438,7 @@ class SwarmPipeline:
         # 5. Marshal ----------------------------------------------------------
         call = self.reasoning_transport.parse(
             agent="marshal", system=BY_AGENT["marshal"],
-            instruction=_marshal_instruction(incident, verdict),
+            instruction=_marshal_instruction(incident, verdict, self.policy_gate),
             output_format=_ProposalList, evidence=evidence[:MARSHAL_EVIDENCE_FINDINGS],
         )
         self._record(case, call)
@@ -596,12 +604,29 @@ def _narrator_instruction(inc: Incident, corr: Correlation | None) -> str:
     )
 
 
-def _marshal_instruction(inc: Incident, verdict: Verdict) -> str:
+def _marshal_instruction(inc: Incident, verdict: Verdict, policy_gate: Any = None) -> str:
+    n_counter = len(verdict.counter())
+    counter_note = (
+        f"{n_counter} counter-evidence claim(s) were recorded against this reading."
+        if n_counter else
+        "No counter-evidence claims were recorded."
+    )
+    # Grounds the model in the real, live action classes rather than asking
+    # it to recall/guess the exact string -- confirmed live, 1 Sep 2026: with
+    # no list shown, the model proposed "block_source_ip", not the real
+    # "block_ip", which the actual gate would have silently denied despite
+    # the prompt's own instruction not to invent one.
+    if policy_gate is not None:
+        classes = "; ".join(f"{c.action_class} ({c.description})"
+                            for c in sorted(policy_gate.clauses.values(), key=lambda c: c.ref))
+        classes_note = f"Valid action classes, exactly as spelled here: {classes}."
+    else:
+        classes_note = "Use only action classes the policy defines."
     return (
         f"Incident {inc.incident_id}. Verdict: {verdict.headline} "
-        f"(stated confidence {verdict.confidence:.2f}). "
+        f"(stated confidence {verdict.confidence:.2f}). {counter_note} "
         f"Hosts: {', '.join(inc.hosts) or 'unknown'}. "
-        "Propose the narrowest containment actions the evidence supports."
+        f"Propose the narrowest containment actions the evidence supports. {classes_note}"
     )
 
 
