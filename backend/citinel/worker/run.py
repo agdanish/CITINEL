@@ -27,6 +27,7 @@ from pathlib import Path
 
 from citinel.audit.ledger import AuditLedger
 from citinel.config import settings
+from citinel.connectors.lyzr import LyzrLedgerMirror
 from citinel.incidents.builder import build_incidents
 
 # Paths from settings, not __file__: once pip-installed, this module lives in
@@ -89,7 +90,12 @@ def run_once() -> None:
     # each entry chains to the previous), so re-opening the same ledger path
     # across cycles preserves history rather than resetting it -- unlike the
     # CLI's `incidents build --fresh`, which is a one-shot rebuild command.
-    ledger = AuditLedger(INCIDENTS_DIR / "ledger.jsonl")
+    # sink=LyzrLedgerMirror() is a no-op until CITINEL_LYZR_API_KEY/GUARD_URL are
+    # set (record() early-returns unconfigured), so this is safe unconditionally.
+    # Without it, the witness half of the ledger-integrity story is silently
+    # dead: /api/ledger/verify's compare() would ask Lyzr "what's your head?"
+    # and get nothing back, because nothing was ever recorded to it.
+    ledger = AuditLedger(INCIDENTS_DIR / "ledger.jsonl", sink=LyzrLedgerMirror())
     report = build_incidents(
         DETECTIONS_PATH, ANOMALIES_PATH, INCIDENTS_DIR / "incidents.jsonl", ledger,
     )

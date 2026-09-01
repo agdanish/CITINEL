@@ -443,11 +443,12 @@ def incidents_build(
     import shutil
 
     from citinel.audit.ledger import AuditLedger
+    from citinel.connectors.lyzr import LyzrLedgerMirror
     from citinel.incidents.builder import build_incidents
 
     if fresh and out_dir.exists():
         shutil.rmtree(out_dir)
-    ledger = AuditLedger(out_dir / "ledger.jsonl")
+    ledger = AuditLedger(out_dir / "ledger.jsonl", sink=LyzrLedgerMirror())
     report = build_incidents(detections, anomalies, out_dir / "incidents.jsonl",
                              ledger, start=start)
 
@@ -515,6 +516,7 @@ def incidents_sign_off(
     decision already made elsewhere.
     """
     from citinel.audit.ledger import AuditLedger
+    from citinel.connectors.lyzr import LyzrLedgerMirror
     from citinel.connectors.n8n import dispatch_signed
     from citinel.incidents.builder import load_incidents
 
@@ -524,7 +526,7 @@ def incidents_sign_off(
         console.print(f"[red]no incident {incident_id}[/red]")
         raise typer.Exit(1)
 
-    ledger = AuditLedger(incidents_dir / "ledger.jsonl")
+    ledger = AuditLedger(incidents_dir / "ledger.jsonl", sink=LyzrLedgerMirror())
     ledger.append(incident_id, signer, "human_signoff",
                   {"incident_id": incident_id, "signed_by": signer})
 
@@ -613,12 +615,13 @@ def policy_execute(
     the whole thing from `incident_id` alone.
     """
     from citinel.audit.ledger import AuditLedger
+    from citinel.connectors.lyzr import LyzrLedgerMirror
     from citinel.connectors.swytchcode import SwytchcodeExecutor
     from citinel.policy.actions import ActionExecutor, ExecutionRefused, MockEndpoints
     from citinel.policy.gate import PolicyGate
 
     decision = PolicyGate(policy).check(action_class, assets, target)
-    ledger = AuditLedger(incidents_dir / "ledger.jsonl")
+    ledger = AuditLedger(incidents_dir / "ledger.jsonl", sink=LyzrLedgerMirror())
     executor = ActionExecutor(MockEndpoints(), ledger)
 
     try:

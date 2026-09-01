@@ -186,15 +186,25 @@ def test_paths_come_from_settings_not_from_file_location(monkeypatch, tmp_path):
     state explicitly, rather than the module's own location on disk.
     """
     import importlib
-    import citinel.config as config
+    from citinel.config import settings
 
     fake_root = tmp_path / "somewhere-else"
     (fake_root / "data").mkdir(parents=True)
     (fake_root / "policies").mkdir()
 
-    monkeypatch.setenv("CITINEL_DATA_DIR", str(fake_root / "data"))
-    monkeypatch.setenv("CITINEL_POLICY_DIR", str(fake_root / "policies"))
-    importlib.reload(config)
+    # Monkeypatch the ONE shared settings object directly -- not
+    # importlib.reload(citinel.config), which constructs a second,
+    # disconnected Settings instance that every module already holding a
+    # `from citinel.config import settings` reference (worker/run.py,
+    # connectors/lyzr.py, cli.py, ...) would NOT pick up. That happened here
+    # once and silently split "the" settings singleton into two objects for
+    # the rest of the test session -- later tests' monkeypatch.setattr(settings,
+    # ...) patched the new copy while already-imported modules kept reading
+    # the old one, so e.g. test_worker.py started making real Lyzr network
+    # calls, but only when run as part of the full suite, never in isolation.
+    monkeypatch.setattr(settings, "data_dir", fake_root / "data")
+    monkeypatch.setattr(settings, "policy_dir", fake_root / "policies")
+
     import citinel.web.app as app_mod
     importlib.reload(app_mod)
 
@@ -202,9 +212,11 @@ def test_paths_come_from_settings_not_from_file_location(monkeypatch, tmp_path):
     assert app_mod.POLICY_PATH == fake_root / "policies" / "citinel-policy.yaml"
     assert "python3" not in str(app_mod.SEED_DIR), "path derived from interpreter location"
 
-    # Restore for the rest of the suite.
+    # Restore for the rest of the suite: undo the settings patch (pytest would
+    # do this at teardown anyway, but app_mod's module-level constants were
+    # computed at reload time above and need recomputing against the real
+    # settings before any later test imports/reuses this same module object).
     monkeypatch.undo()
-    importlib.reload(config)
     importlib.reload(app_mod)
 
 
