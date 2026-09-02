@@ -970,6 +970,8 @@ def swarm_run(
         console.print(f"\n[bold]correlation[/bold]  {len(result.correlation.stages)} stage(s), "
                       f"{len(result.correlation.hosts_involved)} host(s)")
         console.print(f"  {result.correlation.summary}")
+        if result.dropped_kill_chain_stages:
+            console.print(f"  [dim]{len(result.dropped_kill_chain_stages)} stage(s) dropped, citation failed[/dim]")
 
     if result.verdict:
         v = result.verdict
@@ -987,6 +989,8 @@ def swarm_run(
         for p in result.proposals:
             console.print(f"    {p.action_class} -> {p.target} "
                           f"(assets_affected={p.assets_affected})")
+    if result.dropped_proposals:
+        console.print(f"  [dim]{len(result.dropped_proposals)} proposal(s) dropped, citation failed[/dim]")
 
     console.print(f"\n[dim]{len(result.calls)} model call(s) -- "
                   f"{sum(c.input_tokens for c in result.calls)} input / "

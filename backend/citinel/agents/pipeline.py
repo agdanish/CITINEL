@@ -118,6 +118,27 @@ ROUTER_EVIDENCE_FINDINGS = 5
 
 MARSHAL_EVIDENCE_FINDINGS = 10
 
+#: SEC-F06, confirmed 2 Sep 2026: a single Router call, reading evidence the
+#: attacker wrote, had unilateral and unreviewable power to end an
+#: investigation via AUTO_CLOSE -- exactly the shape of decision the fencing
+#: in quarantine.py mitigates but, per its own docstring and the Dec-2025
+#: external research this pipeline was built against (EXT-F01: detection/
+#: fencing defenses are heuristic and are beaten by advanced injections at
+#: 97-100% even when active), cannot be relied on to prevent outright. The
+#: fix is not better prompting -- that is the exact class of defense the
+#: research says does not hold -- it is a deterministic floor the model's own
+#: conclusion cannot override: `incident.severity` is set once, purely from
+#: Sigma rule levels (incidents/builder.py's `_severity()`), before any model
+#: sees the case, so it is not attacker-influenceable the way the log content
+#: the Router reads is. An incident this severe is never silently dismissed
+#: on one triage call's say-so, whatever that call concluded or why.
+#: Residual, stated plainly: below this floor, the Router's own AUTO_CLOSE
+#: conclusion is still trusted at face value -- a genuinely low-severity
+#: alert closing without a full investigation is the same tradeoff a human
+#: triage queue makes, and the stakes of a misclassification there are far
+#: lower than for a high/critical one.
+_NEVER_AUTO_CLOSE_SEVERITIES = frozenset({"high", "critical"})
+
 
 class _ProposalList(BaseModel):
     """Wrapper: structured output needs an object at the root, not a bare array."""
@@ -148,6 +169,14 @@ class SwarmResult:
     proposals: list[ProposedAction] = field(default_factory=list)
     calls: list[AgentCall] = field(default_factory=list)
     dropped_claims: list[str] = field(default_factory=list)
+    #: SEC-F08, confirmed 2 Sep 2026: only Narrator claims (dropped_claims,
+    #: above) ran through the citation gate -- a Correlator kill-chain stage
+    #: or a Marshal proposed action with no verifiable citation reached the
+    #: console exactly as unconditionally as a verified one. These two carry
+    #: the same disclosure `dropped_claims` always has, for the two stages
+    #: that were previously silent about it.
+    dropped_kill_chain_stages: list[str] = field(default_factory=list)
+    dropped_proposals: list[str] = field(default_factory=list)
     note: str = ""
     findings_total: int = 0
     findings_examined: int = 0
@@ -171,6 +200,8 @@ class SwarmResult:
             "verdict": self.verdict.model_dump() if self.verdict else None,
             "proposals": [p.model_dump() for p in self.proposals],
             "dropped_claims": self.dropped_claims,
+            "dropped_kill_chain_stages": self.dropped_kill_chain_stages,
+            "dropped_proposals": self.dropped_proposals,
             "call_count": len(self.calls),
             "findings_total": self.findings_total,
             "findings_examined": self.findings_examined,
@@ -356,8 +387,32 @@ class SwarmPipeline:
         })
 
         if result.triage.lane is Lane.AUTO_CLOSE:
-            result.note = "closed by triage; the deterministic rules and anomaly scoring fully explained this alert"
-            return result
+            if incident.severity not in _NEVER_AUTO_CLOSE_SEVERITIES:
+                sample_size = min(len(incident.findings), ROUTER_EVIDENCE_FINDINGS)
+                result.note = (
+                    f"closed by the fast triage lane, from a sample of {sample_size} "
+                    f"finding(s) -- stated reason: {result.triage.rationale!r}. This "
+                    "is an automated, reversible classification, not a completed "
+                    "investigation; reopen it if the stated reason does not hold up."
+                )
+                return result
+            # The floor: this call's own conclusion is not sufficient by itself to
+            # end an investigation this severe. Record the override -- the router's
+            # true answer (AUTO_CLOSE) already stands in the ledger entry just
+            # written above, unmodified; this is a second, separate entry showing
+            # the pipeline did not act on it -- and continue as ESCALATE.
+            self._ledger(case, "sentinel", "decision", {
+                "check": "auto_close_severity_floor",
+                "router_said": Lane.AUTO_CLOSE.value,
+                "forced_to": Lane.ESCALATE.value,
+                "incident_severity": incident.severity,
+                "reason": (
+                    f"deterministic severity is {incident.severity!r} (set from Sigma "
+                    "rule levels before any model saw this case); a single triage-lane "
+                    "call is never trusted to silently close an incident this severe, "
+                    "regardless of what it concluded or why -- SEC-F06"
+                ),
+            })
 
         # 2. Enricher -----------------------------------------------------------
         # Additive, never required: no enrichment squad configured (no Tavily/
@@ -394,7 +449,7 @@ class SwarmPipeline:
         self._record(case, call)
         if not call.usable:
             return self._degrade(result, call, "correlator")
-        result.correlation = call.parsed
+        result.correlation = self._verify_and_drop_stages(case, call.parsed, incident, result)
         result.calls.append(call)
 
         # 4. Narrator ---------------------------------------------------------
@@ -455,10 +510,32 @@ class SwarmPipeline:
             result.calls.append(call)
             return result
         result.calls.append(call)
-        result.proposals = list(call.parsed.actions)
+        result.proposals = self._verify_and_drop_proposals(case, call.parsed.actions, incident, result)
         return result
 
     # -- the citation gate ---------------------------------------------------
+    #
+    # One gate, three call sites (Narrator claims, Correlator kill-chain
+    # stages, Marshal proposed actions) -- SEC-F08, confirmed 2 Sep 2026: the
+    # gate existed and was tested, but this pipeline only ever called it for
+    # the Narrator. contracts.verify_citations() already accepted all three
+    # shapes (`list[Claim] | list[ProposedAction] | list[KillChainStage]`);
+    # the gap was never in that function, only in which stages used it.
+
+    def _citation_bad(self, item: Any, shown: list) -> bool:
+        """No citation at all, or a citation that does not check out.
+
+        Stated plainly, the same limit noted on `verify_citations` itself: a
+        passing check proves the quoted span really appears in the evidence
+        the model was shown -- it does not prove the finding it quotes is
+        trustworthy, only that the quote is not fabricated. An attacker who
+        writes a plausible-sounding closure/justification INTO a log line the
+        model then quotes verbatim still passes this gate (SEC-F18). This
+        closes fabrication, not persuasion by real content the attacker
+        controls -- SAFE-F02's "mitigates, never solves" discipline applies
+        here exactly as it does to quarantine.py's fencing.
+        """
+        return not item.citations or bool(verify_citations([item], shown))
 
     def _enforce_citations(
         self, case: str, verdict: Verdict, incident: Incident, result: SwarmResult,
@@ -478,18 +555,13 @@ class SwarmPipeline:
         evidence the model could not have quoted.
         """
         shown = incident.findings[:MAX_EVIDENCE_FINDINGS]
-        bad_indices: set[int] = set()
-        for i, claim in enumerate(verdict.claims):
-            if not claim.citations:
-                bad_indices.add(i)
-                continue
-            if verify_citations([claim], shown):
-                bad_indices.add(i)
+        bad_indices = {i for i, claim in enumerate(verdict.claims) if self._citation_bad(claim, shown)}
 
         if bad_indices:
             result.dropped_claims = [verdict.claims[i].text for i in sorted(bad_indices)]
             self._ledger(case, "sentinel", "decision", {
                 "check": "citation_verification",
+                "stage": "narrator",
                 "dropped": len(bad_indices),
                 "kept": len(verdict.claims) - len(bad_indices),
                 "reason": "quoted span absent from the cited log line, or no "
@@ -500,6 +572,62 @@ class SwarmPipeline:
         if not kept:
             return None
         return verdict.model_copy(update={"claims": kept})
+
+    def _verify_and_drop_stages(
+        self, case: str, correlation: Correlation, incident: Incident, result: SwarmResult,
+    ) -> Correlation:
+        """The Correlator's kill-chain stages, through the same gate as claims.
+
+        A stage the console renders as an established step in the attack
+        narrative is exactly the kind of assertion the citation gate exists
+        for -- an uncited or fabricated-citation stage was previously shown
+        with the same confidence as a verified one. Dropped, not repaired:
+        a step that cannot be evidenced does not belong in a chain being
+        presented as grounded fact, the same call already made for claims.
+        """
+        shown = incident.findings[:MAX_EVIDENCE_FINDINGS]
+        kept, dropped = [], []
+        for stage in correlation.stages:
+            (dropped if self._citation_bad(stage, shown) else kept).append(stage)
+        if dropped:
+            result.dropped_kill_chain_stages = [s.what_happened for s in dropped]
+            self._ledger(case, "sentinel", "decision", {
+                "check": "citation_verification",
+                "stage": "correlator",
+                "dropped": len(dropped),
+                "kept": len(kept),
+                "reason": "quoted span absent from the cited log line, or no "
+                          "citation attached",
+            })
+        return correlation.model_copy(update={"stages": kept})
+
+    def _verify_and_drop_proposals(
+        self, case: str, proposals: list[ProposedAction], incident: Incident, result: SwarmResult,
+    ) -> list[ProposedAction]:
+        """The Marshal's proposed actions, through the same gate as claims.
+
+        A response action offered to a human for approval, with no evidence
+        tying it to the incident, is the same "trust me" shape the whole
+        citation-gating design exists to refuse -- it was previously offered
+        exactly as readily as a well-evidenced proposal. Dropped, not passed
+        through with a warning: an unevidenced proposed action being denied
+        outright, before a human ever sees it, is the fail-safe direction.
+        """
+        shown = incident.findings[:MAX_EVIDENCE_FINDINGS]
+        kept, dropped = [], []
+        for action in proposals:
+            (dropped if self._citation_bad(action, shown) else kept).append(action)
+        if dropped:
+            result.dropped_proposals = [f"{a.action_class} -> {a.target}" for a in dropped]
+            self._ledger(case, "sentinel", "decision", {
+                "check": "citation_verification",
+                "stage": "marshal",
+                "dropped": len(dropped),
+                "kept": len(kept),
+                "reason": "quoted span absent from the cited log line, or no "
+                          "citation attached",
+            })
+        return kept
 
     # -- helpers -------------------------------------------------------------
 

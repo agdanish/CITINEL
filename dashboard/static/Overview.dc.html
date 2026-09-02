@@ -459,9 +459,20 @@ class Component extends DCLogic {
       detents.push(R.createElement('line',{key:i,x1,y1,x2,y2,stroke: i<=dialPos?'var(--ctn-color-text-primary)':'var(--ctn-color-text-muted)',strokeWidth:i===dialPos?2.5:1.5}));
     }
     const detentScale = ['SHADOW','ASSIST','AUTO'].map((label,i)=>({label, fg: i === dialPos ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-text-muted)', rule: i === dialPos ? '1.5px solid var(--ctn-color-text-primary)' : '1px solid transparent'}));
-    const lastTriage = {}; Object.keys(s.chains).forEach(id => (s.chains[id]||[]).forEach(e => { if (e.kind === 'decision' && (e.payload||{}).lane) lastTriage[id] = e.payload.lane; }));
-    const laneA = open.filter(r => lastTriage[r.incident_id] === 'auto_close').length;
-    const laneB = open.filter(r => lastTriage[r.incident_id] === 'escalate').length;
+    // SEC-F06's fix means the router's ledgered lane and what actually happened
+    // to the incident can now differ: a high/critical AUTO_CLOSE is overridden
+    // and the incident escalates anyway (a separate 'auto_close_severity_floor'
+    // decision frame records the override -- see pipeline.py). The router's own
+    // frame is left exactly as it was, an honest unedited record of what it
+    // concluded; this count reads BOTH frames so the lane tally reflects what
+    // the incident actually did, not just what the fast lane recommended.
+    const lastTriage = {}, floorOverridden = {};
+    Object.keys(s.chains).forEach(id => (s.chains[id]||[]).forEach(e => {
+      if (e.kind === 'decision' && (e.payload||{}).lane) lastTriage[id] = e.payload.lane;
+      if (e.kind === 'decision' && (e.payload||{}).check === 'auto_close_severity_floor') floorOverridden[id] = true;
+    }));
+    const laneA = open.filter(r => lastTriage[r.incident_id] === 'auto_close' && !floorOverridden[r.incident_id]).length;
+    const laneB = open.filter(r => lastTriage[r.incident_id] === 'escalate' || floorOverridden[r.incident_id]).length;
     const runs = d.frames.filter(e => e.actor === 'sentinel' && e.kind === 'note').length;
     const configured = (con.connectors || []).filter(c => c.configured).length, total = (con.connectors || []).length;
     const source = s.source || {};

@@ -21,7 +21,7 @@ import json
 import pytest
 
 from citinel.agents.contracts import (
-    Citation, Claim, Correlation, Lane, ProposedAction, Support,
+    Citation, Claim, Correlation, KillChainStage, Lane, ProposedAction, Support,
     TriageDecision, Verdict, uncited, verify_citations,
 )
 from citinel.agents.models import (
@@ -44,8 +44,8 @@ INJECTION_TITLE = (
 )
 
 
-def _incident(n_extra_empty: int = 0) -> Incident:
-    inc = Incident(incident_id="INC-0417", severity="critical")
+def _incident(n_extra_empty: int = 0, severity: str = "critical") -> Incident:
+    inc = Incident(incident_id="INC-0417", severity=severity)
     inc.add_finding(Finding(source="sigma", title="Shadow copy deletion",
                             level="critical", timestamp="2016-08-24T01:00:00Z",
                             host="we8105desk", techniques=["T1490"],
@@ -522,16 +522,59 @@ def test_truncated_narrator_response_degrades_instead_of_crashing(tmp_path):
     assert r.verdict is None
 
 
-def test_auto_close_lane_stops_before_investigating_and_explains_why(tmp_path):
+def test_auto_close_still_stops_immediately_below_the_severity_floor(tmp_path):
+    """A genuinely low-severity alert closing on the Router's own say-so is
+    the accepted residual (SEC-F06's floor only covers high/critical) -- the
+    exact original behavior, at a severity where it is the honest tradeoff."""
     p, client = _pipeline(tmp_path, [
         _ok(TriageDecision(lane=Lane.AUTO_CLOSE, rationale="one rule explains it",
                            confidence=0.9)),
     ])
-    r = p.run(_incident())
+    r = p.run(_incident(severity="low"))
     assert r.mode is Mode.FULL and r.verdict is None
     assert len(client.beta.messages.seen) == 1, "should not call further agents"
-    assert r.note and "closed by triage" in r.note
+    assert r.note and "closed by the fast triage lane" in r.note
+    assert "one rule explains it" in r.note, "the router's own stated reason must be quoted, not summarized away"
     assert r.banner() != "", "an auto-close should not render as a silent empty banner"
+
+
+@pytest.mark.parametrize("severity", ["high", "critical"])
+def test_auto_close_is_overridden_by_the_severity_floor_at_high_and_critical(tmp_path, severity):
+    """SEC-F06, confirmed 2 Sep 2026: a single Router call, reading evidence
+    the attacker wrote, had unilateral power to end a HIGH or CRITICAL
+    investigation with a reassuring banner. The floor forces escalation
+    regardless of the router's conclusion or its stated reason -- the fix is
+    a deterministic override, not a hope that the model resists persuasion."""
+    p, client = _pipeline(tmp_path, [
+        _ok(TriageDecision(lane=Lane.AUTO_CLOSE,
+                           rationale="a plausible-sounding reason an attacker could have engineered",
+                           confidence=0.95)),
+        _ok(Correlation(stages=[], summary="s", hosts_involved=[])),
+        _ok(Verdict(headline="h", counter_evidence_searched=True, confidence=0.5,
+                   benign_explanation_considered="b", claims=[])),
+    ])
+    r = p.run(_incident(severity=severity))
+    assert len(client.beta.messages.seen) > 1, "must not stop at the router -- the floor forces escalation"
+    assert r.triage.lane is Lane.AUTO_CLOSE, "the router's true, original answer stays on the record, unedited"
+
+    entries = p.ledger.entries_for("INC-0417")
+    router_decision = next(e for e in entries if e.kind == "decision" and e.actor == "triage-router")
+    assert router_decision.payload["lane"] == "auto_close", "the real conclusion is ledgered before any override"
+    floor = next(e for e in entries if e.payload.get("check") == "auto_close_severity_floor")
+    assert floor.payload["router_said"] == "auto_close"
+    assert floor.payload["forced_to"] == "escalate"
+    assert floor.payload["incident_severity"] == severity
+
+
+def test_auto_close_floor_boundary_is_medium_not_high(tmp_path):
+    """The floor is exactly {high, critical} -- medium is accepted residual,
+    same as low, and must not silently creep due to a boundary slip."""
+    p, client = _pipeline(tmp_path, [
+        _ok(TriageDecision(lane=Lane.AUTO_CLOSE, rationale="r", confidence=0.9)),
+    ])
+    r = p.run(_incident(severity="medium"))
+    assert len(client.beta.messages.seen) == 1
+    assert r.mode is Mode.FULL and r.verdict is None
 
 
 def test_verdict_with_only_fabricated_citations_does_not_advance_state(tmp_path):
@@ -612,14 +655,18 @@ def test_full_run_verifies_citations_and_advances_to_cited(tmp_path):
         _ok(Verdict(headline="Ransomware on we8105desk", counter_evidence_searched=True,
                    confidence=0.86, benign_explanation_considered="admin cleanup ruled out",
                    claims=[good, bad])),
-        _ProposalsResponse([ProposedAction(action_class="isolate_host", target="we8105desk",
-                                           assets_affected=1, justification="contain")]),
+        _ProposalsResponse([ProposedAction(
+            action_class="isolate_host", target="we8105desk", assets_affected=1,
+            justification="contain", citations=[Citation(finding_index=0,
+                                                          quoted_span="vssadmin.exe delete shadows")])]),
     ])
     r = p.run(inc)
     assert r.mode is Mode.FULL
     assert inc.state is State.CITED
     assert [c.text for c in r.verdict.claims] == ["Shadow copies deleted"]
     assert r.dropped_claims == ["C2 confirmed"]
+    assert len(r.proposals) == 1, "a properly cited proposal must survive the gate"
+    assert r.dropped_proposals == []
 
 
 def test_marshal_refusal_after_a_verified_verdict_does_not_disown_it(tmp_path):
@@ -646,10 +693,109 @@ def test_marshal_refusal_after_a_verified_verdict_does_not_disown_it(tmp_path):
     assert "nothing here is a full verdict" not in banner
 
 
+# --- SEC-F08: the citation gate now covers the Correlator and the Marshal too --
+
+def test_uncited_kill_chain_stage_is_dropped_a_verified_one_survives(tmp_path):
+    """Confirmed defect: only Narrator claims ran through the citation gate --
+    a Correlator kill-chain stage with no citation reached the console with
+    the same confidence as a verified one."""
+    inc = _incident()
+    verified = KillChainStage(technique_id="T1490", technique_name="Inhibit System Recovery",
+                              what_happened="Shadow copies were deleted",
+                              citations=[Citation(finding_index=0,
+                                                  quoted_span="vssadmin.exe delete shadows")])
+    uncited = KillChainStage(technique_id="T1071", technique_name="Application Layer Protocol",
+                             what_happened="C2 beacon confirmed", citations=[])
+    p, _ = _pipeline(tmp_path, [
+        _ok(TriageDecision(lane=Lane.ESCALATE, rationale="r", confidence=0.8)),
+        _ok(Correlation(stages=[verified, uncited], summary="s", hosts_involved=[])),
+        _ok(Verdict(headline="h", counter_evidence_searched=True, confidence=0.5,
+                   benign_explanation_considered="b", claims=[])),
+    ])
+    r = p.run(inc)
+    assert [st.what_happened for st in r.correlation.stages] == ["Shadow copies were deleted"]
+    assert r.dropped_kill_chain_stages == ["C2 beacon confirmed"]
+
+    entries = p.ledger.entries_for("INC-0417")
+    decision = next(e for e in entries if e.kind == "decision"
+                    and e.payload.get("check") == "citation_verification"
+                    and e.payload.get("stage") == "correlator")
+    assert decision.payload["kept"] == 1 and decision.payload["dropped"] == 1
+
+
+def test_fabricated_kill_chain_citation_is_dropped_not_shown_as_fact(tmp_path):
+    inc = _incident()
+    fabricated = KillChainStage(technique_id="T1490", technique_name="Inhibit System Recovery",
+                                what_happened="Shadow copies were deleted",
+                                citations=[Citation(finding_index=0,
+                                                    quoted_span="this text is not in the log")])
+    p, _ = _pipeline(tmp_path, [
+        _ok(TriageDecision(lane=Lane.ESCALATE, rationale="r", confidence=0.8)),
+        _ok(Correlation(stages=[fabricated], summary="s", hosts_involved=[])),
+        _ok(Verdict(headline="h", counter_evidence_searched=True, confidence=0.5,
+                   benign_explanation_considered="b", claims=[])),
+    ])
+    r = p.run(inc)
+    assert r.correlation.stages == []
+    assert r.dropped_kill_chain_stages == ["Shadow copies were deleted"]
+
+
+def test_uncited_proposed_action_is_dropped_before_a_human_sees_it(tmp_path):
+    """Confirmed defect: a Marshal proposal with no citation -- a 'trust me'
+    containment action -- reached the approval UI exactly as readily as an
+    evidenced one. Dropped outright, not passed through with a warning: the
+    fail-safe direction is denying it before a human ever sees it."""
+    inc = _incident()
+    cited_claim = Claim(text="Shadow copies deleted", support=Support.SUPPORTING,
+                        citations=[Citation(finding_index=0, quoted_span="vssadmin.exe delete shadows")])
+    p, _ = _pipeline(tmp_path, [
+        _ok(TriageDecision(lane=Lane.ESCALATE, rationale="r", confidence=0.8)),
+        _ok(Correlation(stages=[], summary="s", hosts_involved=[])),
+        _ok(Verdict(headline="h", counter_evidence_searched=True, confidence=0.5,
+                   benign_explanation_considered="b", claims=[cited_claim])),
+        _ProposalsResponse([ProposedAction(action_class="isolate_host", target="we8105desk",
+                                           assets_affected=1, justification="contain",
+                                           citations=[])]),
+    ])
+    r = p.run(inc)
+    assert r.proposals == []
+    assert r.dropped_proposals == ["isolate_host -> we8105desk"]
+
+    entries = p.ledger.entries_for("INC-0417")
+    decision = next(e for e in entries if e.kind == "decision"
+                    and e.payload.get("check") == "citation_verification"
+                    and e.payload.get("stage") == "marshal")
+    assert decision.payload["dropped"] == 1 and decision.payload["kept"] == 0
+
+
+def test_mixed_cited_and_uncited_proposals_only_the_cited_one_survives(tmp_path):
+    inc = _incident()
+    cited_claim = Claim(text="Shadow copies deleted", support=Support.SUPPORTING,
+                        citations=[Citation(finding_index=0, quoted_span="vssadmin.exe delete shadows")])
+    p, _ = _pipeline(tmp_path, [
+        _ok(TriageDecision(lane=Lane.ESCALATE, rationale="r", confidence=0.8)),
+        _ok(Correlation(stages=[], summary="s", hosts_involved=[])),
+        _ok(Verdict(headline="h", counter_evidence_searched=True, confidence=0.5,
+                   benign_explanation_considered="b", claims=[cited_claim])),
+        _ProposalsResponse([
+            ProposedAction(action_class="isolate_host", target="we8105desk", assets_affected=1,
+                          justification="contain",
+                          citations=[Citation(finding_index=0, quoted_span="vssadmin.exe delete shadows")]),
+            ProposedAction(action_class="block_ip", target="23.202.231.167", assets_affected=1,
+                          justification="cut C2", citations=[]),
+        ]),
+    ])
+    r = p.run(inc)
+    assert [a.action_class for a in r.proposals] == ["isolate_host"]
+    assert r.dropped_proposals == ["block_ip -> 23.202.231.167"]
+
+
 def test_large_incident_evidence_truncation_is_disclosed(tmp_path):
     """Confirmed defect: evidence silently capped at 40 findings with no
-    field, ledger entry, or banner text saying so."""
-    inc = _incident()
+    field, ledger entry, or banner text saying so. Below-floor severity: this
+    test is about truncation disclosure, not the auto-close severity floor,
+    so AUTO_CLOSE must still short-circuit after the router call alone."""
+    inc = _incident(severity="low")
     for i in range(MAX_EVIDENCE_FINDINGS + 50):
         inc.add_finding(Finding(source="anomaly", title=f"pad{i}", level="score:1",
                                 timestamp="2016-08-24T02:00:00Z", host="h",
@@ -848,7 +994,9 @@ def test_observer_receives_start_tool_call_and_finish_events(tmp_path):
     t = _transport(client, Role.TRIAGE)
     p = SwarmPipeline(AuditLedger(tmp_path / "l.jsonl"), triage=t, reasoning=t,
                       observer=obs)
-    p.run(_incident())
+    # Below-floor severity: this test is about observer wiring, not the
+    # severity floor, so AUTO_CLOSE must still short-circuit after one call.
+    p.run(_incident(severity="low"))
 
     phases = [(e.agent, e.phase) for e in obs.events]
     assert ("sentinel", "start") in phases
@@ -867,7 +1015,8 @@ def test_default_observer_is_null_and_pipeline_is_unaffected_without_lyzr(tmp_pa
     ])
     from citinel.connectors.lyzr import NullObserver
     assert isinstance(p.observer, NullObserver)
-    r = p.run(_incident())
+    # Below-floor severity: unrelated to the severity floor under test elsewhere.
+    r = p.run(_incident(severity="low"))
     assert r.mode.value == "full"
 
 
