@@ -266,5 +266,16 @@ No untraceable score-bearing claims remain. The historical orchestrator MD retai
 | A5 Analyst UX | A5-analyst-ux.md | UX-Fxx | F01–F45; Features A/B/C; Cautions 1–3 | Cleanest sourcing of the six |
 | A6 Compliance | A6-compliance.md | COMP-Fxx | F01–F31 + F09a/F13a/F17a/F20a | Primary CERT-In PDFs verbatim |
 | Human recon | (organizer meeting/page) | H1-Fxx | H1-F01 PS wording · H1-F02 template | Ground truth on Decode-SIH facts |
+| A7 Security hardening & IP | A7-security-hardening-and-ip-analysis.md | SEC-Fxx · EXT-Fxx · PAT-Fxx | SEC F01–F25 · EXT F01–F05 · PAT F01–F04 | Post-build (2–3 Sep 2026), not part of the Aug 2 idea-lock tournament; audits the real deployed codebase and adds patent/IP research the original pack never covered. Does not re-research A2/A6's ground. |
+
+---
+
+# SECTION 8 · POST-BUILD ADDENDUM (2–3 Sep 2026) — see A7 for full detail
+
+Sections 1–7 above remain the frozen idea-lock record, unedited, per this file's own history rule. This addendum only registers that new work happened after the product was actually built — it does not revise any locked claim, differentiation line, or rubric justification above.
+
+- A security audit of the real deployed codebase (not the idea) found and this session fixed the most serious issue of the whole build: any unauthenticated caller could forge hash-chained audit-ledger frames, including a fake regulatory sign-off under a real person's name. Closed with a fail-closed write-token guard; reads stay fully public, so the glass-box demo premise (§1.2, §1.4) is untouched. 18 lower-severity findings remain open and tracked in A7 §2; none of them contradicts any claim already locked in Sections 1–7.
+- Newer (Dec 2025–2026) published research independently reinforces, with fresh citations, the "mitigates, never solves" injection-defense discipline already locked at §1.4 item 2 / SAFE-F02 — it does not change that claim, only strengthens its evidence base. See A7 §3.
+- A first patent/IP novelty pass (not attempted in A1–A6) found a real, current legal pathway to file in India, but no single CITINEL mechanism is patentable in isolation — every component has adjacent prior art. The likely patentable surface, if any, is the specific five-mechanism combination, and the one open question that most affects that is unresolved (see A7 §5, PAT-F04). **No patent claim should be added to any pitch material until that question is resolved** — this addendum does not authorize any new IP claim on stage.
 
 **State file ends. Awaiting H2-Fxx feedback or "Phase B".**
