@@ -151,8 +151,7 @@
     handover:   { uses: ['incidentsSummary', 'audit', 'handover'],        scripted: [] },
     executive:  { uses: ['incidentsSummary', 'policy', 'ledgerVerify'], scripted: [] },
     settings:   { uses: ['connectors', 'source'],              scripted: [] },
-    demo:       { uses: ['incidentsSummary'],                                   scripted: ['guided walkthrough of the live screens'] },
-    narrow:     { uses: ['incidentsSummary', 'audit'],        scripted: [] }
+    demo:       { uses: ['incidentsSummary'],                                   scripted: ['guided walkthrough of the live screens'] }
   };
 
   /* ── One call path ────────────────────────────────────────────────────────────

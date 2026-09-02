@@ -42,11 +42,11 @@ valid document; they are not routes and must not be linked or indexed.
     Evidence.dc.html        Approvals.dc.html      Corpus.dc.html
     Eval.dc.html            Policy.dc.html         Compliance.dc.html
     Audit.dc.html           Handover.dc.html       Executive.dc.html
-    Settings.dc.html        Demo.dc.html           Narrow.dc.html
+    Settings.dc.html        Demo.dc.html
 
 ## Ship — runtime assets
 
-    support.js  role.js  ledger.js  route.js  reveal.js  motion.js
+    support.js  role.js  ledger.js  reveal.js  motion.js
     a11y.css  motion.css
     assets/lockup-white.png  assets/lockup-navy.png
     _ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/

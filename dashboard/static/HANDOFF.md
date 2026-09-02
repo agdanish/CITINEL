@@ -87,7 +87,6 @@ statutory-clock modelling beyond CERT-In) are cut from the pages or labelled not
 | `Executive.dc.html` | `incidentsSummary`, `policy`, `ledgerVerify` **· wired 2 Sep 2026** | — | — |
 | `Settings.dc.html` | `connectors` **· wired 2 Sep 2026** | — | inlets / header tank / cache sections hidden in live mode (no route) |
 | `Demo.dc.html` | — | — | guided walkthrough; acts labelled SCRIPTED FOR DEMONSTRATION, links carry `?id=` |
-| `Narrow.dc.html` | `incidentsSummary`, `audit` **· wired 2 Sep 2026** | — | the excepted panels are labelled not live |
 
 This table is the human-readable form of `API.PAGES` in `api.js`. **Keep them in step** — the
 on-screen badge is derived from the code, not from this file.
@@ -157,7 +156,6 @@ what makes the mismatch safe to ship rather than misleading.
 | `support.js` | template runtime for `.dc.html` · do not edit | loads React from unpkg |
 | `role.js` | Analyst/CISO depth · `localStorage` only | **deliberate MVP scope** — no real auth. Leave as-is |
 | `ledger.js` | in-session append-only ledger for UI continuity | replace reads with `audit` when wiring Audit |
-| `route.js` | below 720px redirects to `Narrow.dc.html` | relative `location.replace`, no config |
 | `reveal.js` | keyboard reveal for truncated values | none |
 | `motion.js` / `motion.css` | instrument animation | none |
 | `a11y.css` | focus, reflow, reduced motion, short-height layout | none |
@@ -210,7 +208,6 @@ wrap, which is the failure mode vendoring removes.
 - Every stylesheet, script, image and inter-page link is a **relative path**. No absolute or
   root-relative references except the two CDNs in §5.
 - Nav links are plain `<a href="Queue.dc.html">`; they work outside an iframe.
-- `route.js` uses `location.replace('Narrow.dc.html?...')` — relative, no origin assumption.
 - Removed from the project: `_audit/` (measurement harnesses), `uploads/` (source material for
   the brand crops in `assets/`), `screenshots/`. None were referenced by any page.
 - `CLAUDE.md` and `DEPLOY.md` are documentation. Do not mount them as routes.

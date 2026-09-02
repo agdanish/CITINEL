@@ -19,9 +19,9 @@ All colors, type, spacing, tokens come from the imported CITINEL Design System �
 
 ### Canonical page set
 
-Screens: `Entry`, `Shell`, `Overview`, `Queue`, `Replay`, `Confidence`, `Evidence`, `Approvals`, `Corpus`, `Eval`, `Policy`, `Compliance`, `Audit`, `Handover`, `Executive`, `Demo`, `Settings`, `Narrow` (all `*.dc.html`).
+Screens: `Entry`, `Shell`, `Overview`, `Queue`, `Replay`, `Confidence`, `Evidence`, `Approvals`, `Corpus`, `Eval`, `Policy`, `Compliance`, `Audit`, `Handover`, `Executive`, `Demo`, `Settings` (all `*.dc.html`).
 Shared components: `ExternalCitationChip.dc.html`, `ExternalProvenance.dc.html`, `StandardRef.dc.html`, `RuleRef.dc.html`, `StateNotice.dc.html`.
-Shared logic: `role.js` (analyst/CISO depth), `ledger.js`, `route.js`, `reveal.js`, `motion.js`, `api.js` (backend seam — see `HANDOFF.md`). Shared CSS: `a11y.css`, `motion.css`, `transitions.css` (page-to-page navigation only — a deliberate, Danish-approved exception to motion.css's own "no decorative animation" rule; see that file's header comment).
+Shared logic: `role.js` (analyst/CISO depth), `ledger.js`, `reveal.js`, `motion.js`, `api.js` (backend seam — see `HANDOFF.md`). Shared CSS: `a11y.css`, `motion.css`, `transitions.css` (page-to-page navigation only — a deliberate, Danish-approved exception to motion.css's own "no decorative animation" rule; see that file's header comment).
 No `_audit/`, `uploads/` or `screenshots/` folders exist — deleted, not archived.
 
 ### Standing artefact rules
@@ -30,3 +30,6 @@ Version-pin every standard citation (`StandardRef`), give every fired detection 
 ### Layout rule — section header rows
 A section header row that carries a prose subhead must be `flex-wrap:wrap`, with the last fixed item before the subhead taking `margin-right:auto` and the subhead on its own line via `flex:1 1 100%` plus a `max-width:110ch` measure. Never leave a two-sentence note as `flex:1` inside a `nowrap` row beside a wide display-face title — it collapses to a vertical ribbon and blows up the row height. This has been fixed on Corpus, Demo, Handover, Audit and Confidence; do not re-author the broken pattern.
 Assets: `assets/lockup-white.png`, `assets/lockup-navy.png`.
+
+### Narrow view: removed 2 Sep 2026
+`Narrow.dc.html` and `route.js` (the sub-720px width redirect) were deleted on Danish's explicit instruction. There is no separate narrow composition and no width-based routing any more: every screen renders itself at whatever width it gets. Do not reintroduce either without asking — this reverses an earlier decision that had kept the tour card, and it was made deliberately.
