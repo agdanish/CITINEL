@@ -323,14 +323,23 @@
     if (!root) return;
     var key = root.getAttribute('data-citinel-page');
     var v = verdictFor(key);
-    var host = root.querySelector(':scope > header') || root;
+    // Most screens carry the badge in their own top bar. Entry and Executive
+    // have no <header> (a two-column sign-in, and a printable board copy), so
+    // appending into the root's flow dropped the badge wherever the layout
+    // ended -- clipped against the bottom edge on Executive, confirmed live
+    // 2 Sep 2026. With no header to sit in, it floats in a fixed corner
+    // instead, which is legible on any layout and clipped by none.
+    var header = root.querySelector(':scope > header');
+    var host = header || root;
     var el = host.querySelector('[data-source-badge]');
     if (!el) {
       el = document.createElement('span');
       el.setAttribute('data-source-badge', '');
       el.style.cssText = 'flex:none;font-family:var(--ctn-font-display);font-size:7.5px;' +
         'letter-spacing:0.1em;padding:4px 8px;border-radius:3px;white-space:nowrap;' +
-        'color:var(--ctn-color-text-muted);cursor:help';
+        'color:var(--ctn-color-text-muted);cursor:help;' +
+        'background:var(--ctn-color-surface-panel)' +
+        (header ? '' : ';position:fixed;right:12px;bottom:12px;z-index:40');
       host.appendChild(el);
     }
     var isLive = v.tag.indexOf('LIVE') === 0;
