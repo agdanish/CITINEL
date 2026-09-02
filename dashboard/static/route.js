@@ -12,7 +12,13 @@
   var qs = new URLSearchParams(location.search);
   if (qs.get('force') === 'console') { mark(); return; }
 
-  var here = location.pathname.split('/').pop() || 'Overview.dc.html';
+  // A page name that doesn't look like one of ours (missing, a bare
+  // "undefined" from some future caller's unset variable, a directory,
+  // an API path) must never reach the handoff URL: Narrow's "OPEN ... ANYWAY"
+  // link is built directly from this value, and a bad one there is a dead
+  // link with no page behind it.
+  var here = location.pathname.split('/').pop() || '';
+  if (!/^[A-Za-z][\w-]*\.dc\.html$/.test(here)) here = 'Overview.dc.html';
   if (/^(Narrow|Entry)\.dc\.html$/.test(here)) return;
 
   if (window.innerWidth < FLOOR) {

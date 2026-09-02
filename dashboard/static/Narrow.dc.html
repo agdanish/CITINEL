@@ -26,17 +26,29 @@
 <script src="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/_ds_bundle.js"></script>
 <script src="role.js"></script>
 <script>
-// narrow-origin: opened in place of a console screen because the window is below 1280.
+// narrow-origin: opened in place of a console screen because the window is below 720.
 addEventListener('DOMContentLoaded', function () {
   var q = new URLSearchParams(location.search), from = q.get('from');
-  if (!from) return;
-  var name = from.replace('.dc.html', '');
+  // route.js only ever sends a name matching this shape; anything else (a
+  // stale cached page from before that guard existed, a hand-edited URL, a
+  // literal "undefined" from some future caller's unset variable) gets no
+  // handoff link rather than a dead one — the console floor line still tells
+  // the reader why they are here.
+  if (!from || !/^[A-Za-z][\w-]*\.dc\.html$/.test(from)) from = null;
+  var name = from ? from.replace('.dc.html', '') : null;
+  // window.innerWidth is read fresh here rather than trusting the query's
+  // "w": that value is stamped by route.js at the moment it redirected, which
+  // can race a viewport change already in flight (confirmed live: a resize
+  // applied by browser tooling immediately before navigation can hand route.js
+  // a transient 0) and would otherwise print a width nobody ever saw.
   var el = document.createElement('div');
   el.setAttribute('data-width-handoff', '');
   el.setAttribute('data-static', '');
-  el.innerHTML = '<span data-k>NARROW VIEW · ' + (q.get('w') || window.innerWidth) + 'px</span>' +
-    '<span data-m>opened instead of ' + name + ' — this width is below the console floor of 1280px.</span>' +
-    '<a href="' + from + '?force=console">OPEN ' + name.toUpperCase() + ' ANYWAY</a>';
+  el.innerHTML = '<span data-k>NARROW VIEW · ' + window.innerWidth + 'px</span>' +
+    (name
+      ? '<span data-m>opened instead of ' + name + ' — this width is below the console floor of 720px.</span>' +
+        '<a href="' + from + '?force=console">OPEN ' + name.toUpperCase() + ' ANYWAY</a>'
+      : '<span data-m>this width is below the console floor of 720px.</span>');
   var host = document.querySelector('[data-screen-label]') || document.body;
   host.insertBefore(el, host.firstChild);
 });
