@@ -1,0 +1,96 @@
+{
+  "generated_at": "2026-08-31T10:43:12.965546+00:00",
+  "scope": "deterministic layers only (Sigma + anomaly scoring)",
+  "swarm_evaluated": false,
+  "provenance": {
+    "detections_file": "data/cache/detections.jsonl",
+    "detections_sha256": "a418928641e94a3aa10649a65cccb905352fa8428c8352da896a119b1c1bd16b",
+    "anomalies_file": "data/cache/anomalies.jsonl",
+    "anomalies_sha256": "f1c49534fe6cbf986c3c5ef6a46633dac6e13915eab5f17addeb560c91ad10cb",
+    "attack_version": "v16.1"
+  },
+  "measured": [
+    {
+      "name": "sigma detections",
+      "value": 2701,
+      "unit": "detections"
+    },
+    {
+      "name": "anomaly escalations",
+      "value": 130,
+      "unit": "escalations"
+    },
+    {
+      "name": "detections from the single noisiest rule",
+      "value": 2366,
+      "unit": "",
+      "denominator": 2701,
+      "rate": 0.875972,
+      "note": "rule: First Time Seen Remote Named Pipe"
+    },
+    {
+      "name": "distinct rules that fired",
+      "value": 29,
+      "unit": "rules"
+    },
+    {
+      "name": "severity: high",
+      "value": 2597,
+      "unit": "",
+      "denominator": 2701,
+      "rate": 0.961496
+    },
+    {
+      "name": "severity: medium",
+      "value": 104,
+      "unit": "",
+      "denominator": 2701,
+      "rate": 0.038504
+    },
+    {
+      "name": "ATT&CK techniques observed (v16.1)",
+      "value": 29,
+      "unit": "",
+      "denominator": 823,
+      "rate": 0.035237,
+      "note": "observed in this corpus run; not a claim about total coverage"
+    },
+    {
+      "name": "hosts with >=1 detection",
+      "value": 3,
+      "unit": "hosts"
+    },
+    {
+      "name": "detection-set fingerprint",
+      "value": 0,
+      "unit": "sha256",
+      "note": "a47b8da3ac267809e1610d706c3f9b1a...  (re-running on the same corpus must reproduce this exactly)"
+    }
+  ],
+  "unmeasured": [
+    {
+      "name": "false-positive rate",
+      "status": "UNMEASURED",
+      "reason": "no labeled ground-truth corpus exists (evals/labeled/ is empty), so no detection can be classified as a true or false positive. The under-10% figure in the product is a TARGET and has never been measured; publishing a rate here without labels would fabricate it.",
+      "required_to_measure": "a labeled set: one JSONL row per detection in evals/labeled/ with {detection_id, verdict: 'tp'|'fp'} decided by a human analyst reviewing the raw evidence. See labeled/README.md for the schema."
+    },
+    {
+      "name": "true-positive / recall rate",
+      "status": "UNMEASURED",
+      "reason": "same missing precondition, plus recall additionally requires knowing which real attacks the corpus contains that CITINEL did NOT detect -- absent from any output by construction.",
+      "required_to_measure": "the labeled set above, plus an independently-sourced list of the attacks present in the corpus (BOTS v1 has published solutions that could seed this)."
+    },
+    {
+      "name": "cost per incident",
+      "status": "UNMEASURED",
+      "reason": "the agent swarm (Step 7) is not running, so no model tokens have been spent and there is no per-incident cost to measure.",
+      "required_to_measure": "a completed swarm run; AgentCall already records input/output tokens per call, so this becomes measurable the moment Step 7 executes."
+    },
+    {
+      "name": "verdict quality / citation accuracy",
+      "status": "UNMEASURED",
+      "reason": "requires the agent swarm (Step 7), which is blocked on an API key.",
+      "required_to_measure": "Step 7 running; the citation gate in agents/pipeline.py already records verified-vs-dropped claims, which is the natural input."
+    }
+  ]
+}

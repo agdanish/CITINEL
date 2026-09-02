@@ -52,7 +52,7 @@
       <a href="Entry.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">ENTRY</a>
           <a href="Narrow.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">NARROW</a>
 </nav>
-    <span style="flex:none;font-size:11.5px;color:var(--ctn-color-text-muted);font-variant-caps:all-small-caps;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:300px">sahyadri district cooperative bank · pune dc</span>
+    <span style="flex:none;font-size:11.5px;color:var(--ctn-color-text-muted);font-variant-caps:all-small-caps;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:300px">{{ orgNote }}</span>
     <span style="flex:none;font-family:var(--ctn-font-display);font-size:13px;color:var(--ctn-color-text-primary);font-variant-numeric:tabular-nums slashed-zero">{{ utc }} UTC</span>
   </header>
 
@@ -64,7 +64,7 @@
   <div style="display:flex;flex:1;min-height:0;min-width:0" data-reflow-band>
 
     <section data-reflow-rail data-primary-instrument style="width:clamp(274px, 12.29rem + 13.56vw, 392px);flex:none;box-sizing:border-box;border-right:1px solid var(--ctn-color-border-strong);background:var(--ctn-color-surface-panel);display:flex;flex-direction:column;min-height:0;overflow:hidden">
-      <div style="flex:none;padding:16px 22px 0;font-family:var(--ctn-font-display);font-size:10px;letter-spacing:0.14em;color:var(--ctn-color-text-muted)">MASTER STATUTORY COUNTDOWN · INC-0417</div>
+      <div style="flex:none;padding:16px 22px 0;font-family:var(--ctn-font-display);font-size:10px;letter-spacing:0.14em;color:var(--ctn-color-text-muted)">{{ masterTitle }}</div>
       <div style="flex:1;min-height:0;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:8px 0;position:relative;box-sizing:border-box;width:100%;max-width:min(100%, 360px);margin-inline:auto;container-type:inline-size">
         <svg data-radial-svg viewBox="0 0 360 360" style="width:100%;max-width:min(100%, 360px);max-height:100%;height:auto;aspect-ratio:1;min-width:0;display:block;flex:0 1 auto;margin-inline:auto">
           <circle cx="180" cy="180" r="158" fill="none" stroke="var(--ctn-color-border-hairline)" stroke-width="1"></circle>
@@ -81,7 +81,7 @@
       <div style="flex:none;padding:0 22px 8px;font-family:var(--ctn-font-display);font-size:10px;letter-spacing:0.14em;color:var(--ctn-color-text-muted)">EVERY RUNNING CLOCK</div>
       <div style="flex:none;max-height:210px;overflow-y:auto;padding:0 22px 14px;display:flex;flex-direction:column">
         <sc-for list="{{ clocks }}" as="c" hint-placeholder-count="4">
-          <a href="Compliance.dc.html" style="display:flex;align-items:center;gap:12px;padding:9px 0;border-top:1px solid var(--ctn-color-border-hairline);text-decoration:none;min-width:0">
+          <a href="{{ c.href }}" style="display:flex;align-items:center;gap:12px;padding:9px 0;border-top:1px solid var(--ctn-color-border-hairline);text-decoration:none;min-width:0">
             <svg width="26" height="26" viewBox="0 0 26 26" style="flex:none"><circle cx="13" cy="13" r="10" fill="none" stroke="var(--ctn-color-border-strong)" stroke-width="1.5"></circle><path d="{{ c.arc }}" fill="none" stroke="var(--ctn-color-clock)" stroke-width="3"></path></svg>
             <div style="flex:1;min-width:0">
               <div style="font-size:12.5px;color:var(--ctn-color-text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.reg }}</div>
@@ -97,7 +97,7 @@
       <div style="flex:none;display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;padding:14px 22px 10px;min-width:0">
         <span style="font-family:var(--ctn-font-display);font-size:10px;letter-spacing:0.14em;color:var(--ctn-color-text-muted);flex:none">AGENT FLEET</span>
         <span style="font-family:var(--ctn-font-display);font-size:11px;color:var(--ctn-color-text-primary);flex:none;margin-left:auto;white-space:nowrap">{{ fleetSummary }}</span>
-        <span data-token style="font-family:var(--ctn-font-mono);font-size:12px;color:var(--ctn-color-text-muted);flex:1 1 100%;min-width:0;max-width:110ch;line-height:1.4;text-wrap:pretty">trace amplitude is throughput this minute. flat trace: idle.</span>
+        <span data-token style="font-family:var(--ctn-font-mono);font-size:12px;color:var(--ctn-color-text-muted);flex:1 1 100%;min-width:0;max-width:110ch;line-height:1.4;text-wrap:pretty">{{ fleetCaption }}</span>
       </div>
       <div style="flex:1;min-height:0;overflow-y:auto;padding:0 22px 14px;display:flex;flex-direction:column;gap:8px">
         <sc-for list="{{ agents }}" as="a" hint-placeholder-count="7">
@@ -151,7 +151,7 @@
       </div>
 
       <div style="padding:16px 20px;border-bottom:1px solid var(--ctn-color-border-hairline)">
-        <div style="font-family:var(--ctn-font-display);font-size:10px;letter-spacing:0.14em;color:var(--ctn-color-text-muted)">AUTONOMY DIAL · DETENT {{ autonomyIdx }} OF 5</div>
+        <div style="font-family:var(--ctn-font-display);font-size:10px;letter-spacing:0.14em;color:var(--ctn-color-text-muted)">{{ dialTitle }}</div>
         <div style="display:flex;align-items:center;gap:16px;margin-top:12px;min-width:0">
           <div style="flex:none;display:flex;flex-direction:column;align-items:center;gap:5px">
             <svg width="118" height="118" viewBox="-7 -7 118 118" style="display:block">
@@ -189,13 +189,13 @@
             </sc-if>
             <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap">
               <a href="Policy.dc.html" style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:6px 11px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;color:var(--ctn-color-text-primary);text-decoration:none">RULEBOOK</a>
-              <button onClick="{{ reJustify }}" style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:6px 11px;border:1px {{ reJustifyStyle }} var(--ctn-color-border-strong);border-radius:6px;background:{{ reJustifyBg }};color:var(--ctn-color-text-primary);cursor:pointer">RE-JUSTIFY</button>
-              <button onClick="{{ autonomyDown }}" style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:6px 11px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;background:none;color:var(--ctn-color-text-primary);cursor:pointer">LOWER</button>
-              <button onClick="{{ autonomyUp }}" style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:6px 11px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;background:none;color:var(--ctn-color-text-primary);cursor:pointer">RAISE</button>
+              <button onClick="{{ reJustify }}" style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:6px 11px;border:1px {{ reJustifyStyle }} var(--ctn-color-border-strong);border-radius:6px;background:{{ reJustifyBg }};color:var(--ctn-color-text-primary);cursor:pointer">{{ reJustifyLabel }}</button>
+              <button onClick="{{ autonomyDown }}" style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:6px 11px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;background:none;color:var(--ctn-color-text-primary);cursor:pointer">{{ lowerLabel }}</button>
+              <button onClick="{{ autonomyUp }}" style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:6px 11px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;background:none;color:var(--ctn-color-text-primary);cursor:pointer">{{ raiseLabel }}</button>
             </div>
           </div>
         </div>
-        <div style="font-size:11px;color:var(--ctn-color-text-muted);margin-top:10px;line-height:1.45">every detent change is a ledger entry with the operator's name. a lapsed mandate steps the dial down on its own and records that too. filings need a separate signature.</div>
+        <div style="font-size:11px;color:var(--ctn-color-text-muted);margin-top:10px;line-height:1.45">{{ dialFooter }}</div>
       </div>
 
       <div style="padding:16px 20px;display:flex;flex-direction:column;min-height:0">
@@ -224,8 +224,8 @@
       </sc-for>
     </div>
     <div style="display:flex;align-items:center;gap:14px;padding:0 16px;border-left:1px solid var(--ctn-color-border-strong);flex:none">
-      <span data-motion-signal style="font-family:var(--ctn-font-mono);font-size:12px;color:var(--ctn-color-text-on-navy);white-space:nowrap">ingest {{ eps }} eps</span>
-      <span data-reveal style="font-family:var(--ctn-font-mono);font-size:12px;color:var(--ctn-color-text-on-navy);opacity:0.72;white-space:nowrap">OCSF 1.4.0 · sigma 3,000 @ 7f31c0d · ATT&amp;CK v16.1 · 214/823 mapped</span>
+      <span data-motion-signal style="font-family:var(--ctn-font-mono);font-size:12px;color:var(--ctn-color-text-on-navy);white-space:nowrap">{{ ingestNote }}</span>
+      <span data-reveal style="font-family:var(--ctn-font-mono);font-size:12px;color:var(--ctn-color-text-on-navy);opacity:0.72;white-space:nowrap">{{ pinsNote }}</span>
     </div>
   </div>
 </div>
@@ -234,11 +234,8 @@
 class Component extends DCLogic {
   constructor(p){
     super(p);
-    // Seed each channel from its OWN amplitude, not from zero. A zero seed plots
-    // exactly onto the drawn axis line, so for the first minute all seven traces
-    // read as flat — visually "no signal" — while the rows say RUNNING and the
-    // caption says a flat trace means idle. The instrument was contradicting its
-    // own legend on the landing screen.
+    // Authored fallback board: shown only when the service is not read (live === false).
+    // It narrates a fictional watch and never mixes with real records; the badge says DEMO DATA.
     const A = (id,name,state,doing,detail,rate,unit,amp)=>({
       id,name,state,doing,detail,rate,unit,amp,
       hist: Array.from({length:60}, ()=>
@@ -248,8 +245,6 @@ class Component extends DCLogic {
     });
     this.state = {
       now: Date.now(), eps: 2380, autonomy: 2, tick: 0,
-      // Anti-complacency: a detent is a mandate with an expiry, not a setting. Seeded so
-      // detent 3's 14-day mandate has ~2d 04h left — close enough to read as a live leash.
       mandateAt: Date.now() - (14*24 - 52)*3600*1000,
       raising: false, mandateReason: 'ransomware campaign active in the district cooperative sector',
       agents: [
@@ -268,13 +263,17 @@ class Component extends DCLogic {
         {t:'21:38:46', kind:'closed', id:'INC-0845', msg:'sender blocked, mailbox purged · ring complete'},
         {t:'21:37:02', kind:'closed', id:'ALR-99101', msg:'printer vlan port scan cited and closed'},
         {t:'21:35:40', kind:'actioned', id:'INC-0844', msg:'payout reversal executed by r. iyer'}
-      ]
+      ],
+      // live: null = reading · true = real records, policy, connectors and chains · false = authored fallback
+      live:null, liveError:null, rows:[], policy:null, connectors:null, chains:{}, source:null, verify:null
     };
   }
   componentDidMount(){
     this.base = Date.now();
+    const API = window.CITINEL_API;
     this.t = setInterval(()=>{
       this.setState(s=>{
+        if (s.live === true) return {now: Date.now(), tick: s.tick+1};
         const agents = s.agents.map(a=>{
           let v = 0;
           if(a.state==='running') v = a.amp*(0.55+Math.random()*0.45);
@@ -284,7 +283,6 @@ class Component extends DCLogic {
           const jitter = a.state==='failed'?0:Math.round((Math.random()-0.5)*(a.rate*0.12));
           return {...a, hist, live: Math.max(0, (a.id==='sentinel'? s.eps : a.rate + jitter))};
         });
-        // the lapse is real: when the mandate runs out the dial steps itself down
         const per = this.mandateH(s.autonomy) * 3600 * 1000;
         if(per && Date.now() - s.mandateAt > per){
           window.__ledgerSafe && window.__ledgerSafe({tag:'dial-lapse-'+Date.now(), kind:'DECISION', actor:'Scribe',
@@ -300,6 +298,17 @@ class Component extends DCLogic {
         return st;
       });
     }, 1000);
+    if (!API) { this.setState({live:false, liveError:'api.js not loaded'}); return; }
+    Promise.all([API.incidentsSummary(), API.policy(), API.connectors(), API.get('source', null, null, {probe:true})]).then(([inc, pol, con, src]) => {
+      if (!inc.ok || !pol.ok) { this.setState({live:false, liveError: inc.error || pol.error}); return; }
+      const rows = Array.isArray(inc.data) ? inc.data : [];
+      return Promise.all(rows.map(r => API.auditFor(r.incident_id))).then(chs => {
+        const chains = {}; rows.forEach((r, i) => { chains[r.incident_id] = chs[i].ok ? chs[i].data : []; });
+        this._d = null;
+        this.setState({live:true, rows, policy: pol.data, connectors: con.ok ? con.data : null, chains, source: src.ok ? src.data : null});
+        API.verifyLedger().then(v => { if (v.ok) this.setState({verify: v.data}); });
+      });
+    });
   }
   componentWillUnmount(){ clearInterval(this.t); }
   arc(cx,cy,r,frac){
@@ -312,6 +321,7 @@ class Component extends DCLogic {
     if(kind==='closed') return S([R.createElement('circle',{key:'i',cx:10,cy:10,r:4,fill:'var(--ctn-color-state-node)',stroke:'var(--ctn-color-state-stroke)',strokeWidth:1.4}), R.createElement('circle',{key:'o',cx:10,cy:10,r:8,fill:'none',stroke:'var(--ctn-color-state-cited)',strokeWidth:1.8})]);
     if(kind==='gated') return S(R.createElement('circle',{cx:10,cy:10,r:7,fill:'none',stroke:'var(--ctn-color-state-stroke)',strokeWidth:1.8,strokeDasharray:'3.5 3.5'}));
     if(kind==='actioned') return S(R.createElement('rect',{x:5,y:5,width:10,height:10,transform:'rotate(45 10 10)',fill:'var(--ctn-color-state-node)',stroke:'var(--ctn-color-state-stroke)',strokeWidth:2.2}));
+    if(kind==='cited') return S([R.createElement('circle',{key:'n',cx:10,cy:10,r:3.2,fill:'var(--ctn-color-state-node)',stroke:'var(--ctn-color-state-stroke)',strokeWidth:1.4}), R.createElement('path',{key:'a',d:'M 10 2.5 A 7.5 7.5 0 1 0 17.5 10',fill:'none',stroke:'var(--ctn-color-state-cited)',strokeWidth:1.9,strokeLinecap:'round'})]);
     return S(R.createElement('circle',{cx:10,cy:10,r:6,fill:'var(--ctn-color-state-node)',stroke:'var(--ctn-color-state-stroke)',strokeWidth:1.4}));
   }
   lamp(state){
@@ -321,7 +331,7 @@ class Component extends DCLogic {
       idle: {shape:'circle', fill:'none', stroke:'var(--ctn-color-text-muted)'},
       degraded: {shape:'triangle', fill:'var(--ctn-color-severity-high)', stroke:'var(--ctn-color-severity-high)'},
       failed: {shape:'square', fill:'var(--ctn-color-severity-critical)', stroke:'var(--ctn-color-severity-critical)'}
-    }[state];
+    }[state] || {shape:'circle', fill:'none', stroke:'var(--ctn-color-text-muted)'};
     const body = spec.shape==='circle'
       ? R.createElement('circle',{cx:9,cy:9,r:5.5,fill:spec.fill,stroke:spec.stroke,strokeWidth:1.6})
       : spec.shape==='triangle'
@@ -329,6 +339,185 @@ class Component extends DCLogic {
         : R.createElement('rect',{x:3,y:3,width:12,height:12,fill:spec.fill});
     return R.createElement('svg',{width:18,height:18,viewBox:'0 0 18 18'}, body);
   }
+  fmtN(n){ return Number(n || 0).toLocaleString('en-IN'); }
+  fmtAge(s){ s = Math.max(0, s); if (s >= 86400) return Math.floor(s/86400)+'d '+String(Math.floor(s%86400/3600)).padStart(2,'0')+'h'; return [3600,60,1].map(u=>String(Math.floor(s/u)%60).padStart(2,'0')).join(':'); }
+  ist(ts){ const d = new Date(ts); if (isNaN(d)) return '—'; return new Date(d.getTime()+330*60000).toISOString().slice(11,19); }
+  istDate(ts){ const d = new Date(ts); if (isNaN(d)) return '—'; return new Date(d.getTime()+330*60000).toISOString().slice(0,16).replace('T',' '); }
+
+  /* ── live: the board drawn from records, policy, connectors and the chains ─── */
+  liveDerived(){
+    const s = this.state;
+    if (this._d && this._dsrc === s.chains && this._drows === s.rows) return this._d;
+    const rows = s.rows, chains = s.chains, now = Date.now();
+    const frames = [];
+    Object.keys(chains).forEach(id => (chains[id] || []).forEach(e => { if (e.kind !== 'detection_added' && e.kind !== 'escalation_added') frames.push(e); }));
+    frames.sort((a, b) => (Date.parse(a.ts)||0) - (Date.parse(b.ts)||0));
+    const lastBy = actor => { let f = null; frames.forEach(e => { if (e.actor === actor) f = e; }); return f; };
+    const hourly = actor => { const H = Array.from({length: 24}, () => 0); frames.forEach(e => { if (e.actor !== actor) return; const age = (now - (Date.parse(e.ts)||0)) / 3600000; if (age >= 0 && age < 24) H[23 - Math.floor(age)] += 1; }); return H; };
+    const roles = [
+      {id:'sentinel', name:'Sentinel', actors:['sentinel'], doing: n => n ? 'fenced the evidence for a run' : 'no run started', unit:'runs · 24h'},
+      {id:'router', name:'Triage Router', actors:['router','triage-router'], doing: n => n ? 'routed the last run' : 'no triage call', unit:'calls · 24h'},
+      {id:'enrich', name:'Enrichment Squad', actors:['enricher'], doing: n => n ? 'reputation + osint lookups' : 'no lookup', unit:'calls · 24h'},
+      {id:'corr', name:'Correlator', actors:['correlator'], doing: n => n ? 'assembled the chain' : 'no correlation', unit:'calls · 24h'},
+      {id:'narrator', name:'Verdict Narrator', actors:['narrator'], doing: n => n ? 'wrote the cited verdict' : 'no verdict', unit:'calls · 24h'},
+      {id:'marshal', name:'Response Marshal', actors:['marshal','response-marshal'], doing: n => n ? 'drafted or executed' : 'nothing proposed', unit:'calls · 24h'},
+      {id:'gate', name:'Policy gate', actors:['policy-gate'], doing: n => n ? 'ruled on a proposal' : 'no ruling yet', unit:'rulings · 24h'}
+    ];
+    const agents = roles.map(r => {
+      let last = null; r.actors.forEach(a => { const f = lastBy(a); if (f && (!last || (Date.parse(f.ts)||0) > (Date.parse(last.ts)||0))) last = f; });
+      const hist = r.actors.map(hourly).reduce((acc, H) => acc.map((v, i) => v + H[i]), Array.from({length:24}, () => 0));
+      const n24 = hist.reduce((a, b) => a + b, 0);
+      const ageS = last ? Math.round((now - (Date.parse(last.ts)||0))/1000) : null;
+      const p = last ? (last.payload || {}) : {};
+      const bad = last && last.kind === 'tool_call' && (p.refused || p.usable === false || p.stop_reason === 'max_tokens');
+      const state = ageS != null && ageS < 300 ? 'running' : bad ? 'degraded' : 'idle';
+      const detail = !last ? 'nothing on the ledger for this role' :
+        last.kind === 'tool_call' ? (p.model_id ? p.model_id + ' · ' + this.fmtN(p.input_tokens) + ' in / ' + this.fmtN(p.output_tokens) + ' out · ' + p.stop_reason : (p.lookups ? p.lookups.length + ' lookup' + (p.lookups.length===1?'':'s') : 'tool call')) :
+        last.kind === 'decision' ? (p.lane ? 'lane ' + p.lane + ' · confidence ' + Number(p.confidence).toFixed(2) : p.decision || 'decision') :
+        last.kind === 'policy_check' ? p.action_class + ' · ' + p.verdict + ' · clause ' + p.clause_ref :
+        last.kind === 'action_executed' ? '[simulated] ' + p.action_class + ' → ' + p.target :
+        last.kind === 'state_transition' ? '→ ' + p.to + (p.claims_verified != null ? ' · ' + p.claims_verified + ' claims verified' : '') :
+        last.kind === 'note' ? this.fmtN(p.findings_examined) + ' of ' + this.fmtN(p.findings_total) + ' findings examined' : last.kind;
+      return { id: r.id, name: r.name, state, hist, rate: String(n24), unit: r.unit,
+        doing: (last ? this.istDate(last.ts) + ' IST · ' : '') + r.doing(!!last) + (last && last.case_id ? ' · ' + last.case_id : ''), detail };
+    });
+    const feed = frames.slice(-30).reverse().map(e => {
+      const p = e.payload || {};
+      const kind = e.kind === 'human_signoff' ? 'closed' : e.kind === 'policy_check' ? 'gated' : e.kind === 'action_executed' ? 'actioned' : e.kind === 'state_transition' ? (p.reopened ? 'caught' : 'cited') : 'caught';
+      const msg = e.kind === 'tool_call' ? e.actor + ' · ' + (p.model_id || (p.lookups ? 'lookups' : p.status || 'tool call')) + (p.output_tokens != null ? ' · ' + this.fmtN(p.output_tokens) + ' out' : '')
+        : e.kind === 'decision' ? e.actor + ' · ' + (p.lane ? 'lane ' + p.lane + ' ' + Number(p.confidence).toFixed(2) : p.decision || 'decision')
+        : e.kind === 'policy_check' ? 'gate · ' + p.action_class + ' · ' + p.verdict
+        : e.kind === 'action_executed' ? 'executed [simulated] ' + p.action_class + ' → ' + p.target
+        : e.kind === 'human_signoff' ? (p.approved ? 'approved by ' : 'signed off by ') + e.actor
+        : e.kind === 'state_transition' ? (p.reopened ? 'reopened by ' + e.actor + ' · ' + (p.reason || '') : 'state → ' + p.to)
+        : e.kind === 'note' ? 'run started · ' + this.fmtN(p.findings_examined) + '/' + this.fmtN(p.findings_total) + ' examined'
+        : e.kind === 'incident_opened' ? 'record opened' : e.kind;
+      return {t: this.ist(e.ts), kind, id: e.case_id, msg};
+    });
+    this._dsrc = s.chains; this._drows = s.rows;
+    this._d = {agents, feed, frames};
+    return this._d;
+  }
+  liveVals(){
+    const s = this.state, R = React, d = this.liveDerived();
+    const rows = s.rows, now = s.now;
+    const open = rows.filter(r => !/^closed/.test(String(r.state)));
+    const sev = k => rows.filter(r => r.severity === k).length;
+    const st = k => rows.filter(r => r.state === k).length;
+    const clocks = open.map(r => {
+      const opened = Date.parse(r.opened_ts), rem = isFinite(opened) ? Math.round((opened + 6*3600*1000 - now)/1000) : 0;
+      return {r, rem, opened};
+    }).sort((a, b) => a.rem - b.rem);
+    const master = clocks[0] || null;
+    const remainS = master ? master.rem : 0;
+    const breached = master ? remainS < 0 : false;
+    const ticks = [];
+    for(let i=0;i<24;i++){
+      const a = i/24*2*Math.PI - Math.PI/2, big = i%4===0;
+      ticks.push(R.createElement('line',{key:i,x1:180+(big?126:132)*Math.cos(a),y1:180+(big?126:132)*Math.sin(a),x2:180+138*Math.cos(a),y2:180+138*Math.sin(a),stroke:'var(--ctn-color-text-muted)',strokeWidth:big?2:1}));
+      if(big) ticks.push(R.createElement('text',{key:'t'+i,x:180+153*Math.cos(a),y:180+153*Math.sin(a)+4,textAnchor:'middle',fontFamily:'var(--ctn-font-mono)',fontSize:10,fill:'var(--ctn-color-text-muted)'},(i/4)+'h'));
+    }
+    const stateFg = {running:'var(--ctn-color-ok)', idle:'var(--ctn-color-text-muted)', degraded:'var(--ctn-color-severity-high)', failed:'var(--ctn-color-severity-critical-text)'};
+    const agents = d.agents.map(a => {
+      const max = Math.max(1, ...a.hist);
+      const pts = a.hist.map((v,i)=>`${(i/(a.hist.length-1)*300).toFixed(1)},${(20 - (v/max)*17).toFixed(1)}`).join(' ');
+      return { name: a.name, state: a.state.toUpperCase(), stateFg: stateFg[a.state], lamp: this.lamp(a.state),
+        edge: a.state==='running' ? 'var(--ctn-color-ok)' : a.state==='degraded' ? 'var(--ctn-color-severity-high)' : 'var(--ctn-color-border-strong)',
+        trace: pts, traceColor: a.state==='degraded' ? 'var(--ctn-color-severity-high)' : a.state==='idle' ? 'var(--ctn-color-text-disabled)' : 'var(--ctn-color-text-secondary)',
+        doing: a.doing, detail: a.detail, rate: a.rate, unit: a.unit };
+    });
+    const running = d.agents.filter(a => a.state === 'running').length, degraded = d.agents.filter(a => a.state === 'degraded').length;
+    const con = s.connectors || {}, rails = con.rails || {}, clauses = (s.policy && s.policy.clauses) || [];
+    const tiers = {shadow:0, assist:0, autonomous:0}; clauses.forEach(c => { tiers[c.tier] = (tiers[c.tier]||0) + 1; });
+    const dialPos = {shadow:0, assist:1, autonomous:2}[rails.default_autonomy] || 0;
+    const detents = [];
+    for(let i=0;i<3;i++){
+      const th = (-60 + i*60)*Math.PI/180;
+      const x1 = 52 + 34*Math.sin(th), y1 = 52 - 34*Math.cos(th), x2 = 52 + 40*Math.sin(th), y2 = 52 - 40*Math.cos(th);
+      detents.push(R.createElement('line',{key:i,x1,y1,x2,y2,stroke: i<=dialPos?'var(--ctn-color-text-primary)':'var(--ctn-color-text-muted)',strokeWidth:i===dialPos?2.5:1.5}));
+    }
+    const detentScale = ['SHADOW','ASSIST','AUTO'].map((label,i)=>({label, fg: i === dialPos ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-text-muted)', rule: i === dialPos ? '1.5px solid var(--ctn-color-text-primary)' : '1px solid transparent'}));
+    const lastTriage = {}; Object.keys(s.chains).forEach(id => (s.chains[id]||[]).forEach(e => { if (e.kind === 'decision' && (e.payload||{}).lane) lastTriage[id] = e.payload.lane; }));
+    const laneA = open.filter(r => lastTriage[r.incident_id] === 'auto_close').length;
+    const laneB = open.filter(r => lastTriage[r.incident_id] === 'escalate').length;
+    const runs = d.frames.filter(e => e.actor === 'sentinel' && e.kind === 'note').length;
+    const configured = (con.connectors || []).filter(c => c.configured).length, total = (con.connectors || []).length;
+    const source = s.source || {};
+    const withVerdict = rows.filter(r => r.swarm).length;
+    const verify = s.verify;
+    const breachedCount = clocks.filter(c => c.rem < 0).length;
+    return {
+      orgNote: (source.description || 'corpus') + (source.source ? ' · ' + source.source + ' corpus' : ''),
+      utc: new Date(now).toISOString().slice(11,19),
+      masterTitle: 'MASTER STATUTORY COUNTDOWN · ' + (master ? master.r.incident_id : 'NO OPEN RECORD'),
+      masterDigits: master ? (breached ? '+' : '') + this.fmtAge(Math.abs(remainS)) : '—',
+      masterArc: this.arc(180,180,138, master ? (breached ? 1 : 1 - remainS/(6*3600)) : 0), masterTicks: ticks,
+      masterLabel: master ? (breached ? 'CERT-IN · WINDOW CLOSED' : 'CERT-IN · REMAINING') : 'CERT-IN · NOTHING OPEN',
+      masterFg: breached ? 'var(--ctn-color-severity-critical-text)' : 'var(--ctn-color-clock)',
+      masterDigits2: master ? (breached ? '+' : '') + this.fmtAge(Math.abs(remainS)) : '—',
+      masterSub: master ? (breached ? 'six hours from detection ' + this.istDate(master.r.opened_ts) + ' IST · filing is late, not pending' : 'of 06:00:00 from detection ' + this.istDate(master.r.opened_ts) + ' IST') : 'no open incident carries a clock',
+      clocks: clocks.map(c => ({reg: 'CERT-In · 6h report', inc: c.r.incident_id, due: 'due ' + this.istDate(new Date(c.opened + 6*3600*1000).toISOString()) + ' IST', left: (c.rem < 0 ? '+' : '') + this.fmtAge(Math.abs(c.rem)), arc: this.arc(13,13,10, c.rem < 0 ? 1 : 1 - c.rem/(6*3600)), href: 'Compliance.dc.html?id=' + c.r.incident_id})),
+      fleetCaption: 'trace: this role\'s ledger frames over the last 24 hours, by hour · flat trace: nothing recorded',
+      fleetSummary: running + ' running · ' + degraded + ' degraded · ' + (d.agents.length - running - degraded) + ' idle · ' + runs + ' swarm run' + (runs===1?'':'s') + ' on the ledger',
+      agents,
+      shortcuts: [
+        {label:'ALERT QUEUE', href:'Queue.dc.html'},{label:'GLASS-BOX REPLAY', href:'Replay.dc.html?id=' + (master ? master.r.incident_id : 'INC-0417')},
+        {label:'THE GATE', href:'Approvals.dc.html'},{label:'REGULATORY CLOCKS', href:'Compliance.dc.html' + (master ? '?id=' + master.r.incident_id : '')},
+        {label:'AUDIT LEDGER', href:'Audit.dc.html'},{label:'SHIFT HANDOVER', href:'Handover.dc.html'},
+        {label:'BOARD COPY', href:'Executive.dc.html'},{label:'CONNECTORS', href:'Settings.dc.html'}
+      ],
+      lanes: [
+        {tag:'LANE A · AUTO-CLOSE', count:String(laneA).padStart(2,'0'), name:'triage lane auto_close', sub:'the router explained it without the swarm', border:'var(--ctn-color-border-hairline)', href:'Queue.dc.html'},
+        {tag:'LANE B · ESCALATE', count:String(laneB).padStart(2,'0'), name:'triage lane escalate', sub:'the swarm investigated; humans decide at the gate', border:'var(--ctn-color-text-primary)', href:'Approvals.dc.html'}
+      ],
+      laneStats: [
+        {v:String(st('caught')).padStart(2,'0'), k:'caught'},{v:String(st('cited')).padStart(2,'0'), k:'cited'},{v:String(st('gated')).padStart(2,'0'), k:'gated'},{v:String(st('actioned')).padStart(2,'0'), k:'actioned'},{v:String(st('closed')+st('closed_benign')).padStart(2,'0'), k:'closed'},{v:String(withVerdict).padStart(2,'0'), k:'with a saved verdict'}
+      ],
+      dialTitle: 'AUTONOMY DIAL · DEFAULT ' + String(rails.default_autonomy || 'shadow').toUpperCase() + ' · PER CLASS IN THE POLICY',
+      autonomyIdx: String(dialPos+1), autonomyAngle: (-60 + dialPos*60).toFixed(1),
+      autonomyDetents: detents, detentScale,
+      autonomyName: String(rails.default_autonomy || 'shadow').toUpperCase() + ' BY DEFAULT · ' + tiers.autonomous + ' AUTONOMOUS · ' + tiers.assist + ' ASSIST · ' + tiers.shadow + ' SHADOW',
+      autonomyDesc: 'the dial is set per action class in the policy file' + (s.policy ? ' (' + s.policy.name + ' v' + s.policy.version + ', sha256 ' + String(s.policy.policy_sha256).slice(0,12) + '…)' : '') + '. raising a tier never lowers a safeguard: approval:always clauses need a human at every position.',
+      mandateArc: '', mandateFg: 'var(--ctn-color-text-muted)', mandateLabel: 'ENDPOINTS', mandateLeft: rails.simulated_endpoints_only === false ? 'REAL' : 'SIMULATED ONLY',
+      mandateNote: 'every response action runs against simulated endpoints (PIPE-F09) · ' + configured + ' of ' + total + ' connectors configured on this deployment · auto-swarm ' + (rails.auto_swarm ? 'on, cap ' + rails.auto_swarm_max_per_cycle : 'off'),
+      raising: false, raiseTitle: '', raiseReasons: [], cancelRaise: ()=>{},
+      reJustify: ()=>{}, reJustifyStyle: 'dashed', reJustifyBg: 'transparent', reJustifyLabel: 'RULEBOOK IS THE DIAL',
+      autonomyDown: ()=>{}, autonomyUp: ()=>{}, lowerLabel: 'READ-ONLY', raiseLabel: 'CHANGE BY COMMIT',
+      dialFooter: 'this console cannot turn the dial: the policy file is the source of truth and every change is a commit with a name and a diff. what the console can do is show which clause governs each proposal on the approval card.',
+      feed: d.feed.map(e=>({...e, glyph:this.glyph(e.kind)})),
+      strip: [
+        {k:'CRITICAL', v:String(sev('critical')).padStart(2,'0'), color: sev('critical') ? 'var(--ctn-color-severity-critical-text)' : 'rgba(255,255,255,0.72)'},
+        {k:'HIGH', v:String(sev('high')).padStart(2,'0'), color:'var(--ctn-color-text-on-navy)'},
+        {k:'MEDIUM', v:String(sev('medium')).padStart(2,'0'), color:'var(--ctn-color-text-on-navy)'},
+        {k:'LOW', v:String(sev('low')).padStart(2,'0'), color:'rgba(255,255,255,0.72)'},
+        {k:'OPEN', v:String(open.length).padStart(2,'0'), color:'var(--ctn-color-text-on-navy)'},
+        {k:'WITH VERDICT', v:String(withVerdict).padStart(2,'0'), color:'var(--ctn-color-text-on-navy)'},
+        {k:'LEDGER', v: verify ? (verify.intact ? 'INTACT' : 'BROKEN') : '…', color: verify && !verify.intact ? 'var(--ctn-color-severity-critical-text)' : 'var(--ctn-color-text-on-navy)'},
+        {k:'WINDOWS BREACHED', v:String(breachedCount).padStart(2,'0'), color: breachedCount ? 'var(--ctn-color-severity-critical-text)' : 'rgba(255,255,255,0.72)'}
+      ],
+      ingestNote: 'replay corpus · ' + this.fmtN(rows.reduce((n, r) => n + (r.finding_count || 0), 0)) + ' findings on ' + rows.length + ' record' + (rows.length===1?'':'s'),
+      pinsNote: 'OCSF 1.9.0 · sigma 3,302 @ r2026-07-01 · ATT&CK v16.1 · ' + new Set(rows.reduce((a, r) => a.concat(r.techniques || []), [])).size + ' techniques observed',
+      noticeOn: breachedCount > 0 || degraded > 0,
+      noticeKind: breachedCount > 0 ? 'breached' : 'degraded',
+      noticeTitle: breachedCount > 0 ? 'CERT-IN WINDOW CLOSED · ' + breachedCount + ' OPEN RECORD' + (breachedCount===1?'':'S') + ' UNFILED' : 'A SWARM CALL ENDED BADLY',
+      noticeMeta: breachedCount > 0 && master ? 'closed ' + this.fmtAge(Math.abs(remainS)) + ' ago on ' + master.r.incident_id : 'see the fleet rows marked degraded',
+      noticeBody: breachedCount > 0 ? 'The six-hour window is measured from the moment CITINEL opened each record. These records are a corpus replay reopened for re-investigation, so their windows closed long before this session; the clocks show that rather than restarting.' : 'The last frame for a role shows a refusal or a truncated call. The pipeline degrades to a partial run and says so; nothing is fabricated to fill the gap.',
+      noticeConsequence: breachedCount > 0 ? 'A late filing is still the bank\'s to make; the compliance desk drafts it and a named human signs. Nothing here files anything.' : 'Re-run the swarm from the replay screen once the cause is understood; every attempt stays on the ledger.',
+      noticeAction: breachedCount > 0 ? 'OPEN THE DESK' : 'OPEN THE REPLAY', noticeHref: breachedCount > 0 && master ? 'Compliance.dc.html?id=' + master.r.incident_id : 'Replay.dc.html'
+    };
+  }
+  loadingVals(){
+    const muted = 'var(--ctn-color-text-muted)';
+    return {
+      orgNote: 'reading the board from citinel-web', utc: new Date(Date.now()).toISOString().slice(11,19), masterTitle: 'MASTER STATUTORY COUNTDOWN', masterDigits: '—', masterArc: '', masterTicks: [], masterLabel: 'READING', masterFg: muted, masterDigits2: '··', masterSub: 'records, policy, connectors and chains on their way',
+      clocks: [], fleetCaption: 'reading the ledger', fleetSummary: 'reading…', agents: [], shortcuts: [], lanes: [], laneStats: [],
+      dialTitle: 'AUTONOMY DIAL', autonomyIdx: '·', autonomyAngle: '0', autonomyDetents: [], detentScale: [], autonomyName: 'READING', autonomyDesc: '', mandateArc: '', mandateFg: muted, mandateLabel: '', mandateLeft: '', mandateNote: '',
+      raising: false, raiseTitle: '', raiseReasons: [], cancelRaise: ()=>{}, reJustify: ()=>{}, reJustifyStyle: 'dashed', reJustifyBg: 'transparent', reJustifyLabel: '…', autonomyDown: ()=>{}, autonomyUp: ()=>{}, lowerLabel: '…', raiseLabel: '…', dialFooter: '',
+      feed: [], strip: [], ingestNote: 'reading…', pinsNote: '', noticeOn: false, noticeKind: 'offline', noticeTitle: '', noticeMeta: '', noticeBody: '', noticeConsequence: '', noticeAction: '', noticeHref: '#'
+    };
+  }
+
+  /* ── authored fallback ───────────────────────────────────────────────────── */
   baseVals(){
     const s = this.state, base = this.base || s.now;
     const f = x=>{x=Math.max(0,x);return [3600,60,1].map(u=>String(Math.floor(x/u)%60).padStart(2,'0')).join(':');};
@@ -355,22 +544,14 @@ class Component extends DCLogic {
     const running = s.agents.filter(a=>a.state==='running').length;
     const detents = [];
     for(let i=0;i<5;i++){
-      const ang = (-100 + i*50)*Math.PI/180 - Math.PI/2 + Math.PI/2;
       const th = (-100 + i*50)*Math.PI/180;
       const x1 = 52 + 34*Math.sin(th), y1 = 52 - 34*Math.cos(th), x2 = 52 + 40*Math.sin(th), y2 = 52 - 40*Math.cos(th);
       detents.push(R.createElement('line',{key:i,x1,y1,x2,y2,stroke: i<=s.autonomy?'var(--ctn-color-text-primary)':'var(--ctn-color-text-muted)',strokeWidth:i===s.autonomy?2.5:1.5}));
     }
-    // Detent names live in DOM type, not in the SVG. Inside the viewBox their size is
-    // in user units, so legibility was locked to the dial's rail-derived render width —
-    // 6 units at 118px is 6.00px, and no numeric value fixes that class of bug. These
-    // labels replaced five explanatory paragraphs, so they are load-bearing and have to
-    // be readable at the type ramp's own scale.
     const detentScale = ['OBS','FP','LOW','MED','HIGH'].map((label,i)=>({
-      label,
-      fg: i === s.autonomy ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-text-muted)',
+      label, fg: i === s.autonomy ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-text-muted)',
       rule: i === s.autonomy ? '1.5px solid var(--ctn-color-text-primary)' : '1px solid transparent'
     }));
-    // the scale on the dial carries the positions; each line states its ceiling
     const modes = [
       ['OBSERVE ONLY','contains nothing. every disposition is a human keystroke.'],
       ['CITE AND CLOSE FP','closes on a benign citation. contains nothing.'],
@@ -379,15 +560,18 @@ class Component extends DCLogic {
       ['CONTAIN HIGH','the ceiling. critical needs a human at every detent.']
     ];
     return {
+      orgNote: 'sahyadri district cooperative bank · pune dc',
       utc: new Date(s.now).toISOString().slice(11,19), eps: String(s.eps),
+      masterTitle: 'MASTER STATUTORY COUNTDOWN · INC-0417',
       masterDigits: f(remainS), masterArc: this.arc(180,180,138, 1 - remainS/(6*3600)),
       masterHand: ((1 - remainS/(6*3600))*360).toFixed(2), masterTicks: ticks,
       clocks: [
-        {reg:'RBI · 2–6h advisory', inc:'INC-0417', due:'due 01:03 IST', left:f(remainS-3*3600), arc:this.arc(13,13,10, 1-(remainS-3*3600)/(6*3600))},
-        {reg:'NPCI · UPI fraud flag', inc:'INC-0417', due:'due 22:30 IST', left:f(42*60+(remainS%60)), arc:this.arc(13,13,10, 1-(42*60)/(6*3600))},
-        {reg:'RBI · 24h detailed report', inc:'INC-0846', due:'due 21:03 +1d', left:f(remainS+14*3600), arc:this.arc(13,13,10, 0.28)},
-        {reg:'CERT-In · 6h report', inc:'INC-0417', due:'due 03:03 IST', left:f(remainS), arc:this.arc(13,13,10, 1-remainS/(6*3600))}
+        {reg:'RBI · 2–6h advisory', inc:'INC-0417', due:'due 01:03 IST', left:f(remainS-3*3600), arc:this.arc(13,13,10, 1-(remainS-3*3600)/(6*3600)), href:'Compliance.dc.html'},
+        {reg:'NPCI · UPI fraud flag', inc:'INC-0417', due:'due 22:30 IST', left:f(42*60+(remainS%60)), arc:this.arc(13,13,10, 1-(42*60)/(6*3600)), href:'Compliance.dc.html'},
+        {reg:'RBI · 24h detailed report', inc:'INC-0846', due:'due 21:03 +1d', left:f(remainS+14*3600), arc:this.arc(13,13,10, 0.28), href:'Compliance.dc.html'},
+        {reg:'CERT-In · 6h report', inc:'INC-0417', due:'due 03:03 IST', left:f(remainS), arc:this.arc(13,13,10, 1-remainS/(6*3600)), href:'Compliance.dc.html'}
       ],
+      fleetCaption: 'trace amplitude is throughput this minute. flat trace: idle.',
       fleetSummary: running+' running · 1 degraded · 1 idle',
       agents,
       shortcuts: [
@@ -403,9 +587,12 @@ class Component extends DCLogic {
       laneStats: [
         {v:'412', k:'caught · 24h'},{v:'61', k:'cited · 24h'},{v:'06', k:'actioned · 24h'},{v:'59', k:'closed · 24h'},{v:'41s', k:'median catch to gate'}
       ],
+      dialTitle: 'AUTONOMY DIAL · DETENT ' + String(s.autonomy+1) + ' OF 5',
       autonomyIdx: String(s.autonomy+1), autonomyAngle: (-100 + s.autonomy*50).toFixed(1),
       autonomyDetents: detents, detentScale, autonomyName: modes[s.autonomy][0], autonomyDesc: modes[s.autonomy][1],
       autonomyDown: ()=>this.setState(x=>({autonomy: Math.max(0, x.autonomy-1), mandateAt: Date.now(), raising:false})),
+      lowerLabel: 'LOWER', raiseLabel: 'RAISE', reJustifyLabel: 'RE-JUSTIFY',
+      dialFooter: 'every detent change is a ledger entry with the operator\'s name. a lapsed mandate steps the dial down on its own and records that too. filings need a separate signature.',
       ...this.mandateVals(),
       feed: s.feed.map(e=>({...e, glyph:this.glyph(e.kind)})),
       strip: [
@@ -417,16 +604,18 @@ class Component extends DCLogic {
         {k:'LANE B AT GATE', v:'02', color:'var(--ctn-color-text-on-navy)'},
         {k:'AGENTS DEGRADED', v:'01', color:'var(--ctn-color-text-on-navy)'},
         {k:'WINDOWS BREACHED', v:'00', color:'rgba(255,255,255,0.72)'}
-      ]
+      ],
+      ingestNote: 'ingest ' + s.eps + ' eps',
+      pinsNote: 'OCSF 1.4.0 · sigma 3,000 @ 7f31c0d · ATT&CK v16.1 · 214/823 mapped'
     };
   }
-
   stateVals(b){
     let m = 'normal';
     try{ m = new URLSearchParams(window.location.search).get('state') || 'normal'; }catch(e){}
     const f = x=>[3600,60,1].map(u=>String(Math.floor(x/u)%60).padStart(2,'0')).join(':');
     const base = {noticeOn:false, masterLabel:'CERT-IN · REMAINING', masterFg:'var(--ctn-color-clock)',
-      masterDigits2: b.masterDigits, masterSub:'of 06:00:00 · filing due 03:03 IST'};
+      masterDigits2: b.masterDigits, masterSub:'of 06:00:00 · filing due 03:03 IST',
+      noticeKind:'offline', noticeTitle:'', noticeMeta:'', noticeBody:'', noticeConsequence:'', noticeAction:'', noticeHref:'#'};
     if(m === 'offline') return Object.assign(base, {
       noticeOn:true, noticeKind:'offline',
       noticeTitle:'INGEST OFFLINE · THIS BOARD IS STALE',
@@ -450,18 +639,12 @@ class Component extends DCLogic {
       noticeBody:'The six-hour window expired with the draft sealed but unfiled. This is no longer a countdown and the gold has been withdrawn from the dial. Nothing is left to run out.',
       noticeConsequence:'The breach is itself reportable and is already on the ledger. The compliance officer must file late with a covering note; the quarter\'s statutory record moves from 31/31 to 31/32.',
       noticeAction:'OPEN THE DESK', noticeHref:'Compliance.dc.html?state=breached',
-      masterLabel:'CERT-IN · WINDOW CLOSED',
-      masterFg:'var(--ctn-color-text-primary)',
-      masterDigits2:'+'+f(41*60+12),
+      masterLabel:'CERT-IN · WINDOW CLOSED', masterFg:'var(--ctn-color-text-primary)', masterDigits2:'+'+f(41*60+12),
       masterSub:'overdue since 03:03 IST · filing is now late, not pending'
     });
     return base;
   }
-  // Mandate decay. A dial that holds its position indefinitely trains an operator to stop
-  // looking at it. This one is a vigilance control: every detent above OBSERVE carries a
-  // review period that shortens as autonomy rises, and when it lapses the dial steps itself
-  // down and records the lapse. Autonomy has to be re-argued, not merely once granted.
-  mandateH(i){ return [0, 720, 336, 168, 72][i]; }   // observe · 30d · 14d · 7d · 3d
+  mandateH(i){ return [0, 720, 336, 168, 72][i]; }
   mandateVals(){
     const s = this.state, per = this.mandateH(s.autonomy) * 3600 * 1000;
     if(!per) return {
@@ -489,28 +672,29 @@ class Component extends DCLogic {
       this.setState(x=>({autonomy: Math.min(4, x.autonomy+1), mandateAt: Date.now(), raising:false, mandateReason:label}));
     }}));
     return {
-      mandateArc: this.arc(52, 52, 47, Math.min(0.999, frac)),
-      mandateFg: fg,
+      mandateArc: this.arc(52, 52, 47, Math.min(0.999, frac)), mandateFg: fg,
       mandateLabel: lapsed ? 'MANDATE LAPSED' : 'MANDATE LAPSES IN',
       mandateLeft: lapsed ? 'STEPPING DOWN' : (d > 0 ? d+'d '+String(h).padStart(2,'0')+'h' : String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0')),
       mandateNote: lapsed
         ? 'The '+this.mandateH(s.autonomy)/24+'-day mandate expired. The dial reverts one detent and the lapse goes on the ledger. Nobody has to notice for it to happen.'
         : 'Held on: '+s.mandateReason+'. Re-justify before it lapses or the dial steps down on its own.',
-      raising: s.raising,
-      reJustifyStyle: near ? 'solid' : 'dashed',
-      reJustifyBg: near ? 'var(--ctn-color-surface-raised)' : 'transparent',
+      raising: s.raising, reJustifyStyle: near ? 'solid' : 'dashed', reJustifyBg: near ? 'var(--ctn-color-surface-raised)' : 'transparent',
       reJustify: ()=>{
         window.__ledgerSafe && window.__ledgerSafe({tag:'dial-rj-'+Date.now(), kind:'HUMAN', actor:'a.deshmukh · L2',
           record:'action=REJUSTIFY_AUTONOMY detent='+(s.autonomy+1)+' mandate_h='+this.mandateH(s.autonomy)+' justification="'+s.mandateReason+'"'});
         this.setState({mandateAt: Date.now()});
       },
       cancelRaise: ()=>this.setState({raising:false}),
-      raiseTitle: 'RAISING AUTONOMY NEEDS A REASON ON THE RECORD',
-      raiseReasons: reasons,
+      raiseTitle: 'RAISING AUTONOMY NEEDS A REASON ON THE RECORD', raiseReasons: reasons,
       autonomyUp: ()=>this.setState({raising:true})
     };
   }
-  renderVals(){ const b = this.baseVals(); return Object.assign({}, b, this.stateVals(b)); }
+  renderVals(){
+    const s = this.state;
+    if (s.live === null) return this.loadingVals();
+    if (s.live === true) return this.liveVals();
+    const b = this.baseVals(); return Object.assign({}, b, this.stateVals(b));
+  }
 }
 </script>
 </body>

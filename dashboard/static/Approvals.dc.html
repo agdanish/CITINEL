@@ -59,7 +59,7 @@
       <button onClick="{{ setCiso }}" style="font-family:var(--ctn-font-display);font-size:8.5px;letter-spacing:0.1em;padding:6px 11px;border:none;border-radius:4px;cursor:pointer;background:{{ cisoBg }};color:{{ cisoFg }}">CISO</button>
     </div>
     <span style="flex:none;font-size:11.5px;color:var(--ctn-color-text-muted);font-variant-caps:all-small-caps;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:260px">{{ enteredFrom }}</span>
-    <span style="flex:none;font-family:var(--ctn-font-mono);font-size:12px;color:var(--ctn-color-text-secondary);white-space:nowrap">on duty: a. deshmukh · L2</span>
+    <span style="flex:none;font-family:var(--ctn-font-mono);font-size:12px;color:var(--ctn-color-text-secondary);white-space:nowrap">{{ onDuty }}</span>
   </header>
 
   <div style="display:flex;flex:1;min-height:0;min-width:0" data-reflow-band>
@@ -70,7 +70,7 @@
           <span style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.14em;color:var(--ctn-color-text-muted)">SHOT QUEUE</span>
           <span style="font-family:var(--ctn-font-display);font-size:18px;color:var(--ctn-color-text-primary);font-variant-numeric:tabular-nums slashed-zero;margin-left:auto">{{ pendingCount }}</span>
         </div>
-        <div style="font-size:11px;color:var(--ctn-color-text-muted);margin-top:3px;line-height:1.4">gated actions wait here. nothing in this list has fired.</div>
+        <div style="font-size:11px;color:var(--ctn-color-text-muted);margin-top:3px;line-height:1.4">{{ queueNote }}</div>
       </div>
       <div style="flex:1;min-height:0;overflow-y:auto;padding:0 12px 12px;display:flex;flex-direction:column;gap:7px">
         <sc-for list="{{ queue }}" as="q" hint-placeholder-count="5">
@@ -88,7 +88,7 @@
           </button>
         </sc-for>
       </div>
-      <div style="flex:none;border-top:1px solid var(--ctn-color-border-hairline);padding:11px 16px;font-size:11px;color:var(--ctn-color-text-muted);line-height:1.5">reversible actions fire on their own and post a rollback token. consequential ones cannot fire without a name on this card.</div>
+      <div style="flex:none;border-top:1px solid var(--ctn-color-border-hairline);padding:11px 16px;font-size:11px;color:var(--ctn-color-text-muted);line-height:1.5">{{ railNote }}</div>
     </aside>
 
     <main style="flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;overflow:hidden">
@@ -112,7 +112,7 @@
           <div style="flex:1;min-height:0;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:4px 0;position:relative">
             <svg data-radial-svg viewBox="0 0 460 460" style="width:100%;max-width:min(100%, 460px);max-height:100%;height:auto;aspect-ratio:1;min-width:0;display:block;flex:0 1 auto;margin-inline:auto">
               <circle cx="230" cy="230" r="{{ capR }}" fill="none" stroke="var(--ctn-color-border-strong)" stroke-width="2" stroke-dasharray="6 5"></circle>
-              <text x="230" y="{{ capLabelY }}" text-anchor="middle" font-family="var(--ctn-font-display)" font-size="9" letter-spacing="1.6" fill="var(--ctn-color-text-muted)">OPA BLAST CAP · {{ act.cap }} NODES</text>
+              <text x="230" y="{{ capLabelY }}" text-anchor="middle" font-family="var(--ctn-font-display)" font-size="9" letter-spacing="1.6" fill="var(--ctn-color-text-muted)">{{ capLabel }}</text>
               <g>{{ ringShapes }}</g>
               <g>{{ nodeDots }}</g>
               <circle cx="230" cy="230" r="46" fill="var(--ctn-color-surface-panel)" stroke="var(--ctn-color-border-strong)" stroke-width="1.5"></circle>
@@ -121,7 +121,7 @@
       <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;gap:2px">
         <div style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.16em;color:var(--ctn-color-text-muted);text-align:center"></div>
         <div style="font-family:var(--ctn-font-display);font-size:30px;line-height:1;color:{{ totalFg }};font-variant-numeric:tabular-nums slashed-zero">{{ totalNodes }}</div>
-        <div style="font-family:var(--ctn-font-mono);font-size:9px;color:var(--ctn-color-text-muted);text-align:center">nodes touched · {{ capPct }} of cap</div>
+        <div style="font-family:var(--ctn-font-mono);font-size:9px;color:var(--ctn-color-text-muted);text-align:center">{{ capNote }}</div>
       </div>
           </div>
           <div style="flex:none;display:flex;gap:16px;flex-wrap:wrap;padding:0 0 10px;min-width:0">
@@ -175,7 +175,7 @@
             </sc-if>
             <div style="margin-top:7px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;min-width:0">
               <x-import component-from-global-scope="CITINELDesignSystem_fdfd66.CitationChip" locator="{{ act.decisionLocator }}" size="sm" hint-size="220px,22px"></x-import>
-              <dc-import name="StandardRef" standard="OPA" version="rego v1" locator="{{ traceRef }}" size="sm" hint-size="280px,24px"></dc-import>
+              <dc-import name="StandardRef" standard="{{ traceStandard }}" version="{{ traceVersion }}" locator="{{ traceRef }}" size="sm" hint-size="280px,24px"></dc-import>
               <button onClick="{{ toggleTrace }}" style="font-family:var(--ctn-font-display);font-size:8.5px;letter-spacing:0.1em;padding:6px 10px;border:1px {{ traceStyle }} var(--ctn-color-border-strong);border-radius:6px;background:none;color:var(--ctn-color-text-primary);cursor:pointer;white-space:nowrap">{{ traceLabel }}</button>
             </div>
             <sc-if value="{{ traceOpen }}" hint-placeholder-val="{{ false }}">
@@ -230,7 +230,7 @@
             </div>
             <div style="padding:8px 13px;border-top:1px solid var(--ctn-color-border-hairline);font-size:11px;color:var(--ctn-color-text-muted);line-height:1.45;text-wrap:pretty">{{ intentNote }}</div>
           </div>
-          <a href="Replay.dc.html?at={{ act.at }}" style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:9px 12px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;color:var(--ctn-color-text-primary);text-decoration:none;text-align:center">SEE WHY · REPLAY AT THE PROPOSAL</a>
+          <a href="{{ replayHref }}" style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:9px 12px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;color:var(--ctn-color-text-primary);text-decoration:none;text-align:center">SEE WHY · REPLAY AT THE PROPOSAL</a>
         </section>
       </div>
 
@@ -297,9 +297,9 @@
               </div>
             </div>
             <span style="font-family:var(--ctn-font-display);font-size:8px;letter-spacing:0.1em;color:var(--ctn-color-text-muted);border:1px solid var(--ctn-color-border-strong);padding:5px 9px;border-radius:3px;flex:none;align-self:center">SEALED</span>
-            <a href="Audit.dc.html" style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:10px 14px;background:var(--ctn-color-surface-navy);color:var(--ctn-color-text-on-navy);border-radius:6px;text-decoration:none;flex:none">FIND IT IN THE LEDGER</a>
+            <a href="{{ ledgerHref }}" style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:10px 14px;background:var(--ctn-color-surface-navy);color:var(--ctn-color-text-on-navy);border-radius:6px;text-decoration:none;flex:none">FIND IT IN THE LEDGER</a>
             <a href="Queue.dc.html" style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:10px 14px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;color:var(--ctn-color-text-primary);text-decoration:none;flex:none">BACK TO THE QUEUE</a>
-            <a href="Audit.dc.html" style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:10px 14px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;color:var(--ctn-color-text-primary);text-decoration:none;flex:none">VIEW LEDGER ENTRY</a>
+            <a href="{{ ledgerHref }}" style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:10px 14px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;color:var(--ctn-color-text-primary);text-decoration:none;flex:none">VIEW LEDGER ENTRY</a>
             <button onClick="{{ reset }}" style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:10px 14px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;background:none;color:var(--ctn-color-text-primary);cursor:pointer;flex:none">RE-OPEN CARD</button>
           </div>
         </sc-if>
@@ -312,6 +312,8 @@
 class Component extends DCLogic {
   constructor(p){
     super(p);
+    // Authored fallback actions: shown only when the service is not read (live === false).
+    // They narrate a fictional case and never mix with real proposals; the badge says DEMO DATA.
     this.actions = [
       {id:'a1', inc:'INC-0417', sev:'critical', at:92, cls:'consequential',
        name:'FREEZE:BULK_PAYOUT_TPL_07', waitS:761,
@@ -468,17 +470,39 @@ autonomous_allowed {
     ];
     this.actions.forEach(a=>{ a.total = a.rings.reduce((n,r)=>n+r.count,0); });
     let sel = 'a1';
+    this.incId = null;
     try{
-      const q = new URLSearchParams(window.location.search).get('action');
+      const P = new URLSearchParams(window.location.search);
+      const q = P.get('action');
       if(q && this.actions.some(a=>a.id===q)) sel = q;
+      const id = P.get('id'); if (id && /^INC-\d+$/.test(id)) this.incId = id;
     }catch(e){}
-    this.state = {role:this.roleInit(), sel, now:Date.now(), armed:false, phase:{}, fired:0, denied:{}, rolled:{}, trace:false};
+    this.state = {role:this.roleInit(), sel, now:Date.now(), armed:false, phase:{}, fired:0, denied:{}, rolled:{}, trace:false,
+      // live: null = reading · true = real proposals from persisted verdicts · false = authored fallback
+      live:null, liveError:null, rows:[], verdicts:{}, chains:{}, policy:null, connectors:null,
+      liveSel:null, results:{}, busy:false, note:''};
   }
   componentDidMount(){ this.roleMount();
     this.base = Date.now();
     this.t = setInterval(()=>this.setState({now:Date.now()}),1000);
+    const API = window.CITINEL_API;
+    if (!API) { this.setState({live:false, liveError:'api.js not loaded'}); return; }
+    Promise.all([API.incidentsSummary(), API.policy(), API.connectors()]).then(([inc, pol, con]) => {
+      if (!inc.ok || !pol.ok) { this.setState({live:false, liveError: inc.error || pol.error}); return; }
+      const rows = Array.isArray(inc.data) ? inc.data : [];
+      const withRuns = rows.filter(r => r.swarm);
+      return Promise.all(withRuns.map(r => Promise.all([API.verdictFor(r.incident_id), API.auditFor(r.incident_id)]))).then(pairs => {
+        const verdicts = {}, chains = {};
+        withRuns.forEach((r, i) => { verdicts[r.incident_id] = pairs[i][0].ok ? pairs[i][0].data : null; chains[r.incident_id] = pairs[i][1].ok ? pairs[i][1].data : []; });
+        this._q = null;
+        const queue = this.buildQueue(rows, verdicts, chains, pol.data);
+        let liveSel = queue.length ? queue[0].key : null;
+        if (this.incId) { const first = queue.find(q => q.inc === this.incId); if (first) liveSel = first.key; }
+        this.setState({live:true, rows, verdicts, chains, policy: pol.data, connectors: con.ok ? con.data : null, liveSel});
+      });
+    });
   }
-  componentWillUnmount(){ clearInterval(this.t); clearInterval(this.f); clearTimeout(this.fDone); }
+  componentWillUnmount(){ clearInterval(this.t); clearInterval(this.f); clearTimeout(this.fDone); if(this.unsubRole) this.unsubRole(); }
   arcPath(cx,cy,r,frac){
     if(frac<=0) return '';
     const a = Math.min(frac,0.9999)*2*Math.PI - Math.PI/2;
@@ -497,6 +521,8 @@ autonomous_allowed {
       R.createElement('circle',{cx:8,cy:8,r:6,fill:'none',stroke:'var(--ctn-color-state-stroke)',strokeWidth:1.9,strokeDasharray:'3.5 3.5'}));
   }
   fmt(x){ x=Math.max(0,x); return [3600,60,1].map(u=>String(Math.floor(x/u)%60).padStart(2,'0')).join(':'); }
+  fmtN(n){ return Number(n || 0).toLocaleString('en-IN'); }
+  fmtAge(s){ s = Math.max(0, s); if (s >= 86400) return Math.floor(s/86400)+'d '+String(Math.floor(s%86400/3600)).padStart(2,'0')+'h'; if (s >= 3600) return Math.floor(s/3600)+'h '+String(Math.floor(s/60)%60).padStart(2,'0')+'m'; return this.fmt(s); }
   phaseOf(a){
     const s = this.state;
     if(s.denied[a.id]) return 'denied';
@@ -504,6 +530,352 @@ autonomous_allowed {
     if(s.phase[a.id]) return s.phase[a.id];
     return a.executed ? 'done' : 'gated';
   }
+
+  /* ── live: the marshal's real proposals, what the ledger already says about each, and the
+     clause that governs it. The gate's verdict is predicted from the policy table exactly as
+     gate.py decides it, and labelled as a prediction until the real decision is on the ledger. */
+  predict(clause, assets){
+    if (!clause) return {verdict:'deny', why:['no policy clause defines this action class; undefined actions are denied, not defaulted']};
+    if (clause.approval === 'always') return {verdict:'require_approval', why:['clause '+clause.clause+' requires human approval at every dial position; structural, no tier setting relaxes it']};
+    if (assets > clause.max_assets_auto) return {verdict:'require_approval', why:['blast radius '+assets+' exceeds the automatic cap of '+clause.max_assets_auto+' for clause '+clause.clause+'; escalates to approval (SAFE-F07)']};
+    if (clause.tier === 'shadow') return {verdict:'shadow', why:['clause '+clause.clause+' is in shadow: proposal logged, nothing executes']};
+    if (clause.tier === 'assist') return clause.reversible ? {verdict:'allow_with_rollback', why:['clause '+clause.clause+' is in assist: executes with a rollback token']} : {verdict:'allow', why:['clause '+clause.clause+' is in assist and the action is irreversible: executes within its hard asset cap, no token possible; the cap is the safeguard']};
+    return {verdict:'allow', why:['clause '+clause.clause+' is autonomous for this class']};
+  }
+  ledgerFor(chain, action_class, target){
+    // the frames the ledger already holds for this exact proposal, newest last
+    const out = {checks:[], executed:[], rolled:[], denied:[]};
+    (chain||[]).forEach(e => {
+      const p = e.payload || {};
+      if (e.kind === 'policy_check' && p.action_class === action_class && String(p.intent_preview||'').indexOf('target: ' + target) >= 0) out.checks.push(e);
+      if (e.kind === 'action_executed' && p.action_class === action_class && p.target === target) out.executed.push(e);
+      if (e.kind === 'action_rolled_back') out.rolled.push(e);
+      if (e.kind === 'decision' && p.decision === 'proposal_denied' && p.action_class === action_class && (!p.target || p.target === target)) out.denied.push(e);
+    });
+    return out;
+  }
+  buildQueue(rows, verdicts, chains, policy){
+    if (this._q && this._qsrc === verdicts && this._qchains === chains) return this._q;
+    const clauses = {}; ((policy && policy.clauses) || []).forEach(c => { clauses[c.action_class] = c; });
+    const q = [];
+    rows.forEach(r => {
+      const vd = verdicts[r.incident_id]; if (!vd) return;
+      (vd.proposals || []).forEach((p, i) => {
+        const clause = clauses[p.action_class] || null;
+        const led = this.ledgerFor(chains[r.incident_id], p.action_class, p.target);
+        const executed = led.executed[led.executed.length-1] || null;
+        const token = executed && executed.payload ? executed.payload.rollback_token : null;
+        const rolledBack = !!(token && led.rolled.some(e => (e.payload||{}).rollback_token === token));
+        q.push({ key: r.incident_id + '#' + i, inc: r.incident_id, sev: r.severity, hosts: r.hosts || [], state: r.state,
+          proposal: p, clause, predicted: this.predict(clause, p.assets_affected), led, executed, token, rolledBack,
+          draftedAt: Date.parse(vd.saved_at) || 0, findingsExamined: vd.findings_examined, findingsTotal: vd.findings_total,
+          policy });
+      });
+    });
+    this._qsrc = verdicts; this._qchains = chains; this._q = q;
+    return q;
+  }
+  livePhase(item){
+    const s = this.state, res = s.results[item.key];
+    if (res && res.phase) return res.phase;                // this session's own real result
+    if (item.led.denied.length) return 'denied';
+    if (item.rolledBack) return 'rolled';
+    if (item.executed) return 'done';
+    const lastCheck = item.led.checks[item.led.checks.length-1];
+    if (lastCheck && (lastCheck.payload||{}).verdict === 'shadow') return 'shadow';
+    if (lastCheck && (lastCheck.payload||{}).verdict === 'require_approval') return 'held';
+    return 'gated';
+  }
+  reload(){
+    const API = window.CITINEL_API, s = this.state;
+    const ids = Object.keys(s.verdicts);
+    Promise.all(ids.map(id => API.auditFor(id))).then(rs => {
+      const chains = {}; ids.forEach((id, i) => { chains[id] = rs[i].ok ? rs[i].data : s.chains[id]; });
+      this._q = null; this.setState({chains});
+      API.incidentsSummary().then(r => { if (r.ok) this.setState({rows: r.data}); });
+    });
+  }
+  fire(item, approver){
+    const API = window.CITINEL_API, key = item.key, p = item.proposal;
+    if (this.state.busy) return;
+    this.setState({busy:true, note:'sending the proposal through the gate…', armed:false});
+    const body = {incident_id: item.inc, action_class: p.action_class, target: p.target, assets_affected: p.assets_affected};
+    if (approver) body.approver = approver;
+    API.execute(body).then(r => {
+      const res = {at: Date.now(), raw: r};
+      if (!r.ok) {
+        const d = r.data && r.data.detail;
+        res.phase = 'denied'; res.decision = d && d.decision; res.refused = d && d.refused; res.gateDenied = true;
+        this.setState(x => ({busy:false, note:'the gate refused: ' + (res.refused || r.error || 'unknown'), results: Object.assign({}, x.results, {[key]: res})}));
+        this.reload(); return;
+      }
+      const d = r.data; res.decision = d.decision; res.receipt = d.receipt; res.swytch = d.swytchcode || []; res.state = d.state;
+      const st = d.receipt.status;
+      res.phase = st === 'executed' ? 'firing' : st === 'awaiting_approval' ? 'held' : 'shadow';
+      this.setState(x => ({busy:false, note:'', fired:0, results: Object.assign({}, x.results, {[key]: res})}));
+      if (st === 'executed') {
+        const total = Math.max(1, p.assets_affected), steps = 14, step = Math.max(1, Math.ceil(total/steps));
+        clearInterval(this.f); clearTimeout(this.fDone);
+        this.f = setInterval(()=>{ this.setState(x => ({fired: Math.min(total, x.fired + step)})); }, 80);
+        this.fDone = setTimeout(()=>{ clearInterval(this.f); this.setState(x => ({fired: total, results: Object.assign({}, x.results, {[key]: Object.assign({}, x.results[key], {phase:'done'})})})); this.reload(); }, 80*steps + 120);
+      } else this.reload();
+    });
+  }
+  denyLive(item){
+    const API = window.CITINEL_API;
+    const by = window.prompt('Deny ' + item.proposal.action_class + ' → ' + item.proposal.target + ' · your name or address (recorded on the ledger):', ''); if (!by) return;
+    const reason = window.prompt('Reason for the refusal (recorded on the ledger):', ''); if (!reason) return;
+    this.setState({busy:true, note:'recording the refusal…'});
+    API.deny({incident_id: item.inc, action_class: item.proposal.action_class, target: item.proposal.target, by, reason}).then(r => {
+      this.setState(x => ({busy:false, note: r.ok ? '' : 'deny failed: ' + (r.error||'unknown'), results: Object.assign({}, x.results, {[item.key]: {phase: r.ok ? 'denied' : (x.results[item.key]||{}).phase, at: Date.now(), by, reason}})}));
+      this.reload();
+    });
+  }
+  rollbackLive(item){
+    const API = window.CITINEL_API, res = this.state.results[item.key];
+    const token = (res && res.receipt && res.receipt.rollback_token) || item.token; if (!token) return;
+    const actor = window.prompt('Roll back with token ' + token + ' · your name or address (recorded on the ledger):', ''); if (!actor) return;
+    this.setState({busy:true, note:'rolling back…'});
+    API.rollback(token, {incident_id: item.inc, actor}).then(r => {
+      this.setState(x => ({busy:false, note: r.ok ? '' : 'rollback refused: ' + (r.error||'unknown'), results: Object.assign({}, x.results, {[item.key]: Object.assign({}, x.results[item.key]||{}, {phase: r.ok ? 'rolled' : (x.results[item.key]||{}).phase, rollback: r.ok ? r.data.receipt : null})})}));
+      this.reload();
+    });
+  }
+  liveVals(){
+    const s = this.state, R = React;
+    const queue = this.buildQueue(s.rows, s.verdicts, s.chains, s.policy);
+    const item = queue.find(q => q.key === s.liveSel) || queue[0] || null;
+    const elapsed = Math.floor((s.now - (this.base||s.now))/1000);
+    const rails = (s.connectors && s.connectors.rails) || {};
+    if (!item) return Object.assign(this.emptyVals(queue.length ? 'no proposal selected' : 'no proposals: no persisted swarm run has drafted any action yet'), {
+      queue: [], pendingCount: '00', queueNote: 'the marshal has drafted nothing yet · run the swarm on the replay screen'});
+    const p = item.proposal, clause = item.clause, phase = this.livePhase(item), res = s.results[item.key] || {};
+    const decision = res.decision || ((item.led.checks[item.led.checks.length-1]||{}).payload) || null;
+    const predicted = item.predicted;
+    const verdictShown = decision ? decision.verdict : predicted.verdict;
+    const isPrediction = !decision;
+    const assets = Number(p.assets_affected) || 0;
+    const cap = clause ? Number(clause.max_assets_auto) : 0;
+    const capGeom = Math.max(cap, 1);
+    const rings = [
+      {label:'assets the marshal declared', count: assets, note:'direct'},
+      {label:'findings this proposal cites', count: (p.citations||[]).length, note:'evidence'},
+      {label:'hosts on the record', count: item.hosts.length, note:'context'}
+    ];
+    const total = assets;
+    const capR = 196;
+    const radii = [];
+    rings.forEach((ring, i) => { let rr = 52 + (capR-58)*Math.sqrt(Math.min(1, Math.max(ring.count,1)/Math.max(capGeom, ring.count, 1))); if (i > 0) rr = Math.max(rr, radii[i-1] + 15); radii.push(Math.min(rr, capR - 4)); });
+    const firedFrac = phase==='firing' ? s.fired/Math.max(total,1) : (phase==='done' ? 1 : 0);
+    const ringShapes = [], nodeDots = [];
+    let seen = 0;
+    rings.forEach((ring, ri)=>{
+      const rr = radii[ri];
+      ringShapes.push(R.createElement('circle',{key:'r'+ri, cx:230, cy:230, r:rr, fill:'none', stroke:'var(--ctn-color-border-hairline)', strokeWidth:1}));
+      const shown = Math.min(ring.count, 44);
+      for(let i=0;i<shown;i++){
+        const ang = (i/Math.max(shown,1))*2*Math.PI - Math.PI/2 + ri*0.22;
+        const on = ri === 0 && (seen + i) < Math.round(firedFrac*total);
+        nodeDots.push(R.createElement('circle',{key:'d'+ri+'_'+i, cx: 230+rr*Math.cos(ang), cy: 230+rr*Math.sin(ang), r: 3.4,
+          fill: on ? 'var(--ctn-color-state-node)' : 'var(--ctn-color-surface-shell)',
+          stroke: on ? 'var(--ctn-color-state-cited)' : 'var(--ctn-color-border-strong)', strokeWidth: on?1.8:1.2}));
+      }
+      if (ri === 0) seen += ring.count;
+    });
+    const stateSeq = ['caught','cited','gated','actioned','closed'];
+    const rank = {caught:0, cited:1, gated:2, actioned:3, closed:4, closed_benign:4};
+    const incState = (s.rows.find(r => r.incident_id === item.inc) || {}).state || item.state || 'caught';
+    const reachedIdx = phase==='done' || phase==='rolled' ? Math.max(3, rank[incState]||0) : phase==='denied' ? 2 : Math.max(2, rank[incState]||0);
+    const stateNodes = stateSeq.map((k,i)=>{
+      const f = i/4, a = f*2*Math.PI - Math.PI/2, cx = 38+30*Math.cos(a), cy = 38+30*Math.sin(a);
+      const on = i <= reachedIdx;
+      const stroke = phase==='denied' && i===2 ? 'var(--ctn-color-state-deny)' : on ? 'var(--ctn-color-state-stroke)' : 'var(--ctn-color-text-disabled)';
+      if(k==='gated' && phase==='denied') return R.createElement('rect',{key:i,x:cx-4.5,y:cy-4.5,width:9,height:9,fill:'var(--ctn-color-state-deny)'});
+      if(k==='gated') return R.createElement('circle',{key:i,cx,cy,r:5,fill:'var(--ctn-color-surface-panel)',stroke,strokeWidth:1.9,strokeDasharray:'3 3'});
+      if(k==='actioned') return R.createElement('rect',{key:i,x:cx-4.5,y:cy-4.5,width:9,height:9,transform:`rotate(45 ${cx} ${cy})`,fill: on?'var(--ctn-color-state-node)':'var(--ctn-color-surface-panel)',stroke,strokeWidth:2.4});
+      if(k==='closed') return R.createElement('circle',{key:i,cx,cy,r:5.5,fill: on?'var(--ctn-color-state-node)':'var(--ctn-color-surface-panel)',stroke,strokeWidth:2.4});
+      return R.createElement('circle',{key:i,cx,cy,r:4.5,fill: on?'var(--ctn-color-state-node)':'var(--ctn-color-surface-panel)',stroke,strokeWidth:1.8});
+    });
+    const opened = Date.parse((s.rows.find(r => r.incident_id === item.inc) || {}).opened_ts);
+    const remainS = isFinite(opened) ? Math.round((opened + 6*3600*1000 - s.now)/1000) : 0;
+    const clock = (remainS < 0 ? '−' : '') + this.fmtAge(Math.abs(remainS));
+    const gated = phase==='gated' || phase==='held';
+    const needsName = verdictShown === 'require_approval';
+    const receipt = res.receipt || (item.executed && item.executed.payload) || null;
+    const token = (res.receipt && res.receipt.rollback_token) || item.token || null;
+    const tierLabel = clause ? clause.tier.toUpperCase() : 'UNDEFINED';
+    const classTag = clause ? (tierLabel + ' · ' + (clause.approval === 'always' ? 'HUMAN REQUIRED' : clause.reversible ? 'REVERSIBLE' : 'IRREVERSIBLE')) : 'NO CLAUSE · DENIED';
+    const clauseText = clause ? [
+      'clause ' + clause.clause + ' · ' + clause.action_class,
+      'description: ' + clause.description,
+      'tier: ' + clause.tier + '        approval: ' + clause.approval,
+      'max_assets_auto: ' + clause.max_assets_auto + '   reversible: ' + clause.reversible,
+      'policy: ' + (s.policy ? s.policy.name + ' v' + s.policy.version : '—'),
+      'sha256: ' + (s.policy ? s.policy.policy_sha256 : '—')
+    ].join('\n') : 'no clause defines ' + p.action_class + ' · the gate denies undefined classes rather than defaulting';
+    const traceLines = [
+      'engine: ' + (decision ? decision.engine : 'yaml-inprocess (predicted from the policy table)'),
+      'policy: ' + (s.policy ? s.policy.name + ' v' + s.policy.version + ' · sha256 ' + s.policy.policy_sha256.slice(0,16) + '…' : '—'),
+      '', 'input:',
+      '  action_class    = "' + p.action_class + '"',
+      '  target          = "' + p.target + '"',
+      '  assets_affected = ' + assets + (clause ? '   (cap ' + clause.max_assets_auto + ')' : ''),
+      '  approver        = ' + (res.decision && res.decision.verdict === 'require_approval' && receipt ? '"named"' : 'null'),
+      '', (decision ? 'reasons recorded by the gate:' : 'reasons the gate will give (predicted):')
+    ].concat((decision ? decision.reasons : predicted.why).map(w => '  - ' + w)).concat([
+      '', 'verdict: ' + String(verdictShown).toUpperCase() + (isPrediction ? '   (prediction · the gate decides when you fire)' : '   (decided ' + String(decision.decided_at||'').slice(0,19).replace('T',' ') + 'Z)'),
+      decision && decision.rollback_token ? 'rollback_token: ' + decision.rollback_token : ''
+    ]);
+    const swytch = res.swytch || [];
+    const intent = {
+      will: [
+        (clause ? clause.description : p.action_class) + ' · against a simulated endpoint, never real infrastructure (PIPE-F09)',
+        'write the gate\'s decision to the ledger as a policy_check frame, allow or deny',
+        verdictShown === 'allow_with_rollback' ? 'execute and issue a rollback token; rolling back is its own ledger frame' : verdictShown === 'allow' ? 'execute within the clause\'s asset cap; no token is possible for this class' : verdictShown === 'require_approval' ? 'hold until a named human approves; the approval is a ledger frame too' : verdictShown === 'shadow' ? 'log the proposal and execute nothing (shadow tier)' : 'refuse: no clause covers this class',
+        'hand the executed action to Swytchcode ticketing + comms' + (s.connectors && !(s.connectors.connectors||[]).some(c => c.name === 'swytchcode' && c.configured) ? ' (not configured here: reported as such, never faked)' : '')
+      ],
+      wont: [
+        'touch real infrastructure: simulated_endpoints_only is ' + (rails.simulated_endpoints_only === false ? 'OFF (the executor refuses to construct)' : 'on'),
+        'file anything with a regulator or start a statutory clock',
+        clause ? 'exceed ' + clause.max_assets_auto + ' asset' + (clause.max_assets_auto===1?'':'s') + ' without a human' : 'run at all',
+        'run at a lower safeguard than the clause states: the dial can never relax a structural approval'
+      ],
+      note: isPrediction ? 'predicted from the policy table the service serves; the real decision is written to the ledger when you fire, and shown here after' : 'this is the decision the gate recorded'
+    };
+    const ledgerHref = 'Audit.dc.html?id=' + item.inc + '&q=' + encodeURIComponent(p.action_class);
+    return {
+      enteredFrom: 'proposals drafted by the Response Marshal · ' + queue.length + ' across ' + Object.keys(s.verdicts).length + ' record' + (Object.keys(s.verdicts).length===1?'':'s'),
+      onDuty: 'on duty: you · the gate asks for a name where the clause requires one',
+      pendingCount: String(queue.filter(q => ['gated','held'].indexOf(this.livePhase(q)) >= 0).length).padStart(2,'0'),
+      queueNote: 'proposals from persisted swarm runs · ' + queue.filter(q => this.livePhase(q)==='done').length + ' executed on simulated endpoints · ' + queue.filter(q => this.livePhase(q)==='denied').length + ' denied',
+      railNote: 'assist-tier reversible actions execute with a rollback token; classes marked approval:always never fire without a name on this card · every endpoint is simulated',
+      queue: queue.map(q => {
+        const ph = this.livePhase(q), on = q.key === item.key, c = q.clause;
+        const waited = Math.floor((s.now - q.draftedAt)/1000);
+        return {
+          inc: q.inc, name: q.proposal.action_class + ' → ' + q.proposal.target, pick: ()=>this.setState({liveSel:q.key, armed:false, trace:false}),
+          classTag: c ? c.tier.toUpperCase() + (c.approval === 'always' ? ' · HUMAN' : c.reversible ? ' · REVERSIBLE' : '') : 'NO CLAUSE',
+          borderStyle: c && c.reversible ? 'dashed' : 'solid',
+          glyph: this.qGlyph(ph==='done' ? 'actioned' : ph==='denied' ? 'denied' : ph==='rolled' ? 'closed' : 'gated'),
+          status: ph==='gated' ? 'drafted · not yet through the gate' : ph==='held' ? 'held for a named approver' : ph==='shadow' ? 'shadow tier · logged, nothing executed' : ph==='denied' ? 'denied · on the ledger' : ph==='rolled' ? 'executed, then rolled back' : ph==='firing' ? 'executing on the simulated endpoint' : 'executed · simulated' + (q.token ? ' · token ' + q.token : ''),
+          clock: (ph==='gated' || ph==='held') ? this.fmtAge(waited) : ph==='done' ? 'done' : '—',
+          clockFg: (ph==='gated' || ph==='held') ? 'var(--ctn-color-clock)' : 'var(--ctn-color-text-muted)',
+          edge: q.sev==='critical' ? 'var(--ctn-color-severity-critical)' : q.sev==='high' ? 'var(--ctn-color-severity-high)' : 'var(--ctn-color-border-strong)',
+          border: on ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-border-hairline)',
+          bg: on ? 'var(--ctn-color-surface-raised)' : 'transparent',
+          fg: on ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-text-secondary)'
+        };
+      }),
+      act: {
+        sev: item.sev, inc: item.inc, name: p.action_class + ' → ' + p.target, cap: cap, at: 100,
+        plain: p.justification + ' · the marshal declared ' + assets + ' asset' + (assets===1?'':'s') + ' affected, citing ' + (p.citations||[]).length + ' finding' + ((p.citations||[]).length===1?'':'s') + ' of the ' + this.fmtN(item.findingsExamined) + ' it examined (of ' + this.fmtN(item.findingsTotal) + ').',
+        assets: [{name: p.target, type: 'TARGET', note: 'named by the marshal'}].concat(item.hosts.map(h => ({name: h, type: 'HOST', note: 'on the record'}))).concat((p.citations||[]).slice(0,4).map(c => ({name: 'finding #' + c.finding_index, type: 'CITATION', note: String(c.quoted_span||'').slice(0,60)}))),
+        policyFile: clause ? 'clause ' + clause.clause + ' · ' + clause.action_class + ' · ' + (s.policy ? s.policy.name + ' v' + s.policy.version : '') : 'no clause for ' + p.action_class,
+        rego: clauseText,
+        decisionLocator: decision ? 'ledger · policy_check · ' + item.inc : 'no gate decision on the ledger yet',
+        reversal: clause ? (clause.reversible ? 'reversible: an executed action carries a rollback token, honoured for the life of the service process; the rollback is its own ledger frame' : 'irreversible: no rollback token is possible; the asset cap and the tier are the safeguards') : 'undefined class: nothing to reverse because nothing can execute',
+        rings
+      },
+      classTag, classBorderStyle: clause && clause.reversible ? 'dashed' : 'solid',
+      clockDigits: clock,
+      plotNote: 'the inner ring is the marshal\'s declared blast radius; the dashed boundary is the clause\'s automatic cap (' + cap + ') · above it a human decides',
+      capLabel: 'AUTOMATIC CAP · ' + cap + ' ASSET' + (cap===1?'':'S') + (cap === 0 ? ' · ANY ASSET ESCALATES' : ''),
+      capNote: assets + ' declared · cap ' + cap + (assets > cap ? ' · over cap' : ' · within cap'),
+      capR, capLabelY: 230-capR-8, ringShapes, nodeDots,
+      ringLegend: rings.map((r,i)=>({label:r.label, count:r.count,
+        swatch: R.createElement('svg',{width:18, height:18, viewBox:'0 0 18 18', style:{flex:'none'}},
+          R.createElement('circle',{cx:9, cy:9, r: 2.5 + 6 * (radii[i]-radii[0])/Math.max(1, radii[radii.length-1]-radii[0]), fill:'none', stroke: firedFrac>0 ? 'var(--ctn-color-state-cited)' : 'var(--ctn-color-text-muted)', strokeWidth:1.4}))})),
+      totalNodes: total, firedNodes: phase==='firing' ? s.fired : total,
+      totalFg: total > cap ? 'var(--ctn-color-severity-critical-text)' : 'var(--ctn-color-text-primary)',
+      capPct: cap ? Math.round(total/cap*100)+'%' : (total ? 'over a cap of 0' : '0 of 0'),
+      sweepAngle: phase==='firing' ? (s.fired/Math.max(total,1)*360).toFixed(1) : 0,
+      sweepTip: 230-capR+6, sweepOpacity: phase==='firing' ? 1 : 0,
+      stateArc: this.arcPath(38,38,30, phase==='denied' ? 0.5 : (reachedIdx/4)),
+      stateWeight: reachedIdx >= 3 ? 3.4 : 2.6,
+      stateNodes,
+      stateLabel: String(incState).replace('_',' ').toUpperCase() + (phase==='denied' ? ' · THIS PROPOSAL DENIED' : phase==='rolled' ? ' · ROLLED BACK' : phase==='shadow' ? ' · SHADOW, LOGGED ONLY' : ''),
+      isGated: gated, isFiring: phase==='firing', isDone: phase==='done' || phase==='denied' || phase==='rolled' || phase==='shadow',
+      toggleKey: ()=>this.setState(x=>({armed:!x.armed})),
+      keyAngle: s.armed ? 90 : 0,
+      keyColor: s.armed ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-text-disabled)',
+      keyLabel: s.armed ? 'KEY ARMED' : 'KEY SAFE',
+      keyLabelFg: s.armed ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-text-muted)',
+      keyNote: s.armed ? (needsName ? 'approve asks for your name' : 'approve is live') : 'turn to free the approve control',
+      continuityNote: s.note ? s.note : (s.armed ? 'gate prediction: ' + String(verdictShown).replace(/_/g,' ') + ' · ' + predicted.why[0] : 'pre-flight held: turn the key to send this proposal through the policy gate'),
+      continuityPct: s.armed ? '100%' : '38%',
+      continuityFill: s.armed ? 'var(--ctn-color-ok)' : 'var(--ctn-color-border-strong)',
+      approveDisabled: !s.armed || s.busy,
+      approveLabel: s.busy ? 'WORKING…' : !s.armed ? 'ARM THE KEY FIRST' : needsName ? 'APPROVE WITH YOUR NAME' : verdictShown === 'shadow' ? 'SEND THROUGH THE GATE (SHADOW)' : 'APPROVE AND FIRE',
+      approve: ()=>{
+        if(!this.state.armed || this.state.busy) return;
+        let approver = null;
+        if (needsName) { approver = window.prompt('Approve ' + p.action_class + ' → ' + p.target + ' · your name or address (recorded on the ledger as the approver):', ''); if (!approver) return; }
+        this.fire(item, approver);
+      },
+      deny: ()=>this.denyLive(item),
+      reset: ()=>this.setState(x=>{ const r = Object.assign({}, x.results); delete r[item.key]; return {results:r, armed:false, fired:0}; }),
+      firingNote: 'the gate allowed it · applying to the simulated endpoint · ' + (receipt ? receipt.detail : ''),
+      simNote: receipt ? ('receipt: ' + receipt.detail + ' · the mock returns success unconditionally, so this proves the right call was made with the right arguments and nothing more.' + (swytch.length ? ' swytchcode: ' + swytch.map(w => w.ecosystem_api + ' ' + w.status).join(', ') : '')) : 'no receipt: nothing executed',
+      doneHeadline: phase==='denied' ? (res.gateDenied ? 'refused by the gate · ' + (res.refused || '') : 'denied by ' + (res.by || (item.led.denied[item.led.denied.length-1]||{}).actor || 'a human') + ' · on the ledger')
+        : phase==='rolled' ? 'rolled back · the reversal is its own ledger frame'
+        : phase==='shadow' ? 'shadow tier · proposal logged, nothing executed'
+        : 'executed on the simulated endpoint · ' + (receipt && receipt.at ? String(receipt.at).slice(11,19) + 'Z' : (item.executed ? String(item.executed.ts||'').slice(11,19) + 'Z' : '')),
+      doneNote: phase==='denied' ? (res.reason || (item.led.denied[item.led.denied.length-1]||{payload:{}}).payload.reason || 'the reason is on the ledger frame')
+        : phase==='rolled' ? 'the original action and its reversal both stand in the tape; neither was deleted.'
+        : phase==='shadow' ? 'the dial for this class is at shadow: the ledger holds the proposal and the gate\'s ruling; a human would raise the tier to change that.'
+        : (clause && clause.reversible ? 'reversible with the token below while this service process lives' : 'irreversible by design; the cap was the safeguard'),
+      hasToken: !!token && phase!=='rolled' && phase!=='denied',
+      tokenValue: token || '',
+      tokenExpiry: 'no expiry',
+      tokenNote: 'issued by the gate because the clause marks this action reversible · held in the service process; a restart forgets it, honestly',
+      rollback: ()=>this.rollbackLive(item),
+      willDo: intent.will, willNot: intent.wont, intentNote: intent.note,
+      intentLead: 'gate ' + (isPrediction ? 'prediction' : 'decision') + ': ' + String(verdictShown).replace(/_/g,' ').toUpperCase(),
+      traceRef: decision ? 'decision recorded · engine ' + decision.engine : 'prediction · policy sha256 ' + (s.policy ? s.policy.policy_sha256.slice(0,12) : '') + '…',
+      traceStandard: 'POLICY', traceVersion: s.policy ? 'v' + s.policy.version : 'v?',
+      traceOpen: !!s.trace, trace: traceLines.join('\n'),
+      toggleTrace: ()=>this.setState(x=>({trace:!x.trace})),
+      traceLabel: s.trace ? 'HIDE DECISION TRACE' : 'EXPAND DECISION TRACE',
+      traceStyle: s.trace ? 'solid' : 'dashed',
+      replayHref: 'Replay.dc.html?id=' + item.inc + '&at=100',
+      ledgerHref,
+      clockFg: remainS < 0 ? 'var(--ctn-color-severity-critical-text)' : 'var(--ctn-color-clock)', clockDigits2: clock,
+      clausePlain: clause ? (clause.approval === 'always' ? 'Clause ' + clause.clause + ' requires a named human at every dial position; structural, and no tier setting relaxes it.' : 'Clause ' + clause.clause + ' sits at ' + clause.tier + ' with an automatic cap of ' + clause.max_assets_auto + ' asset' + (clause.max_assets_auto===1?'':'s') + '; this proposal declares ' + assets + ', so it ' + (assets > clause.max_assets_auto ? 'escalates to a human' : 'can run at that tier') + (clause.reversible ? ', with a rollback token' : ', irreversibly') + '.') : 'No clause defines ' + p.action_class + '; the gate denies undefined classes rather than defaulting.',
+      precedent: this.precedentFor(p.action_class),
+      _liveItem: item
+    };
+  }
+  precedentFor(action_class){
+    const s = this.state; let checks = 0, executed = 0, rolled = 0, denied = 0;
+    Object.keys(s.chains).forEach(id => (s.chains[id]||[]).forEach(e => { const p = e.payload||{};
+      if (e.kind === 'policy_check' && p.action_class === action_class) checks++;
+      if (e.kind === 'action_executed' && p.action_class === action_class) executed++;
+      if (e.kind === 'action_rolled_back') rolled++;
+      if (e.kind === 'decision' && p.decision === 'proposal_denied' && p.action_class === action_class) denied++; }));
+    const clause = ((s.policy && s.policy.clauses) || []).find(c => c.action_class === action_class);
+    return [
+      {k:'this class on the ledger', v: checks + ' gate ruling' + (checks===1?'':'s') + ' · ' + executed + ' executed · ' + denied + ' denied · ' + rolled + ' rollback' + (rolled===1?'':'s') + ' (all simulated)'},
+      {k:'the cap', v: clause ? 'automatic up to ' + clause.max_assets_auto + ' asset' + (clause.max_assets_auto===1?'':'s') + ' at ' + clause.tier + '; approval ' + clause.approval : 'no clause'},
+      {k:'if you deny', v: 'nothing executes; your name and reason become a decision frame on the ledger, and the record stays where it is'}
+    ];
+  }
+  emptyVals(msg){
+    const R = React, mutedFg = 'var(--ctn-color-text-muted)';
+    return {
+      enteredFrom: msg, onDuty: 'on duty: you', railNote: '', act: {sev:'medium', inc:'—', name: msg, cap: 0, at: 100, plain: msg, assets: [], policyFile: '—', rego: '', decisionLocator: '—', reversal: '', rings: []},
+      classTag: '—', classBorderStyle: 'solid', clockDigits: '—', clockDigits2: '—', clockFg: mutedFg, plotNote: msg, capLabel: '', capNote: '', capR: 196, capLabelY: 26, ringShapes: [], nodeDots: [], ringLegend: [],
+      totalNodes: 0, firedNodes: 0, totalFg: mutedFg, capPct: '—', sweepAngle: 0, sweepTip: 40, sweepOpacity: 0, stateArc: '', stateWeight: 2.6, stateNodes: [], stateLabel: '—',
+      isGated: false, isFiring: false, isDone: false, toggleKey: ()=>{}, keyAngle: 0, keyColor: mutedFg, keyLabel: '', keyLabelFg: mutedFg, keyNote: '', continuityNote: '', continuityPct: '0%', continuityFill: mutedFg,
+      approveDisabled: true, approveLabel: '—', approve: ()=>{}, deny: ()=>{}, reset: ()=>{}, firingNote: '', simNote: '', doneHeadline: '', doneNote: '', hasToken: false, tokenValue: '', tokenExpiry: '', tokenNote: '', rollback: ()=>{},
+      willDo: [], willNot: [], intentNote: '', intentLead: '', traceRef: '', traceStandard: 'POLICY', traceVersion: '', traceOpen: false, trace: '', toggleTrace: ()=>{}, traceLabel: '', traceStyle: 'dashed',
+      replayHref: 'Replay.dc.html', ledgerHref: 'Audit.dc.html', clausePlain: '', precedent: []
+    };
+  }
+  loadingVals(){
+    return Object.assign(this.emptyVals('reading proposals, policy and ledger from citinel-web'), {queue: [], pendingCount: '··', queueNote: 'reading…'});
+  }
+
+  /* ── authored fallback ───────────────────────────────────────────────────── */
   baseVals(){
     const s = this.state, R = React;
     const act = this.actions.find(a=>a.id===s.sel) || this.actions[0];
@@ -511,8 +883,6 @@ autonomous_allowed {
     const elapsed = Math.floor((s.now - (this.base||s.now))/1000);
     const total = act.rings.reduce((n,r)=>n+r.count,0);
     const capR = 196;
-    // radius reads magnitude, but scope order is concentric: a downstream ring can never sit
-    // inside or on top of the direct ring it follows, even when the node counts are equal.
     const radii = [];
     act.rings.forEach((ring, i) => {
       let rr = 52 + (capR-58)*Math.sqrt(Math.max(ring.count,1)/act.cap);
@@ -526,12 +896,6 @@ autonomous_allowed {
     act.rings.forEach((ring, ri)=>{
       const rr = rOf(ring.count, ri);
       ringShapes.push(R.createElement('circle',{key:'r'+ri, cx:230, cy:230, r:rr, fill:'none', stroke:'var(--ctn-color-border-hairline)', strokeWidth:1}));
-      // No text on the arcs. A label placed above its own ring at the centreline sits where
-      // every arc is flattest, and rings are only guaranteed 15 units apart while a 9.5px
-      // label needs ~16 — so the ring above always cut through the glyphs. The counts were
-      // already duplicated in the legend beneath the plot, so they move there entirely and
-      // each legend row is keyed to its ring by a scaled radius swatch. This is the shot-plan
-      // idiom anyway: a blasting plan tabulates charges beside the plot, never on the rings.
       const shown = Math.min(ring.count, 44);
       for(let i=0;i<shown;i++){
         const ang = (i/Math.max(shown,1))*2*Math.PI - Math.PI/2 + ri*0.22;
@@ -561,6 +925,9 @@ autonomous_allowed {
     const gated = phase==='gated';
     return {
       enteredFrom: 'entered from the replay proposal · and the shell pending rail',
+      onDuty: 'on duty: a. deshmukh · L2',
+      queueNote: 'gated actions wait here. nothing in this list has fired.',
+      railNote: 'reversible actions fire on their own and post a rollback token. consequential ones cannot fire without a name on this card.',
       pendingCount: String(this.actions.filter(a=>this.phaseOf(a)==='gated').length).padStart(2,'0'),
       queue: this.actions.map(a=>{
         const ph = this.phaseOf(a), on = a.id===s.sel, rev = a.cls==='reversible';
@@ -585,13 +952,10 @@ autonomous_allowed {
       plotNote: act.cls==='reversible'
         ? 'plotted after the fact · this is what the automatic action actually touched'
         : 'every dot is one real node this action would touch; the dashed boundary is the policy cap, not a design flourish',
+      capLabel: 'OPA BLAST CAP · ' + act.cap + ' NODES', capNote: 'nodes touched · ' + Math.round(total/act.cap*100) + '% of cap',
       capR, capLabelY: 230-capR-8,
       ringShapes, nodeDots,
       ringLegend: act.rings.map((r,i)=>({label:r.label, count:r.count,
-        dot: firedFrac>0 ? 'var(--ctn-color-state-node)' : 'transparent',
-        ring: firedFrac>0 ? 'var(--ctn-color-state-cited)' : 'var(--ctn-color-border-strong)',
-        // the swatch IS the ring: its diameter is that ring's radius scaled to the row, so a
-        // reader ties row to arc by size order without a leader line or a label on the plot
         swatch: R.createElement('svg',{width:18, height:18, viewBox:'0 0 18 18', style:{flex:'none'}},
           R.createElement('circle',{cx:9, cy:9, r: 2.5 + 6 * (radii[i]-radii[0])/Math.max(1, radii[radii.length-1]-radii[0]),
             fill:'none', stroke: firedFrac>0 ? 'var(--ctn-color-state-cited)' : 'var(--ctn-color-text-muted)', strokeWidth:1.4}))})),
@@ -635,7 +999,6 @@ autonomous_allowed {
             return n >= total ? {fired:total} : {fired:n};
           });
         }, 80);
-        // the plot finishes on its own clock; the phase change never depends on the interval surviving
         this.fDone = setTimeout(()=>{
           clearInterval(this.f);
           this.setState(x=>({fired:total, phase:{...x.phase, [id]:'done'}}));
@@ -667,13 +1030,13 @@ autonomous_allowed {
       tokenValue: act.token || '',
       tokenExpiry: this.fmt(tokenLeft),
       tokenNote: 'issued at execution because the policy clause marked this action reversible. one use; expiry is enforced by the ledger, not the UI.',
-      rollback: ()=>this.setState(x=>({rolled:{...x.rolled, [act.id]:true}}))
+      rollback: ()=>this.setState(x=>({rolled:{...x.rolled, [act.id]:true}})),
+      replayHref: 'Replay.dc.html?at=' + act.at, ledgerHref: 'Audit.dc.html', traceStandard: 'OPA', traceVersion: 'rego v1'
     };
   }
 
   roleInit(){ try{ return (window.CitinelRole && window.CitinelRole.get()) || 'analyst'; }catch(e){ return 'analyst'; } }
   roleMount(){ if(window.CitinelRole) this.unsubRole = window.CitinelRole.subscribe(r=>{ if(r !== this.state.role) this.setState({role:r}); }); }
-  componentWillUnmount_role(){ if(this.unsubRole) this.unsubRole(); }
   roleVals(){
     const ciso = this.state.role === 'ciso';
     return { ciso, analyst: !ciso,
@@ -684,11 +1047,15 @@ autonomous_allowed {
       cisoBg: ciso ? 'var(--ctn-color-surface-navy)' : 'transparent',
       cisoFg: ciso ? 'var(--ctn-color-text-on-navy)' : 'var(--ctn-color-text-muted)' };
   }
-  renderVals(){ const b = this.baseVals(); return Object.assign({}, b, this.roleVals(), this.traceVals(), this.intentVals(), this.depthVals ? this.depthVals(b) : {}, this.stateVals(b)); }
+  renderVals(){
+    const s = this.state;
+    if (s.live === null) return Object.assign({}, this.loadingVals(), this.roleVals());
+    if (s.live === true) { const b = this.liveVals(); const ciso = this.state.role === 'ciso'; return Object.assign({}, b, this.roleVals(), ciso ? {nodeDots: [], approveLabel: b.approveDisabled ? b.approveLabel : (b.approveLabel === 'APPROVE AND FIRE' ? 'APPROVE AS SIGN-OFF AUTHORITY' : b.approveLabel)} : {}); }
+    const b = this.baseVals();
+    return Object.assign({}, b, this.roleVals(), this.traceVals(), this.intentVals(), this.depthVals(b), this.stateVals(b));
+  }
 
-  // Intent preview: the scope declaration a shot-firer reads back before the key turns.
-  // Its value is the right-hand column — an operator can only consent to a blast radius
-  // they have been told the edge of, and "what this will not touch" is the edge.
+  /* ── authored fallback helpers (unchanged narrative) ─────────────────────── */
   intentVals(){
     const act = this.actions.find(a=>a.id===this.state.sel) || this.actions[0];
     const spec = {
@@ -747,7 +1114,6 @@ autonomous_allowed {
       intentLead: 'read back before the key turns · this is the scope you are consenting to, and the scope you are not'
     };
   }
-
   traceVals(){
     const act = this.actions.find(a=>a.id===this.state.sel) || this.actions[0];
     const open = !!this.state.trace;
@@ -803,7 +1169,6 @@ autonomous_allowed {
       approveLabel: this.state.armed ? 'APPROVE AS SIGN-OFF AUTHORITY' : 'ARM THE KEY FIRST'
     };
   }
-
   stateVals(b){
     let m = 'normal';
     try{ m = new URLSearchParams(window.location.search).get('state') || 'normal'; }catch(e){}

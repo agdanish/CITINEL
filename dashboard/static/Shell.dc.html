@@ -77,7 +77,7 @@
         </div>
       </sc-for>
       <div style="margin-top:auto;padding:14px 18px;display:flex;flex-direction:column;gap:9px;min-width:0">
-        <div style="font-size:11px;color:var(--ctn-color-text-muted);font-variant-caps:all-small-caps;line-height:1.5">OCSF 1.4.0 · sigma 3,000 @ 7f31c0d, synced 22 Aug · ATT&amp;CK v16.1, 214/823 mapped<br>AeroFyta · build 2026.08.23-rc4</div>
+        <div style="font-size:11px;color:var(--ctn-color-text-muted);font-variant-caps:all-small-caps;line-height:1.5">{{ footerLine }}<br>{{ footerBuild }}</div>
         <a href="Narrow.dc.html" style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.12em;padding:8px 11px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;color:var(--ctn-color-text-primary);text-decoration:none;text-align:center">NARROW VIEW</a>
       </div>
     </nav>
@@ -170,7 +170,7 @@
       </sc-for>
     </div>
     <div style="display:flex;align-items:center;gap:12px;padding:0 16px;border-left:1px solid var(--ctn-color-border-strong);flex:none">
-      <span data-reveal style="font-family:var(--ctn-font-mono);font-size:12px;color:var(--ctn-color-text-on-navy);opacity:0.72;white-space:nowrap">ingest {{ eps }} eps</span>
+      <span data-reveal style="font-family:var(--ctn-font-mono);font-size:12px;color:var(--ctn-color-text-on-navy);opacity:0.72;white-space:nowrap">{{ eps }}</span>
       <span data-reveal style="font-family:var(--ctn-font-mono);font-size:12px;color:var(--ctn-color-text-on-navy);font-variant-numeric:tabular-nums slashed-zero;white-space:nowrap">{{ utc }} UTC</span>
     </div>
   </div>
@@ -192,10 +192,33 @@
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;role&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;analyst&quot;,&quot;ciso&quot;],&quot;default&quot;:&quot;analyst&quot;,&quot;tsType&quot;:&quot;'analyst'|'ciso'&quot;,&quot;section&quot;:&quot;Shell&quot;}}">
 class Component extends DCLogic {
-  state = {role:'analyst', route:'overview', drawerOpen:false, now:Date.now(), eps:2380};
+  state = {role:'analyst', route:'overview', drawerOpen:false, now:Date.now(), live:null, liveError:null, incidents:[], policy:null, ledger:null, corpus_data:null, connectors_data:null};
   componentDidMount(){
     this.base = Date.now();
-    this.t = setInterval(()=>this.setState(s=>({now:Date.now(), eps: Math.max(1600,Math.min(3600, s.eps + Math.round((Math.random()-0.48)*220)))})),1000);
+    this.t = setInterval(()=>this.setState(s=>({now:Date.now()})),1000);
+    const API = window.CITINEL_API;
+    if (!API) { this.setState({live:false, liveError:'api.js not loaded'}); return; }
+    Promise.all([
+      API.incidentsSummary(),
+      API.policy(),
+      API.verifyLedger(),
+      API.corpusRules(),
+      API.connectors()
+    ]).then(([incRes, polRes, ledRes, corpRes, connRes]) => {
+      if (!incRes.ok || !polRes.ok || !ledRes.ok) {
+        const err = [incRes, polRes, ledRes].find(r => !r.ok);
+        this.setState({live:false, liveError: err ? err.error : 'unknown error'});
+        return;
+      }
+      this.setState({
+        live: true,
+        incidents: Array.isArray(incRes.data) ? incRes.data : [],
+        policy: polRes.data,
+        ledger: ledRes.data,
+        corpus_data: corpRes.ok ? corpRes.data : null,
+        connectors_data: connRes.ok ? connRes.data : null
+      });
+    });
   }
   componentWillUnmount(){ clearInterval(this.t); }
   arc(cx,cy,r,frac){
@@ -228,30 +251,67 @@ class Component extends DCLogic {
       fg: on(id) ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-text-secondary)',
       countFg: on(id) ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-text-muted)'
     });
+
+    // Compute state and severity counts from live incidents
+    const incs = s.live === true && Array.isArray(s.incidents) ? s.incidents : [];
+    const stateCounts = {caught:0, cited:0, gated:0, actioned:0, closed:0};
+    const severityCounts = {critical:0, high:0, medium:0, low:0};
+    let totalFindings = 0;
+    incs.forEach(i => {
+      const st = String(i.state || 'caught');
+      if (stateCounts.hasOwnProperty(st)) stateCounts[st]++;
+      const sv = String(i.severity || '').toLowerCase();
+      if (severityCounts.hasOwnProperty(sv)) severityCounts[sv]++;
+      totalFindings += (i.finding_count || 0);
+    });
+
+    // Policy clause count and ledger entry count from live data
+    const policyClauseCount = (s.live === true && s.policy && Array.isArray(s.policy.clauses)) ? s.policy.clauses.length : '—';
+    const ledgerCount = (s.live === true && s.ledger && s.ledger.witness) ? s.ledger.witness.local_count : '—';
+    const corpusRulesCount = (s.live === true && s.corpus_data && s.corpus_data.rules_total) ? s.corpus_data.rules_total : '3,302';
+    const connectorsCounts = (s.live === true && s.connectors_data && Array.isArray(s.connectors_data.connectors))
+      ? (s.connectors_data.connectors.filter(c => c.configured).length + '/' + s.connectors_data.connectors.length)
+      : '—';
+
+    const overviewBadge = s.live === true ? String(stateCounts.gated) : s.live === false ? '02' : '—';
+    const cd = s.corpus_data || {};
+    const footerLine = s.live === true
+      ? 'OCSF 1.9.0 · sigma ' + (cd.rules_total ? cd.rules_total.toLocaleString() + ' rules' : 'rules not shipped') + (cd.release ? ' @ ' + cd.release : '') + ' · ATT&CK ' + (cd.techniques_observed || cd.techniques || []).length + ' techniques observed'
+      : s.live === false ? 'OCSF 1.4.0 · sigma 3,000 @ 7f31c0d, synced 22 Aug · ATT&CK v16.1, 214/823 mapped' : 'reading corpus pin from citinel-web';
+    const footerBuild = s.live === true ? 'citinel-web · ' + (s.source && s.source.service_version ? s.source.service_version : 'live service') : s.live === false ? 'AeroFyta · build 2026.08.23-rc4' : '···';
     const groups = ciso ? [
-      {name:'POSITION', items:[mkItem('overview','Overview','02'), mkItem('exec','Executive brief','—','Executive.dc.html'), mkItem('compliance','Regulatory clocks','04','Compliance.dc.html')]},
-      {name:'ASSURANCE', items:[mkItem('audit','Audit log','220','Audit.dc.html'), mkItem('policy','Policy & guardrails','31','Policy.dc.html'), mkItem('eval','Detection eval','8.47%','Eval.dc.html')]},
-      {name:'ADMIN', items:[mkItem('handover','Shift handover','2','Handover.dc.html'), mkItem('settings','Connectors','0/7','Settings.dc.html')]}
+      {name:'POSITION', items:[mkItem('overview','Overview', overviewBadge), mkItem('exec','Executive brief','—','Executive.dc.html'), mkItem('compliance','Regulatory clocks','—','Compliance.dc.html')]},
+      {name:'ASSURANCE', items:[mkItem('audit','Audit log', String(ledgerCount), 'Audit.dc.html'), mkItem('policy','Policy & guardrails', String(policyClauseCount), 'Policy.dc.html'), mkItem('eval','Detection eval','—','Eval.dc.html')]},
+      {name:'ADMIN', items:[mkItem('handover','Shift handover','—','Handover.dc.html'), mkItem('settings','Connectors', String(connectorsCounts), 'Settings.dc.html')]}
     ] : [
-      {name:'FLOOR', items:[mkItem('overview','Overview','02'), mkItem('queue','Alert queue','93','Queue.dc.html'), mkItem('incident','Incident detail','—','Replay.dc.html'), mkItem('approvals','Approvals','02','Approvals.dc.html')]},
-      {name:'EVIDENCE', items:[mkItem('evidence','Evidence viewer','8','Evidence.dc.html'), mkItem('confidence','Confidence panel','—','Confidence.dc.html'), mkItem('audit','Audit log','220','Audit.dc.html'), mkItem('compliance','Regulatory clocks','04','Compliance.dc.html')]},
-      {name:'DETECTION', items:[mkItem('sigma','Sigma corpus','3,000','Corpus.dc.html'), mkItem('policy','Policy & guardrails','31','Policy.dc.html'), mkItem('eval','Detection eval','8.47%','Eval.dc.html'), mkItem('demo','Demo mode','—','Demo.dc.html')]},
-      {name:'WATCH', items:[mkItem('handover','Shift handover','2','Handover.dc.html'), mkItem('settings','Connectors','0/7','Settings.dc.html')]}
+      {name:'FLOOR', items:[mkItem('overview','Overview', overviewBadge), mkItem('queue','Alert queue', String(incs.length), 'Queue.dc.html'), mkItem('incident','Incident detail','—','Replay.dc.html'), mkItem('approvals','Approvals','—','Approvals.dc.html')]},
+      {name:'EVIDENCE', items:[mkItem('evidence','Evidence viewer','—','Evidence.dc.html'), mkItem('confidence','Confidence panel','—','Confidence.dc.html'), mkItem('audit','Audit log', String(ledgerCount), 'Audit.dc.html'), mkItem('compliance','Regulatory clocks','—','Compliance.dc.html')]},
+      {name:'DETECTION', items:[mkItem('sigma','Sigma corpus', String(corpusRulesCount), 'Corpus.dc.html'), mkItem('policy','Policy & guardrails', String(policyClauseCount), 'Policy.dc.html'), mkItem('eval','Detection eval','—','Eval.dc.html'), mkItem('demo','Demo mode','—','Demo.dc.html')]},
+      {name:'WATCH', items:[mkItem('handover','Shift handover','—','Handover.dc.html'), mkItem('settings','Connectors', String(connectorsCounts), 'Settings.dc.html')]}
     ];
-    const rows = ciso ? [
-      {sev:'critical', id:'INC-0417', what:'UPI mule cashout attempt · ₹18.4L held, filing due 03:03 IST', showCite:false, clock:f(remainS)},
-      {sev:'high', id:'INC-0846', what:'movement toward core banking · contained to one jump host', showCite:false, clock:f(remainS+14*3600)},
-      {sev:'low', id:'Q2 FY27', what:'31 of 31 statutory windows met, zero breaches', showCite:false, clock:'31/31'}
-    ] : [
-      {sev:'critical', id:'INC-0417', what:'14 beneficiary accounts staged, maker-checker bypassed', showCite:true, locator:'finacle/audit_trail:88412', clock:f(remainS)},
-      {sev:'high', id:'INC-0846', what:'rdp lateral br-jump-02 → CBS segment, isolation drafted', showCite:true, locator:'auth/secure.log:7742', clock:'25:23'},
-      {sev:'high', id:'ALR-99141', what:'lsass memory read after failed su burst', showCite:true, locator:'edr/telemetry:20114', clock:'05:47'},
-      {sev:'medium', id:'ALR-99138', what:'oauth consent grant to unverified app', showCite:true, locator:'m365/audit:7781', clock:'15:12'},
-      {sev:'medium', id:'ALR-99133', what:'encoded powershell on teller workstation', showCite:true, locator:'sysmon/1:44902', clock:'20:04'}
-    ];
+
+    // wellRows: if live, show real incidents from summary; otherwise fall back to authored
+    let rows;
+    if (s.live === true && incs.length > 0) {
+      rows = ciso ? incs.slice(0,3).map(i => ({sev:i.severity, id:i.incident_id, what:'[' + i.state + '] · ' + (i.finding_count || '?') + ' findings', showCite:false, clock:'—'}))
+                 : incs.slice(0,5).map(i => ({sev:i.severity, id:i.incident_id, what:'[' + i.state + '] · ' + (i.finding_count || '?') + ' findings', showCite:false, clock:'—'}));
+    } else {
+      rows = ciso ? [
+        {sev:'critical', id:'INC-0417', what:'UPI mule cashout attempt · ₹18.4L held, filing due 03:03 IST', showCite:false, clock:f(remainS)},
+        {sev:'high', id:'INC-0846', what:'movement toward core banking · contained to one jump host', showCite:false, clock:f(remainS+14*3600)},
+        {sev:'low', id:'Q2 FY27', what:'31 of 31 statutory windows met, zero breaches', showCite:false, clock:'31/31'}
+      ] : [
+        {sev:'critical', id:'INC-0417', what:'14 beneficiary accounts staged, maker-checker bypassed', showCite:false, clock:f(remainS)},
+        {sev:'high', id:'INC-0846', what:'rdp lateral br-jump-02 → CBS segment, isolation drafted', showCite:false, clock:'25:23'},
+        {sev:'high', id:'ALR-99141', what:'lsass memory read after failed su burst', showCite:false, clock:'05:47'},
+        {sev:'medium', id:'ALR-99138', what:'oauth consent grant to unverified app', showCite:false, clock:'15:12'},
+        {sev:'medium', id:'ALR-99133', what:'encoded powershell on teller workstation', showCite:false, clock:'20:04'}
+      ];
+    }
+
     return {
       screenTitle: ciso ? 'executive position · read-only, board copy exportable' : 'operations floor · overview route',
-      operator: ciso ? 'v. rao · ciso' : 'a. deshmukh · L2',
+      operator: s.live === true ? (ciso ? 'ciso · no directory bound' : 'analyst · no directory bound') : ciso ? 'v. rao · ciso' : 'a. deshmukh · L2',
       setAnalyst: ()=>this.setState({role:'analyst'}), setCiso: ()=>this.setState({role:'ciso'}),
       analystBg: !ciso ? 'var(--ctn-color-surface-navy)' : 'transparent',
       analystFg: !ciso ? 'var(--ctn-color-text-on-navy)' : 'var(--ctn-color-text-muted)',
@@ -265,7 +325,7 @@ class Component extends DCLogic {
       wellEyebrow: ciso ? 'POSITION AT A GLANCE' : 'WHAT NEEDS A HUMAN RIGHT NOW',
       wellBody: ciso
         ? 'Same shell, shallower depth: outcomes, statutory position and value protected. Raw log lines stay one click away rather than on the surface. Every citation stays reachable.'
-        : 'Two incidents hold at the gate. Every row below carries the log locator behind its verdict; the drawer opens the line verbatim without covering the clock or the annunciator.',
+        : (s.live === true ? (stateCounts.gated > 0 ? String(stateCounts.gated) + ' incident' + (stateCounts.gated === 1 ? '' : 's') + ' hold at the gate.' : 'No incidents at the gate.') : 'Two incidents hold at the gate. Every row below carries the log locator behind its verdict; the drawer opens the line verbatim without covering the clock or the annunciator.'),
       wellCta: ciso ? 'OPEN BOARD COPY' : 'GO TO THE GATE',
       wellHref: ciso ? 'Executive.dc.html' : 'Approvals.dc.html',
       wellRows: rows,
@@ -273,38 +333,52 @@ class Component extends DCLogic {
         ? [{label:'REGULATORY CLOCKS', href:'Compliance.dc.html'},{label:'AUDIT LEDGER', href:'Audit.dc.html'},{label:'SHIFT HANDOVER', href:'Handover.dc.html'}]
         : [{label:'ALERT QUEUE', href:'Queue.dc.html'},{label:'GLASS-BOX REPLAY', href:'Replay.dc.html'},{label:'AUDIT LEDGER', href:'Audit.dc.html'},{label:'WALLBOARD', href:'Overview.dc.html'}],
       legend: [
-        {glyph:g.caught, name:'CAUGHT', desc:'rule fired, nothing asserted yet', n:'412'},
-        {glyph:g.cited, name:'CITED', desc:'verdict bound to a log line', n:'61'},
-        {glyph:g.gated, name:'GATED', desc:'drafted action awaits a human', n:'02'},
-        {glyph:g.actioned, name:'ACTIONED', desc:'approved and executed', n:'06'},
-        {glyph:g.closed, name:'CLOSED', desc:'ring complete, receipt filed', n:'59'},
+        {glyph:g.caught, name:'CAUGHT', desc:'rule fired, nothing asserted yet', n: s.live===true ? String(stateCounts.caught) : '412'},
+        {glyph:g.cited, name:'CITED', desc:'verdict bound to a log line', n: s.live===true ? String(stateCounts.cited) : '61'},
+        {glyph:g.gated, name:'GATED', desc:'drafted action awaits a human', n: s.live===true ? String(stateCounts.gated) : '02'},
+        {glyph:g.actioned, name:'ACTIONED', desc:'approved and executed', n: s.live===true ? String(stateCounts.actioned) : '06'},
+        {glyph:g.closed, name:'CLOSED', desc:'ring complete, receipt filed', n: s.live===true ? String(stateCounts.closed) : '59'},
         {glyph:g.denied, name:'DENIED', desc:'dead end, recorded with reason', n:'01'}
       ],
       asideEyebrow: ciso ? 'QUARTER TO DATE' : 'THIS WATCH',
       asideRows: ciso
-        ? [{k:'statutory windows met',v:'31/31'},{k:'breaches',v:'00'},{k:'fraud value frozen',v:'₹41.2L'},{k:'median catch-to-gate',v:'41s'},{k:'ledger entries',v:'2,914'}]
-        : [{k:'caught',v:'412'},{k:'cited',v:'61'},{k:'gated now',v:'02'},{k:'mean time to gate',v:'41s'},{k:'false positives cited shut',v:'38'}],
+        ? [{k:'statutory windows met',v:'—'},{k:'breaches',v:'—'},{k:'fraud value frozen',v:'—'},{k:'median catch-to-gate',v:'—'},{k:'ledger entries',v: s.live===true ? String(ledgerCount) : '—'}]
+        : [{k:'caught',v: s.live===true ? String(stateCounts.caught) : '412'},{k:'cited',v: s.live===true ? String(stateCounts.cited) : '61'},{k:'gated now',v: s.live===true ? String(stateCounts.gated) : '02'},{k:'mean time to gate',v:'—'},{k:'false positives cited shut',v:'—'}],
       drawerOpen: s.drawerOpen, toggleDrawer: ()=>this.setState(x=>({drawerOpen:!x.drawerOpen})),
       drawerLabel: s.drawerOpen ? 'CLOSE EVIDENCE DRAWER' : 'OPEN EVIDENCE DRAWER',
       annunciator: [
-        {label:'CRITICAL', value:'02', color:'var(--ctn-color-severity-critical-text)'},
-        {label:'HIGH', value:'07', color:'var(--ctn-color-text-on-navy)'},
-        {label:'MEDIUM', value:'23', color:'var(--ctn-color-text-on-navy)'},
-        {label:'LOW', value:'61', color:'rgba(255,255,255,0.72)'},
-        {label:'AT GATE', value:'02', color:'var(--ctn-color-text-on-navy)'},
-        {label:'CLOCKS RUNNING', value:'04', color:'var(--ctn-color-text-on-navy)'},
-        {label:'BREACHED', value:'00', color:'rgba(255,255,255,0.72)'}
+        {label:'CRITICAL', value: s.live===true ? String(severityCounts.critical) : '02', color:'var(--ctn-color-severity-critical-text)'},
+        {label:'HIGH', value: s.live===true ? String(severityCounts.high) : '07', color:'var(--ctn-color-text-on-navy)'},
+        {label:'MEDIUM', value: s.live===true ? String(severityCounts.medium) : '23', color:'var(--ctn-color-text-on-navy)'},
+        {label:'LOW', value: s.live===true ? String(severityCounts.low) : '61', color:'rgba(255,255,255,0.72)'},
+        {label:'AT GATE', value: s.live===true ? String(stateCounts.gated) : '02', color:'var(--ctn-color-text-on-navy)'}
       ],
-      eps: String(s.eps), utc: new Date(s.now).toISOString().slice(11,19)
+      footerLine, footerBuild,
+      eps: s.live===true ? 'replay corpus · ' + totalFindings + ' findings on ' + incs.length + ' record' + (incs.length === 1 ? '' : 's') : 'demo mode · seed data', utc: new Date(s.now).toISOString().slice(11,19)
     };
   }
 
   stateVals(b){
+    const s = this.state;
     let m = 'normal';
     try{ m = new URLSearchParams(window.location.search).get('state') || 'normal'; }catch(e){}
     const f = x=>[3600,60,1].map(u=>String(Math.floor(x/u)%60).padStart(2,'0')).join(':');
     const base = {clockLabel2:b.clockLabel, clockLabelFg:'var(--ctn-color-text-muted)',
       clockFg:'var(--ctn-color-clock)', clockDigits2:b.clockDigits, clockStruck:false, bannerOn:false};
+
+    // If live is null, show reading state
+    if(s.live === null) {
+      return Object.assign(base, {
+        bannerOn:true, bannerText:'LOADING · READING FROM CITINEL SERVICE'
+      });
+    }
+    // If live is false, service not reached or demo state
+    if(s.live === false) {
+      return Object.assign(base, {
+        bannerOn:true, bannerText:'DEMO MODE · SHOWING AUTHORED FALLBACK DATA'
+      });
+    }
+    // Live is true: normal operational states from ?state= parameter
     if(m === 'breached') return Object.assign(base, {
       clockLabel2:'CERT-IN · WINDOW CLOSED', clockLabelFg:'var(--ctn-color-text-primary)',
       clockFg:'var(--ctn-color-text-primary)', clockDigits2:'+'+f(41*60+12), clockStruck:true,

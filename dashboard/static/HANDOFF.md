@@ -42,20 +42,23 @@ Wrappers: `API.incidents()`, `API.incident(id)`, `API.auditFor(id)`, `API.draftF
 | `draft` | `GET /api/incidents/{id}/draft?kind=certin\|dpdp` | `{draft, rendered, guard}` |
 | `policy` | `GET /api/policy` | `{name, version, policy_sha256, clauses[]}` |
 | `ledgerVerify` | `GET /api/ledger/verify` | `{intact, message, witness}` · waits on the Lyzr witness, can take several seconds |
-| `evalRuns` | `GET /api/eval` | `{measured[], unmeasured[], ...}` · harness report with denominators |
+| `evalRuns` | `GET /api/eval` | `{measured[], unmeasured[], served_from}` · harness report with denominators |
+| `incidentsSummary` | `GET /api/incidents?summary=true` | `Incident[]` without findings · `state` derived from the ledger, `state_basis[]`, `swarm` summary |
+| `verdict` | `GET /api/incidents/{id}/verdict` | persisted `SwarmResult` + `runs[]` + `lyzr_triage` · 404 until a run is saved |
+| `swarmRun` / `swarmStatus` | `POST /api/incidents/{id}/swarm` `{confirm:true}` · `GET …/swarm/status` | starts a live run (202, real model spend) · `{running, mode, error, summary, has_result}` |
+| `execute` | `POST /api/actions/execute` | `{incident_id, action_class, target, assets_affected, approver?}` → gate decision + simulated receipt + rollback token · 403 with the decision when denied |
+| `deny` / `rollback` | `POST /api/actions/deny` · `POST /api/actions/rollback/{token}` | a named refusal as a ledger frame · reverses a simulated action by token |
+| `signoff` / `reopen` | `POST /api/incidents/{id}/signoff` · `POST …/reopen` | human sign-off frame carrying the signer's answers + n8n dispatch · a named reopen frame (closed → caught) |
+| `context` / `contextGather` | `GET/POST /api/incidents/{id}/context` | public context via Tavily per technique and rule: query, URLs, fetch time · never evidence |
+| `handover` | `GET/POST /api/incidents/{id}/handover` | a Lyzr-written handover note from the ledger's frames · not_configured without its agent id |
+| `corpusRules` | `GET /api/corpus` | release pin, rule count (or not shipped), fired rules with counts, techniques observed |
+| `connectors` | `GET /api/connectors` | rails, connectors configured (presence only), mock endpoint state, policy clauses |
 
-### Endpoints — seam built, route does not exist
+### Endpoints — none pending
 
-| Endpoint key | Intended path | Blocked on |
-| --- | --- | --- |
-| `verdict` | `GET /api/incidents/{id}/verdict` | swarm runs live (step 7) but its verdict is printed by the CLI, not persisted or served |
-| `proposals` | `GET /api/incidents/{id}/proposals` | same: produced live, not persisted or served |
-| `execute` | `POST /api/actions/execute` | mocks only, no route |
-| `rollback` | `POST /api/actions/rollback/{token}` | no route |
-| `corpusRules` | `GET /api/corpus/rules` | corpus not exposed |
-
-Paths in the second table are the intended shape, not a contract the service keeps. Rename
-freely — one `path` function each.
+Every key in `API.ENDPOINTS` has a route today. Ideas the console once sketched and the backend
+does not do (a corpus accession bench that drafts rules, a per-exhibit collection-time digest,
+statutory-clock modelling beyond CERT-In) are cut from the pages or labelled not live, never faked.
 
 ---
 
@@ -66,29 +69,29 @@ freely — one `path` function each.
 
 | Page | uses (live) | uses (pending) | still scripted |
 | --- | --- | --- | --- |
-| `Entry.dc.html` | — | — | statutory clock; first-run vs returning session |
-| `Shell.dc.html` | `incidents` | — | nav counts; annunciator strip |
-| `Overview.dc.html` | `incidents`, `policy` | — | agent fleet traces; autonomy mandate; disposition feed |
+| `Entry.dc.html` | `incidentsSummary` **· wired 2 Sep 2026** | — | first-run vs returning session (localStorage convenience) |
+| `Shell.dc.html` | `incidentsSummary`, `policy`, `ledgerVerify` **· wired 2 Sep 2026** | — | — |
+| `Overview.dc.html` | `incidentsSummary`, `policy`, `connectors` (+ audit chains, ledgerVerify) **· wired 2 Sep 2026** | — | — (the dial is read-only: the policy file is the source of truth) |
 | `Queue.dc.html` | `incidents`, `audit` **· wired 2 Sep 2026** | — | belt-dot decoration; `?state=quiet\|firstrun` demo panels |
-| `Replay.dc.html` | `incident`, `audit` | `verdict` | citation chips; agent timeline; kill-chain narrative |
-| `Confidence.dc.html` | — | `verdict` | supporting/counter ledger; retired-evidence trail |
+| `Replay.dc.html` | `incident`, `audit`, `verdict`, `context` **· wired 2 Sep 2026** | — | — (runs the swarm and gathers public context from the screen) |
+| `Confidence.dc.html` | `incident`, `verdict` (+ audit) **· wired 2 Sep 2026** | — | — (restore is a what-if on screen only, and says so) |
 | `Evidence.dc.html` | `incident`, `audit` **· wired 2 Sep 2026** | — | nothing authored in live mode: the external-source and quarantine panels are cut (no route carries either), the integrity dial computes a digest here and says so because none is recorded upstream |
-| `Approvals.dc.html` | `policy` | `proposals`, `execute`, `rollback` | blast rings; intent preview; rollback tokens |
-| `Corpus.dc.html` | — | `corpusRules` | accession bench; export packet |
-| `Eval.dc.html` | `evalRuns` (route exists; page does not read it yet) | — | FP rate + denominators; inferred cost |
-| `Policy.dc.html` | `policy` | — | autonomy dials; change history |
-| `Compliance.dc.html` | `draft`, `incident` | — | press mechanics; DPDP artifacts |
+| `Approvals.dc.html` | `policy`, `verdict`, `audit`, `execute` (+ deny, rollback, connectors) **· wired 2 Sep 2026** | — | — |
+| `Corpus.dc.html` | `corpusRules` **· wired 2 Sep 2026** | — | the accession bench is labelled demo-only (no backend drafts rules) |
+| `Eval.dc.html` | `evalRuns` **· wired 2 Sep 2026** | — | — (the false-positive rate is shown as UNMEASURED, never a number) |
+| `Policy.dc.html` | `policy`, `connectors` **· wired 2 Sep 2026** | — | — (read-only; no dial can be turned from the console) |
+| `Compliance.dc.html` | `draft`, `incident` (+ audit, signoff) **· wired 2 Sep 2026** | — | — |
 | `Audit.dc.html` | `audit`, `ledgerVerify` **· wired 2 Sep 2026** | — | nothing: the ribbon is placed by real elapsed time; an authored fallback reel shows only when the service is not reached |
-| `Handover.dc.html` | `incidents`, `audit` | — | watch register; exceptions |
-| `Executive.dc.html` | `incidents`, `policy`, `ledgerVerify` | — | board narrative; quarter figures |
-| `Settings.dc.html` | `health` | — | connector roster; enrichment quota; mock endpoints |
-| `Demo.dc.html` | — | — | entire walkthrough, by design |
-| `Narrow.dc.html` | `incidents`, `audit` | — | mirrors the console it replaces |
+| `Handover.dc.html` | `incidentsSummary`, `audit` (+ handover) **· wired 2 Sep 2026** | — | RELIEVED BY names cut (no user backend) |
+| `Executive.dc.html` | `incidentsSummary`, `policy`, `ledgerVerify` **· wired 2 Sep 2026** | — | — |
+| `Settings.dc.html` | `connectors` **· wired 2 Sep 2026** | — | inlets / header tank / cache sections hidden in live mode (no route) |
+| `Demo.dc.html` | — | — | guided walkthrough; acts labelled SCRIPTED FOR DEMONSTRATION, links carry `?id=` |
+| `Narrow.dc.html` | `incidentsSummary`, `audit` **· wired 2 Sep 2026** | — | the excepted panels are labelled not live |
 
 This table is the human-readable form of `API.PAGES` in `api.js`. **Keep them in step** — the
 on-screen badge is derived from the code, not from this file.
 
-**Wiring status, 2 Sep 2026.** `Queue.dc.html`, `Audit.dc.html` and `Evidence.dc.html` read the service. Every other
+**Wiring status, 2 Sep 2026.** Every page reads the service; nothing authored is drawn while `live === true`, and what has no backend is cut or labelled on screen. Every other
 page still renders authored data and, because the badge follows actual reads, correctly says
 `DEMO DATA` even with the backend up. The pattern to copy is in both wired pages: three states that
 never blend (`live: null` reading → `true` real records → `false` authored fallback), the badge left

@@ -60,8 +60,8 @@
     </div>
     <span style="flex:none;font-size:11.5px;color:var(--ctn-color-text-muted);font-variant-caps:all-small-caps;white-space:nowrap">{{ enteredFrom }}</span>
     <div style="display:flex;align-items:center;gap:2px;flex:none;border:1px solid var(--ctn-color-border-strong);border-radius:6px;padding:2px">
-      <button onClick="{{ pickLive }}" style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:6px 11px;border:none;border-radius:4px;cursor:pointer;background:{{ liveBg }};color:{{ liveFg }}">INC-0417</button>
-      <button onClick="{{ pickDemo }}" style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:6px 11px;border:none;border-radius:4px;cursor:pointer;background:{{ demoBg }};color:{{ demoFg }}">DEMO INC-0416</button>
+      <button onClick="{{ pickLive }}" style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:6px 11px;border:none;border-radius:4px;cursor:pointer;background:{{ liveBg }};color:{{ liveFg }}">{{ liveLabel }}</button>
+      <button onClick="{{ pickDemo }}" style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:6px 11px;border:none;border-radius:4px;cursor:pointer;background:{{ demoBg }};color:{{ demoFg }}">{{ demoLabel }}</button>
     </div>
   </header>
 
@@ -103,8 +103,8 @@
     <div style="flex:1;min-width:0;display:flex;flex-direction:column;padding:14px 22px 12px">
       <div style="display:flex;align-items:baseline;gap:12px;flex:none;min-width:0">
         <span style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.14em;color:var(--ctn-color-text-muted);flex:none">PIPELINE FILMSTRIP · DRAG TO SHUTTLE</span>
-        <span style="font-size:11.5px;color:var(--ctn-color-text-muted);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">seven stages, one incident, {{ elapsedReal }} of wall clock. solid stock is work performed, gold arcs are cited frames</span>
-        <span data-token style="font-family:var(--ctn-font-mono);font-size:11.5px;color:var(--ctn-color-text-muted);flex:none">edge code {{ edgeCode }}</span>
+        <span style="font-size:11.5px;color:var(--ctn-color-text-muted);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ filmstripNote }}</span>
+        <span data-token style="font-family:var(--ctn-font-mono);font-size:11.5px;color:var(--ctn-color-text-muted);flex:none">{{ edgeCode }}</span>
       </div>
       <div style="display:flex;flex:1;min-height:0;margin-top:8px;min-width:0">
         <div style="width:150px;flex:none;min-width:0;display:flex;flex-direction:column;border-right:1px solid var(--ctn-color-border-strong);padding-right:10px;overflow:hidden">
@@ -156,14 +156,14 @@
     <section style="border-right:1px solid var(--ctn-color-border-hairline);display:flex;flex-direction:column;min-height:0;min-width:0">
       <div style="flex:none;display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;padding:13px 22px 8px;min-width:0">
         <span style="font-family:var(--ctn-font-display);font-size:10px;letter-spacing:0.14em;color:var(--ctn-color-text-muted);flex:none">NARRATOR · EVERY CLAIM CARRIES ITS LINE</span>
-        <span style="font-size:12px;color:var(--ctn-color-text-muted);flex:1 1 100%;order:3;min-width:0;max-width:110ch;line-height:1.4">click a claim to park the shuttle on its frame</span>
+        <span style="font-size:12px;color:var(--ctn-color-text-muted);flex:1 1 100%;order:3;min-width:0;max-width:110ch;line-height:1.4">{{ narratorSub }}</span>
         <span style="font-family:var(--ctn-font-display);font-size:14px;color:var(--ctn-color-text-primary);font-variant-numeric:tabular-nums slashed-zero;flex:none;margin-left:auto">{{ citedCount }}</span>
       </div>
       <div style="flex:1;min-height:0;overflow-y:auto;padding:0 22px 18px;display:flex;flex-direction:column;gap:9px">
         <sc-if value="{{ isLoading }}" hint-placeholder-val="{{ false }}">
           <div style="border:1px dashed var(--ctn-color-border-strong);border-radius:6px;padding:18px 20px;min-width:0">
-            <div style="font-family:var(--ctn-font-display);font-size:10px;letter-spacing:0.12em;color:var(--ctn-color-text-primary)">PAPER RUNNING · NO PEN DOWN YET</div>
-            <div style="font-size:13px;color:var(--ctn-color-text-secondary);margin-top:9px;line-height:1.55;max-width:92ch;text-wrap:pretty">The recorder is turning and the channels are open; the incident record has not finished loading, so nothing has been drawn. What you are not seeing is deliberate. A claim appears on this strip only once its citation has loaded with it.</div>
+            <div style="font-family:var(--ctn-font-display);font-size:10px;letter-spacing:0.12em;color:var(--ctn-color-text-primary)">{{ loadTitle }}</div>
+            <div style="font-size:13px;color:var(--ctn-color-text-secondary);margin-top:9px;line-height:1.55;max-width:92ch;text-wrap:pretty">{{ loadBody }}</div>
             <div style="display:flex;flex-direction:column;gap:7px;margin-top:13px">
               <sc-for list="{{ loadSteps }}" as="s" hint-placeholder-count="4">
                 <div style="display:flex;align-items:center;gap:10px;min-width:0">
@@ -173,6 +173,12 @@
                 </div>
               </sc-for>
             </div>
+            <sc-if value="{{ showRun }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;align-items:center;gap:12px;margin-top:14px;flex-wrap:wrap;min-width:0">
+                <button onClick="{{ runSwarm }}" style="font-family:var(--ctn-font-display);font-size:10px;letter-spacing:0.12em;padding:11px 14px;border:none;border-radius:6px;background:var(--ctn-color-surface-navy);color:var(--ctn-color-text-on-navy);cursor:pointer;flex:none">{{ runLabel }}</button>
+                <span data-token style="font-family:var(--ctn-font-mono);font-size:11px;color:var(--ctn-color-text-muted);flex:1;min-width:0;line-height:1.4">{{ runStatus }}</span>
+              </div>
+            </sc-if>
           </div>
         </sc-if>
         <sc-for list="{{ claims }}" as="c" hint-placeholder-count="5">
@@ -218,7 +224,7 @@
     <section style="display:flex;flex-direction:column;min-height:0;min-width:0;overflow-y:auto;background:var(--ctn-color-surface-panel)">
       <div style="padding:13px 20px 6px;flex:none">
         <div style="font-family:var(--ctn-font-display);font-size:10px;letter-spacing:0.14em;color:var(--ctn-color-text-muted)">CORRELATOR · KILL CHAIN, ATT&amp;CK v16</div>
-        <div style="font-size:11.5px;color:var(--ctn-color-text-muted);margin-top:3px">assembled from {{ chainSourceCount }} sources</div>
+        <div style="font-size:11.5px;color:var(--ctn-color-text-muted);margin-top:3px">{{ chainSourceNote }}</div>
       </div>
       <div style="padding:6px 20px 0;flex:none">
         <sc-for list="{{ killChain }}" as="k" hint-placeholder-count="5">
@@ -238,6 +244,31 @@
           </div>
         </sc-for>
       </div>
+      <div style="padding:10px 20px 4px;flex:none;border-top:1px solid var(--ctn-color-border-hairline)">
+        <div style="display:flex;align-items:baseline;gap:10px;min-width:0">
+          <span style="font-family:var(--ctn-font-display);font-size:10px;letter-spacing:0.14em;color:var(--ctn-color-text-muted);flex:none">PUBLIC CONTEXT · TAVILY</span>
+          <span style="font-size:11px;color:var(--ctn-color-text-muted);flex:1;min-width:0;line-height:1.4">{{ contextNote }}</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px">
+          <sc-for list="{{ contextRows }}" as="x" hint-placeholder-count="3">
+            <div style="display:flex;flex-direction:column;gap:5px;padding:7px 0;border-bottom:1px solid var(--ctn-color-border-hairline);min-width:0">
+              <div style="display:flex;align-items:baseline;gap:8px;min-width:0">
+                <span data-token style="font-family:var(--ctn-font-mono);font-size:11px;color:var(--ctn-color-text-primary);flex:none">{{ x.for }}</span>
+                <span style="font-size:11px;color:var(--ctn-color-text-muted);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="{{ x.query }}">{{ x.query }}</span>
+              </div>
+              <sc-for list="{{ x.chips }}" as="ch" hint-placeholder-count="2">
+                <dc-import name="ExternalCitationChip" source="{{ ch.source }}" url="{{ ch.url }}" fetched-at="{{ ch.fetchedAt }}" size="sm" hint-size="300px,24px"></dc-import>
+              </sc-for>
+            </div>
+          </sc-for>
+        </div>
+        <sc-if value="{{ contextGatherable }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;align-items:center;gap:10px;margin-top:8px;flex-wrap:wrap">
+            <button onClick="{{ gatherContext }}" style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:8px 12px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;background:none;color:var(--ctn-color-text-primary);cursor:pointer">{{ gatherLabel }}</button>
+            <span data-token style="font-family:var(--ctn-font-mono);font-size:10.5px;color:var(--ctn-color-text-muted);flex:1;min-width:0">{{ gatherStatus }}</span>
+          </div>
+        </sc-if>
+      </div>
       <div style="padding:8px 20px 0;flex:none;border-top:1px solid var(--ctn-color-border-hairline)">
         <div style="border:1px solid var(--ctn-color-border-strong);border-radius:14px;padding:14px;margin-top:8px;display:flex;flex-direction:column;gap:9px;min-width:0">
           <div style="display:flex;align-items:baseline;gap:10px;min-width:0">
@@ -255,9 +286,9 @@
             </a>
           </sc-for>
           <div style="display:flex;gap:6px;flex-wrap:wrap">
-            <a href="{{ harvestHref }}" style="flex:1;min-width:130px;font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:9px 12px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;color:var(--ctn-color-text-primary);text-decoration:none;text-align:center">TAKE THESE · EXPORT</a>
-            <span style="flex:none;font-family:var(--ctn-font-display);font-size:8px;letter-spacing:0.1em;color:var(--ctn-color-text-muted);border:1px solid var(--ctn-color-border-strong);padding:6px 8px;border-radius:3px;align-self:center">CONFIRMED</span>
-            <a href="Compliance.dc.html" style="flex:1;min-width:118px;font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:9px 12px;background:var(--ctn-color-surface-navy);color:var(--ctn-color-text-on-navy);border-radius:6px;text-decoration:none;text-align:center">OPEN THE DESK</a>
+            <a href="{{ harvestHref }}" style="flex:1;min-width:130px;font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:9px 12px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;color:var(--ctn-color-text-primary);text-decoration:none;text-align:center">{{ exportLabel }}</a>
+            <span style="flex:none;font-family:var(--ctn-font-display);font-size:8px;letter-spacing:0.1em;color:var(--ctn-color-text-muted);border:1px solid var(--ctn-color-border-strong);padding:6px 8px;border-radius:3px;align-self:center">{{ modeChip }}</span>
+            <a href="{{ deskHref }}" style="flex:1;min-width:118px;font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:9px 12px;background:var(--ctn-color-surface-navy);color:var(--ctn-color-text-on-navy);border-radius:6px;text-decoration:none;text-align:center">OPEN THE DESK</a>
           </div>
           <div style="border-top:1px solid var(--ctn-color-border-hairline);padding-top:10px;display:flex;flex-direction:column;gap:8px;min-width:0">
             <div style="font-size:11.5px;color:var(--ctn-color-text-muted);line-height:1.45;text-wrap:pretty">{{ closeNote }}</div>
@@ -300,8 +331,8 @@
                 </div>
               </div>
             </sc-for>
-            <div style="font-size:12px;color:var(--ctn-color-text-secondary);line-height:1.45">drafted and held. the ring stops at gated. completing it takes a decision at the gate.</div>
-            <a href="Approvals.dc.html" style="font-family:var(--ctn-font-display);font-size:10px;letter-spacing:0.12em;padding:11px 14px;background:var(--ctn-color-surface-navy);color:var(--ctn-color-text-on-navy);border-radius:6px;text-decoration:none;text-align:center">OPEN THE APPROVAL CARD</a>
+            <div style="font-size:12px;color:var(--ctn-color-text-secondary);line-height:1.45">{{ proposalNote }}</div>
+            <a href="{{ approvalsHref }}" style="font-family:var(--ctn-font-display);font-size:10px;letter-spacing:0.12em;padding:11px 14px;background:var(--ctn-color-surface-navy);color:var(--ctn-color-text-on-navy);border-radius:6px;text-decoration:none;text-align:center">OPEN THE APPROVAL CARD</a>
           </div>
         </sc-if>
         <sc-if value="{{ proposalPending }}" hint-placeholder-val="{{ false }}">
@@ -312,7 +343,7 @@
         </sc-if>
         <div style="margin-top:12px;display:flex;gap:7px">
           <a href="Queue.dc.html" style="flex:1;font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:9px 8px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;color:var(--ctn-color-text-primary);text-decoration:none;text-align:center">BACK TO QUEUE</a>
-          <a href="Audit.dc.html" style="flex:1;font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:9px 8px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;color:var(--ctn-color-text-primary);text-decoration:none;text-align:center">FULL TAPE</a>
+          <a href="{{ auditHref }}" style="flex:1;font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:9px 8px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;color:var(--ctn-color-text-primary);text-decoration:none;text-align:center">FULL TAPE</a>
         </div>
       </div>
     </section>
@@ -324,6 +355,8 @@ class Component extends DCLogic {
   constructor(p){
     super(p);
     this.trackRef = React.createRef();
+    // Authored fallback reels: shown only when the service is not read (live === false).
+    // They narrate a fictional case and never mix with a real run; the badge says DEMO DATA.
     this.data = {
       live: {
         id:'INC-0417', sev:'critical',
@@ -437,11 +470,17 @@ class Component extends DCLogic {
       }
     };
     let at = 0, playing = true, open = null;
+    this.incId = null;
     try{
-      const q = new URLSearchParams(window.location.search).get('at');
+      const P = new URLSearchParams(window.location.search);
+      const q = P.get('at');
       if(q !== null && !isNaN(parseFloat(q))){ at = Math.max(0, Math.min(100, parseFloat(q))); playing = false; open = at; }
+      const id = P.get('id'); if (id && /^INC-\d+$/.test(id)) this.incId = id;
     }catch(err){}
-    this.state = {role:this.roleInit(), which:'live', pos:at, playing, openClaim:open, now:Date.now()};
+    this.state = {role:this.roleInit(), which:'live', pos:at, playing, openClaim:open, now:Date.now(),
+      // live: null = reading · true = a real record and its run on the strip · false = authored fallback
+      live:null, liveError:null, ids:[], rows:[], incident:null, chain:null, verdict:null, verdictMissing:false,
+      running:false, runStatus:null, context:null, gathering:false, gatherStatus:''};
   }
   componentDidMount(){ this.roleMount();
     this.base = Date.now();
@@ -459,8 +498,65 @@ class Component extends DCLogic {
     this.move = e=>{ if(this.dragging) this.seekFromEvent(e); };
     window.addEventListener('mouseup', this.up);
     window.addEventListener('mousemove', this.move);
+    const API = window.CITINEL_API;
+    if (!API) { this.setState({live:false, liveError:'api.js not loaded'}); return; }
+    API.incidentsSummary().then(r => {
+      if (!r.ok || !Array.isArray(r.data) || !r.data.length) { this.setState({live:false, liveError: r.error || 'no incidents'}); return; }
+      const ids = r.data.map(i => i.incident_id);
+      const id = this.incId && ids.indexOf(this.incId) >= 0 ? this.incId : (ids.indexOf(API.INCIDENT_PRIMARY) >= 0 ? API.INCIDENT_PRIMARY : ids[0]);
+      this.setState({ids, rows: r.data});
+      this.load(id);
+    });
   }
-  componentWillUnmount(){ clearInterval(this.t); window.removeEventListener('mouseup', this.up); window.removeEventListener('mousemove', this.move); }
+  load(id){
+    const API = window.CITINEL_API;
+    this.incId = id; this._d = null;
+    this.setState({live:null, incident:null, chain:null, verdict:null, verdictMissing:false, pos:0, playing:true, openClaim:null});
+    Promise.all([API.incident(id), API.auditFor(id), API.verdictFor(id), API.contextFor(id)]).then(([inc, ch, vd, cx]) => {
+      if (!inc.ok) { this.setState({live:false, liveError:inc.error}); return; }
+      this._d = null;
+      this.setState({live:true, incident:inc.data, chain: ch.ok ? ch.data : [], verdict: vd.ok ? vd.data : null,
+                     verdictMissing: !vd.ok, context: cx.ok ? cx.data : null, pos:0, playing:true, openClaim:null});
+    });
+  }
+  gatherContext(){
+    const API = window.CITINEL_API, id = this.incId;
+    if (!API || this.state.gathering) return;
+    this.setState({gathering:true, gatherStatus:'searching the open web for each technique and rule · one Tavily credit per uncached query'});
+    API.gatherContext(id).then(r => {
+      if (!r.ok) { this.setState({gathering:false, gatherStatus:'could not gather: ' + (r.error || 'unknown')}); return; }
+      this.setState({gathering:false, gatherStatus:'gathered ' + r.data.sources + ' sources for ' + r.data.credits_used + ' credit' + (r.data.credits_used===1?'':'s'), context: r.data});
+    });
+  }
+  contextVals(liveMode){
+    const s = this.state, cx = liveMode ? s.context : null;
+    if (!liveMode) return { contextNote: 'authored demo · no public context gathered', contextRows: [], contextGatherable: false, gatherContext: ()=>{}, gatherLabel: '', gatherStatus: '' };
+    const rows = cx ? (cx.queries || []).map(q => ({ for: q.for, query: q.query + (q.status !== 'ok' ? ' · ' + (q.note || q.status) : ''),
+      chips: (q.results || []).map(r => ({ source: String(r.title || '').slice(0, 70) || 'untitled', url: r.url, fetchedAt: String(q.fetched_at || cx.gathered_at || '').slice(0, 16).replace('T', ' ') + 'Z' })) })) : [];
+    return {
+      contextRows: rows,
+      contextNote: cx ? cx.sources + ' source' + (cx.sources===1?'':'s') + ' for ' + (cx.queries||[]).length + ' quer' + ((cx.queries||[]).length===1?'y':'ies') + ' · gathered ' + String(cx.gathered_at||'').slice(0,16).replace('T',' ') + 'Z · context only, never evidence: claims cite the record\'s own findings' : 'nothing gathered yet · the open web has not been asked about these techniques',
+      contextGatherable: !!s.verdict, gatherContext: ()=>this.gatherContext(),
+      gatherLabel: s.gathering ? 'SEARCHING…' : (cx ? 'GATHER AGAIN' : 'GATHER PUBLIC CONTEXT'), gatherStatus: s.gatherStatus || (cx ? cx.credits_used + ' credit' + (cx.credits_used===1?'':'s') + ' spent last time' : '')
+    };
+  }
+  runSwarm(){
+    const API = window.CITINEL_API, id = this.incId;
+    if (!API || this.state.running) return;
+    this.setState({running:true, runStatus:'starting the swarm on ' + id + ' · real model spend'});
+    API.runSwarm(id).then(r => {
+      if (!r.ok) { this.setState({running:false, runStatus:'could not start: ' + (r.error || 'unknown')}); return; }
+      const poll = () => API.swarmStatus(id).then(s => {
+        const st = s.ok ? s.data : null;
+        if (st && st.running) { this.setState({runStatus:'running since ' + String(st.started_at||'').slice(11,19) + 'Z · router → enricher → correlator → narrator → marshal'}); setTimeout(poll, 4000); return; }
+        if (st && st.error) { this.setState({running:false, runStatus:'run failed: ' + st.error}); return; }
+        this.setState({running:false, runStatus:'run finished · mode ' + (st && st.mode) + ' · reading the verdict'});
+        this.load(id);
+      });
+      setTimeout(poll, 3000);
+    });
+  }
+  componentWillUnmount(){ clearInterval(this.t); window.removeEventListener('mouseup', this.up); window.removeEventListener('mousemove', this.move); if(this.unsubRole) this.unsubRole(); }
   seekFromEvent(e){
     const el = this.trackRef.current; if(!el) return;
     const r = el.getBoundingClientRect();
@@ -500,25 +596,135 @@ class Component extends DCLogic {
     const abs = h*3600+m*60+s0+sec;
     return [Math.floor(abs/3600)%24, Math.floor(abs/60)%60, abs%60].map(x=>String(x).padStart(2,'0')).join(':');
   }
+  fmtN(n){ return Number(n || 0).toLocaleString('en-IN'); }
+  ist(ms){ const d = new Date(ms + 330*60000); return isNaN(d) ? '—' : d.toISOString().slice(11,19); }
+
+  /* ── the real run, in the shape the strip already renders ─────────────────
+     `d` mirrors the authored reel's fields (lanes, claims, killChain, proposals,
+     startIST, spanS...) so every instrument below draws real frames the same way.
+     The strip is the LATEST swarm run on this case's ledger chain -- the frames
+     from its sentinel note to its last model call -- placed by real time. Earlier
+     runs and the days before them are on the Audit reel, not squashed here. */
+  liveData(){
+    const s = this.state;
+    if (this._d && this._dsrc === s.verdict && this._dchain === s.chain) return this._d;
+    const inc = s.incident || {}, chain = Array.isArray(s.chain) ? s.chain : [], vd = s.verdict;
+    const fs = inc.findings || [];
+    const ms = e => Date.parse(e.ts) || 0;
+    let start = -1;
+    chain.forEach((e, i) => { if (e.actor === 'sentinel' && e.kind === 'note') start = i; });
+    const run = start >= 0 ? chain.slice(start) : [];
+    const swarmActors = {'router':1,'triage-router':1,'enricher':1,'correlator':1,'narrator':1,'marshal':1,'sentinel':1,'policy-gate':1,'response-marshal':1};
+    const frames = run.filter(e => swarmActors[e.actor] || e.kind === 'human_signoff');
+    const t0 = frames.length ? ms(frames[0]) : 0;
+    const t1 = frames.length ? Math.max(t0 + 1000, Math.max.apply(null, frames.map(ms))) : t0 + 1000;
+    const spanS = Math.max(1, Math.round((t1 - t0) / 1000));
+    const pctOf = e => Math.max(0, Math.min(100, ((ms(e) - t0) / (t1 - t0)) * 100));
+    const laneOf = e => e.actor === 'sentinel' && e.kind === 'note' ? 0
+      : (e.actor === 'router' || e.actor === 'triage-router') ? 1
+      : e.actor === 'enricher' ? 2 : e.actor === 'correlator' ? 3
+      : (e.actor === 'narrator' || (e.actor === 'sentinel' && e.kind !== 'note')) ? 4
+      : e.actor === 'marshal' ? 5 : 6;
+    const laneDefs = [
+      {stage:'EVIDENCE', agent:'Sentinel · fenced findings'},
+      {stage:'TRIAGE', agent:'Triage Router'},
+      {stage:'ENRICH', agent:'Enrichment Squad'},
+      {stage:'CORRELATE', agent:'Correlator'},
+      {stage:'NARRATE', agent:'Verdict Narrator'},
+      {stage:'PROPOSE', agent:'Response Marshal'},
+      {stage:'GATE', agent:'policy gate · humans'}
+    ];
+    const lanes = laneDefs.map(l => ({stage:l.stage, agent:l.agent, spans:[]}));
+    let prevPct = 0;
+    frames.forEach(e => {
+      const p = pctOf(e), li = laneOf(e);
+      if (li === 0) { prevPct = p; return; }
+      const a = Math.min(prevPct, p);
+      lanes[li].spans.push([a, Math.max(p, a + 0.6)]);
+      prevPct = p;
+    });
+    if (!lanes[0].spans.length) lanes[0].spans.push([0, 100]);
+    const frameAt = (pred) => { let f = null; frames.forEach(e => { if (pred(e)) f = e; }); return f; };
+    const narratorF = frameAt(e => e.actor === 'narrator') || frameAt(e => e.kind === 'state_transition');
+    const correlatorF = frameAt(e => e.actor === 'correlator');
+    const marshalF = frameAt(e => e.actor === 'marshal');
+    const citedF = frameAt(e => e.kind === 'state_transition' && (e.payload||{}).to === 'cited');
+    const narratorPct = narratorF ? pctOf(narratorF) : 100, correlatorPct = correlatorF ? pctOf(correlatorF) : narratorPct;
+    const tOf = e => e ? this.ist(ms(e)) : '—';
+    const locatorOf = (f, idx) => {
+      const raw = String(f.evidence_raw || ''), host = String(f.host||'').split('.')[0] || 'host';
+      const logName = (/LogName=([^\r\n]+)/.exec(raw) || [])[1], rec = (/RecordNumber=(\d+)/.exec(raw) || [])[1];
+      const prov = (/Provider Name='([^']+)'/.exec(raw) || [])[1];
+      return host + ' · ' + (logName ? 'WinEventLog:' + logName.trim() : prov || f.source) + (rec ? ' · record ' + rec : ' · finding #' + idx);
+    };
+    const verdict = vd && vd.verdict, claimsSrc = verdict ? verdict.claims || [] : [];
+    const claims = claimsSrc.map((c, i) => {
+      const cit = (c.citations || [])[0] || {}, idx = cit.finding_index, f = fs[idx] || {};
+      const counter = c.support === 'counter';
+      const tech = (f.techniques || [])[0];
+      const n = (c.citations || []).length;
+      return {
+        pct: narratorPct, lane: 4, t: tOf(narratorF), counter,
+        technique: (counter ? 'COUNTER-EVIDENCE' : 'SUPPORTING') + (tech ? ' · ' + tech : '') + ' · ' + n + ' citation' + (n===1?'':'s'),
+        text: c.text, locator: idx != null ? locatorOf(f, idx) : 'no citation attached', source: idx != null ? String(f.host || '') : '—',
+        hash: 'no digest recorded at collection', log: idx != null ? String(f.evidence_raw || '') : '',
+        span: cit.quoted_span || '', findingIndex: idx, order: i
+      };
+    });
+    const stages = vd && vd.correlation ? vd.correlation.stages || [] : [];
+    const killChain = stages.map(st => {
+      const n = (st.citations||[]).length;
+      return { pct: correlatorPct, tactic: String(st.technique_name || '').toUpperCase(), tid: st.technique_id, t: tOf(correlatorF).slice(0,5),
+        note: st.what_happened + (n ? ' · ' + n + ' citation' + (n===1?'':'s') : '') };
+    });
+    const proposals = (vd && vd.proposals || []).map(p => {
+      const n = (p.citations||[]).length;
+      return { name: p.action_class + ' → ' + p.target,
+        detail: p.justification + ' · assets affected ' + p.assets_affected + (n ? ' · ' + n + ' citation' + (n===1?'':'s') : ''),
+        action_class: p.action_class, target: p.target, assets: p.assets_affected };
+    });
+    const at = pred => { const f = frameAt(pred); return f ? pctOf(f) : 101; };
+    const hostsInvolved = vd && vd.correlation ? (vd.correlation.hosts_involved || []) : [];
+    this._dsrc = s.verdict; this._dchain = s.chain;
+    this._d = {
+      id: inc.incident_id || this.incId, sev: inc.severity || 'medium',
+      title: verdict ? verdict.headline : (fs.length ? this.fmtN(fs.length) + ' findings on the record · no swarm verdict saved yet' : 'no findings'),
+      startIST: frames.length ? this.ist(t0) : '00:00:00', spanS,
+      entered: 'opened from the queue · state ' + String(inc.state || 'caught').replace('_',' ') + ' · ' + (inc.state_basis||[]).length + ' ledger frames behind it',
+      edge: vd ? 'run ' + ((vd.runs||[]).length || 1) + ' · saved ' + String(vd.saved_at||'').slice(0,16).replace('T',' ') + 'Z' : 'no run saved',
+      lanes, claims, chainSourceCount: hostsInvolved.length, hostsInvolved,
+      killChain, proposalPct: marshalF ? pctOf(marshalF) : 101, proposals,
+      frames, citedPct: citedF ? pctOf(citedF) : 101, firstPct: frames.length ? 0 : 101,
+      gatedPct: at(e => e.kind === 'policy_check'), actionedPct: at(e => e.kind === 'action_executed'),
+      closedPct: at(e => e.kind === 'human_signoff' && !(e.payload||{}).approved),
+      verdict: vd, derived: inc.state || 'caught', inc, findingsExamined: vd ? vd.findings_examined : null, findingsTotal: fs.length
+    };
+    return this._d;
+  }
+
   baseVals(){
-    const s = this.state, d = this.data[s.which], live = s.which==='live';
+    const s = this.state, liveMode = s.live === true, d = liveMode ? this.liveData() : this.data[s.which], live = liveMode || s.which==='live';
     const passed = d.claims.filter(c=>c.pct <= s.pos);
     const cur = passed.length ? passed[passed.length-1] : null;
     const openId = s.openClaim != null ? s.openClaim : (cur ? cur.pct : null);
     const marks = d.claims.slice().sort((a,b)=>a.pct-b.pct);
-    const first = marks[0].pct, lastCite = marks[marks.length-2].pct, gatedAt = d.proposalPct;
+    const first = liveMode ? d.firstPct : (marks.length ? marks[0].pct : 0);
+    const lastCite = liveMode ? d.citedPct : (marks.length > 1 ? marks[marks.length-2].pct : first);
+    const gatedAt = liveMode ? Math.min(d.gatedPct, d.proposalPct) : d.proposalPct;
     let prog = 0;
     if(s.pos >= gatedAt) prog = 0.5;
-    else if(s.pos >= lastCite) prog = 0.25 + 0.25*(s.pos-lastCite)/(gatedAt-lastCite);
-    else if(s.pos >= first) prog = 0.25*(s.pos-first)/(lastCite-first);
+    else if(s.pos >= lastCite) prog = 0.25 + 0.25*(gatedAt > lastCite ? (s.pos-lastCite)/(gatedAt-lastCite) : 1);
+    else if(s.pos >= first) prog = 0.25*(lastCite > first ? (s.pos-first)/(lastCite-first) : 1);
+    if (liveMode && s.pos >= d.actionedPct) prog = 0.75;
+    if (liveMode && s.pos >= d.closedPct) prog = 1;
     const R = React;
-    const ringArc = prog<=0 ? '' : (()=>{ const a = prog*2*Math.PI - Math.PI/2; return `M 110 24 A 86 86 0 ${prog>0.5?1:0} 1 ${(110+86*Math.cos(a)).toFixed(1)} ${(110+86*Math.sin(a)).toFixed(1)}`; })();
+    const ringArc = prog<=0 ? '' : (()=>{ const a = Math.min(prog, 0.9999)*2*Math.PI - Math.PI/2; return `M 110 24 A 86 86 0 ${prog>0.5?1:0} 1 ${(110+86*Math.cos(a)).toFixed(1)} ${(110+86*Math.sin(a)).toFixed(1)}`; })();
     const nodeDefs = [
       {f:0, kind:'caught', on: s.pos>=first},
       {f:0.25, kind:'cited', on: s.pos>=lastCite},
       {f:0.5, kind:'gated', on: s.pos>=gatedAt},
-      {f:0.75, kind:'actioned', on:false},
-      {f:1, kind:'closed', on:false}
+      {f:0.75, kind:'actioned', on: liveMode ? s.pos>=d.actionedPct : false},
+      {f:1, kind:'closed', on: liveMode ? s.pos>=d.closedPct : false}
     ];
     const ringNodes = nodeDefs.map((n,i)=>{
       const a = n.f*2*Math.PI - Math.PI/2, cx = 110+86*Math.cos(a), cy = 110+86*Math.sin(a);
@@ -534,8 +740,9 @@ class Component extends DCLogic {
     });
     const lanes = d.lanes.map((l,li)=>{
       const active = l.spans.some(([a,b])=>s.pos>=a && s.pos<=b);
-      const done = !active && l.spans.every(([,b])=>b < s.pos);
+      const done = !active && l.spans.length > 0 && l.spans.every(([,b])=>b < s.pos);
       const state = active ? 'active' : done ? 'done' : 'idle';
+      const laneClaims = d.claims.filter(c=>c.lane===li);
       return {
         stage:l.stage, agent:l.agent, state,
         nameFg: state==='idle' ? 'var(--ctn-color-text-muted)' : 'var(--ctn-color-text-primary)',
@@ -544,57 +751,76 @@ class Component extends DCLogic {
           fill: b < s.pos ? 'var(--ctn-color-surface-raised)' : (s.pos>=a && s.pos<=b) ? 'var(--ctn-color-surface-navy)' : 'transparent',
           stroke: b < s.pos ? 'var(--ctn-color-border-strong)' : (s.pos>=a && s.pos<=b) ? 'var(--ctn-color-text-secondary)' : 'var(--ctn-color-border-hairline)'
         })),
-        marks: d.claims.filter(c=>c.lane===li).map(c=>({
-          left:c.pct+'%', title:c.t+' · '+c.text.slice(0,70),
+        marks: (liveMode ? laneClaims.slice(0, 1) : laneClaims).map(c=>({
+          left:c.pct+'%', title: liveMode ? (laneClaims.length + ' claims land here at ' + c.t) : (c.t+' · '+c.text.slice(0,70)),
           glyph:this.citeMark(c.pct<=s.pos, !!c.ext),
           jump: ()=>this.setState({pos:c.pct, playing:false, openClaim:c.pct})
         }))
       };
     });
     const idx = marks.findIndex(m=>m.pct === (cur?cur.pct:-1));
-    const remainS = (3*3600+45*60) - Math.floor((s.now-(this.base||s.now))/1000);
-    const fclk = x=>{x=Math.max(0,x);return [3600,60,1].map(u=>String(Math.floor(x/u)%60).padStart(2,'0')).join(':');};
-    const stateLabel = s.pos>=gatedAt ? 'GATED · HELD' : s.pos>=lastCite ? 'CITED' : s.pos>=first ? 'CAUGHT' : 'INGESTING';
-    return {
+    const stateLabel = liveMode
+      ? (s.pos>=d.closedPct ? 'CLOSED' : s.pos>=d.actionedPct ? 'ACTIONED' : s.pos>=gatedAt ? 'GATED · HELD' : s.pos>=lastCite ? 'CITED' : s.pos>=first ? 'CAUGHT' : 'READING')
+      : (s.pos>=gatedAt ? 'GATED · HELD' : s.pos>=lastCite ? 'CITED' : s.pos>=first ? 'CAUGHT' : 'INGESTING');
+    let clockDigits = '03:45:00';
+    if (liveMode) {
+      // the CERT-In six-hour window from the moment the record was opened; overdue is shown as overdue
+      const opened = Date.parse((d.inc||{}).opened_ts);
+      if (isFinite(opened)) { const rem = Math.round((opened + 6*3600*1000 - s.now)/1000); const a = Math.abs(rem);
+        clockDigits = (rem < 0 ? '−' : '') + (a >= 86400 ? Math.floor(a/86400) + 'd ' + String(Math.floor(a%86400/3600)).padStart(2,'0') + 'h' : [3600,60,1].map(u=>String(Math.floor(a/u)%60).padStart(2,'0')).join(':')); }
+    } else {
+      const remainS = (3*3600+45*60) - Math.floor((s.now-(this.base||s.now))/1000);
+      clockDigits = [3600,60,1].map(u=>String(Math.floor(Math.max(0,remainS)/u)%60).padStart(2,'0')).join(':');
+    }
+    const ids = s.ids || [];
+    const idA = ids[0] || 'INC-0417', idB = ids[1] || 'INC-0416';
+    const isA = liveMode ? d.id === idA : live;
+    const vdl = liveMode ? d.verdict : null;
+    return Object.assign({
       enteredFrom: d.entered, edgeCode: d.edge,
-      pickLive: ()=>this.setState({which:'live', pos:0, playing:true, openClaim:null}),
-      pickDemo: ()=>this.setState({which:'demo', pos:0, playing:true, openClaim:null}),
-      liveBg: live?'var(--ctn-color-surface-navy)':'transparent', liveFg: live?'var(--ctn-color-text-on-navy)':'var(--ctn-color-text-muted)',
-      demoBg: !live?'var(--ctn-color-surface-navy)':'transparent', demoFg: !live?'var(--ctn-color-text-on-navy)':'var(--ctn-color-text-muted)',
-      incId: d.id, sev: d.sev, incTitle: d.title, clockDigits: fclk(remainS),
+      pickLive: liveMode ? ()=>this.load(idA) : ()=>this.setState({which:'live', pos:0, playing:true, openClaim:null}),
+      pickDemo: liveMode ? ()=>this.load(idB) : ()=>this.setState({which:'demo', pos:0, playing:true, openClaim:null}),
+      liveLabel: liveMode ? idA : 'INC-0417', demoLabel: liveMode ? idB : 'DEMO INC-0416',
+      liveBg: isA?'var(--ctn-color-surface-navy)':'transparent', liveFg: isA?'var(--ctn-color-text-on-navy)':'var(--ctn-color-text-muted)',
+      demoBg: !isA?'var(--ctn-color-surface-navy)':'transparent', demoFg: !isA?'var(--ctn-color-text-on-navy)':'var(--ctn-color-text-muted)',
+      incId: d.id, sev: d.sev, incTitle: d.title, clockDigits,
       ringArc, ringNodes, ringWeight: s.pos>=gatedAt ? 7 : s.pos>=lastCite ? 6 : 5,
       ringStateLabel: stateLabel,
-      ringSub: s.pos>=gatedAt ? 'ring stops here until a human decides' : 'arc advances with the shuttle',
+      ringSub: liveMode ? (s.pos>=gatedAt ? 'the gate has ruled on this run' : 'arc advances with the shuttle · real frames') : (s.pos>=gatedAt ? 'ring stops here until a human decides' : 'arc advances with the shuttle'),
       timecode: this.tc(d, s.pos),
       togglePlay: ()=>this.setState(x=>({playing:!x.playing, pos: x.pos>=100?0:x.pos, openClaim:null})),
       playLabel: s.playing ? 'PAUSE' : (s.pos>=100 ? 'REWIND' : 'RUN'),
       stepBack: ()=>{ const prev = marks.filter(m=>m.pct < s.pos - 0.5).pop(); if(prev) this.setState({pos:prev.pct, playing:false, openClaim:prev.pct}); },
       stepFwd: ()=>{ const nx = marks.find(m=>m.pct > s.pos + 0.5); if(nx) this.setState({pos:nx.pct, playing:false, openClaim:nx.pct}); },
-      markIdx: String(Math.max(0, idx+1)).padStart(2,'0'), markTotal: String(marks.length).padStart(2,'0'),
-      markAgent: cur ? d.lanes[cur.lane].agent : 'Sentinel',
-      markLabel: cur ? cur.text : 'ingest running · no rule has fired yet on this window',
+      markIdx: String(Math.max(0, liveMode ? passed.length : idx+1)).padStart(2,'0'), markTotal: String(marks.length).padStart(2,'0'),
+      markAgent: cur ? d.lanes[cur.lane].agent : (liveMode ? (d.frames.length ? 'swarm run · ' + d.frames.length + ' ledger frames' : 'no run on this record') : 'Sentinel'),
+      markLabel: cur ? cur.text : (liveMode ? (vdl ? 'the narrator\'s claims land at ' + this.tc(d, marks.length ? marks[0].pct : 100) + ' IST · shuttle forward' : 'no swarm verdict is saved for this record · run the swarm below') : 'ingest running · no rule has fired yet on this window'),
       citedCount: String(passed.length).padStart(2,'0'),
       elapsedReal: Math.floor(s.pos/100*d.spanS/60)+'m '+String(Math.floor(s.pos/100*d.spanS)%60).padStart(2,'0')+'s',
+      filmstripNote: liveMode ? 'one run, ' + d.frames.length + ' ledger frames, ' + Math.floor(d.spanS/60) + 'm ' + String(d.spanS%60).padStart(2,'0') + 's of wall clock · a bar is a model call, from the frame before it to its own · gold marks are where claims land'
+                              : 'seven stages, one incident, ' + Math.floor(s.pos/100*d.spanS/60)+'m '+String(Math.floor(s.pos/100*d.spanS)%60).padStart(2,'0')+'s of wall clock. solid stock is work performed, gold arcs are cited frames',
       lanes,
       perfs: Array.from({length:26},(_,i)=>({left:((i+0.5)/26*100)+'%'})),
-      // a ruler's end graduations sit flush with the paper edge; only interior ones centre on their tick
       ruler: Array.from({length:7},(_,i)=>({left:(i/6*100)+'%', label:this.tc(d, i/6*100),
         tx: i===0 ? 'translateX(0)' : i===6 ? 'translateX(-100%)' : 'translateX(-50%)'})),
       headLeft: s.pos+'%',
       trackRef: this.trackRef,
       onScrubDown: e=>{ this.dragging = true; this.seekFromEvent(e); },
-      claims: d.claims.map(c=>{
-        const reached = c.pct <= s.pos, open = reached && openId === c.pct;
+      narratorSub: liveMode ? (vdl ? (vdl.degraded ? vdl.banner : 'click a claim to park the shuttle on its frame · ' + (vdl.dropped_claims||[]).length + ' claim' + ((vdl.dropped_claims||[]).length===1?'':'s') + ' dropped by the citation gate · confidence ' + Number(vdl.verdict.confidence).toFixed(2) + ' (CITINEL\'s assessment, not a probability)') : 'no verdict on this record yet') : 'click a claim to park the shuttle on its frame',
+      claims: d.claims.map((c, i)=>{
+        const key = liveMode ? c.pct + i/1000 : c.pct;
+        const reached = c.pct <= s.pos, open = reached && (liveMode ? (s.openClaim == null ? i === 0 : s.openClaim === key) : openId === c.pct);
         const exN = marks.findIndex(m=>m.pct===c.pct) + 1;
         return {...c, open, isExternal: !!c.ext, isInternal: !c.ext,
           extSource: c.ext ? c.ext.source : '', extUrl: c.ext ? c.ext.url : '', extFetched: c.ext ? c.ext.fetchedAt : '',
-          evHref: live ? ('Evidence.dc.html?exhibit=e'+exN) : 'Evidence.dc.html',
-          jump: ()=>this.setState({pos:c.pct, playing:false, openClaim:c.pct}),
+          evHref: liveMode ? ('Evidence.dc.html?id=' + d.id + (c.findingIndex != null ? '&exhibit=' + c.findingIndex : '')) : (live ? ('Evidence.dc.html?exhibit=e'+exN) : 'Evidence.dc.html'),
+          jump: ()=>this.setState({pos:c.pct, playing:false, openClaim:key}),
           border: open ? 'var(--ctn-color-text-secondary)' : 'var(--ctn-color-border-hairline)',
           bg: open ? 'var(--ctn-color-surface-panel)' : 'transparent',
-          fg: reached ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-text-disabled)'};
+          fg: reached ? (c.counter ? 'var(--ctn-color-text-secondary)' : 'var(--ctn-color-text-primary)') : 'var(--ctn-color-text-disabled)'};
       }),
       chainSourceCount: d.chainSourceCount,
+      chainSourceNote: liveMode ? (vdl && vdl.correlation ? 'assembled across ' + d.chainSourceCount + ' host' + (d.chainSourceCount===1?'':'s') + ' from ' + this.fmtN(d.findingsExamined) + ' of ' + this.fmtN(d.findingsTotal) + ' findings examined' : 'no correlation saved for this record') : 'assembled from ' + d.chainSourceCount + ' sources',
       killChain: d.killChain.map((k,i)=>{
         const on = k.pct <= s.pos, last = i === d.killChain.length-1;
         return {...k, glyph:this.chainGlyph(on, last),
@@ -607,14 +833,17 @@ class Component extends DCLogic {
         fg: l.state==='idle' ? 'var(--ctn-color-text-muted)' : 'var(--ctn-color-text-primary)',
         stateFg: l.state==='active' ? 'var(--ctn-color-ok)' : l.state==='done' ? 'var(--ctn-color-text-secondary)' : 'var(--ctn-color-text-muted)'
       })),
-      proposalReady: s.pos >= d.proposalPct, proposalPending: s.pos < d.proposalPct,
-      proposalAt: this.tc(d, d.proposalPct), proposals: d.proposals
-    };
+      proposalReady: s.pos >= d.proposalPct && d.proposals.length > 0, proposalPending: !(s.pos >= d.proposalPct && d.proposals.length > 0),
+      proposalAt: d.proposalPct <= 100 ? this.tc(d, d.proposalPct) : 'no marshal frame on this run', proposals: d.proposals,
+      proposalNote: liveMode ? 'drafted and held · nothing executes until a proposal goes through the gate on the approval card · every action runs against simulated endpoints' : 'drafted and held. the ring stops at gated. completing it takes a decision at the gate.',
+      approvalsHref: liveMode ? 'Approvals.dc.html?id=' + d.id : 'Approvals.dc.html',
+      deskHref: liveMode ? 'Compliance.dc.html?id=' + d.id : 'Compliance.dc.html',
+      auditHref: liveMode ? 'Audit.dc.html?id=' + d.id : 'Audit.dc.html'
+    }, this.contextVals(liveMode));
   }
 
   roleInit(){ try{ return (window.CitinelRole && window.CitinelRole.get()) || 'analyst'; }catch(e){ return 'analyst'; } }
   roleMount(){ if(window.CitinelRole) this.unsubRole = window.CitinelRole.subscribe(r=>{ if(r !== this.state.role) this.setState({role:r}); }); }
-  componentWillUnmount_role(){ if(this.unsubRole) this.unsubRole(); }
   roleVals(){
     const ciso = this.state.role === 'ciso';
     return { ciso, analyst: !ciso,
@@ -625,26 +854,126 @@ class Component extends DCLogic {
       cisoBg: ciso ? 'var(--ctn-color-surface-navy)' : 'transparent',
       cisoFg: ciso ? 'var(--ctn-color-text-on-navy)' : 'var(--ctn-color-text-muted)' };
   }
+  /* what this run actually produced, with real links: the persisted verdict itself is the export */
   harvestVals(){
-    const live = this.state.which === 'live';
-    const items = live ? [
-      {tag:'SIG', id:'SIG-DRAFT-0221', title:'upi_beneficiary_burst_v2 · session-scoped', state:'ON THE BENCH', style:'solid'},
-      {tag:'SIG', id:'SIG-DRAFT-0222', title:'finacle_maker_checker_bypass', state:'ON THE BENCH', style:'solid'},
-      {tag:'PB', id:'PB-DRAFT-0068', title:'Mule cashout containment · freeze, block, flag, draft', state:'ON THE BENCH', style:'dashed'}
-    ] : [
-      {tag:'SIG', id:'SIG-DRAFT-0219', title:'oauth_consent_unverified_publisher', state:'ON THE BENCH', style:'solid'},
-      {tag:'PB', id:'PB-DRAFT-0067', title:'Consent-grant revocation · reversible', state:'ON THE BENCH', style:'dashed'}
+    if (this.state.live !== true) {
+      const live = this.state.which === 'live';
+      const items = live ? [
+        {tag:'SIG', id:'SIG-DRAFT-0221', title:'upi_beneficiary_burst_v2 · session-scoped', state:'ON THE BENCH', style:'solid'},
+        {tag:'SIG', id:'SIG-DRAFT-0222', title:'finacle_maker_checker_bypass', state:'ON THE BENCH', style:'solid'},
+        {tag:'PB', id:'PB-DRAFT-0068', title:'Mule cashout containment · freeze, block, flag, draft', state:'ON THE BENCH', style:'dashed'}
+      ] : [
+        {tag:'SIG', id:'SIG-DRAFT-0219', title:'oauth_consent_unverified_publisher', state:'ON THE BENCH', style:'solid'},
+        {tag:'PB', id:'PB-DRAFT-0067', title:'Consent-grant revocation · reversible', state:'ON THE BENCH', style:'dashed'}
+      ];
+      return {
+        harvest: items.map(i=>({...i, href:'Corpus.dc.html?incident='+(live?'INC-0417':'INC-0416')})),
+        harvestHref: 'Corpus.dc.html?incident='+(live?'INC-0417':'INC-0416'), exportLabel: 'TAKE THESE · EXPORT', modeChip: 'CONFIRMED',
+        harvestNote: live ? 'drafted from this record, waiting on human review. none of it is in the corpus yet' : 'this incident closed on 19 Aug; both artefacts are still on the bench awaiting determination'
+      };
+    }
+    const d = this.liveData(), vd = d.verdict, id = d.id;
+    if (!vd) return { harvest: [], harvestHref: '/api/incidents/' + id + '/verdict', exportLabel: 'NO VERDICT TO EXPORT', modeChip: 'NO RUN',
+      harvestNote: 'nothing produced yet: no swarm run is saved for this record' };
+    const v = vd.verdict || {}, u = vd.usage || {}, props = vd.proposals || [], dropped = vd.dropped_claims || [];
+    const items = [
+      {tag:'VERDICT', id: 'confidence ' + Number(v.confidence||0).toFixed(2) + ' · ' + (v.claims||[]).length + ' claims kept · ' + dropped.length + ' dropped', title: v.headline || 'no verdict (mode ' + vd.mode + ')', state: String(vd.mode||'').toUpperCase(), style:'solid', href:'Confidence.dc.html?id=' + id},
+      {tag:'PROPOSALS', id: props.length + ' action' + (props.length===1?'':'s') + ' drafted', title: props.map(p=>p.action_class + ' → ' + p.target).join(' · ') || 'none', state: props.length ? 'AT THE GATE' : '—', style:'dashed', href:'Approvals.dc.html?id=' + id},
+      {tag:'COST', id: this.fmtN(u.input_tokens) + ' in / ' + this.fmtN(u.output_tokens) + ' out tokens · ' + vd.call_count + ' calls', title: [...new Set((vd.calls||[]).map(c=>c.model_id).filter(Boolean))].join(', ') || 'models on the ledger', state:'RUN ' + ((vd.runs||[]).length || 1), style:'solid', href:'Audit.dc.html?id=' + id}
     ];
+    const lt = vd.lyzr_triage;
+    if (lt) items.push(lt.status === 'ok'
+      ? {tag:'LYZR', id: 'independent triage · lane ' + lt.lane + ' · confidence ' + (lt.confidence != null ? Number(lt.confidence).toFixed(2) : '—') + ' · ' + (lt.agrees_with_router === false ? 'DISAGREES with the router' : lt.agrees_with_router ? 'agrees with the router' : 'lane unparsed'), title: lt.rationale || 'no rationale returned', state: lt.agrees_with_router === false ? 'DISAGREES' : 'AGREES', style: lt.agrees_with_router === false ? 'dashed' : 'solid', href:'Audit.dc.html?id=' + id + '&q=lyzr-triage'}
+      : {tag:'LYZR', id: 'independent triage · ' + String(lt.status).replace(/_/g,' '), title: lt.detail || 'the Lyzr triage agent did not answer; nothing is filled in for it', state: String(lt.status).toUpperCase().replace(/_/g,' '), style:'dashed', href:'Settings.dc.html'});
     return {
-      harvest: items.map(i=>({...i, href:'Corpus.dc.html?incident='+(live?'INC-0417':'INC-0416')})),
-      harvestHref: 'Corpus.dc.html?incident='+(live?'INC-0417':'INC-0416'),
-      harvestNote: live
-        ? 'drafted from this record, waiting on human review. none of it is in the corpus yet'
-        : 'this incident closed on 19 Aug; both artefacts are still on the bench awaiting determination'
+      harvest: items, harvestHref: '/api/incidents/' + id + '/verdict', exportLabel: 'EXPORT · VERDICT JSON', modeChip: vd.degraded ? 'DEGRADED' : 'FULL RUN',
+      harvestNote: 'this run\'s outputs, persisted by the service · examined ' + this.fmtN(vd.findings_examined) + ' of ' + this.fmtN(vd.findings_total) + ' findings'
     };
   }
-  renderVals(){ const b = this.baseVals(); return Object.assign({}, b, this.roleVals(), this.harvestVals(), this.depthVals ? this.depthVals(b) : {}, this.stateVals(b), this.closeVals()); }
+  renderVals(){
+    const s = this.state;
+    if (s.live === null) return Object.assign({}, this.loadingVals(), this.roleVals());
+    const b = this.baseVals();
+    if (s.live === true) return Object.assign({}, b, this.roleVals(), this.harvestVals(), this.liveDepthVals(b), this.liveStateVals(b), this.liveCloseVals());
+    return Object.assign({}, b, this.roleVals(), this.harvestVals(), this.depthVals(b), this.stateVals(b), this.closeVals());
+  }
+  loadingVals(){
+    const id = this.incId || 'the record';
+    const step = (k, v, done) => ({k, v, fill: done ? 'var(--ctn-color-ok)' : 'transparent', ring: done ? 'var(--ctn-color-ok)' : 'var(--ctn-color-border-strong)', fg: done ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-text-muted)'});
+    return {
+      enteredFrom: 'reading ' + id + ' from citinel-web', edgeCode: '—', pickLive: ()=>{}, pickDemo: ()=>{}, liveLabel: (this.state.ids||[])[0] || '…', demoLabel: (this.state.ids||[])[1] || '…',
+      liveBg:'transparent', liveFg:'var(--ctn-color-text-muted)', demoBg:'transparent', demoFg:'var(--ctn-color-text-muted)',
+      incId: id, sev: 'medium', incTitle: 'reading the record, its audit chain and its saved verdict', clockDigits: '··:··:··',
+      ringArc: '', ringNodes: [], ringWeight: 5, ringStateLabel: 'READING', ringSub: 'nothing authored is drawn while the record loads', timecode: '--:--:--',
+      togglePlay: ()=>{}, playLabel: 'READING', stepBack: ()=>{}, stepFwd: ()=>{}, markIdx: '00', markTotal: '00', markAgent: 'citinel-web', markLabel: 'reading…',
+      citedCount: '00', elapsedReal: '0m 00s', filmstripNote: 'reading the run from the ledger', lanes: [], perfs: [], ruler: [], headLeft: '0%', trackRef: this.trackRef, onScrubDown: ()=>{},
+      narratorSub: 'reading…', claims: [], isLoading: true, loadTitle: 'PAPER RUNNING · READING THE RECORD', loadBody: 'The recorder is turning and the channels are open; the incident record, its audit chain and its saved verdict are being read from the service. Nothing authored is drawn while they load: a claim appears on this strip only with the citation that carries it.',
+      loadSteps: [step('incident record', 'reading', false), step('audit chain', 'reading', false), step('persisted swarm verdict', 'reading', false)],
+      runLabel: '', runStatus: '', runSwarm: ()=>{}, showRun: false,
+      chainSourceCount: 0, chainSourceNote: 'reading…', killChain: [], rail: [], proposalReady: false, proposalPending: true, proposalAt: '—', proposals: [], proposalNote: '',
+      approvalsHref: 'Approvals.dc.html', deskHref: 'Compliance.dc.html', auditHref: 'Audit.dc.html',
+      harvest: [], harvestHref: '#', exportLabel: 'READING', modeChip: '—', harvestNote: '', closeNote: '', closeLabel: 'READING', closeBg: 'transparent', closeFg: 'var(--ctn-color-text-muted)', closeIncident: ()=>{},
+      authority: [], wouldNotSign: '', contextNote: 'reading…', contextRows: [], contextGatherable: false, gatherContext: ()=>{}, gatherLabel: '', gatherStatus: ''
+    };
+  }
+  liveStateVals(b){
+    const s = this.state, d = this.liveData();
+    const step = (k, v, done) => ({k, v, fill: done ? 'var(--ctn-color-ok)' : 'transparent', ring: done ? 'var(--ctn-color-ok)' : 'var(--ctn-color-border-strong)', fg: done ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-text-muted)'});
+    const frames = Array.isArray(s.chain) ? this.fmtN(s.chain.length) : '0';
+    if (d.verdict) return { isLoading: false, showRun: false, runLabel: '', runStatus: s.runStatus || '', runSwarm: ()=>this.runSwarm(), loadSteps: [], loadTitle: '', loadBody: '' };
+    return {
+      isLoading: true,
+      loadTitle: 'NO SWARM VERDICT ON THIS RECORD',
+      loadBody: 'The deterministic layers attached ' + this.fmtN(d.findingsTotal) + ' findings and the ledger has ' + frames + ' frames for it, but no investigation has been saved. Running the swarm reads the evidence through Router → Enricher → Correlator → Narrator → Marshal, records every call on the ledger, and persists the cited verdict here. It is real model spend and a few minutes of wall clock.',
+      loadSteps: [step('incident record', this.fmtN(d.findingsTotal) + ' findings', true), step('audit chain', frames + ' frames', true), step('persisted swarm verdict', 'none saved', false)],
+      showRun: true, runLabel: s.running ? 'RUNNING…' : 'RUN THE SWARM ON ' + d.id, runStatus: s.runStatus || '', runSwarm: ()=>this.runSwarm()
+    };
+  }
+  liveDepthVals(b){
+    if(this.state.role !== 'ciso') return {};
+    const d = this.liveData(), vd = d.verdict, v = vd && vd.verdict, inc = d.inc || {};
+    const signer = (Array.isArray(this.state.chain) ? this.state.chain.filter(e => e.kind === 'human_signoff' && !(e.payload||{}).approved).pop() : null);
+    const counters = v ? (v.claims||[]).filter(c=>c.support==='counter').length : 0, dropped = vd ? (vd.dropped_claims||[]).length : 0;
+    return {
+      claims: b.claims.map(c=>({...c,
+        basis: c.findingIndex != null
+          ? 'Grounded in finding #' + c.findingIndex + ' of this record (' + c.locator + '). The quoted span “' + String(c.span||'').slice(0, 90) + (String(c.span||'').length > 90 ? '…' : '') + '” was verified against the raw line by the citation gate before this claim reached you.'
+          : 'This claim carries no citation and should not have survived the gate; treat it as unverified.'})),
+      authority: [
+        {k:'state', v: String(d.derived).replace('_',' ') + ' · derived from ' + ((inc.state_basis||[]).length) + ' ledger frames, never from prose'},
+        {k:'confidence', v: v ? Number(v.confidence).toFixed(2) + ' · CITINEL\'s stated assessment, not a probability · counter-evidence ' + (v.counter_evidence_searched ? 'searched' : 'NOT searched') : 'no verdict saved'},
+        {k:'benign reading', v: v ? v.benign_explanation_considered : '—'},
+        {k:'decided by', v: signer ? String(signer.actor) + ' · ' + String(signer.ts||'').slice(0,16).replace('T',' ') + 'Z' : 'nobody yet · no human sign-off on the ledger'}
+      ],
+      wouldNotSign: v ? 'Before signing: ' + counters + ' counter claim' + (counters===1?'':'s') + ' stand on this verdict and ' + dropped + ' claim' + (dropped===1?'':'s') + ' were dropped for failing citation. The evidence examined was ' + this.fmtN(vd.findings_examined) + ' of ' + this.fmtN(vd.findings_total) + ' findings.' : 'There is nothing to sign: no verdict is saved for this record.'
+    };
+  }
+  liveCloseVals(){
+    const d = this.liveData(), st = d.derived, id = d.id, vd = d.verdict;
+    const n = (vd && vd.proposals || []).length;
+    const go = href => ()=>{ window.location.href = href; };
+    if (st === 'closed' || st === 'closed_benign') return {
+      closeNote: 'Closed on the ledger · the ring is complete. Reopening is a named decision recorded as a frame: the closure stays on the reel and the record goes back on the belt for re-investigation.',
+      closeLabel: 'REOPEN FOR RE-INVESTIGATION', closeBg: 'var(--ctn-color-surface-navy)', closeFg: 'var(--ctn-color-text-on-navy)',
+      closeIncident: ()=>{
+        const API = window.CITINEL_API; if (!API) return;
+        const by = window.prompt('Reopen ' + id + ' · your name or address (recorded on the ledger):', ''); if (!by) return;
+        const reason = window.prompt('Reason for reopening (recorded on the ledger):', 're-investigation'); if (!reason) return;
+        API.post('reopen', id, {by: by, reason: reason}).then(r => { if (r.ok) this.load(id); else window.alert('reopen refused: ' + (r.error || 'unknown')); });
+      } };
+    if (st === 'actioned' || st === 'gated') return {
+      closeNote: 'The gate has ruled on this record (' + st + '). Closing is a named human signing off on the compliance desk; that sign-off is a ledger frame, and n8n fires after it, never before.',
+      closeLabel: 'SIGN OFF ON THE DESK ▸', closeBg: 'var(--ctn-color-surface-navy)', closeFg: 'var(--ctn-color-text-on-navy)', closeIncident: go('Compliance.dc.html?id=' + id) };
+    if (vd && n) return {
+      closeNote: 'Cited, not yet gated: ' + n + ' proposal' + (n===1?'':'s') + ' wait on the approval card. Each goes through the policy gate and, if it clears, runs against simulated endpoints with a rollback token.',
+      closeLabel: 'TAKE THE PROPOSALS TO THE GATE ▸', closeBg: 'var(--ctn-color-surface-navy)', closeFg: 'var(--ctn-color-text-on-navy)', closeIncident: go('Approvals.dc.html?id=' + id) };
+    return {
+      closeNote: vd ? 'A verdict is saved but the marshal drafted no proposals; the record can still be signed off on the compliance desk.' : 'Nothing to close yet: no verdict is saved for this record.',
+      closeLabel: vd ? 'OPEN THE DESK ▸' : 'NO VERDICT YET', closeBg: vd ? 'var(--ctn-color-surface-navy)' : 'transparent', closeFg: vd ? 'var(--ctn-color-text-on-navy)' : 'var(--ctn-color-text-muted)',
+      closeIncident: vd ? go('Compliance.dc.html?id=' + id) : ()=>{} };
+  }
 
+  /* ── authored fallback (unchanged narrative) ─────────────────────────────── */
   depthVals(b){
     if(this.state.role !== 'ciso') return {};
     const live = this.state.which === 'live';
@@ -668,21 +997,14 @@ class Component extends DCLogic {
         : 'Nothing here needs my signature. It is shown as the shape a closed incident takes.'
     };
   }
-
   stateVals(b){
     let m = 'normal';
     try{ m = new URLSearchParams(window.location.search).get('state') || 'normal'; }catch(e){}
-    if(m === 'degraded') return {
-      isLoading:false,
-      degradedOn:true,
-      degradedTitle:'CORRELATOR UNSTABLE · RUNNING IN COPILOT SHAPE',
-      degradedMeta:'since 21:14 IST · 3 of 7 agents affected',
-      degradedBody:'Multi-agent correlation is failing its own consistency check, so the swarm has dropped to copilot shape: agents still enrich and still cite, but they no longer hand findings to each other and nothing is stitched into a chain automatically. Every claim on this strip is now single-source.',
-      degradedConsequence:'You are the correlator until this clears. Cross-incident links will not appear on their own, and the confidence band is suppressed rather than reported low. A number computed from a broken join reads as evidence when it is not.'
-    };
-    if(m !== 'loading') return {isLoading:false, degradedOn:false};
-    return {
-      isLoading:true, degradedOn:false, claims: [], killChain: [],
+    const base = {showRun:false, runLabel:'', runStatus:'', runSwarm:()=>{}, loadTitle:'PAPER RUNNING · NO PEN DOWN YET',
+      loadBody:'The recorder is turning and the channels are open; the incident record has not finished loading, so nothing has been drawn. What you are not seeing is deliberate. A claim appears on this strip only once its citation has loaded with it.'};
+    if(m !== 'loading') return Object.assign(base, {isLoading:false, loadSteps: []});
+    return Object.assign(base, {
+      isLoading:true, claims: [], killChain: [],
       markLabel: 'loading the incident record · nothing drawn yet',
       loadSteps: [
         {k:'incident record and asset graph', v:'loaded', done:1},
@@ -693,9 +1015,8 @@ class Component extends DCLogic {
         fill: s.done ? 'var(--ctn-color-ok)' : 'transparent',
         ring: s.done ? 'var(--ctn-color-ok)' : 'var(--ctn-color-border-strong)',
         fg: s.done ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-text-muted)'}))
-    };
+    });
   }
-
   closeVals(){
     const live = this.state.which === 'live';
     const inc = live ? 'INC-0417' : 'INC-0416';

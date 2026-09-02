@@ -1,0 +1,118 @@
+{
+ "incident_id": "INC-0416",
+ "gathered_at": "2026-09-01T23:54:00.347834+00:00",
+ "provider": "tavily",
+ "queries": [
+  {
+   "for": "T1595.002",
+   "kind": "technique",
+   "query": "MITRE ATT&CK T1595.002 Active Scanning: Vulnerability Scanning detection and mitigation",
+   "status": "ok",
+   "fetched_at": "2026-09-01T23:53:53.576489+00:00",
+   "cached": false,
+   "answer": "Active Scanning: Vulnerability Scanning, Sub-technique T1595.002 - Enterprise | MITRE ATT&CK®",
+   "results": [
+    {
+     "title": "Active Scanning: Vulnerability Scanning, Sub-technique T1595.002 - Enterprise | MITRE ATT&CK®",
+     "url": "https://attack.mitre.org/techniques/T1595/002",
+     "score": 0.9791158
+    },
+    {
+     "title": "Active Scanning, Technique T1595 - Enterprise | MITRE ATT&CK®",
+     "url": "https://attack.mitre.org/techniques/T1595",
+     "score": 0.92683524
+    },
+    {
+     "title": "T1595.002: Vulnerability Scanning - Ontolocy Explore",
+     "url": "https://explore.ontolocy.com/mitre-attack/techniques/attack-pattern--5502c4e9-24ef-4d5f-8ee9-9e906c2f82c4",
+     "score": 0.91978675
+    }
+   ],
+   "note": ""
+  },
+  {
+   "for": "T1190",
+   "kind": "technique",
+   "query": "MITRE ATT&CK T1190 Exploit Public-Facing Application detection and mitigation",
+   "status": "ok",
+   "fetched_at": "2026-09-01T23:53:56.132011+00:00",
+   "cached": false,
+   "answer": "Detecting Exploit Public-Facing Application (T1190) → ...",
+   "results": [
+    {
+     "title": "Detecting Exploit Public-Facing Application (T1190) → ...",
+     "url": "https://www.manageengine.com/log-management/mitre-attack/initial-access/exploit-public-facing-application-t1190.html",
+     "score": 0.988085
+    },
+    {
+     "title": "Exploit Public-Facing Application, Technique T1190",
+     "url": "https://attack.mitre.org/techniques/T1190",
+     "score": 0.9723622
+    },
+    {
+     "title": "Comprehensive Analysis of MITRE ATT&CK T1190: Public-Facing ...",
+     "url": "https://medium.com/@shivamkanodia77/comprehensive-analysis-of-mitre-att-ck-t1190-public-facing-applications-996a02642d46",
+     "score": 0.947381
+    }
+   ],
+   "note": ""
+  },
+  {
+   "for": "SQL Injection Strings In URI",
+   "kind": "rule",
+   "query": "Sigma rule \"SQL Injection Strings In URI\" detection",
+   "status": "ok",
+   "fetched_at": "2026-09-01T23:53:58.470392+00:00",
+   "cached": false,
+   "answer": "Single-Event Detection Rules in Cybersecurity | by Andrey Pautov | Medium",
+   "results": [
+    {
+     "title": "Single-Event Detection Rules in Cybersecurity | by Andrey Pautov | Medium",
+     "url": "https://medium.com/@1200km/single-event-detection-rules-in-cybersecurity-aa7498f665bd",
+     "score": 0.9885804
+    },
+    {
+     "title": "sigma/rules/web/webserver_generic/web_sql_injection_in_access_logs.yml at master · SigmaHQ/sigma · GitHub",
+     "url": "https://github.com/SigmaHQ/sigma/blob/master/rules/web/webserver_generic/web_sql_injection_in_access_logs.yml",
+     "score": 0.95759624
+    },
+    {
+     "title": "Uncovering SQL Injection Risks in URL Rewrite Rules: Testing and Exploitation Techniques – ExamCollection",
+     "url": "https://www.examcollection.com/blog/uncovering-sql-injection-risks-in-url-rewrite-rules-testing-and-exploitation-techniques",
+     "score": 0.77932185
+    }
+   ],
+   "note": ""
+  },
+  {
+   "for": "Path Traversal Exploitation Attempts",
+   "kind": "rule",
+   "query": "Sigma rule \"Path Traversal Exploitation Attempts\" detection",
+   "status": "ok",
+   "fetched_at": "2026-09-01T23:54:00.345041+00:00",
+   "cached": false,
+   "answer": "Threat Detection with SIGMA Rules - Loginsoft",
+   "results": [
+    {
+     "title": "Threat Detection with SIGMA Rules - Loginsoft",
+     "url": "https://www.loginsoft.com/post/threat-detection-with-sigma-rules",
+     "score": 0.96182173
+    },
+    {
+     "title": "Detect CVE-2021-41773: Path Traversal Zero-Day in Apache HTTP Server | SOC Prime",
+     "url": "https://socprime.com/blog/detect-cve-2021-41773-path-traversal-zero-day-in-apache-http-server",
+     "score": 0.91102153
+    },
+    {
+     "title": "\"Directory Traversal Attack Detection in SIEM\" | M. Mahamudul Hassan posted on the topic | LinkedIn",
+     "url": "https://www.linkedin.com/posts/mmahmudul-hassan_siem-incident-detection-directory-traversal-activity-7398113718896807936-6SCs",
+     "score": 0.87966454
+    }
+   ],
+   "note": ""
+  }
+ ],
+ "credits_used": 4,
+ "sources": 12,
+ "not_evidence": "public context only; nothing here can support a claim -- citations still point only at the record's own findings"
+}

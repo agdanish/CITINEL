@@ -84,7 +84,7 @@ def _parse_agent_reply(body: Any) -> dict[str, Any]:
     return parsed if isinstance(parsed, dict) else {}
 
 
-def _chat_payload(task_message: str, session_id: str) -> dict[str, Any]:
+def _chat_payload(task_message: str, session_id: str, agent_id: str | None = None) -> dict[str, Any]:
     """Build a request body against Lyzr's REAL wire format.
 
     Confirmed against the live "Agent API" tab for a deployed agent (the
@@ -105,7 +105,7 @@ def _chat_payload(task_message: str, session_id: str) -> dict[str, Any]:
     """
     return {
         "user_id": "citinel-backend",
-        "agent_id": settings.lyzr_agent_id,
+        "agent_id": agent_id or settings.lyzr_agent_id,
         "session_id": session_id,
         "message": task_message,
     }
@@ -277,9 +277,27 @@ class LyzrLedgerMirror(LedgerSink):
     #: across separate HTTP calls -- see the module-level docstring above.
     _SESSION_ID = "citinel-lyzr-ledger"
 
+    #: One background worker for the whole process, so mirrored entries reach
+    #: the witness in ledger order without the caller waiting on the network.
+    #: Measured live on 2 Sep 2026: a synchronous mirror cost ~7 s per append,
+    #: which turned a four-frame gate execution into a 28 s request and would
+    #: have timed the console out. The local append has already committed by
+    #: the time record() runs (LedgerSink's contract), so deferring the
+    #: witness write changes nothing about what is true, only when the
+    #: witness learns it -- and `compare` already treats lag as "diverged,
+    #: not proof of tampering", so a still-queued entry is reported honestly.
+    _executor = None
+
     def __init__(self, sender=None) -> None:
         self._sender = sender
         self.mirrored = 0
+
+    @classmethod
+    def _worker(cls):
+        if cls._executor is None:
+            from concurrent.futures import ThreadPoolExecutor
+            cls._executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="lyzr-mirror")
+        return cls._executor
 
     # -- the witness side ---------------------------------------------------
 
@@ -292,13 +310,23 @@ class LyzrLedgerMirror(LedgerSink):
         message = json.dumps({"task": "ledger_record", "entry": entry.as_dict()})
         payload = _chat_payload(message, self._SESSION_ID)
         if self._sender is not None:
+            # an injected sender is a test double or a caller that wants the
+            # synchronous path; keep it synchronous so its assertions hold
             self._sender(settings.lyzr_guard_url,
                          {"x-api-key": settings.lyzr_api_key}, payload)
-        else:
+            self.mirrored += 1
+            return
+        url, key = settings.lyzr_guard_url, settings.lyzr_api_key
+
+        def _post() -> None:
             import httpx
-            with httpx.Client(timeout=10) as c:
-                c.post(settings.lyzr_guard_url,
-                       headers={"x-api-key": settings.lyzr_api_key}, json=payload)
+            try:
+                with httpx.Client(timeout=10) as c:
+                    c.post(url, headers={"x-api-key": key}, json=payload)
+            except Exception:
+                pass    # the witness is additive; a failed mirror is lag, reported by compare()
+
+        self._worker().submit(_post)
         self.mirrored += 1
 
     # -- the half that makes it worth having --------------------------------

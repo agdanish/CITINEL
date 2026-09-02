@@ -164,9 +164,9 @@
         </div>
         <input value="{{ q }}" onChange="{{ onQ }}" placeholder="technique, family, incident, catalogue no…" style="width:100%;box-sizing:border-box;font-family:var(--ctn-font-mono);font-size:12px;letter-spacing:0;padding:9px 11px;margin-top:8px;background:var(--ctn-color-surface-well);border:1px solid var(--ctn-color-border-strong);border-radius:6px;color:var(--ctn-color-text-primary);flex:none">
         <div style="margin-top:8px;flex:none;display:flex;flex-wrap:wrap;gap:6px">
-          <dc-import name="StandardRef" standard="SIGMA" version="spec 2.0" locator="@ 7f31c0d" size="sm" hint-size="200px,24px"></dc-import>
+          <dc-import name="StandardRef" standard="SIGMA" version="spec 2.0" locator="r2026-07-01" size="sm" hint-size="200px,24px"></dc-import>
           <dc-import name="StandardRef" standard="SYNCED" version="22 Aug" locator="04:10 IST" size="sm" hint-size="200px,24px"></dc-import>
-          <dc-import name="StandardRef" standard="ATT&amp;CK" version="v16.1" locator="214 of 823" size="sm" hint-size="200px,24px"></dc-import>
+          <dc-import name="StandardRef" standard="ATT&amp;CK" version="v16.1" locator="29 techniques observed" size="sm" hint-size="200px,24px"></dc-import>
         </div>
         <div style="display:flex;gap:14px;margin-top:9px;flex:none;flex-wrap:wrap">
           <sc-for list="{{ corpusTally }}" as="t" hint-placeholder-count="4">
@@ -330,12 +330,21 @@ level: medium`,
     const sel = {};
     if(focus) this.pendingDefs.forEach(p=>{ if(p.fromId === focus) sel[p.id] = true; });
 
-    this.state = {role:this.roleInit(), filter:'ALL', det:{}, sel, q:'', exported:false, focus};
+    this.state = {role:this.roleInit(), filter:'ALL', det:{}, sel, q:'', exported:false, focus, live: null, corpusData: null, corpusError: null};
   }
-  componentDidMount(){ this.roleMount(); }
+  componentDidMount(){
+    this.roleMount();
+    const API = window.CITINEL_API;
+    if (!API) { this.setState({live:false, corpusError:'api.js not loaded'}); return; }
+    API.corpusRules().then(r => {
+      if (!r.ok) { this.setState({live:false, corpusError:r.error}); return; }
+      this.setState({live:true, corpusData:r.data});
+    });
+  }
   roleInit(){ try{ return (window.CitinelRole && window.CitinelRole.get()) || 'analyst'; }catch(e){ return 'analyst'; } }
   roleMount(){ if(window.CitinelRole) this.unsubRole = window.CitinelRole.subscribe(r=>{ if(r !== this.state.role) this.setState({role:r}); }); }
   componentWillUnmount(){ if(this.unsubRole) this.unsubRole(); }
+  fmtN(n){ return Number(n || 0).toLocaleString('en-IN'); }
   arcPath(cx,cy,r,frac){
     if(frac<=0) return '';
     const a = Math.min(frac,0.9999)*2*Math.PI - Math.PI/2;
@@ -364,6 +373,95 @@ level: medium`,
       R.createElement('circle',{key:'n',cx:8,cy:8,r:2.6,fill:'var(--ctn-color-state-node)',stroke:'var(--ctn-color-state-stroke)',strokeWidth:1.3}),
       R.createElement('path',{key:'a',d:'M 8 1.6 A 6.4 6.4 0 1 0 14.4 8',fill:'none',stroke:'var(--ctn-color-state-cited)',strokeWidth:1.7,strokeLinecap:'round'})]);
   }
+
+  liveVals(){
+    const s = this.state, ciso = s.role === 'ciso';
+    const d = s.corpusData || {};
+    const q = s.q.trim().toLowerCase();
+
+    // Transform fired rules into corpus display items
+    const fired = (d.fired || []).map(f => {
+      const techniques = (f.techniques || []).join(' ') || 'no technique ids';
+      const hosts = (f.hosts || []).filter(h => h).join(', ') || 'no hosts';
+      return {
+        id: f.rule_id || f.id || 'unknown',
+        name: f.title || 'untitled',
+        behaviour: f.level + ' · ' + this.fmtN(f.count) + ' detection' + (f.count !== 1 ? 's' : ''),
+        from: (f.incidents && f.incidents[0]) || '',
+        fromHref: (f.incidents && f.incidents[0]) ? 'Replay.dc.html?id=' + f.incidents[0] : '',
+        stats: this.fmtN(f.count) + ' fire' + (f.count !== 1 ? 's' : ''),
+        tag: 'SIG',
+        typeStyle: 'solid',
+        toggleSelect: ()=>this.setState(x=>({sel:{...x.sel, [f.rule_id||f.id]: !x.sel[f.rule_id||f.id]}, exported:false})),
+        selLabel: s.sel[f.rule_id||f.id] ? 'IN' : 'ADD',
+        selStyle: s.sel[f.rule_id||f.id] ? 'solid' : 'dashed',
+        selBg: s.sel[f.rule_id||f.id] ? 'var(--ctn-color-surface-raised)' : 'transparent'
+      };
+    }).filter(c => !q || (c.id+' '+c.name+' '+c.behaviour+' '+c.from).toLowerCase().includes(q));
+
+    const selIds = Object.keys(s.sel).filter(k => s.sel[k]);
+    return {
+      ciso, analyst: !ciso,
+      headNote: 'live corpus from ' + (d.release || 'release unknown') + ' · ' + this.fmtN(d.detections_total) + ' detections · ' + this.fmtN(d.distinct_rules_fired) + ' distinct rules fired',
+
+      // Accession bench is NOT LIVE (no swarm draft endpoint)
+      pendingCount: '00',
+      benchNote: 'The accession bench relies on incident-driven swarm drafts which are not persisted. This section is available in demo mode only.',
+      typeFilters: [{label:'ALL', pick:()=>this.setState({filter:'ALL'}), bg:'var(--ctn-color-surface-navy)', fg:'var(--ctn-color-text-on-navy)'},
+                    {label:'RULES', pick:()=>this.setState({filter:'RULES'}), bg:'transparent', fg:'var(--ctn-color-text-muted)'},
+                    {label:'PLAYBOOKS', pick:()=>this.setState({filter:'PLAYBOOKS'}), bg:'transparent', fg:'var(--ctn-color-text-muted)'}],
+      pendingTabs: [],
+      pending: [],
+      benchEmpty: true,
+      emptyTitle: 'ACCESSION BENCH · DEMO ONLY',
+      emptyBody: 'Draft rules and playbooks from incident-driven swarm runs are not persisted to a corpus store. To see accession workflow, use demo mode (?state=normal).',
+      emptyCaveat: 'This section is part of the planned Step 8 (corpus accession gate); today the live section shows what has fired from the accessed rules.',
+
+      // The collection shows real fired rules
+      corpusNote: this.fmtN(fired.length) + ' of ' + this.fmtN(d.distinct_rules_fired || 0) + ' fired rules',
+      corpusTotal: d.distinct_rules_fired || 0,
+      q: s.q, onQ: e => this.setState({q: e.target.value}),
+      corpusTally: [
+        {k: 'sigma rules', v: this.fmtN(d.rules_total || 0)},
+        {k: 'shipped', v: d.rules_shipped ? 'yes' : 'no'},
+        {k: 'distinct fired', v: this.fmtN(d.distinct_rules_fired || 0)},
+        {k: 'techniques', v: this.fmtN((d.techniques_observed || []).length) + ' techniques observed'}
+      ],
+      corpus: fired,
+      noCorpus: fired.length === 0,
+
+      // Export is DISABLED (no backend endpoint for bulk export)
+      selCount: this.fmtN(selIds.length),
+      selBreak: selIds.length ? '(demo feature only)' : 'not available live',
+      hasSel: false,
+      packFill: '0%',
+      manifest: '',
+      packNote: 'Bulk export of rules is not available live. Individual rules can be cited via their incident link.',
+      exportDisabled: true,
+      exportLabel: 'LIVE EXPORT NOT AVAILABLE',
+      doExport: ()=>{},
+      clearSel: ()=>this.setState({sel:{}, exported:false}),
+      exported: false,
+      exportFile: '',
+      exportNote: 'Export endpoint not implemented.',
+
+      setAnalyst: ()=>{ this.setState({role:'analyst'}); if(window.CitinelRole) window.CitinelRole.set('analyst'); },
+      setCiso: ()=>{ this.setState({role:'ciso'}); if(window.CitinelRole) window.CitinelRole.set('ciso'); },
+      analystBg: ciso ? 'transparent' : 'var(--ctn-color-surface-navy)',
+      analystFg: ciso ? 'var(--ctn-color-text-muted)' : 'var(--ctn-color-text-on-navy)',
+      cisoBg: ciso ? 'var(--ctn-color-surface-navy)' : 'transparent',
+      cisoFg: ciso ? 'var(--ctn-color-text-on-navy)' : 'var(--ctn-color-text-muted)'
+    };
+  }
+  loadingVals(){
+    return {
+      pendingCount: '··', benchNote: 'Reading from citinel-web.', typeFilters: [], pendingTabs: [], pending: [],
+      benchEmpty: true, emptyTitle: 'READING THE CORPUS FROM CITINEL-WEB', emptyBody: 'Nothing authored is shown while loading, so a scripted card is never mistaken for a real one.',
+      corpusNote: '· of · rules', corpusTally: [], corpus: [], noCorpus: false, corpusTotal: 0,
+      selCount: '··', packNote: 'Reading', exportDisabled: true, exportLabel: 'READING', exported: false
+    };
+  }
+
   baseVals(){
     const s = this.state, ciso = s.role === 'ciso';
     const DET = ['ACCESSION','REVISE','REJECT'];
@@ -458,10 +556,10 @@ level: medium`,
       corpusTotal: this.corpusDefs.length,
       q: s.q, onQ: e=>this.setState({q:e.target.value}),
       corpusTally: [
-        {k:'sigma rules', v:String(this.corpusDefs.filter(c=>c.kind==='rule').length + 2988)},
+        {k:'sigma rules', v:'3,302'},
         {k:'playbooks', v:String(this.corpusDefs.filter(c=>c.kind==='playbook').length + 44)},
         {k:'from our own incidents', v:'62'},
-        {k:'att&ck techniques', v:'214 / 823'}
+        {k:'att&ck techniques', v:'29 techniques observed'}
       ],
       corpus: corpus.map(c=>({
         id:c.id, name:c.name, behaviour:c.behaviour, from:c.from, fromHref:c.fromHref, stats:c.fires,
@@ -496,10 +594,10 @@ level: medium`,
     if(m === 'firstrun') return {
       benchEmpty:true, pending:[], pendingTabs:[], pendingCount:'00', corpus:[], noCorpus:true, corpusTotal:0,
       corpusNote:'0 accessioned on this install',
-      corpusTally:[{k:'sigma rules',v:'3,000'},{k:'playbooks',v:'44'},{k:'from our own incidents',v:'0'},{k:'att&ck techniques',v:'214 / 823'}],
+      corpusTally:[{k:'sigma rules',v:'3,302'},{k:'playbooks',v:'44'},{k:'from our own incidents',v:'0'},{k:'att&ck techniques',v:'29 techniques observed'}],
       emptyTitle:'NOTHING COLLECTED YET · THE FLYWHEEL HAS NOT TURNED',
-      emptyBody:'The bench is empty because no incident has closed on this install. The 3,000 upstream Sigma rules and 44 shipped playbooks are in the collection, but none came from here. The "from our own incidents" count stays at zero until an incident produces something.',
-      emptyCaveat:'That count is the honest measure of whether this install is learning. Treat it as the number to watch over the first quarter, not the 3,000.'
+      emptyBody:'The bench is empty because no incident has closed on this install. The 3,302 upstream Sigma rules and 44 shipped playbooks are in the collection, but none came from here. The "from our own incidents" count stays at zero until an incident produces something.',
+      emptyCaveat:'That count is the honest measure of whether this install is learning. Treat it as the number to watch over the first quarter, not the 3,302.'
     };
     if(m !== 'empty') return {benchEmpty:false};
     return {
@@ -509,7 +607,13 @@ level: medium`,
       emptyCaveat:'An empty bench for more than a fortnight is worth questioning rather than celebrating: it usually means incidents are closing without anyone asking what the corpus should have learned from them.'
     };
   }
-  renderVals(){ const b = this.baseVals(); return Object.assign({}, b, this.stateVals(b)); }
+  renderVals(){
+    const s = this.state;
+    if (s.live === true) { return this.liveVals(); }
+    if (s.live === null) { const b = this.baseVals(); return Object.assign({}, b, this.loadingVals()); }
+    const b = this.baseVals();
+    return Object.assign({}, b, this.stateVals(b));
+  }
 }
 </script>
 </body>

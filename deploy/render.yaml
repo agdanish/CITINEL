@@ -93,6 +93,12 @@ services:
         sync: false
       - key: CITINEL_LYZR_AGENT_ID
         sync: false
+      - key: CITINEL_LYZR_TRIAGE_AGENT_ID
+        sync: false
+      - key: CITINEL_LYZR_REVIEW_AGENT_ID
+        sync: false
+      - key: CITINEL_LYZR_HANDOVER_AGENT_ID
+        sync: false
       - key: CITINEL_DATABASE_URL
         fromDatabase:
           name: citinel-postgres
@@ -154,6 +160,12 @@ services:
       - key: CITINEL_LYZR_GUARD_URL
         sync: false
       - key: CITINEL_LYZR_AGENT_ID
+        sync: false
+      - key: CITINEL_LYZR_TRIAGE_AGENT_ID
+        sync: false
+      - key: CITINEL_LYZR_REVIEW_AGENT_ID
+        sync: false
+      - key: CITINEL_LYZR_HANDOVER_AGENT_ID
         sync: false
       - key: CITINEL_DATABASE_URL
         fromDatabase:

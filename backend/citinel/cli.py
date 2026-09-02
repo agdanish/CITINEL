@@ -944,6 +944,16 @@ def swarm_run(
     console.print(f"[dim]running {incident_id} ({len(inc.findings)} findings) "
                   f"through the swarm, live...[/dim]")
     result = pipeline.run(inc)
+    from citinel.agents.store import annotate_result, save_result
+    from citinel.connectors.lyzr_agents import triage_second_opinion
+    saved = save_result(result, incidents_dir)
+    opinion = triage_second_opinion(inc, result.as_dict(), ledger)
+    annotate_result(incident_id, incidents_dir, "lyzr_triage", opinion)
+    if opinion.get("status") == "ok":
+        console.print(f"[dim]lyzr triage second opinion: lane={opinion.get('lane')} "
+                      f"confidence={opinion.get('confidence')} agrees={opinion.get('agrees_with_router')}[/dim]")
+    console.print(f"[dim]result saved to {saved} -- the console serves it at "
+                  f"/api/incidents/{incident_id}/verdict[/dim]")
 
     colour = {"full": "green", "no_credentials": "dim", "model_refused": "red",
               "citations_failed": "yellow", "partial": "yellow"}[result.mode.value]

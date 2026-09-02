@@ -1,0 +1,585 @@
+{
+ "incident_id": "INC-0416",
+ "mode": "full",
+ "degraded": false,
+ "note": "",
+ "triage": {
+  "lane": "escalate",
+  "rationale": "337 findings across 3 hosts with high severity, spanning multiple attack techniques (T1133 external remote services, T1078 valid accounts, T1110 brute force, T1190 exploit public-facing app, T1059 command execution, T1003 credential dumping, T1505.003 web shell) indicate a coordinated intrusion chain; the sample shows anonymous logon followed by SYSTEM elevation and process execution, which chaining plus multi-host scope and command execution techniques warrant investigation beyond single-rule closure.",
+  "confidence": 0.98
+ },
+ "correlation": {
+  "stages": [
+   {
+    "technique_id": "T1595.002",
+    "technique_name": "Active Scanning: Vulnerability Scanning",
+    "what_happened": "The external actor at 40.80.148.42 fired a battery of generic exploitation probes (path traversal, XSS, SQL injection, and exposed-.git enumeration) at imreallynotbatman.com to fingerprint vulnerable software before settling on a target.",
+    "citations": [
+     {
+      "finding_index": 9,
+      "quoted_span": "type=../../../../../../../../../../../etc/passwd%00"
+     },
+     {
+      "finding_index": 10,
+      "quoted_span": "type=../../../../../../../../../../../etc/passwd%00"
+     },
+     {
+      "finding_index": 12,
+      "quoted_span": "search=%3Cscript%3Ealert(1)%3C%2Fscript%3E"
+     },
+     {
+      "finding_index": 14,
+      "quoted_span": "UNION+SELECT+GROUP_CONCAT(table_name)"
+     },
+     {
+      "finding_index": 15,
+      "quoted_span": "/.git/config"
+     }
+    ]
+   },
+   {
+    "technique_id": "T1190",
+    "technique_name": "Exploit Public-Facing Application",
+    "what_happened": "Having located a live Joomla installation (confirmed by the IIS worker process spun up for the joomla application pool), the actor repeatedly abused the search component's catid/format parameters with directory-traversal payloads to try to read local files such as windows/win.ini.",
+    "citations": [
+     {
+      "finding_index": 16,
+      "quoted_span": "IIS APPPOOL\\joomla"
+     },
+     {
+      "finding_index": 17,
+      "quoted_span": "catid=../../../../../../../../../../windows/win.ini&format=opensearch"
+     },
+     {
+      "finding_index": 18,
+      "quoted_span": "catid=../../../../../../../../../../windows/win.ini%00.jpg&format=opensearch"
+     },
+     {
+      "finding_index": 29,
+      "quoted_span": "format=../../../../../../../../../../windows/win.ini&id=5"
+     },
+     {
+      "finding_index": 36,
+      "quoted_span": "format=../../../../../../../../../../windows/win.ini&id=6"
+     }
+    ]
+   },
+   {
+    "technique_id": "T1190",
+    "technique_name": "Exploit Public-Facing Application (SQL Injection)",
+    "what_happened": "In parallel with the file-inclusion attempts, the actor injected time-based blind SQL injection payloads (pg_sleep) into the same catid parameter, including quote-breakout and comment variants, apparently probing the backend database for exploitability.",
+    "citations": [
+     {
+      "finding_index": 19,
+      "quoted_span": "select%20pg_sleep(9);%20--%20"
+     },
+     {
+      "finding_index": 22,
+      "quoted_span": "select%20pg_sleep(3);%20--%20"
+     },
+     {
+      "finding_index": 23,
+      "quoted_span": "ixykuIl8';select%20pg_sleep(3)"
+     },
+     {
+      "finding_index": 31,
+      "quoted_span": "select%20pg_sleep(8);%20--%20"
+     },
+     {
+      "finding_index": 34,
+      "quoted_span": "select%20pg_sleep(12);%20--%20"
+     }
+    ]
+   }
+  ],
+  "summary": "An external actor at 40.80.148.42 broadly scanned imreallynotbatman.com for common web vulnerabilities, then focused on a discovered Joomla installation, alternating between path-traversal attempts to read local files and time-based blind SQL injection against the search component -- consistent with an attacker trying to confirm and weaponize a foothold in the public-facing web application, though this evidence set shows only the probing/exploitation attempts and does not establish that file disclosure or database access actually succeeded. A separate set of findings (anonymous SMB/Kerberos logons and Splunk-named process launches on we8105desk) occurred roughly 40 minutes earlier on an unrelated host and lacks any corroborating link (e.g., a shared source IP) to this web attack, so it has been left out of this chain rather than forced into the narrative.",
+  "hosts_involved": [
+   "we1149srv.waynecorpinc.local",
+   "40.80.148.42 (external actor)"
+  ]
+ },
+ "verdict": {
+  "headline": "A single external actor at 40.80.148.42 scanned imreallynotbatman.com, found a Joomla install on we1149srv, and repeatedly chained path-traversal and time-based blind SQL injection against the search component over about seven minutes, with no confirmed evidence in this data that file disclosure or database extraction actually succeeded.",
+  "claims": [
+   {
+    "text": "The actor first probed the site broadly with path-traversal payloads aimed at /etc/passwd and a .git/config request typical of pre-exploitation recon.",
+    "support": "supporting",
+    "citations": [
+     {
+      "finding_index": 9,
+      "quoted_span": "type=../../../../../../../../../../../etc/passwd%00"
+     },
+     {
+      "finding_index": 10,
+      "quoted_span": "/util/barcode.php type=../../../../../../../../../../../etc/passwd%00"
+     },
+     {
+      "finding_index": 15,
+      "quoted_span": "GET /.git/config"
+     }
+    ]
+   },
+   {
+    "text": "Once a Joomla search component was found, the actor sent repeated path-traversal requests trying to read windows/win.ini through the catid and format parameters.",
+    "support": "supporting",
+    "citations": [
+     {
+      "finding_index": 17,
+      "quoted_span": "catid=../../../../../../../../../../windows/win.ini&format=opensearch"
+     },
+     {
+      "finding_index": 29,
+      "quoted_span": "format=../../../../../../../../../../windows/win.ini&id=5"
+     },
+     {
+      "finding_index": 39,
+      "quoted_span": "format=../../../../../../../../../../windows/win.ini&id=4"
+     }
+    ]
+   },
+   {
+    "text": "The same actor interleaved time-based blind SQL injection attempts against the catid parameter, escalating the pg_sleep delay value across requests, consistent with probing for an exploitable injection point.",
+    "support": "supporting",
+    "citations": [
+     {
+      "finding_index": 19,
+      "quoted_span": "select%20pg_sleep(9);%20--%20"
+     },
+     {
+      "finding_index": 32,
+      "quoted_span": "select%20pg_sleep(12);%20--%20"
+     },
+     {
+      "finding_index": 37,
+      "quoted_span": "select%20pg_sleep(4);%20--%20"
+     }
+    ]
+   },
+   {
+    "text": "The IIS worker process actually serving the targeted content was running the Joomla application pool, confirming the exploited component matches the live application on the host.",
+    "support": "supporting",
+    "citations": [
+     {
+      "finding_index": 16,
+      "quoted_span": "IIS APPPOOL\\joomla"
+     }
+    ]
+   },
+   {
+    "text": "None of the captured responses show a status code or content indicating the traversal or injection payloads actually returned file contents or query output; several traversal attempts produced 404s or 500 application errors rather than disclosed data.",
+    "support": "counter",
+    "citations": [
+     {
+      "finding_index": 9,
+      "quoted_span": "404 0 2 15"
+     },
+     {
+      "finding_index": 29,
+      "quoted_span": "500 0 0 1218"
+     }
+    ]
+   },
+   {
+    "text": "A separate cluster of anonymous SMB/Kerberos logons and Splunk-named process launches on a different host (we8105desk) occurred about 40 minutes earlier and shares no source IP or other indicator with the 40.80.148.42 web attack, so it should not be folded into this intrusion narrative.",
+    "support": "counter",
+    "citations": [
+     {
+      "finding_index": 0,
+      "quoted_span": "ANONYMOUS LOGON"
+     },
+     {
+      "finding_index": 1,
+      "quoted_span": "WE8105DESK$"
+     }
+    ]
+   },
+   {
+    "text": "The splunk-wmi.exe, splunk-perfmon.exe, and splunk-winevtlog.exe processes on we8105desk were spawned by splunkd.exe under the SYSTEM account, matching normal Splunk Universal Forwarder behavior rather than attacker tooling despite the coincidental naming overlap with the correlator's flagged anomaly.",
+    "support": "counter",
+    "citations": [
+     {
+      "finding_index": 4,
+      "quoted_span": "SplunkUniversalForwarder\\bin\\splunk-wmi.exe"
+     },
+     {
+      "finding_index": 5,
+      "quoted_span": "SplunkUniversalForwarder\\bin\\splunk-perfmon.exe"
+     },
+     {
+      "finding_index": 6,
+      "quoted_span": "SplunkUniversalForwarder\\bin\\splunk-winevtlog.exe"
+     }
+    ]
+   },
+   {
+    "text": "One of the two external network connections seen on we1149srv resolves to an academic internet-measurement service rather than an attacker-controlled host, suggesting at least part of that outbound/inbound port-80 traffic is unrelated background noise rather than attacker infrastructure.",
+    "support": "counter",
+    "citations": [
+     {
+      "finding_index": 7,
+      "quoted_span": "internetmeasurements.informatik.rwth-aachen.de"
+     }
+    ]
+   }
+  ],
+  "counter_evidence_searched": true,
+  "confidence": 0.72,
+  "benign_explanation_considered": "The strongest innocent explanation is that this traffic is an automated vulnerability scanner or authorized penetration test rather than a genuine attacker, since none of the responses in this evidence set confirm actual file disclosure or SQL result leakage. This is only partly ruled out: the requests show a single IP escalating sleep values in a controlled, iterative way and pivoting from generic probes to a specific, previously-discovered Joomla search endpoint over several minutes, a pattern more consistent with manual/semi-automated exploitation confirmation than with a benign crawler or scanner sweep, but the absence of confirmed data exfiltration in these logs means compromise itself remains unproven."
+ },
+ "proposals": [
+  {
+   "action_class": "block_ip",
+   "target": "40.80.148.42",
+   "assets_affected": 1,
+   "justification": "This IP is the confirmed source of an active path-traversal exploitation attempt against we1149srv and should be blocked at the perimeter while the broader SQLi/traversal campaign is still under evaluation.",
+   "citations": [
+    {
+     "finding_index": 9,
+     "quoted_span": "40.80.148.42"
+    },
+    {
+     "finding_index": 9,
+     "quoted_span": "/horde/util/barcode.php"
+    }
+   ]
+  },
+  {
+   "action_class": "enrich_ioc",
+   "target": "137.226.113.4",
+   "assets_affected": 1,
+   "justification": "we1149srv made an unexplained outbound connection to this external IP shortly after the exploitation window; reputation lookup is needed before deciding whether it represents C2 or benign external measurement traffic.",
+   "citations": [
+    {
+     "finding_index": 7,
+     "quoted_span": "137.226.113.4"
+    }
+   ]
+  },
+  {
+   "action_class": "enrich_ioc",
+   "target": "185.93.185.10",
+   "assets_affected": 1,
+   "justification": "A second unexplained outbound connection from we1149srv to this IP needs threat-intel context before any blocking action is warranted, given the current evidence does not confirm data exfiltration.",
+   "citations": [
+    {
+     "finding_index": 8,
+     "quoted_span": "185.93.185.10"
+    }
+   ]
+  },
+  {
+   "action_class": "query_logs",
+   "target": "we1149srv.waynecorpinc.local",
+   "assets_affected": 1,
+   "justification": "The only confirmed exploitation evidence shows a path-traversal request against /horde/util/barcode.php, not the Joomla search-component SQL injection described in the verdict narrative, so a scoped log query is needed to reconcile which application component was actually targeted before escalating further.",
+   "citations": [
+    {
+     "finding_index": 9,
+     "quoted_span": "/horde/util/barcode.php"
+    }
+   ]
+  },
+  {
+   "action_class": "notify",
+   "target": "SOC IR team",
+   "assets_affected": 0,
+   "justification": "Several findings cited as suspicious (anonymous SMB logons and process creations) are consistent with normal SYSTEM-level Kerberos activity and Splunk Universal Forwarder helper processes on we8105desk, and should be flagged as likely counter-evidence rather than intrusion artifacts before any containment on that host is considered.",
+   "citations": [
+    {
+     "finding_index": 0,
+     "quoted_span": "ANONYMOUS LOGON"
+    },
+    {
+     "finding_index": 4,
+     "quoted_span": "splunk-wmi.exe"
+    }
+   ]
+  }
+ ],
+ "dropped_claims": [],
+ "call_count": 6,
+ "findings_total": 337,
+ "findings_examined": 40,
+ "evidence_truncated": true,
+ "saved_at": "2026-09-01T22:16:11.261257+00:00",
+ "banner": "This incident had 337 findings; the investigation examined the first 40. The verdict above, if any, is scoped to what was examined.",
+ "calls": [
+  {
+   "agent": "router",
+   "model_id": "claude-haiku-4-5-20251001",
+   "role": "triage",
+   "stop_reason": "end_turn",
+   "input_tokens": 4756,
+   "output_tokens": 140,
+   "refused": false,
+   "refusal_category": null,
+   "served_by": null,
+   "request_id": "req_011CedV5cz7amv6B1aVfX68Y",
+   "usable": true,
+   "unusable_reason": null,
+   "evidence_provenance": [
+    "botsv1 replay | sigma | 2016-08-10T20:54:24+00:00 | finding[0]",
+    "botsv1 replay | sigma | 2016-08-10T20:54:25+00:00 | finding[1]",
+    "botsv1 replay | sigma | 2016-08-10T20:54:25+00:00 | finding[2]",
+    "botsv1 replay | sigma | 2016-08-10T20:54:33+00:00 | finding[3]",
+    "botsv1 replay | anomaly | 2016-08-10T20:54:38+00:00 | finding[4]"
+   ]
+  },
+  {
+   "agent": "enricher",
+   "model_id": "claude-sonnet-5",
+   "role": "reasoning",
+   "stop_reason": "tool_use",
+   "input_tokens": 21051,
+   "output_tokens": 1647,
+   "refused": false,
+   "refusal_category": null,
+   "served_by": null,
+   "request_id": null,
+   "usable": false,
+   "unusable_reason": null,
+   "evidence_provenance": [
+    "botsv1 replay | sigma | 2016-08-10T20:54:24+00:00 | finding[0]",
+    "botsv1 replay | sigma | 2016-08-10T20:54:25+00:00 | finding[1]",
+    "botsv1 replay | sigma | 2016-08-10T20:54:25+00:00 | finding[2]",
+    "botsv1 replay | sigma | 2016-08-10T20:54:33+00:00 | finding[3]",
+    "botsv1 replay | anomaly | 2016-08-10T20:54:38+00:00 | finding[4]",
+    "botsv1 replay | anomaly | 2016-08-10T20:54:41+00:00 | finding[5]",
+    "botsv1 replay | anomaly | 2016-08-10T20:54:44+00:00 | finding[6]",
+    "botsv1 replay | anomaly | 2016-08-10T21:16:56.693626+00:00 | finding[7]",
+    "botsv1 replay | anomaly | 2016-08-10T21:28:27.958580+00:00 | finding[8]",
+    "botsv1 replay | sigma | 2016-08-10T21:36:58+00:00 | finding[9]",
+    "botsv1 replay | sigma | 2016-08-10T21:36:58+00:00 | finding[10]",
+    "botsv1 replay | sigma | 2016-08-10T21:37:27+00:00 | finding[11]",
+    "botsv1 replay | sigma | 2016-08-10T21:37:27+00:00 | finding[12]",
+    "botsv1 replay | sigma | 2016-08-10T21:37:27+00:00 | finding[13]",
+    "botsv1 replay | sigma | 2016-08-10T21:37:27+00:00 | finding[14]",
+    "botsv1 replay | sigma | 2016-08-10T21:37:40+00:00 | finding[15]",
+    "botsv1 replay | anomaly | 2016-08-10T21:37:56.023257+00:00 | finding[16]",
+    "botsv1 replay | sigma | 2016-08-10T21:42:39+00:00 | finding[17]",
+    "botsv1 replay | sigma | 2016-08-10T21:42:41+00:00 | finding[18]",
+    "botsv1 replay | sigma | 2016-08-10T21:42:50+00:00 | finding[19]",
+    "botsv1 replay | sigma | 2016-08-10T21:42:52+00:00 | finding[20]",
+    "botsv1 replay | sigma | 2016-08-10T21:42:53+00:00 | finding[21]",
+    "botsv1 replay | sigma | 2016-08-10T21:42:53+00:00 | finding[22]",
+    "botsv1 replay | sigma | 2016-08-10T21:42:54+00:00 | finding[23]",
+    "botsv1 replay | sigma | 2016-08-10T21:42:55+00:00 | finding[24]",
+    "botsv1 replay | sigma | 2016-08-10T21:42:55+00:00 | finding[25]",
+    "botsv1 replay | sigma | 2016-08-10T21:42:56+00:00 | finding[26]",
+    "botsv1 replay | sigma | 2016-08-10T21:43:06+00:00 | finding[27]",
+    "botsv1 replay | sigma | 2016-08-10T21:43:09+00:00 | finding[28]",
+    "botsv1 replay | sigma | 2016-08-10T21:43:19+00:00 | finding[29]",
+    "botsv1 replay | sigma | 2016-08-10T21:43:22+00:00 | finding[30]",
+    "botsv1 replay | sigma | 2016-08-10T21:43:28+00:00 | finding[31]",
+    "botsv1 replay | sigma | 2016-08-10T21:43:29+00:00 | finding[32]",
+    "botsv1 replay | sigma | 2016-08-10T21:43:30+00:00 | finding[33]",
+    "botsv1 replay | sigma | 2016-08-10T21:43:31+00:00 | finding[34]",
+    "botsv1 replay | sigma | 2016-08-10T21:43:32+00:00 | finding[35]",
+    "botsv1 replay | sigma | 2016-08-10T21:43:33+00:00 | finding[36]",
+    "botsv1 replay | sigma | 2016-08-10T21:43:33+00:00 | finding[37]",
+    "botsv1 replay | sigma | 2016-08-10T21:43:36+00:00 | finding[38]",
+    "botsv1 replay | sigma | 2016-08-10T21:43:47+00:00 | finding[39]"
+   ]
+  },
+  {
+   "agent": "enricher",
+   "model_id": "claude-sonnet-5",
+   "role": "reasoning",
+   "stop_reason": "end_turn",
+   "input_tokens": 23191,
+   "output_tokens": 1871,
+   "refused": false,
+   "refusal_category": null,
+   "served_by": null,
+   "request_id": null,
+   "usable": false,
+   "unusable_reason": null,
+   "evidence_provenance": [
+    "botsv1 replay | sigma | 2016-08-10T20:54:24+00:00 | finding[0]",
+    "botsv1 replay | sigma | 2016-08-10T20:54:25+00:00 | finding[1]",
+    "botsv1 replay | sigma | 2016-08-10T20:54:25+00:00 | finding[2]",
+    "botsv1 replay | sigma | 2016-08-10T20:54:33+00:00 | finding[3]",
+    "botsv1 replay | anomaly | 2016-08-10T20:54:38+00:00 | finding[4]",
+    "botsv1 replay | anomaly | 2016-08-10T20:54:41+00:00 | finding[5]",
+    "botsv1 replay | anomaly | 2016-08-10T20:54:44+00:00 | finding[6]",
+    "botsv1 replay | anomaly | 2016-08-10T21:16:56.693626+00:00 | finding[7]",
+    "botsv1 replay | anomaly | 2016-08-10T21:28:27.958580+00:00 | finding[8]",
+    "botsv1 replay | sigma | 2016-08-10T21:36:58+00:00 | finding[9]",
+    "botsv1 replay | sigma | 2016-08-10T21:36:58+00:00 | finding[10]",
+    "botsv1 replay | sigma | 2016-08-10T21:37:27+00:00 | finding[11]",
+    "botsv1 replay | sigma | 2016-08-10T21:37:27+00:00 | finding[12]",
+    "botsv1 replay | sigma | 2016-08-10T21:37:27+00:00 | finding[13]",
+    "botsv1 replay | sigma | 2016-08-10T21:37:27+00:00 | finding[14]",
+    "botsv1 replay | sigma | 2016-08-10T21:37:40+00:00 | finding[15]",
+    "botsv1 replay | anomaly | 2016-08-10T21:37:56.023257+00:00 | finding[16]",
+    "botsv1 replay | sigma | 2016-08-10T21:42:39+00:00 | finding[17]",
+    "botsv1 replay | sigma | 2016-08-10T21:42:41+00:00 | finding[18]",
+    "botsv1 replay | sigma | 2016-08-10T21:42:50+00:00 | finding[19]",
+    "botsv1 replay | sigma | 2016-08-10T21:42:52+00:00 | finding[20]",
+    "botsv1 replay | sigma | 2016-08-10T21:42:53+00:00 | finding[21]",
+    "botsv1 replay | sigma | 2016-08-10T21:42:53+00:00 | finding[22]",
+    "botsv1 replay | sigma | 2016-08-10T21:42:54+00:00 | finding[23]",
+    "botsv1 replay | sigma | 2016-08-10T21:42:55+00:00 | finding[24]",
+    "botsv1 replay | sigma | 2016-08-10T21:42:55+00:00 | finding[25]",
+    "botsv1 replay | sigma | 2016-08-10T21:42:56+00:00 | finding[26]",
+    "botsv1 replay | sigma | 2016-08-10T21:43:06+00:00 | finding[27]",
+    "botsv1 replay | sigma | 2016-08-10T21:43:09+00:00 | finding[28]",
+    "botsv1 replay | sigma | 2016-08-10T21:43:19+00:00 | finding[29]",
+    "botsv1 replay | sigma | 2016-08-10T21:43:22+00:00 | finding[30]",
+    "botsv1 replay | sigma | 2016-08-10T21:43:28+00:00 | finding[31]",
+    "botsv1 replay | sigma | 2016-08-10T21:43:29+00:00 | finding[32]",
+    "botsv1 replay | sigma | 2016-08-10T21:43:30+00:00 | finding[33]",
+    "botsv1 replay | sigma | 2016-08-10T21:43:31+00:00 | finding[34]",
+    "botsv1 replay | sigma | 2016-08-10T21:43:32+00:00 | finding[35]",
+    "botsv1 replay | sigma | 2016-08-10T21:43:33+00:00 | finding[36]",
+    "botsv1 replay | sigma | 2016-08-10T21:43:33+00:00 | finding[37]",
+    "botsv1 replay | sigma | 2016-08-10T21:43:36+00:00 | finding[38]",
+    "botsv1 replay | sigma | 2016-08-10T21:43:47+00:00 | finding[39]"
+   ]
+  },
+  {
+   "agent": "correlator",
+   "model_id": "claude-sonnet-5",
+   "role": "reasoning",
+   "stop_reason": "end_turn",
+   "input_tokens": 20573,
+   "output_tokens": 11070,
+   "refused": false,
+   "refusal_category": null,
+   "served_by": null,
+   "request_id": "req_011CedVBZ8bz1ynUfGzyj3pa",
+   "usable": true,
+   "unusable_reason": null,
+   "evidence_provenance": [
+    "botsv1 replay | sigma | 2016-08-10T20:54:24+00:00 | finding[0]",
+    "botsv1 replay | sigma | 2016-08-10T20:54:25+00:00 | finding[1]",
+    "botsv1 replay | sigma | 2016-08-10T20:54:25+00:00 | finding[2]",
+    "botsv1 replay | sigma | 2016-08-10T20:54:33+00:00 | finding[3]",
+    "botsv1 replay | anomaly | 2016-08-10T20:54:38+00:00 | finding[4]",
+    "botsv1 replay | anomaly | 2016-08-10T20:54:41+00:00 | finding[5]",
+    "botsv1 replay | anomaly | 2016-08-10T20:54:44+00:00 | finding[6]",
+    "botsv1 replay | anomaly | 2016-08-10T21:16:56.693626+00:00 | finding[7]",
+    "botsv1 replay | anomaly | 2016-08-10T21:28:27.958580+00:00 | finding[8]",
+    "botsv1 replay | sigma | 2016-08-10T21:36:58+00:00 | finding[9]",
+    "botsv1 replay | sigma | 2016-08-10T21:36:58+00:00 | finding[10]",
+    "botsv1 replay | sigma | 2016-08-10T21:37:27+00:00 | finding[11]",
+    "botsv1 replay | sigma | 2016-08-10T21:37:27+00:00 | finding[12]",
+    "botsv1 replay | sigma | 2016-08-10T21:37:27+00:00 | finding[13]",
+    "botsv1 replay | sigma | 2016-08-10T21:37:27+00:00 | finding[14]",
+    "botsv1 replay | sigma | 2016-08-10T21:37:40+00:00 | finding[15]",
+    "botsv1 replay | anomaly | 2016-08-10T21:37:56.023257+00:00 | finding[16]",
+    "botsv1 replay | sigma | 2016-08-10T21:42:39+00:00 | finding[17]",
+    "botsv1 replay | sigma | 2016-08-10T21:42:41+00:00 | finding[18]",
+    "botsv1 replay | sigma | 2016-08-10T21:42:50+00:00 | finding[19]",
+    "botsv1 replay | sigma | 2016-08-10T21:42:52+00:00 | finding[20]",
+    "botsv1 replay | sigma | 2016-08-10T21:42:53+00:00 | finding[21]",
+    "botsv1 replay | sigma | 2016-08-10T21:42:53+00:00 | finding[22]",
+    "botsv1 replay | sigma | 2016-08-10T21:42:54+00:00 | finding[23]",
+    "botsv1 replay | sigma | 2016-08-10T21:42:55+00:00 | finding[24]",
+    "botsv1 replay | sigma | 2016-08-10T21:42:55+00:00 | finding[25]",
+    "botsv1 replay | sigma | 2016-08-10T21:42:56+00:00 | finding[26]",
+    "botsv1 replay | sigma | 2016-08-10T21:43:06+00:00 | finding[27]",
+    "botsv1 replay | sigma | 2016-08-10T21:43:09+00:00 | finding[28]",
+    "botsv1 replay | sigma | 2016-08-10T21:43:19+00:00 | finding[29]",
+    "botsv1 replay | sigma | 2016-08-10T21:43:22+00:00 | finding[30]",
+    "botsv1 replay | sigma | 2016-08-10T21:43:28+00:00 | finding[31]",
+    "botsv1 replay | sigma | 2016-08-10T21:43:29+00:00 | finding[32]",
+    "botsv1 replay | sigma | 2016-08-10T21:43:30+00:00 | finding[33]",
+    "botsv1 replay | sigma | 2016-08-10T21:43:31+00:00 | finding[34]",
+    "botsv1 replay | sigma | 2016-08-10T21:43:32+00:00 | finding[35]",
+    "botsv1 replay | sigma | 2016-08-10T21:43:33+00:00 | finding[36]",
+    "botsv1 replay | sigma | 2016-08-10T21:43:33+00:00 | finding[37]",
+    "botsv1 replay | sigma | 2016-08-10T21:43:36+00:00 | finding[38]",
+    "botsv1 replay | sigma | 2016-08-10T21:43:47+00:00 | finding[39]",
+    "enricher-agent-output | enrichment | enricher-summary:INC-0416"
+   ]
+  },
+  {
+   "agent": "narrator",
+   "model_id": "claude-sonnet-5",
+   "role": "reasoning",
+   "stop_reason": "end_turn",
+   "input_tokens": 20490,
+   "output_tokens": 7098,
+   "refused": false,
+   "refusal_category": null,
+   "served_by": null,
+   "request_id": "req_011CedVLcznDttPg98cqQqZ1",
+   "usable": true,
+   "unusable_reason": null,
+   "evidence_provenance": [
+    "botsv1 replay | sigma | 2016-08-10T20:54:24+00:00 | finding[0]",
+    "botsv1 replay | sigma | 2016-08-10T20:54:25+00:00 | finding[1]",
+    "botsv1 replay | sigma | 2016-08-10T20:54:25+00:00 | finding[2]",
+    "botsv1 replay | sigma | 2016-08-10T20:54:33+00:00 | finding[3]",
+    "botsv1 replay | anomaly | 2016-08-10T20:54:38+00:00 | finding[4]",
+    "botsv1 replay | anomaly | 2016-08-10T20:54:41+00:00 | finding[5]",
+    "botsv1 replay | anomaly | 2016-08-10T20:54:44+00:00 | finding[6]",
+    "botsv1 replay | anomaly | 2016-08-10T21:16:56.693626+00:00 | finding[7]",
+    "botsv1 replay | anomaly | 2016-08-10T21:28:27.958580+00:00 | finding[8]",
+    "botsv1 replay | sigma | 2016-08-10T21:36:58+00:00 | finding[9]",
+    "botsv1 replay | sigma | 2016-08-10T21:36:58+00:00 | finding[10]",
+    "botsv1 replay | sigma | 2016-08-10T21:37:27+00:00 | finding[11]",
+    "botsv1 replay | sigma | 2016-08-10T21:37:27+00:00 | finding[12]",
+    "botsv1 replay | sigma | 2016-08-10T21:37:27+00:00 | finding[13]",
+    "botsv1 replay | sigma | 2016-08-10T21:37:27+00:00 | finding[14]",
+    "botsv1 replay | sigma | 2016-08-10T21:37:40+00:00 | finding[15]",
+    "botsv1 replay | anomaly | 2016-08-10T21:37:56.023257+00:00 | finding[16]",
+    "botsv1 replay | sigma | 2016-08-10T21:42:39+00:00 | finding[17]",
+    "botsv1 replay | sigma | 2016-08-10T21:42:41+00:00 | finding[18]",
+    "botsv1 replay | sigma | 2016-08-10T21:42:50+00:00 | finding[19]",
+    "botsv1 replay | sigma | 2016-08-10T21:42:52+00:00 | finding[20]",
+    "botsv1 replay | sigma | 2016-08-10T21:42:53+00:00 | finding[21]",
+    "botsv1 replay | sigma | 2016-08-10T21:42:53+00:00 | finding[22]",
+    "botsv1 replay | sigma | 2016-08-10T21:42:54+00:00 | finding[23]",
+    "botsv1 replay | sigma | 2016-08-10T21:42:55+00:00 | finding[24]",
+    "botsv1 replay | sigma | 2016-08-10T21:42:55+00:00 | finding[25]",
+    "botsv1 replay | sigma | 2016-08-10T21:42:56+00:00 | finding[26]",
+    "botsv1 replay | sigma | 2016-08-10T21:43:06+00:00 | finding[27]",
+    "botsv1 replay | sigma | 2016-08-10T21:43:09+00:00 | finding[28]",
+    "botsv1 replay | sigma | 2016-08-10T21:43:19+00:00 | finding[29]",
+    "botsv1 replay | sigma | 2016-08-10T21:43:22+00:00 | finding[30]",
+    "botsv1 replay | sigma | 2016-08-10T21:43:28+00:00 | finding[31]",
+    "botsv1 replay | sigma | 2016-08-10T21:43:29+00:00 | finding[32]",
+    "botsv1 replay | sigma | 2016-08-10T21:43:30+00:00 | finding[33]",
+    "botsv1 replay | sigma | 2016-08-10T21:43:31+00:00 | finding[34]",
+    "botsv1 replay | sigma | 2016-08-10T21:43:32+00:00 | finding[35]",
+    "botsv1 replay | sigma | 2016-08-10T21:43:33+00:00 | finding[36]",
+    "botsv1 replay | sigma | 2016-08-10T21:43:33+00:00 | finding[37]",
+    "botsv1 replay | sigma | 2016-08-10T21:43:36+00:00 | finding[38]",
+    "botsv1 replay | sigma | 2016-08-10T21:43:47+00:00 | finding[39]",
+    "correlator-agent-output | summary | correlator-summary"
+   ]
+  },
+  {
+   "agent": "marshal",
+   "model_id": "claude-sonnet-5",
+   "role": "reasoning",
+   "stop_reason": "end_turn",
+   "input_tokens": 9577,
+   "output_tokens": 5887,
+   "refused": false,
+   "refusal_category": null,
+   "served_by": null,
+   "request_id": "req_011CedVS8TiBeJw5o9tXBSaf",
+   "usable": true,
+   "unusable_reason": null,
+   "evidence_provenance": [
+    "botsv1 replay | sigma | 2016-08-10T20:54:24+00:00 | finding[0]",
+    "botsv1 replay | sigma | 2016-08-10T20:54:25+00:00 | finding[1]",
+    "botsv1 replay | sigma | 2016-08-10T20:54:25+00:00 | finding[2]",
+    "botsv1 replay | sigma | 2016-08-10T20:54:33+00:00 | finding[3]",
+    "botsv1 replay | anomaly | 2016-08-10T20:54:38+00:00 | finding[4]",
+    "botsv1 replay | anomaly | 2016-08-10T20:54:41+00:00 | finding[5]",
+    "botsv1 replay | anomaly | 2016-08-10T20:54:44+00:00 | finding[6]",
+    "botsv1 replay | anomaly | 2016-08-10T21:16:56.693626+00:00 | finding[7]",
+    "botsv1 replay | anomaly | 2016-08-10T21:28:27.958580+00:00 | finding[8]",
+    "botsv1 replay | sigma | 2016-08-10T21:36:58+00:00 | finding[9]"
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 99638,
+  "output_tokens": 27713
+ }
+}

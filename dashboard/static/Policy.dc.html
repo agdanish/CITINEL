@@ -62,19 +62,18 @@
 
   <div data-reflow-yield style="flex:none;display:flex;align-items:center;gap:22px;padding:12px 22px;border-bottom:1px solid var(--ctn-color-border-hairline);background:var(--ctn-color-surface-panel);min-width:0">
     <div style="flex:none;max-width:520px">
-      <div style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.14em;color:var(--ctn-color-text-muted)">WHAT RUNS WITHOUT YOU TONIGHT</div>
+      <div style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.14em;color:var(--ctn-color-text-muted)">POLICY SUMMARY</div>
       <div style="font-size:13px;color:var(--ctn-color-text-primary);margin-top:5px;line-height:1.45;text-wrap:pretty">{{ summary }}</div>
     </div>
     <div style="flex:none;display:flex;gap:9px">
-      <sc-for list="{{ posTally }}" as="p" hint-placeholder-count="3">
+      <sc-for list="{{ tierTally }}" as="p" hint-placeholder-count="3">
         <div style="border:1px {{ p.style }} {{ p.border }};border-radius:6px;padding:8px 13px;min-width:0">
           <div style="font-family:var(--ctn-font-display);font-size:19px;color:var(--ctn-color-text-primary);font-variant-numeric:tabular-nums slashed-zero">{{ p.n }}</div>
-          <div style="font-family:var(--ctn-font-display);font-size:7.5px;letter-spacing:0.1em;color:var(--ctn-color-text-muted);margin-top:2px;white-space:nowrap">{{ p.name }}</div>
+          <div style="font-family:var(--ctn-font-display);font-size:7.5px;letter-spacing:0.1em;color:var(--ctn-color-text-muted);margin-top:2px;white-space:nowrap">{{ p.tier }}</div>
         </div>
       </sc-for>
     </div>
-    <div style="flex:1;min-width:0;font-size:11.5px;color:var(--ctn-color-text-muted);line-height:1.5;text-wrap:pretty">Two clauses in this rulebook are welded shut and no dial reaches them: critical severity never executes unattended, and a production identity is never disabled without a name. Everything else on this page is yours to change.</div>
-    <button onClick="{{ toggleRego }}" style="flex:none;font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:9px 13px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;background:none;color:var(--ctn-color-text-primary);cursor:pointer">{{ regoLabel }}</button>
+    <div style="flex:1;min-width:0;font-size:11.5px;color:var(--ctn-color-text-muted);line-height:1.5;text-wrap:pretty">{{ policyNote }}</div>
   </div>
 
   <div style="flex:1;min-height:0;min-width:0;display:flex" data-reflow-band>
@@ -85,130 +84,38 @@
           <dc-import name="StateNotice" kind="fallback" title="POLICY ENGINE UNREACHABLE · RUNNING THE SIGNED CONFIG FILE" meta="OPA sidecar down since 20:41 IST" body="{{ fallbackBody }}" consequence="{{ fallbackConsequence }}" action="OPEN THE LEDGER" href="Audit.dc.html" hint-size="100%,124px"></dc-import>
         </div>
       </sc-if>
-      <div style="flex:none;display:grid;grid-template-columns:74px 226px 1fr 150px;gap:0 16px;padding:11px 22px 7px;border-bottom:1px solid var(--ctn-color-border-strong);font-family:var(--ctn-font-display);font-size:8px;letter-spacing:0.12em;color:var(--ctn-color-text-muted);min-width:0">
-        <span>REACH</span><span>ACTION CLASS · AUTONOMY</span><span>THE RULE, IN WORDS</span><span>CEILINGS</span>
+      <div style="flex:none;display:grid;grid-template-columns:120px 180px 1fr 120px 100px;gap:0 16px;padding:11px 22px 7px;border-bottom:1px solid var(--ctn-color-border-strong);font-family:var(--ctn-font-display);font-size:8px;letter-spacing:0.12em;color:var(--ctn-color-text-muted);min-width:0">
+        <span>CLAUSE</span><span>ACTION CLASS</span><span>DESCRIPTION</span><span>TIER</span><span>DETAILS</span>
       </div>
       <div style="flex:1;min-height:0;overflow-y:auto;padding:0 22px 18px">
-        <sc-for list="{{ strips }}" as="s" hint-placeholder-count="7">
-          <div style="display:grid;grid-template-columns:74px 226px 1fr 150px;gap:0 16px;align-items:start;padding:13px 0;border-bottom:1px solid var(--ctn-color-border-hairline);background:{{ s.rowBg }};min-width:0">
-
-            <div style="display:flex;flex-direction:column;align-items:center;gap:5px;min-width:0">
-              <svg width="62" height="62" viewBox="0 0 62 62" style="flex:none">
-                <circle cx="31" cy="31" r="24" fill="none" stroke="var(--ctn-color-border-strong)" stroke-width="1.4"></circle>
-                <path d="{{ s.arc }}" fill="none" stroke="var(--ctn-color-state-cited)" stroke-width="3.6" style="transition:d 0.4s ease"></path>
-                <g>{{ s.nodes }}</g>
-              </svg>
-              <span style="font-family:var(--ctn-font-display);font-size:7px;letter-spacing:0.08em;color:var(--ctn-color-text-muted);text-align:center;line-height:1.3">{{ s.reachLabel }}</span>
-            </div>
-
-            <div style="min-width:0">
-              <div style="font-size:13.5px;color:var(--ctn-color-text-primary);line-height:1.35">{{ s.name }}</div>
-              <div style="font-family:var(--ctn-font-mono);font-size:10.5px;color:var(--ctn-color-text-muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ s.verbs }}</div>
-              <div style="display:flex;margin-top:9px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;overflow:hidden;min-width:0">
-                <sc-for list="{{ s.positions }}" as="p" hint-placeholder-count="3">
-                  <button onClick="{{ p.pick }}" title="{{ p.tip }}" style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--ctn-font-display);font-size:7.5px;letter-spacing:0.06em;padding:8px 3px;border:none;border-right:1px solid var(--ctn-color-border-strong);background:{{ p.bg }};color:{{ p.fg }};cursor:{{ p.cursor }};white-space:nowrap">{{ p.label }}</button>
-                </sc-for>
-              </div>
-              <sc-if value="{{ s.hasCeilingNote }}" hint-placeholder-val="{{ false }}">
-                <div style="display:flex;align-items:flex-start;gap:7px;margin-top:7px;min-width:0">
-                  <svg width="12" height="12" viewBox="0 0 12 12" style="flex:none;margin-top:2px"><rect x="2" y="5.5" width="8" height="5.5" rx="1" fill="none" stroke="var(--ctn-color-text-muted)" stroke-width="1.2"></rect><path d="M 3.8 5.5 V 3.6 a 2.2 2.2 0 0 1 4.4 0 V 5.5" fill="none" stroke="var(--ctn-color-text-muted)" stroke-width="1.2"></path></svg>
-                  <span style="font-size:10.5px;color:var(--ctn-color-text-muted);flex:1;min-width:0;line-height:1.4">{{ s.ceilingNote }}</span>
-                </div>
-              </sc-if>
-            </div>
-
-            <div style="min-width:0">
-              <sc-if value="{{ s.reading }}" hint-placeholder-val="{{ true }}">
-                <div style="font-size:13px;color:var(--ctn-color-text-primary);line-height:1.55;text-wrap:pretty">{{ s.rule }}</div>
-              </sc-if>
-              <sc-if value="{{ s.editing }}" hint-placeholder-val="{{ false }}">
-                <textarea value="{{ s.rule }}" onChange="{{ s.onRule }}" rows="4" style="width:100%;box-sizing:border-box;font-family:var(--ctn-font-body);font-size:13px;line-height:1.55;padding:9px 11px;background:var(--ctn-color-surface-well);border:1px solid var(--ctn-color-text-primary);border-radius:6px;color:var(--ctn-color-text-primary);resize:vertical"></textarea>
-              </sc-if>
-              <div style="font-size:11.5px;color:var(--ctn-color-text-muted);margin-top:6px;line-height:1.45;text-wrap:pretty"><span style="font-family:var(--ctn-font-display);font-size:7.5px;letter-spacing:0.1em;margin-right:7px">RIGHT NOW</span>{{ s.consequence }}</div>
-              <sc-if value="{{ s.showRego }}" hint-placeholder-val="{{ false }}">
-                <div style="margin-top:8px">
-                  <x-import component-from-global-scope="CITINELDesignSystem_fdfd66.LogWell" dense="{{ true }}" hint-size="100%,90px">{{ s.rego }}</x-import>
-                </div>
-              </sc-if>
-              <div style="display:flex;gap:7px;margin-top:8px;flex-wrap:wrap">
-                <button onClick="{{ s.toggleEdit }}" style="font-family:var(--ctn-font-display);font-size:8.5px;letter-spacing:0.1em;padding:6px 11px;border:1px {{ s.editBorder }} var(--ctn-color-border-strong);border-radius:6px;background:{{ s.editBg }};color:var(--ctn-color-text-primary);cursor:pointer">{{ s.editLabel }}</button>
-                <span data-token style="font-family:var(--ctn-font-mono);font-size:10.5px;color:var(--ctn-color-text-muted);align-self:center">{{ s.lastChanged }}</span>
+        <sc-if value="{{ isLoading }}" hint-placeholder-val="{{ true }}">
+          <div style="padding:20px;text-align:center;color:var(--ctn-color-text-muted);font-size:13px">Reading policy from the backend...</div>
+        </sc-if>
+        <sc-if value="{{ isLive }}" hint-placeholder-val="{{ true }}">
+          <sc-for list="{{ clauses }}" as="c" hint-placeholder-count="8">
+            <div style="display:grid;grid-template-columns:120px 180px 1fr 120px 100px;gap:0 16px;align-items:start;padding:13px 0;border-bottom:1px solid var(--ctn-color-border-hairline);min-width:0">
+              <div style="font-family:var(--ctn-font-mono);font-size:12px;color:var(--ctn-color-text-primary)">{{ c.clause }}</div>
+              <div style="font-size:12px;color:var(--ctn-color-text-primary)">{{ c.action_class }}</div>
+              <div style="font-size:13px;color:var(--ctn-color-text-primary);line-height:1.5;text-wrap:pretty">{{ c.description }}</div>
+              <div style="font-size:11px;color:var(--ctn-color-text-muted);text-transform:uppercase;letter-spacing:0.05em">{{ c.tier }}</div>
+              <div style="font-size:10px;color:var(--ctn-color-text-muted);line-height:1.4">
+                <div>{{ c.approvalLabel }}</div>
+                <div style="margin-top:3px">{{ c.maxAssetsLabel }}</div>
+                <div style="margin-top:3px">{{ c.reversibleLabel }}</div>
               </div>
             </div>
-
-            <div style="min-width:0;display:flex;flex-direction:column;gap:7px">
-              <sc-for list="{{ s.caps }}" as="c" hint-placeholder-count="2">
-                <div style="min-width:0">
-                  <div style="font-size:10px;color:var(--ctn-color-text-muted);font-variant-caps:all-small-caps;line-height:1.3">{{ c.k }}</div>
-                  <sc-if value="{{ c.editable }}" hint-placeholder-val="{{ true }}">
-                    <input value="{{ c.v }}" onChange="{{ c.onEdit }}" style="width:100%;box-sizing:border-box;font-family:var(--ctn-font-mono);font-size:12px;letter-spacing:0;padding:6px 8px;margin-top:2px;background:var(--ctn-color-surface-well);border:1px solid {{ c.border }};border-radius:6px;color:var(--ctn-color-text-primary);font-variant-numeric:tabular-nums slashed-zero">
-                  </sc-if>
-                  <sc-if value="{{ c.locked }}" hint-placeholder-val="{{ false }}">
-                    <div style="font-family:var(--ctn-font-mono);font-size:12px;color:var(--ctn-color-text-muted);margin-top:4px;font-variant-numeric:tabular-nums slashed-zero">{{ c.v }}</div>
-                  </sc-if>
-                </div>
-              </sc-for>
-            </div>
-          </div>
-        </sc-for>
+          </sc-for>
+        </sc-if>
+        <sc-if value="{{ isFallback }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:20px;text-align:center;color:var(--ctn-color-text-muted);font-size:13px">{{ fallbackNote }}</div>
+        </sc-if>
       </div>
     </section>
 
-    <aside data-reflow-rail style="width:clamp(260px, 11.67rem + 12.87vw, 372px);flex:none;box-sizing:border-box;display:flex;flex-direction:column;min-height:0;min-width:0;overflow:hidden">
-      <div style="flex:none;display:flex;align-items:baseline;gap:10px;padding:13px 18px 9px;min-width:0">
-        <span style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.14em;color:var(--ctn-color-text-primary);flex:none">SNAPSHOT HISTORY</span>
-        <span style="font-size:11px;color:var(--ctn-color-text-muted);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">every revision recallable</span>
-      </div>
-      <div style="flex:1;min-height:0;overflow-y:auto;padding:0 18px 16px;display:flex;flex-direction:column">
-        <sc-for list="{{ history }}" as="h" hint-placeholder-count="6">
-          <div style="display:flex;gap:11px;min-width:0">
-            <div style="flex:none;width:16px;display:flex;flex-direction:column;align-items:center">
-              <span style="flex:none;width:9px;height:9px;border-radius:50%;background:{{ h.dot }};border:1.5px solid {{ h.ring }};margin-top:4px"></span>
-              <span style="flex:1;width:1px;background:var(--ctn-color-border-hairline);min-height:12px"></span>
-            </div>
-            <div style="flex:1;min-width:0;padding-bottom:13px">
-              <div style="display:flex;align-items:baseline;gap:8px;min-width:0">
-                <span data-token style="font-family:var(--ctn-font-mono);font-size:11px;color:var(--ctn-color-text-primary);flex:none">rev {{ h.rev }}</span>
-                <span data-reveal style="font-family:var(--ctn-font-mono);font-size:10.5px;color:var(--ctn-color-text-muted);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ h.when }}</span>
-                <span style="font-family:var(--ctn-font-display);font-size:7px;letter-spacing:0.1em;color:var(--ctn-color-text-muted);border:1px solid var(--ctn-color-border-strong);padding:2px 5px;border-radius:3px;flex:none">#{{ h.seq }}</span>
-              </div>
-              <div style="font-size:12.5px;color:var(--ctn-color-text-primary);margin-top:4px;line-height:1.45;text-wrap:pretty">{{ h.change }}</div>
-              <div style="font-size:11px;color:var(--ctn-color-text-muted);margin-top:3px;line-height:1.4;text-wrap:pretty">{{ h.why }}</div>
-              <div style="display:flex;align-items:center;gap:9px;margin-top:5px;min-width:0">
-                <span data-reveal style="font-family:var(--ctn-font-mono);font-size:10.5px;color:var(--ctn-color-text-muted);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ h.by }}</span>
-                <sc-if value="{{ h.recallable }}" hint-placeholder-val="{{ true }}">
-                  <button onClick="{{ h.recall }}" style="flex:none;font-family:var(--ctn-font-display);font-size:8px;letter-spacing:0.1em;padding:5px 9px;border:1px dashed var(--ctn-color-border-strong);border-radius:6px;background:none;color:var(--ctn-color-text-primary);cursor:pointer">RECALL</button>
-                </sc-if>
-              </div>
-            </div>
-          </div>
-        </sc-for>
-      </div>
-    </aside>
   </div>
 
   <div data-reflow-yield style="flex:none;border-top:2px solid var(--ctn-color-border-strong);background:var(--ctn-color-surface-panel);padding:12px 22px;display:flex;align-items:center;gap:20px;min-width:0">
-    <div style="flex:none;min-width:0;max-width:290px">
-      <div style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;color:var(--ctn-color-text-primary)">STAGED CHANGES</div>
-      <div style="font-size:11.5px;color:var(--ctn-color-text-muted);margin-top:3px;line-height:1.45">{{ stagedNote }}</div>
-    </div>
-    <div style="flex:1;min-width:0;display:flex;gap:8px;overflow-x:auto;scrollbar-width:thin;align-items:center">
-      <sc-if value="{{ noChanges }}" hint-placeholder-val="{{ true }}">
-        <span style="font-size:12px;color:var(--ctn-color-text-muted)">the live rulebook and the desk agree · nothing to commit.</span>
-      </sc-if>
-      <sc-for list="{{ diffs }}" as="d" hint-placeholder-count="2">
-        <div style="flex:none;border:1px dashed var(--ctn-color-text-primary);border-radius:6px;padding:8px 12px;min-width:0">
-          <div style="font-family:var(--ctn-font-mono);font-size:11px;color:var(--ctn-color-text-primary);white-space:nowrap">{{ d.what }}</div>
-          <div style="font-family:var(--ctn-font-mono);font-size:10.5px;color:var(--ctn-color-text-muted);margin-top:2px;white-space:nowrap">{{ d.from }} → {{ d.to }}</div>
-        </div>
-      </sc-for>
-    </div>
-    <label style="flex:none;width:220px;display:flex;flex-direction:column;gap:4px">
-      <span style="font-size:10.5px;color:var(--ctn-color-text-muted);font-variant-caps:all-small-caps">reason for the change · required</span>
-      <input value="{{ reason }}" onChange="{{ onReason }}" placeholder="why the rulebook moves" style="font-family:var(--ctn-font-body);font-size:12px;padding:8px 10px;background:var(--ctn-color-surface-well);border:1px solid {{ reasonBorder }};border-radius:6px;color:var(--ctn-color-text-primary);width:100%;box-sizing:border-box">
-    </label>
-    <x-import component-from-global-scope="CITINELDesignSystem_fdfd66.Button" variant="primary" size="lg" disabled="{{ commitDisabled }}" on-click="{{ commit }}" hint-size="200px,42px">{{ commitLabel }}</x-import>
-    <button onClick="{{ revert }}" style="flex:none;font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:11px 14px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;background:none;color:var(--ctn-color-text-primary);cursor:pointer">DISCARD</button>
+    <div style="flex:1;min-width:0;font-size:11.5px;color:var(--ctn-color-text-muted);line-height:1.5;text-wrap:pretty">{{ footerNote }}</div>
   </div>
 </div>
 </x-dc>
@@ -216,272 +123,90 @@
 class Component extends DCLogic {
   constructor(p){
     super(p);
-    this.POS = ['SHADOW','ASSIST','AUTONOMOUS'];
-    this.tips = {
-      SHADOW:'',
-      ASSIST:'drafts the action and stops at the gate for a human',
-      AUTONOMOUS:'executes within the ceilings, gates anything above them'
-    };
-    this.classes = [
-      {id:'disp', name:'Case disposition', verbs:'close as benign · attach citation · reopen', pos:2,
-       rule:'Close an alert on its own only when a cited log line proves it benign. If the citation does not settle it, the alert stays open and goes to the swarm. Every closure carries the line that justified it.',
-       rego:`package citinel.disposition
-autonomous {
-  input.verdict.benign
-  count(input.verdict.citations) > 0
-}`,
-       caps:[{k:'min citations',v:'1',key:'cites'},{k:'max severity',v:'medium',key:'sev'}],
-       changed:'rev 12 · 04 Jul'},
-      {id:'mail', name:'Mail actions', verbs:'quarantine message · block sender · revoke link', pos:2,
-       rule:'Quarantine and sender-block may run unattended because nothing is destroyed: messages move to a folder, senders get a readable bounce, and a rollback token restores everything for 24 hours. Deleting mail is not in this class and never will be.',
-       rego:`package citinel.mail
-autonomous_allowed {
-  input.action.reversible
-  not input.action.destructive
-  not data.allowlist[input.action.domain]
-}`,
-       caps:[{k:'max mailboxes',v:'50',key:'boxes'},{k:'token ttl (h)',v:'24',key:'ttl'}],
-       changed:'rev 14 · 19 Jul'},
-      {id:'net', name:'Network containment', verbs:'egress block · firewall rule · vlan quarantine', pos:1,
-       rule:'Draft the block, show the segment it touches, and wait. A branch losing egress at the wrong hour costs more than the twenty minutes it takes to ask someone. Blocks that do get approved expire on their own after 24 hours unless renewed.',
-       rego:`package citinel.network
-egress_block_allowed {
-  net.cidr_contains("10.4.0.0/16", input.action.cidr)
-  count(input.action.affected_hosts) <= data.caps.segment
-}`,
-       caps:[{k:'max hosts',v:'250',key:'hosts'},{k:'rule expiry (h)',v:'24',key:'exp'}],
-       changed:'rev 15 · 02 Aug'},
-      {id:'edr', name:'Endpoint containment', verbs:'host isolate · kill process · quarantine binary', pos:1,
-       rule:'Isolating a teller workstation stops a branch serving customers. Always draft, never fire. The floor asked for one exception: killing a process already flagged malicious by two independent engines. It stays gated, because two engines have been wrong together before.',
-       rego:`package citinel.endpoint
-deny[msg] {
-  input.action.kind == "ISOLATE"
-  input.asset.role == "teller"
-  not input.decision.human_approver
-  msg := "teller endpoints are customer-facing"
-}`,
-       caps:[{k:'max hosts',v:'12',key:'hosts'},{k:'auto-release (h)',v:'8',key:'rel'}],
-       changed:'rev 11 · 28 Jun'},
-      {id:'idam', name:'Identity actions', verbs:'disable account · force reset · revoke session', pos:1, lockedCeiling:true,
-       ceilingNote:'production service accounts stop at ASSIST. the dial has no AUTONOMOUS position for this class.',
-       rule:'A disabled service account takes live sessions down with it. Draft it, show which sessions die, and let a human decide. Ordinary user password resets are lower stakes but stay here too, because a reset at 3am locks someone out of their own bank.',
-       rego:`package citinel.identity
-deny[msg] {
-  input.action.kind == "DISABLE_ACCOUNT"
-  input.asset.tier == "production"
-  not input.decision.human_approver
-  msg := "production identity · never automatic, at any dial position"
-}`,
-       caps:[{k:'max accounts',v:'3',key:'acct'},{k:'prod accounts',v:'gated · locked',key:'prod',locked:true}],
-       changed:'rev 09 · 11 Jun'},
-      {id:'pay', name:'Payment and financial', verbs:'freeze batch · hold beneficiary · reverse payout', pos:1, lockedCeiling:true,
-       ceilingNote:'value above ₹5,00,000 is welded to the gate regardless of the dial position.',
-       rule:'Freezing money is reversible and holding it is usually right, but the bank has told us plainly that no machine moves rupees on its own. Draft the freeze in seconds, put the value and the beneficiary count on the card, and wait for a name.',
-       rego:`package citinel.payout
-deny[msg] {
-  input.action.value_inr > 500000
-  not input.decision.human_approver
-  msg := "value above 5,00,000 · a named human must approve"
-}`,
-       caps:[{k:'gate above (₹)',v:'500000',key:'val'},{k:'max beneficiaries',v:'40',key:'ben'}],
-       changed:'rev 15 · 02 Aug'},
-      {id:'saas', name:'Cloud and SaaS tokens', verbs:'revoke oauth grant · rotate key · disable app', pos:0,
-       rule:'This class went live eleven days ago and is still in shadow. It records what it would have revoked and nothing more, so the floor can read a fortnight of would-have-done before anyone trusts it with a live grant. Nine proposals so far, seven of which the analysts agreed with.',
-       rego:`package citinel.saas
-shadow_only {
-  time.now_ns() < data.saas.trust_window_end
-}`,
-       caps:[{k:'shadow until',v:'2026-09-04',key:'until'},{k:'agreement rate',v:'7/9',key:'agree',locked:true}],
-       changed:'rev 16 · 12 Aug'}
-    ];
-    const pos = {}, rules = {}, caps = {};
-    this.classes.forEach(c=>{
-      pos[c.id] = c.pos; rules[c.id] = c.rule;
-      caps[c.id] = {}; c.caps.forEach(k=>{ caps[c.id][k.key] = k.v; });
-    });
-    this.base = {pos:{...pos}, rules:{...rules}, caps: JSON.parse(JSON.stringify(caps))};
-    this.state = {role:this.roleInit(), pos, rules, caps, editing:{}, showRego:false, reason:'', rev:16,
-      history:[
-        {rev:'16', when:'12 Aug 09:14 IST', seq:'86112', by:'v. rao · ciso',
-         change:'Cloud and SaaS tokens added in SHADOW', why:'new class; two-week observation before anyone considers moving it.'},
-        {rev:'15', when:'02 Aug 16:40 IST', seq:'85330', by:'v. rao · ciso · countersigned s. kulkarni',
-         change:'Payment gate lowered from ₹10,00,000 to ₹5,00,000', why:'two incidents in July staged just under the old ceiling.'},
-        {rev:'14', when:'19 Jul 11:02 IST', seq:'84771', by:'a. deshmukh · soc l2',
-         change:'Mail actions moved ASSIST → AUTONOMOUS', why:'six weeks of assist with a 100% approval rate; the gate was theatre.'},
-        {rev:'13', when:'11 Jul 22:31 IST', seq:'84402', by:'r. iyer · soc l2',
-         change:'Endpoint containment moved AUTONOMOUS → ASSIST', why:'a branch teller was isolated mid-transaction during the June drill.'},
-        {rev:'12', when:'04 Jul 10:18 IST', seq:'84090', by:'v. rao · ciso',
-         change:'Case disposition requires at least one citation', why:'closed-as-benign with no cited line is indistinguishable from ignoring it.'},
-        {rev:'11', when:'28 Jun 15:55 IST', seq:'83771', by:'a. deshmukh · soc l2',
-         change:'Endpoint auto-release window set to 8 hours', why:'isolations were surviving past the shift that made them.'}
-      ]
+    this.state = {
+      live: null,
+      liveError: null,
+      policy: null,
+      liveLoaded: false,
+      rev: 1
     };
   }
-  arcPath(cx,cy,r,frac){
-    if(frac<=0) return '';
-    const a = Math.min(frac,0.9999)*2*Math.PI - Math.PI/2;
-    return `M ${cx} ${cy-r} A ${r} ${r} 0 ${frac>0.5?1:0} 1 ${(cx+r*Math.cos(a)).toFixed(1)} ${(cy+r*Math.sin(a)).toFixed(1)}`;
-  }
-  nodes(cx,cy,r,reached){
-    const R = React, seq = ['caught','cited','gated','actioned','closed'];
-    return seq.map((k,i)=>{
-      const a = (i/4)*2*Math.PI - Math.PI/2, x = cx+r*Math.cos(a), y = cy+r*Math.sin(a);
-      const on = i <= reached;
-      const stroke = on ? 'var(--ctn-color-state-stroke)' : 'var(--ctn-color-text-disabled)';
-      const fill = on ? 'var(--ctn-color-state-node)' : 'var(--ctn-color-surface-shell)';
-      if(k==='gated') return R.createElement('circle',{key:i,cx:x,cy:y,r:4,fill:'var(--ctn-color-surface-shell)',stroke,strokeWidth:1.8,strokeDasharray:'2.8 2.8'});
-      if(k==='actioned') return R.createElement('rect',{key:i,x:x-3.8,y:y-3.8,width:7.6,height:7.6,transform:`rotate(45 ${x} ${y})`,fill,stroke,strokeWidth:2.2});
-      if(k==='closed') return R.createElement('circle',{key:i,cx:x,cy:y,r:4.6,fill,stroke,strokeWidth:2.2});
-      return R.createElement('circle',{key:i,cx:x,cy:y,r:3.6,fill,stroke,strokeWidth:1.7});
-    });
-  }
-  baseVals(){
-    const s = this.state;
-    const reachFor = p => p===0 ? 1 : p===1 ? 2 : 3;
-    const reachLabel = p => p===0 ? 'cites, then stops' : p===1 ? 'reaches the gate' : 'may act alone';
-    const diffs = [];
-    this.classes.forEach(c=>{
-      if(s.pos[c.id] !== this.base.pos[c.id]) diffs.push({what:c.name+' · dial', from:this.POS[this.base.pos[c.id]], to:this.POS[s.pos[c.id]]});
-      if(s.rules[c.id] !== this.base.rules[c.id]) diffs.push({what:c.name+' · wording', from:'rev '+s.rev, to:'amended'});
-      c.caps.forEach(k=>{
-        if(s.caps[c.id][k.key] !== this.base.caps[c.id][k.key]) diffs.push({what:c.name+' · '+k.k, from:this.base.caps[c.id][k.key], to:s.caps[c.id][k.key]});
+
+  componentDidMount(){
+    const API = window.CITINEL_API;
+    if (!API) {
+      this.setState({live:false, liveError:'API not loaded'});
+      return;
+    }
+    API.policy().then(r => {
+      if (!r.ok) {
+        this.setState({live:false, liveError:r.error});
+        return;
+      }
+      const policy = r.data || {};
+      this.setState({
+        live: true,
+        liveLoaded: true,
+        policy: policy
       });
     });
-    const counts = [0,0,0];
-    this.classes.forEach(c=>{ counts[s.pos[c.id]]++; });
-    const autoNames = this.classes.filter(c=>s.pos[c.id]===2).map(c=>c.name.toLowerCase());
-    const ready = diffs.length > 0 && s.reason.trim().length > 8;
-    return {
-      rev: s.rev, liveNote: diffs.length ? diffs.length+' change'+(diffs.length>1?'s':'')+' staged' : 'desk matches live',
-      summary: autoNames.length
-        ? 'Unattended tonight: '+autoNames.join(', ')+'. Everything else drafts and waits for a name. '+counts[0]+' class in shadow, recording only.'
-        : 'Nothing runs unattended tonight. All 31 classes draft and wait for a name.',
-      posTally: this.POS.map((n,i)=>({name:n, n:String(counts[i]).padStart(2,'0'),
-        style: i===2 ? 'solid' : 'dashed',
-        border: i===2 ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-border-strong)'})),
-      toggleRego: ()=>this.setState(x=>({showRego:!x.showRego})),
-      regoLabel: s.showRego ? 'HIDE THE REGO' : 'SHOW THE REGO IT COMPILES TO',
-
-      strips: this.classes.map(c=>{
-        const p = s.pos[c.id], ed = !!s.editing[c.id];
-        const maxPos = c.lockedCeiling ? 1 : 2;
-        return {
-          name:c.name, verbs:c.verbs, rule:s.rules[c.id], rego:c.rego,
-          arc: this.arcPath(31,31,24, reachFor(p)/4),
-          nodes: this.nodes(31,31,24, reachFor(p)),
-          reachLabel: reachLabel(p),
-          rowBg: p===2 ? 'transparent' : p===0 ? 'var(--ctn-color-surface-panel)' : 'transparent',
-          positions: this.POS.map((label,i)=>({
-            label, tip:this.tips[label],
-            pick: ()=>{ if(i<=maxPos) this.setState(x=>({pos:{...x.pos, [c.id]:i}})); },
-            bg: p===i ? 'var(--ctn-color-surface-navy)' : 'transparent',
-            fg: p===i ? 'var(--ctn-color-text-on-navy)' : (i>maxPos ? 'var(--ctn-color-text-disabled)' : 'var(--ctn-color-text-muted)'),
-            cursor: i>maxPos ? 'not-allowed' : 'pointer'
-          })),
-          hasCeilingNote: !!c.lockedCeiling, ceilingNote: c.ceilingNote,
-          reading: !ed, editing: ed,
-          onRule: e=>{ const v = e.target.value; this.setState(x=>({rules:{...x.rules, [c.id]:v}})); },
-          toggleEdit: ()=>this.setState(x=>({editing:{...x.editing, [c.id]: !x.editing[c.id]}})),
-          editLabel: ed ? 'DONE EDITING' : 'EDIT THE WORDING',
-          editBorder: ed ? 'solid' : 'dashed',
-          editBg: ed ? 'var(--ctn-color-surface-raised)' : 'transparent',
-          lastChanged: 'last changed '+c.changed,
-          showRego: s.showRego,
-          consequence: p===0
-            ? 'records proposals in the ledger and takes no action of any kind.'
-            : p===1 ? 'drafts and holds at the gate; nothing in this class fires without a name.'
-                    : 'fires inside the ceilings on the right; anything above them still goes to the gate.',
-          caps: c.caps.map(k=>({
-            k:k.k, v:s.caps[c.id][k.key], editable: !k.locked, locked: !!k.locked,
-            border: s.caps[c.id][k.key] !== this.base.caps[c.id][k.key] ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-border-strong)',
-            onEdit: e=>{ const v = e.target.value; this.setState(x=>({caps:{...x.caps, [c.id]:{...x.caps[c.id], [k.key]:v}}})); }
-          }))
-        };
-      }),
-
-      history: s.history.map((h,i)=>({...h, recallable: i>0,
-        dot: i===0 ? 'var(--ctn-color-text-primary)' : 'transparent',
-        ring: i===0 ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-border-strong)',
-        recall: ()=>this.setState({reason:'recalled rev '+h.rev+' · '+h.change.toLowerCase()})})),
-
-      diffs, noChanges: diffs.length === 0,
-      stagedNote: diffs.length
-        ? diffs.length+' change'+(diffs.length>1?'s':'')+' on the desk. The live rulebook is untouched until you commit. The swarm is still running rev '+s.rev+'.'
-        : 'Edit a dial, a ceiling or the wording and the change stages here first.',
-      reason: s.reason, onReason: e=>this.setState({reason:e.target.value}),
-      reasonBorder: s.reason.trim().length > 8 ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-border-strong)',
-      commitDisabled: !ready,
-      commitLabel: diffs.length === 0 ? 'NOTHING TO COMMIT' : (s.reason.trim().length > 8 ? 'COMMIT REV '+(s.rev+1) : 'REASON REQUIRED'),
-      commit: ()=>{
-        if(!ready) return;
-        const nr = s.rev + 1;
-        const entry = {rev:String(nr), when:new Date(Date.now()+330*60000).toISOString().slice(11,16)+' IST · today', seq:String(88430+nr),
-          by:'a. deshmukh · soc l2', change: diffs.map(d=>d.what).join('; '), why: s.reason.trim()};
-        this.classes.forEach(c=>{
-          this.base.pos[c.id] = s.pos[c.id];
-          this.base.rules[c.id] = s.rules[c.id];
-          c.caps.forEach(k=>{ this.base.caps[c.id][k.key] = s.caps[c.id][k.key]; });
-        });
-        this.setState(x=>({rev:nr, reason:'', editing:{}, history:[entry].concat(x.history)}));
-      },
-      revert: ()=>this.setState({
-        pos:{...this.base.pos}, rules:{...this.base.rules},
-        caps: JSON.parse(JSON.stringify(this.base.caps)), reason:'', editing:{}
-      })
-    };
   }
 
-  roleInit(){ try{ return (window.CitinelRole && window.CitinelRole.get()) || 'analyst'; }catch(e){ return 'analyst'; } }
-  roleMount(){ if(window.CitinelRole) this.unsubRole = window.CitinelRole.subscribe(r=>{ if(r !== this.state.role) this.setState({role:r}); }); }
-  componentWillUnmount_role(){ if(this.unsubRole) this.unsubRole(); }
-  roleVals(){
-    const ciso = this.state.role === 'ciso';
-    return { ciso, analyst: !ciso,
-      setAnalyst: ()=>{ this.setState({role:'analyst'}); if(window.CitinelRole) window.CitinelRole.set('analyst'); },
-      setCiso: ()=>{ this.setState({role:'ciso'}); if(window.CitinelRole) window.CitinelRole.set('ciso'); },
-      analystBg: ciso ? 'transparent' : 'var(--ctn-color-surface-navy)',
-      analystFg: ciso ? 'var(--ctn-color-text-muted)' : 'var(--ctn-color-text-on-navy)',
-      cisoBg: ciso ? 'var(--ctn-color-surface-navy)' : 'transparent',
-      cisoFg: ciso ? 'var(--ctn-color-text-on-navy)' : 'var(--ctn-color-text-muted)' };
-  }
-  renderVals(){ const b = this.baseVals(); return Object.assign({}, b, this.roleVals(), this.depthVals ? this.depthVals(b) : {}, this.stateVals(b)); }
-  componentDidMount(){ this.roleMount(); }
+  renderVals(){
+    const s = this.state;
+    const policy = s.policy || {};
+    const clauses = Array.isArray(policy.clauses) ? policy.clauses : [];
 
-  depthVals(b){
-    if(this.state.role === 'ciso') return {
-      summary: b.summary,
-      stagedNote: b.stagedNote + ' You hold the authority to commit; an analyst on this screen can read it and request a change, nothing more.'
-    };
-    return {
-      strips: b.strips.map(s=>({...s,
-        positions: s.positions.map(p=>({...p, pick: ()=>{}, cursor:'not-allowed'})),
-        toggleEdit: ()=>{}, editLabel:'READ ONLY · REQUEST A CHANGE', editBorder:'dashed', editBg:'transparent',
-        caps: s.caps.map(c=>({...c, editable:false, locked:true}))
-      })),
-      commitDisabled: true,
-      commitLabel: 'CISO SIGNS OFF POLICY',
-      stagedNote: 'The rulebook is read-only at analyst depth. You can read every clause and every ceiling, and you can raise a change request against one. Moving a dial needs the CISO. The last three revisions were all raised from the floor and committed by the CISO.',
-      history: b.history.map(h=>({...h, recallable:false}))
-    };
-  }
+    const tierCounts = {autonomous: 0, assist: 0, shadow: 0};
+    clauses.forEach(c => {
+      const t = String(c.tier || 'shadow').toLowerCase();
+      if (tierCounts.hasOwnProperty(t)) tierCounts[t]++;
+    });
 
-  stateVals(b){
-    let m = 'normal';
-    try{ m = new URLSearchParams(window.location.search).get('state') || 'normal'; }catch(e){}
-    if(m !== 'fallback') return {fallbackOn:false};
+    const tierTally = [
+      {tier: 'SHADOW', n: String(tierCounts.shadow).padStart(2, '0'), style: 'dashed', border: 'var(--ctn-color-border-strong)'},
+      {tier: 'ASSIST', n: String(tierCounts.assist).padStart(2, '0'), style: 'dashed', border: 'var(--ctn-color-border-strong)'},
+      {tier: 'AUTONOMOUS', n: String(tierCounts.autonomous).padStart(2, '0'), style: 'solid', border: 'var(--ctn-color-text-primary)'}
+    ];
+
+    const clauseItems = clauses.map(c => ({
+      clause: c.clause || '',
+      action_class: c.action_class || '',
+      description: c.description || '',
+      tier: String(c.tier || 'shadow').toUpperCase(),
+      approvalLabel: (c.approval === 'always') ? 'Approval: always required' : 'Approval: never required',
+      maxAssetsLabel: (c.max_assets_auto > 0) ? 'Max assets auto: ' + c.max_assets_auto : 'No auto-limit',
+      reversibleLabel: c.reversible ? 'Reversible: yes' : 'Reversible: no'
+    }));
+
+    let summary = 'CITINEL response policy version ' + (policy.version || '?') + '.';
+    if (clauseItems.length > 0) {
+      summary += ' ' + tierCounts.autonomous + ' action classes autonomous, ' + tierCounts.assist + ' assist, ' + tierCounts.shadow + ' shadow.';
+    }
+
     return {
-      fallbackOn: true,
-      fallbackBody: 'The OPA sidecar stopped responding at 20:41. CITINEL did not fail open and did not guess: it fell back to the last signed policy bundle on disk: rev 16, commit 7f31c0d, signature verified against the deployment key at load. Every decision since 20:41 has been evaluated against that file.',
-      fallbackConsequence: 'The rulebook is frozen while this holds. Dials, ceilings and wording are read-only for everyone including the CISO, because a change committed now could not be evaluated. Any action whose class sits at AUTONOMOUS has been demoted to the gate for the duration. A signed file states what is allowed; re-evaluating it takes the engine, so nothing runs unattended on a stale bundle.',
-      commitDisabled: true,
-      commitLabel: 'FROZEN · ENGINE UNREACHABLE',
-      stagedNote: 'No change can be committed while the engine is down. The desk still shows the live rulebook exactly as the signed file holds it.',
-      strips: b.strips.map(s=>({...s,
-        positions: s.positions.map(x=>({...x, pick: ()=>{}, cursor:'not-allowed'})),
-        toggleEdit: ()=>{}, editLabel:'FROZEN · SIGNED FILE', editBorder:'dashed',
-        caps: s.caps.map(c=>({...c, editable:false, locked:true})),
-        consequence: s.consequence + ' While the engine is unreachable this class is held at the gate regardless of the dial.'
-      }))
+      rev: policy.version || 1,
+      liveNote: s.liveLoaded ? 'live · ' + (policy.name || 'policy') : 'reading...',
+      live: s.live,
+      liveLoaded: s.liveLoaded,
+      isLoading: s.live === null,
+      isLive: s.live === true,
+      isFallback: s.live === false,
+      fallbackOn: s.live === false,
+      fallbackNote: 'Unable to reach the policy backend: ' + (s.liveError || 'unknown error'),
+      fallbackBody: 'The policy service did not respond. The console is not reading the current policy configuration from the backend.',
+      fallbackConsequence: 'The Policy page will show an error message instead of the live rulebook. Check the backend service status.',
+      summary: summary,
+      tierTally: tierTally,
+      policyNote: 'This rulebook is served by the backend and controls all automated and gated actions. Changes are deployed via the backend, not this console.',
+      clauses: clauseItems,
+      footerNote: 'The live policy is read-only in this view. To change a clause, tier, or approval rule, deploy a new policy configuration to the backend.',
+      setAnalyst: ()=>{ if(window.CitinelRole) window.CitinelRole.set('analyst'); },
+      setCiso: ()=>{ if(window.CitinelRole) window.CitinelRole.set('ciso'); },
+      analystBg: 'var(--ctn-color-surface-navy)',
+      analystFg: 'var(--ctn-color-text-on-navy)',
+      cisoBg: 'transparent',
+      cisoFg: 'var(--ctn-color-text-muted)'
     };
   }
 }

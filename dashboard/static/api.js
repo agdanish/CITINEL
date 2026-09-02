@@ -44,6 +44,7 @@
     INCIDENT_SECONDARY: 'INC-0416',
     TIMEOUT_MS: 6000,          // probes and small reads
     BULK_TIMEOUT_MS: 20000,    // incident bodies, audit chains, drafts, ledger verify
+    WRITE_TIMEOUT_MS: 45000,   // writes append ledger frames and may wait on connectors; never retried
     reachable: null,           // null = not probed, true/false after probe()
     service: null,             // /healthz's service name once probed
     corpus: null,              // /api/source's answer: 'live' pipeline output or the committed 'seed'
@@ -70,21 +71,42 @@
     ledgerVerify: { path: function () { return '/api/ledger/verify'; },
                     live: true,  note: '{intact, message, witness}' },
     evalRuns:     { path: function () { return '/api/eval'; },
-                    live: true,  note: '{measured[], unmeasured[], ...} · harness report, denominators included' },
-
-    /* Not built yet. The swarm runs (step 7 is live) but its verdict and proposals are printed
-       by the CLI and not persisted or served; action execution and the corpus have no routes.
-       Paths below are the intended shape, not a promise the service keeps. */
+                    live: true,  note: '{measured[], unmeasured[], served_from} · harness report, denominators included' },
+    incidentsSummary: { path: function () { return '/api/incidents?summary=true'; },
+                    live: true,  note: 'Incident[] without findings · state derived from the ledger · swarm summary' },
     verdict:      { path: function (id) { return '/api/incidents/' + id + '/verdict'; },
-                    live: false, note: 'swarm verdict + citations · produced live, not persisted or served yet' },
-    proposals:    { path: function (id) { return '/api/incidents/' + id + '/proposals'; },
-                    live: false, note: 'Response Marshal proposals · produced live, not persisted or served yet' },
+                    live: true,  note: 'persisted SwarmResult: triage, correlation, cited verdict, proposals, runs · 404 until a run is saved' },
+    swarmRun:     { path: function (id) { return '/api/incidents/' + id + '/swarm'; },
+                    live: true,  note: 'POST {confirm:true} · starts a live swarm run (real model spend) · 202, then poll status', method: 'POST' },
+    swarmStatus:  { path: function (id) { return '/api/incidents/' + id + '/swarm/status'; },
+                    live: true,  note: '{running, mode, error, summary, has_result}' },
     execute:      { path: function () { return '/api/actions/execute'; },
-                    live: false, note: 'action execution · mocks only, no route' },
+                    live: true,  note: 'POST {incident_id, action_class, target, assets_affected, approver?} · gate + simulated endpoints · 403 when denied', method: 'POST' },
+    deny:         { path: function () { return '/api/actions/deny'; },
+                    live: true,  note: 'POST {incident_id, action_class, target, by, reason} · a human refusal as a ledger frame', method: 'POST' },
     rollback:     { path: function (token) { return '/api/actions/rollback/' + token; },
-                    live: false, note: 'rollback by token · no route' },
-    corpusRules:  { path: function () { return '/api/corpus/rules'; },
-                    live: false, note: 'sigma corpus + review bench · no route' }
+                    live: true,  note: 'POST {incident_id, actor} · reverses a simulated action by token · 404 unknown', method: 'POST' },
+    reopen:       { path: function (id) { return '/api/incidents/' + id + '/reopen'; },
+                    live: true,  note: 'POST {by, reason} · a named reopen frame, closed → caught · 409 unless closed', method: 'POST' },
+    signoff:      { path: function (id) { return '/api/incidents/' + id + '/signoff'; },
+                    live: true,  note: 'POST {signed_by} · human sign-off frame + n8n dispatch (degrades to not_configured)', method: 'POST' },
+    context:      { path: function (id) { return '/api/incidents/' + id + '/context'; },
+                    live: true,  note: 'public context gathered via Tavily: per technique/rule, query, URLs, fetch time · 404 until gathered' },
+    contextGather:{ path: function (id) { return '/api/incidents/' + id + '/context'; },
+                    live: true,  note: 'POST {confirm:true} · gathers public context (one Tavily credit per uncached query)', method: 'POST' },
+    handover:     { path: function (id) { return '/api/incidents/' + id + '/handover'; },
+                    live: true,  note: 'a Lyzr-written handover note from the ledger frames · 404 until written · not_configured without its agent id' },
+    handoverWrite:{ path: function (id) { return '/api/incidents/' + id + '/handover'; },
+                    live: true,  note: 'POST {confirm:true} · asks the Lyzr handover agent to write the note; cached on disk', method: 'POST' },
+    corpusRules:  { path: function () { return '/api/corpus'; },
+                    live: true,  note: '{release, rules_total|null, by_dir, fired[], techniques_observed, anomaly_kinds}' },
+    connectors:   { path: function () { return '/api/connectors'; },
+                    live: true,  note: '{rails, connectors[] (presence only), mock_endpoints, policy}' },
+
+    /* The Response Marshal's proposals ride inside the persisted verdict; there is no separate
+       route and none is planned. */
+    proposals:    { path: function (id) { return '/api/incidents/' + id + '/verdict'; },
+                    live: true,  note: 'alias of verdict · proposals[] is a field of it' }
   };
 
   /* ── Page registry ────────────────────────────────────────────────────────────
@@ -92,24 +114,24 @@
      not reading: the badge only counts an endpoint once the page's script has read it.
      HANDOFF.md is the human-readable form of this table; keep them in step. */
   API.PAGES = {
-    entry:      { uses: [],                                  scripted: ['statutory clock', 'first-run vs returning session'] },
-    shell:      { uses: ['incidents'],                        scripted: ['nav counts', 'annunciator strip'] },
-    overview:   { uses: ['incidents', 'policy'],              scripted: ['agent fleet traces', 'autonomy mandate', 'disposition feed'] },
+    entry:      { uses: ['incidentsSummary'],                 scripted: ['first-run vs returning session'] },
+    shell:      { uses: ['incidentsSummary', 'policy', 'ledgerVerify'], scripted: [] },
+    overview:   { uses: ['incidentsSummary', 'policy', 'connectors'], scripted: [] },
     queue:      { uses: ['incidents', 'audit'],               scripted: ['belt-dot decoration', '?state=quiet|firstrun demo panels'] },
-    replay:     { uses: ['incident', 'audit', 'verdict'],     scripted: ['citation chips', 'agent timeline', 'kill-chain narrative'] },
-    confidence: { uses: ['verdict'],                          scripted: ['supporting/counter ledger', 'retired-evidence trail'] },
+    replay:     { uses: ['incident', 'audit', 'verdict', 'context'], scripted: [] },
+    confidence: { uses: ['incident', 'verdict'],              scripted: [] },
     evidence:   { uses: ['incident', 'audit'],                scripted: [] },
-    approvals:  { uses: ['policy', 'proposals', 'execute', 'rollback'], scripted: ['blast rings', 'intent preview', 'rollback tokens'] },
-    corpus:     { uses: ['corpusRules'],                      scripted: ['accession bench', 'export packet'] },
-    eval:       { uses: ['evalRuns'],                         scripted: ['FP rate + denominators', 'inferred cost'] },
-    policy:     { uses: ['policy'],                           scripted: ['autonomy dials', 'change history'] },
-    compliance: { uses: ['draft', 'incident'],                scripted: ['press mechanics', 'DPDP artifacts'] },
+    approvals:  { uses: ['policy', 'verdict', 'audit', 'execute'], scripted: [] },
+    corpus:     { uses: ['corpusRules'],                      scripted: [] },
+    eval:       { uses: ['evalRuns'],                         scripted: [] },
+    policy:     { uses: ['policy', 'connectors'],             scripted: [] },
+    compliance: { uses: ['draft', 'incident'],                scripted: [] },
     audit:      { uses: ['audit', 'ledgerVerify'],            scripted: [] },
-    handover:   { uses: ['incidents', 'audit'],               scripted: ['watch register', 'exceptions'] },
-    executive:  { uses: ['incidents', 'policy', 'ledgerVerify'], scripted: ['board narrative', 'quarter figures'] },
-    settings:   { uses: ['health'],                           scripted: ['connector roster', 'enrichment quota', 'mock endpoints'] },
-    demo:       { uses: [],                                   scripted: ['entire walkthrough, by design'] },
-    narrow:     { uses: ['incidents', 'audit'],               scripted: ['same as the console it mirrors'] }
+    handover:   { uses: ['incidentsSummary', 'audit', 'handover'],        scripted: [] },
+    executive:  { uses: ['incidentsSummary', 'policy', 'ledgerVerify'], scripted: [] },
+    settings:   { uses: ['connectors'],                       scripted: [] },
+    demo:       { uses: ['incidentsSummary'],                                   scripted: ['guided walkthrough of the live screens'] },
+    narrow:     { uses: ['incidentsSummary', 'audit'],        scripted: [] }
   };
 
   /* ── One call path ────────────────────────────────────────────────────────────
@@ -148,6 +170,38 @@
     }).then(record);
   };
 
+  /* The write path. Same envelope as API.get, same consumption record, JSON body in, JSON out.
+     Never retried: every one of these is a ledger frame or real model spend. */
+  API.post = function (name, a, body, opts) {
+    opts = opts || {};
+    var ep = API.ENDPOINTS[name];
+    if (!ep) return Promise.resolve({ ok: false, source: 'scripted', error: 'unknown endpoint ' + name });
+    if (!ep.live) return Promise.resolve({ ok: false, source: 'scripted', error: 'endpoint not built: ' + ep.note });
+    var url = API.BASE + ep.path(a);
+    var ctl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    var timer = setTimeout(function () { if (ctl) ctl.abort(); }, opts.timeoutMs || API.WRITE_TIMEOUT_MS);
+    return fetch(url, {
+      method: 'POST',
+      headers: { accept: 'application/json', 'content-type': 'application/json' },
+      body: JSON.stringify(body || {}),
+      signal: ctl ? ctl.signal : undefined
+    }).then(function (r) {
+      clearTimeout(timer);
+      return r.json().catch(function () { return null; }).then(function (d) {
+        if (!r.ok) return { ok: false, source: 'live', status: r.status, data: d, error: (d && d.detail && (d.detail.refused || d.detail)) ? String(d.detail.refused || d.detail) : r.status + ' from ' + url };
+        return { ok: true, source: 'live', status: r.status, data: d, url: url };
+      });
+    }).catch(function (e) {
+      clearTimeout(timer);
+      return { ok: false, source: 'scripted', error: String(e && e.message || e) + ' · ' + url };
+    }).then(function (res) {
+      // a refused action (403) is still a live answer from the gate; only transport failure is 'scripted'
+      API.consumed[name] = res.source === 'live' ? 'live' : 'failed';
+      paint();
+      return res;
+    });
+  };
+
   /* Probe once per page load; every badge reads the cached answer. /api/source is asked
      alongside /healthz because "the service is up" and "it is serving the live corpus rather
      than the committed seed slice" are different facts, and the badge states both. */
@@ -174,6 +228,20 @@
   API.policy = function () { return API.get('policy'); };
   API.verifyLedger = function () { return API.get('ledgerVerify', null, null, BULK); };
   API.evalReport = function () { return API.get('evalRuns'); };
+  API.incidentsSummary = function () { return API.get('incidentsSummary'); };
+  API.verdictFor = function (id) { return API.get('verdict', id || API.INCIDENT_PRIMARY, null, BULK); };
+  API.swarmStatus = function (id) { return API.get('swarmStatus', id || API.INCIDENT_PRIMARY); };
+  API.runSwarm = function (id) { return API.post('swarmRun', id || API.INCIDENT_PRIMARY, { confirm: true }); };
+  API.execute = function (body) { return API.post('execute', null, body); };
+  API.rollback = function (token, body) { return API.post('rollback', token, body); };
+  API.deny = function (body) { return API.post('deny', null, body); };
+  API.signOff = function (id, signedBy, extra) { return API.post('signoff', id || API.INCIDENT_PRIMARY, Object.assign({ signed_by: signedBy }, extra || {})); };
+  API.corpusRules = function () { return API.get('corpusRules'); };  // not API.corpus: the badge helper below stores the corpus *source name* there
+  API.contextFor = function (id) { return API.get('context', id || API.INCIDENT_PRIMARY); };
+  API.gatherContext = function (id) { return API.post('contextGather', id || API.INCIDENT_PRIMARY, { confirm: true }); };
+  API.handoverFor = function (id) { return API.get('handover', id || API.INCIDENT_PRIMARY); };
+  API.writeHandover = function (id) { return API.post('handoverWrite', id || API.INCIDENT_PRIMARY, { confirm: true }); };
+  API.connectors = function () { return API.get('connectors'); };
 
   /* ── Data-source badge ────────────────────────────────────────────────────────
      Once some pages are wired and others are not, an unmarked mix misrepresents which
@@ -242,7 +310,7 @@
   }
 
   API.badge = paint;
-  API.verdictFor = verdictFor;
+  API.badgeVerdict = verdictFor;   // the badge's own verdict; API.verdictFor (above) is the swarm verdict read
 
   function boot() {
     paint();                                   // honest immediately: DEMO until proven live

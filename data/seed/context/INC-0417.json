@@ -1,0 +1,172 @@
+{
+ "incident_id": "INC-0417",
+ "gathered_at": "2026-09-01T23:53:50.832190+00:00",
+ "provider": "tavily",
+ "queries": [
+  {
+   "for": "T1135",
+   "kind": "technique",
+   "query": "MITRE ATT&CK T1135 Network Share Discovery detection and mitigation",
+   "status": "ok",
+   "fetched_at": "2026-09-01T23:53:39.752876+00:00",
+   "cached": false,
+   "answer": "Network Share Discovery, Technique T1135 - Enterprise",
+   "results": [
+    {
+     "title": "Network Share Discovery, Technique T1135 - Enterprise",
+     "url": "https://attack.mitre.org/techniques/T1135",
+     "score": 0.9513234
+    },
+    {
+     "title": "Behavior-chain detection for T1135 Network Share Discovery across Windows, Linux, and macOS, Detection Strategy DET0182 | MITRE ATT&CK®",
+     "url": "https://attack.mitre.org/detectionstrategies/DET0182",
+     "score": 0.92495924
+    },
+    {
+     "title": "MITRE ATT&CK CoA - T1135 - Network Share Discovery | Cortex XSOAR",
+     "url": "https://xsoar.pan.dev/docs/reference/playbooks/mitre-attck-co-a---t1135---network-share-discovery",
+     "score": 0.8951567
+    }
+   ],
+   "note": ""
+  },
+  {
+   "for": "T1069.002",
+   "kind": "technique",
+   "query": "MITRE ATT&CK T1069.002 Permission Groups Discovery: Domain Groups detection and mitigation",
+   "status": "ok",
+   "fetched_at": "2026-09-01T23:53:42.277528+00:00",
+   "cached": false,
+   "answer": "Permission Groups Discovery: Domain Groups, Sub-technique T1069.002 - Enterprise | MITRE ATT&CK®",
+   "results": [
+    {
+     "title": "Permission Groups Discovery: Domain Groups, Sub-technique T1069.002 - Enterprise | MITRE ATT&CK®",
+     "url": "https://attack.mitre.org/techniques/T1069/002",
+     "score": 0.97428846
+    },
+    {
+     "title": "Permission Groups Discovery, Technique T1069 - Enterprise | MITRE ATT&CK®",
+     "url": "https://attack.mitre.org/techniques/T1069",
+     "score": 0.96405166
+    },
+    {
+     "title": "Domain Groups (T1069.002) — MITRE ATT&CK | GTK Cyber",
+     "url": "https://gtkcyber.com/mitre/T1069.002",
+     "score": 0.9448931
+    }
+   ],
+   "note": ""
+  },
+  {
+   "for": "T1078",
+   "kind": "technique",
+   "query": "MITRE ATT&CK T1078 Valid Accounts detection and mitigation",
+   "status": "ok",
+   "fetched_at": "2026-09-01T23:53:43.870284+00:00",
+   "cached": false,
+   "answer": "Valid Accounts, Technique T1078 - Enterprise",
+   "results": [
+    {
+     "title": "Valid Accounts, Technique T1078 - Enterprise",
+     "url": "https://attack.mitre.org/techniques/T1078",
+     "score": 0.95257413
+    },
+    {
+     "title": "MITRE ATT&CK T1078 Valid Accounts Explained",
+     "url": "https://www.picussecurity.com/resource/blog/mitre-attck-t1078-valid-accounts-explained",
+     "score": 0.93698055
+    },
+    {
+     "title": "Detecting valid accounts for privilege escalation (T1078) | ManageEngine Log360",
+     "url": "https://www.manageengine.com/log-management/mitre-attack/privilege-escalation/valid-account-abuse.html",
+     "score": 0.9253649
+    }
+   ],
+   "note": ""
+  },
+  {
+   "for": "T1021.002",
+   "kind": "technique",
+   "query": "MITRE ATT&CK T1021.002 Remote Services: SMB/Windows Admin Shares detection and mitigation",
+   "status": "ok",
+   "fetched_at": "2026-09-01T23:53:46.626643+00:00",
+   "cached": false,
+   "answer": "Remote Services: SMB/Windows Admin Shares, Sub-technique T1021.002 - Enterprise | MITRE ATT&CK®",
+   "results": [
+    {
+     "title": "Remote Services: SMB/Windows Admin Shares, Sub-technique T1021.002 - Enterprise | MITRE ATT&CK®",
+     "url": "https://attack.mitre.org/techniques/T1021/002",
+     "score": 0.8763069
+    },
+    {
+     "title": "T1021 Remote Services of the MITRE ATT&CK Framework",
+     "url": "https://www.picussecurity.com/resource/blog/t1021-remote-services-of-the-mitre-attack-framework",
+     "score": 0.83932644
+    },
+    {
+     "title": "ATT&CK Technique T1021.002 - Mappings Explorer",
+     "url": "https://center-for-threat-informed-defense.github.io/mappings-explorer/attack/attack-9.0/domain-enterprise/techniques/T1021.002",
+     "score": 0.8190992
+    }
+   ],
+   "note": ""
+  },
+  {
+   "for": "First Time Seen Remote Named Pipe",
+   "kind": "rule",
+   "query": "Sigma rule \"First Time Seen Remote Named Pipe\" detection",
+   "status": "ok",
+   "fetched_at": "2026-09-01T23:53:48.824294+00:00",
+   "cached": false,
+   "answer": "First Time Seen Remote Named Pipe | Detection.FYI",
+   "results": [
+    {
+     "title": "First Time Seen Remote Named Pipe | Detection.FYI",
+     "url": "https://detection.fyi/sigmahq/sigma/windows/builtin/security/win_security_lm_namedpipe",
+     "score": 0.9812749
+    },
+    {
+     "title": "First Time Seen Remote Named Pipe - Zeek | Detection.FYI",
+     "url": "https://detection.fyi/sigmahq/sigma/network/zeek/zeek_smb_converted_win_lm_namedpipe",
+     "score": 0.9812749
+    },
+    {
+     "title": "Windows: First Time Seen Remote Named Pipe",
+     "url": "https://filestore.fortinet.com/docs.fortinet.com/fsiem/Public_Resource_Access/7_6_0/rules/PH_RULE_First_Time_Seen_Remote_Named_Pipe.htm",
+     "score": 0.94728357
+    }
+   ],
+   "note": ""
+  },
+  {
+   "for": "WmiPrvSE Spawned A Process",
+   "kind": "rule",
+   "query": "Sigma rule \"WmiPrvSE Spawned A Process\" detection",
+   "status": "ok",
+   "fetched_at": "2026-09-01T23:53:50.831439+00:00",
+   "cached": false,
+   "answer": "WmiPrvSE Spawned A Process | Detection.FYI",
+   "results": [
+    {
+     "title": "WmiPrvSE Spawned A Process | Detection.FYI",
+     "url": "https://detection.fyi/sigmahq/sigma/windows/process_creation/proc_creation_win_wmiprvse_spawning_process",
+     "score": 0.82186085
+    },
+    {
+     "title": "Windows: WmiPrvSE Spawned A Process",
+     "url": "https://filestore.fortinet.com/docs.fortinet.com/fsiem/Public_Resource_Access/7_5_1/rules/PH_RULE_Wmiprvse_Spawning_Process.htm",
+     "score": 0.7265231
+    },
+    {
+     "title": "Potential WMI Lateral Movement WmiPrvSE Spawned PowerShell | Detection.FYI",
+     "url": "https://detection.fyi/sigmahq/sigma/windows/process_creation/proc_creation_win_wmiprvse_spawns_powershell",
+     "score": 0.7045877
+    }
+   ],
+   "note": ""
+  }
+ ],
+ "credits_used": 6,
+ "sources": 18,
+ "not_evidence": "public context only; nothing here can support a claim -- citations still point only at the record's own findings"
+}

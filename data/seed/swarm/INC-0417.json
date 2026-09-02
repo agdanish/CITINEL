@@ -1,0 +1,559 @@
+{
+ "incident_id": "INC-0417",
+ "mode": "full",
+ "degraded": false,
+ "note": "",
+ "triage": {
+  "lane": "escalate",
+  "rationale": "Multiple hosts, 2487 findings over 1.8 hours, credential dumping (T1003.*), code execution (T1059.*), lateral movement (T1021.002), data destruction (T1490), and process injection (T1134) indicate a coordinated intrusion chain requiring investigation beyond rule explanation.",
+  "confidence": 0.98
+ },
+ "correlation": {
+  "stages": [
+   {
+    "technique_id": "T1135",
+    "technique_name": "Network Share Discovery",
+    "what_happened": "A domain workstation's machine account opened an IPC$ session to the file server and queried the browser named pipe, the first time this pattern was seen for that host.",
+    "citations": [
+     {
+      "finding_index": 0,
+      "quoted_span": "WE8105DESK$"
+     },
+     {
+      "finding_index": 1,
+      "quoted_span": "Relative Target Name:\tbrowser"
+     }
+    ]
+   },
+   {
+    "technique_id": "T1069.002",
+    "technique_name": "Permission Groups Discovery: Domain Groups",
+    "what_happened": "An unauthenticated ANONYMOUS LOGON session from a second internal host opened the LSA RPC named pipe on the file server, consistent with a null-session probe of domain policy/accounts.",
+    "citations": [
+     {
+      "finding_index": 2,
+      "quoted_span": "ANONYMOUS LOGON"
+     },
+     {
+      "finding_index": 2,
+      "quoted_span": "Relative Target Name:\tlsarpc"
+     }
+    ]
+   },
+   {
+    "technique_id": "T1078",
+    "technique_name": "Valid Accounts",
+    "what_happened": "Immediately after the anonymous probe, the same source address began authenticating as the Administrator account and repeated the LSA/SAM RPC queries, showing the actor already held privileged credentials.",
+    "citations": [
+     {
+      "finding_index": 3,
+      "quoted_span": "Administrator"
+     },
+     {
+      "finding_index": 5,
+      "quoted_span": "Relative Target Name:\tsamr"
+     }
+    ]
+   },
+   {
+    "technique_id": "T1021.002",
+    "technique_name": "Remote Services: SMB/Windows Admin Shares",
+    "what_happened": "The authenticated Administrator session opened the Service Control Manager (svcctl) named pipe on the file server, the mechanism used to remotely create or control services for code execution.",
+    "citations": [
+     {
+      "finding_index": 7,
+      "quoted_span": "Relative Target Name:\tsvcctl"
+     }
+    ]
+   },
+   {
+    "technique_id": "T1012",
+    "technique_name": "Query Registry",
+    "what_happened": "The same Administrator session then opened the remote registry (winreg) named pipe, indicating remote inspection or modification of registry configuration on the file server.",
+    "citations": [
+     {
+      "finding_index": 8,
+      "quoted_span": "Relative Target Name:\twinreg"
+     }
+    ]
+   },
+   {
+    "technique_id": "T1087.002",
+    "technique_name": "Account Discovery: Domain Account",
+    "what_happened": "A sustained burst of dozens of ANONYMOUS LOGON connections from the first internal host hammered the LSA and SAM RPC pipes within a few seconds, consistent with automated large-scale account/group enumeration via null sessions.",
+    "citations": [
+     {
+      "finding_index": 9,
+      "quoted_span": "ANONYMOUS LOGON"
+     },
+     {
+      "finding_index": 9,
+      "quoted_span": "192.168.250.100"
+     },
+     {
+      "finding_index": 16,
+      "quoted_span": "Relative Target Name:\tsamr"
+     }
+    ]
+   },
+   {
+    "technique_id": "T1135",
+    "technique_name": "Network Share/Service Discovery",
+    "what_happened": "A final wave of Administrator-authenticated connections from the second host cycled through winreg, srvsvc, samr, DAV RPC SERVICE and lsarpc pipes in quick succession, matching the pattern of an automated remote-administration or lateral-movement tool sweeping the host's RPC interfaces.",
+    "citations": [
+     {
+      "finding_index": 29,
+      "quoted_span": "Relative Target Name:\tsrvsvc"
+     },
+     {
+      "finding_index": 32,
+      "quoted_span": "DAV RPC SERVICE"
+     },
+     {
+      "finding_index": 33,
+      "quoted_span": "Relative Target Name:\twinreg"
+     },
+     {
+      "finding_index": 34,
+      "quoted_span": "Relative Target Name:\tlsarpc"
+     }
+    ]
+   }
+  ],
+  "summary": "An internal actor pivoted against the file server we9041srv, first probing it anonymously over SMB named pipes (lsarpc/samr) for account and policy information, then switching to authenticated Administrator access from the same source to open service-control and registry pipes -- the classic setup for remote service execution -- while a second internal host ran a much larger automated anonymous-logon enumeration sweep against the same RPC pipes; taken together this looks like reconnaissance and preparation for further lateral movement or credential harvesting using an already-compromised Administrator account, though IP reputation checks on both source addresses returned no external threat data (both are internal RFC1918 hosts), so attribution beyond 'internal actor with valid admin credentials' cannot be established from this evidence alone.",
+  "hosts_involved": [
+   "we9041srv.waynecorpinc.local",
+   "192.168.2.50",
+   "192.168.250.100",
+   "WE8105DESK$"
+  ]
+ },
+ "verdict": {
+  "headline": "An internal host at 192.168.2.50 escalated from an anonymous SMB null session to an authenticated Administrator session on the Wayne Corp file server within two seconds and then opened service-control and registry named pipes, while a second internal host (192.168.250.100) ran a large automated anonymous SMB enumeration sweep against the same server -- a pattern consistent with credential-abuse reconnaissance and lateral-movement staging, not yet confirmed as external compromise.",
+  "claims": [
+   {
+    "text": "An anonymous SMB session and an authenticated Administrator SMB session, both from the same source IP 192.168.2.50, hit the file server's lsarpc pipe within two seconds of each other.",
+    "support": "supporting",
+    "citations": [
+     {
+      "finding_index": 2,
+      "quoted_span": "NT AUTHORITY\\ANONYMOUS LOGON"
+     },
+     {
+      "finding_index": 3,
+      "quoted_span": "WAYNECORPINC\\Administrator"
+     }
+    ]
+   },
+   {
+    "text": "That same Administrator session from 192.168.2.50 went on to open the svcctl (service control manager) and winreg (remote registry) named pipes minutes later, a pipe combination associated with remote service creation as used by tools like PsExec.",
+    "support": "supporting",
+    "citations": [
+     {
+      "finding_index": 7,
+      "quoted_span": "RecordNumber=1083476"
+     },
+     {
+      "finding_index": 8,
+      "quoted_span": "RecordNumber=1083562"
+     }
+    ]
+   },
+   {
+    "text": "A second internal host, 192.168.250.100, generated a burst of nineteen-plus anonymous-logon SMB pipe requests against lsarpc and samr within a five-second window, consistent with an automated enumeration tool rather than manual interactive use.",
+    "support": "supporting",
+    "citations": [
+     {
+      "finding_index": 9,
+      "quoted_span": "NT AUTHORITY\\ANONYMOUS LOGON"
+     },
+     {
+      "finding_index": 27,
+      "quoted_span": "RecordNumber=1084266"
+     }
+    ]
+   },
+   {
+    "text": "Before the anonymous sweep, 192.168.250.100 had connected using its own machine account (WE8105DESK$) to the browser named pipe, which is routine SMB browsing-service traffic and not inherently suspicious.",
+    "support": "counter",
+    "citations": [
+     {
+      "finding_index": 0,
+      "quoted_span": "WE8105DESK$"
+     }
+    ]
+   },
+   {
+    "text": "Every 5145 event's Access Check Results field is blank, meaning these logs record requested pipe access, not a confirmed grant, service creation, or payload execution -- the escalation pattern is suggestive but not proof of successful malicious action.",
+    "support": "counter",
+    "citations": [
+     {
+      "finding_index": 7,
+      "quoted_span": "Access Check Results:"
+     }
+    ]
+   },
+   {
+    "text": "Both source IPs involved, 192.168.2.50 and 192.168.250.100, are internal RFC1918 addresses rather than externally attributed infrastructure, so this cannot be pinned on an outside attacker from this evidence alone.",
+    "support": "counter",
+    "citations": [
+     {
+      "finding_index": 3,
+      "quoted_span": "192.168.2.50"
+     },
+     {
+      "finding_index": 9,
+      "quoted_span": "192.168.250.100"
+     }
+    ]
+   }
+  ],
+  "counter_evidence_searched": true,
+  "confidence": 0.66,
+  "benign_explanation_considered": "The most plausible innocent reading is routine IT administration: an admin using the Administrator account to run remote management tasks that naturally touch svcctl/winreg/samr, with the anonymous-logon burst from the second host being an authorized scanner or SMB enumeration utility rather than an attacker. This survives partly -- the initial browser-pipe traffic from the machine account is clearly benign -- but a null anonymous session immediately followed by authenticated Administrator access on the identical source IP, then svcctl/winreg access, is not a pattern normal admin tooling or vulnerability scanners typically produce, so the benign explanation is weakened but not conclusively ruled out by log data alone."
+ },
+ "proposals": [
+  {
+   "action_class": "revoke_sessions",
+   "target": "WAYNECORPINC\\Administrator",
+   "assets_affected": 1,
+   "justification": "The Administrator account transitioned from an anonymous SMB null session to an authenticated session against the file server within two seconds and then opened service-control (svcctl) and registry (winreg) named pipes, a pattern consistent with credential abuse that warrants forcing re-authentication without yet disabling the account outright given moderate confidence and open counter-evidence.",
+   "citations": [
+    {
+     "finding_index": 2,
+     "quoted_span": "Security ID:\t\tNT AUTHORITY\\ANONYMOUS LOGON"
+    },
+    {
+     "finding_index": 3,
+     "quoted_span": "Security ID:\t\tWAYNECORPINC\\Administrator"
+    },
+    {
+     "finding_index": 7,
+     "quoted_span": "Relative Target Name:\tsvcctl"
+    },
+    {
+     "finding_index": 8,
+     "quoted_span": "Relative Target Name:\twinreg"
+    }
+   ]
+  },
+  {
+   "action_class": "query_logs",
+   "target": "192.168.2.50",
+   "assets_affected": 1,
+   "justification": "Scoped follow-up query on 192.168.2.50's authentication and logon history is needed to confirm whether the anonymous-to-Administrator transition reflects genuine credential theft or a benign administrative workflow, especially given three recorded counter-evidence claims against the credential-abuse reading.",
+   "citations": [
+    {
+     "finding_index": 2,
+     "quoted_span": "Source Address:\t\t192.168.2.50"
+    },
+    {
+     "finding_index": 3,
+     "quoted_span": "Source Address:\t\t192.168.2.50"
+    }
+   ]
+  },
+  {
+   "action_class": "notify",
+   "target": "SOC on-call analyst",
+   "assets_affected": 0,
+   "justification": "Given the moderate 0.66 confidence and existing counter-evidence, human review of the escalation and enumeration activity on the Wayne Corp file server is the appropriate next step before any host isolation is considered.",
+   "citations": [
+    {
+     "finding_index": 3,
+     "quoted_span": "Account Name:\t\tAdministrator"
+    },
+    {
+     "finding_index": 9,
+     "quoted_span": "Security ID:\t\tNT AUTHORITY\\ANONYMOUS LOGON"
+    }
+   ]
+  }
+ ],
+ "dropped_claims": [],
+ "call_count": 6,
+ "findings_total": 2487,
+ "findings_examined": 40,
+ "evidence_truncated": true,
+ "saved_at": "2026-09-01T22:10:31.504949+00:00",
+ "banner": "This incident had 2487 findings; the investigation examined the first 40. The verdict above, if any, is scoped to what was examined.",
+ "calls": [
+  {
+   "agent": "router",
+   "model_id": "claude-haiku-4-5-20251001",
+   "role": "triage",
+   "stop_reason": "end_turn",
+   "input_tokens": 3036,
+   "output_tokens": 93,
+   "refused": false,
+   "refusal_category": null,
+   "served_by": null,
+   "request_id": "req_011CedUeouVoW7QSEa3Hj2fr",
+   "usable": true,
+   "unusable_reason": null,
+   "evidence_provenance": [
+    "botsv1 replay | sigma | 2016-08-24T15:30:36+00:00 | finding[0]",
+    "botsv1 replay | sigma | 2016-08-24T15:30:36+00:00 | finding[1]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:21+00:00 | finding[2]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:23+00:00 | finding[3]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:23+00:00 | finding[4]"
+   ]
+  },
+  {
+   "agent": "enricher",
+   "model_id": "claude-sonnet-5",
+   "role": "reasoning",
+   "stop_reason": "tool_use",
+   "input_tokens": 25912,
+   "output_tokens": 539,
+   "refused": false,
+   "refusal_category": null,
+   "served_by": null,
+   "request_id": null,
+   "usable": false,
+   "unusable_reason": null,
+   "evidence_provenance": [
+    "botsv1 replay | sigma | 2016-08-24T15:30:36+00:00 | finding[0]",
+    "botsv1 replay | sigma | 2016-08-24T15:30:36+00:00 | finding[1]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:21+00:00 | finding[2]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:23+00:00 | finding[3]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:23+00:00 | finding[4]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:23+00:00 | finding[5]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:23+00:00 | finding[6]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:31+00:00 | finding[7]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:45+00:00 | finding[8]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:54+00:00 | finding[9]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:56+00:00 | finding[10]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:56+00:00 | finding[11]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:56+00:00 | finding[12]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:56+00:00 | finding[13]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:57+00:00 | finding[14]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:57+00:00 | finding[15]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:57+00:00 | finding[16]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:57+00:00 | finding[17]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:57+00:00 | finding[18]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:57+00:00 | finding[19]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:58+00:00 | finding[20]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:58+00:00 | finding[21]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:58+00:00 | finding[22]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:59+00:00 | finding[23]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:59+00:00 | finding[24]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:59+00:00 | finding[25]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:59+00:00 | finding[26]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:59+00:00 | finding[27]",
+    "botsv1 replay | sigma | 2016-08-24T15:34:07+00:00 | finding[28]",
+    "botsv1 replay | sigma | 2016-08-24T15:34:07+00:00 | finding[29]",
+    "botsv1 replay | sigma | 2016-08-24T15:34:07+00:00 | finding[30]",
+    "botsv1 replay | sigma | 2016-08-24T15:34:07+00:00 | finding[31]",
+    "botsv1 replay | sigma | 2016-08-24T15:34:07+00:00 | finding[32]",
+    "botsv1 replay | sigma | 2016-08-24T15:34:07+00:00 | finding[33]",
+    "botsv1 replay | sigma | 2016-08-24T15:34:07+00:00 | finding[34]",
+    "botsv1 replay | sigma | 2016-08-24T15:34:07+00:00 | finding[35]",
+    "botsv1 replay | sigma | 2016-08-24T15:34:07+00:00 | finding[36]",
+    "botsv1 replay | sigma | 2016-08-24T15:34:07+00:00 | finding[37]",
+    "botsv1 replay | sigma | 2016-08-24T15:34:07+00:00 | finding[38]",
+    "botsv1 replay | sigma | 2016-08-24T15:34:07+00:00 | finding[39]"
+   ]
+  },
+  {
+   "agent": "enricher",
+   "model_id": "claude-sonnet-5",
+   "role": "reasoning",
+   "stop_reason": "end_turn",
+   "input_tokens": 26707,
+   "output_tokens": 957,
+   "refused": false,
+   "refusal_category": null,
+   "served_by": null,
+   "request_id": null,
+   "usable": false,
+   "unusable_reason": null,
+   "evidence_provenance": [
+    "botsv1 replay | sigma | 2016-08-24T15:30:36+00:00 | finding[0]",
+    "botsv1 replay | sigma | 2016-08-24T15:30:36+00:00 | finding[1]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:21+00:00 | finding[2]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:23+00:00 | finding[3]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:23+00:00 | finding[4]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:23+00:00 | finding[5]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:23+00:00 | finding[6]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:31+00:00 | finding[7]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:45+00:00 | finding[8]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:54+00:00 | finding[9]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:56+00:00 | finding[10]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:56+00:00 | finding[11]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:56+00:00 | finding[12]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:56+00:00 | finding[13]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:57+00:00 | finding[14]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:57+00:00 | finding[15]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:57+00:00 | finding[16]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:57+00:00 | finding[17]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:57+00:00 | finding[18]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:57+00:00 | finding[19]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:58+00:00 | finding[20]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:58+00:00 | finding[21]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:58+00:00 | finding[22]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:59+00:00 | finding[23]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:59+00:00 | finding[24]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:59+00:00 | finding[25]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:59+00:00 | finding[26]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:59+00:00 | finding[27]",
+    "botsv1 replay | sigma | 2016-08-24T15:34:07+00:00 | finding[28]",
+    "botsv1 replay | sigma | 2016-08-24T15:34:07+00:00 | finding[29]",
+    "botsv1 replay | sigma | 2016-08-24T15:34:07+00:00 | finding[30]",
+    "botsv1 replay | sigma | 2016-08-24T15:34:07+00:00 | finding[31]",
+    "botsv1 replay | sigma | 2016-08-24T15:34:07+00:00 | finding[32]",
+    "botsv1 replay | sigma | 2016-08-24T15:34:07+00:00 | finding[33]",
+    "botsv1 replay | sigma | 2016-08-24T15:34:07+00:00 | finding[34]",
+    "botsv1 replay | sigma | 2016-08-24T15:34:07+00:00 | finding[35]",
+    "botsv1 replay | sigma | 2016-08-24T15:34:07+00:00 | finding[36]",
+    "botsv1 replay | sigma | 2016-08-24T15:34:07+00:00 | finding[37]",
+    "botsv1 replay | sigma | 2016-08-24T15:34:07+00:00 | finding[38]",
+    "botsv1 replay | sigma | 2016-08-24T15:34:07+00:00 | finding[39]"
+   ]
+  },
+  {
+   "agent": "correlator",
+   "model_id": "claude-sonnet-5",
+   "role": "reasoning",
+   "stop_reason": "end_turn",
+   "input_tokens": 25310,
+   "output_tokens": 14000,
+   "refused": false,
+   "refusal_category": null,
+   "served_by": null,
+   "request_id": "req_011CedUhdj9jc7FN5YRqesx6",
+   "usable": true,
+   "unusable_reason": null,
+   "evidence_provenance": [
+    "botsv1 replay | sigma | 2016-08-24T15:30:36+00:00 | finding[0]",
+    "botsv1 replay | sigma | 2016-08-24T15:30:36+00:00 | finding[1]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:21+00:00 | finding[2]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:23+00:00 | finding[3]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:23+00:00 | finding[4]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:23+00:00 | finding[5]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:23+00:00 | finding[6]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:31+00:00 | finding[7]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:45+00:00 | finding[8]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:54+00:00 | finding[9]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:56+00:00 | finding[10]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:56+00:00 | finding[11]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:56+00:00 | finding[12]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:56+00:00 | finding[13]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:57+00:00 | finding[14]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:57+00:00 | finding[15]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:57+00:00 | finding[16]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:57+00:00 | finding[17]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:57+00:00 | finding[18]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:57+00:00 | finding[19]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:58+00:00 | finding[20]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:58+00:00 | finding[21]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:58+00:00 | finding[22]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:59+00:00 | finding[23]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:59+00:00 | finding[24]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:59+00:00 | finding[25]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:59+00:00 | finding[26]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:59+00:00 | finding[27]",
+    "botsv1 replay | sigma | 2016-08-24T15:34:07+00:00 | finding[28]",
+    "botsv1 replay | sigma | 2016-08-24T15:34:07+00:00 | finding[29]",
+    "botsv1 replay | sigma | 2016-08-24T15:34:07+00:00 | finding[30]",
+    "botsv1 replay | sigma | 2016-08-24T15:34:07+00:00 | finding[31]",
+    "botsv1 replay | sigma | 2016-08-24T15:34:07+00:00 | finding[32]",
+    "botsv1 replay | sigma | 2016-08-24T15:34:07+00:00 | finding[33]",
+    "botsv1 replay | sigma | 2016-08-24T15:34:07+00:00 | finding[34]",
+    "botsv1 replay | sigma | 2016-08-24T15:34:07+00:00 | finding[35]",
+    "botsv1 replay | sigma | 2016-08-24T15:34:07+00:00 | finding[36]",
+    "botsv1 replay | sigma | 2016-08-24T15:34:07+00:00 | finding[37]",
+    "botsv1 replay | sigma | 2016-08-24T15:34:07+00:00 | finding[38]",
+    "botsv1 replay | sigma | 2016-08-24T15:34:07+00:00 | finding[39]",
+    "enricher-agent-output | enrichment | enricher-summary:INC-0417"
+   ]
+  },
+  {
+   "agent": "narrator",
+   "model_id": "claude-sonnet-5",
+   "role": "reasoning",
+   "stop_reason": "end_turn",
+   "input_tokens": 25322,
+   "output_tokens": 11953,
+   "refused": false,
+   "refusal_category": null,
+   "served_by": null,
+   "request_id": "req_011CedUtRuYz2MDsAXxX2XKT",
+   "usable": true,
+   "unusable_reason": null,
+   "evidence_provenance": [
+    "botsv1 replay | sigma | 2016-08-24T15:30:36+00:00 | finding[0]",
+    "botsv1 replay | sigma | 2016-08-24T15:30:36+00:00 | finding[1]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:21+00:00 | finding[2]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:23+00:00 | finding[3]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:23+00:00 | finding[4]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:23+00:00 | finding[5]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:23+00:00 | finding[6]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:31+00:00 | finding[7]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:45+00:00 | finding[8]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:54+00:00 | finding[9]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:56+00:00 | finding[10]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:56+00:00 | finding[11]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:56+00:00 | finding[12]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:56+00:00 | finding[13]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:57+00:00 | finding[14]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:57+00:00 | finding[15]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:57+00:00 | finding[16]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:57+00:00 | finding[17]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:57+00:00 | finding[18]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:57+00:00 | finding[19]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:58+00:00 | finding[20]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:58+00:00 | finding[21]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:58+00:00 | finding[22]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:59+00:00 | finding[23]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:59+00:00 | finding[24]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:59+00:00 | finding[25]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:59+00:00 | finding[26]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:59+00:00 | finding[27]",
+    "botsv1 replay | sigma | 2016-08-24T15:34:07+00:00 | finding[28]",
+    "botsv1 replay | sigma | 2016-08-24T15:34:07+00:00 | finding[29]",
+    "botsv1 replay | sigma | 2016-08-24T15:34:07+00:00 | finding[30]",
+    "botsv1 replay | sigma | 2016-08-24T15:34:07+00:00 | finding[31]",
+    "botsv1 replay | sigma | 2016-08-24T15:34:07+00:00 | finding[32]",
+    "botsv1 replay | sigma | 2016-08-24T15:34:07+00:00 | finding[33]",
+    "botsv1 replay | sigma | 2016-08-24T15:34:07+00:00 | finding[34]",
+    "botsv1 replay | sigma | 2016-08-24T15:34:07+00:00 | finding[35]",
+    "botsv1 replay | sigma | 2016-08-24T15:34:07+00:00 | finding[36]",
+    "botsv1 replay | sigma | 2016-08-24T15:34:07+00:00 | finding[37]",
+    "botsv1 replay | sigma | 2016-08-24T15:34:07+00:00 | finding[38]",
+    "botsv1 replay | sigma | 2016-08-24T15:34:07+00:00 | finding[39]",
+    "correlator-agent-output | summary | correlator-summary"
+   ]
+  },
+  {
+   "agent": "marshal",
+   "model_id": "claude-sonnet-5",
+   "role": "reasoning",
+   "stop_reason": "end_turn",
+   "input_tokens": 6661,
+   "output_tokens": 2207,
+   "refused": false,
+   "refusal_category": null,
+   "served_by": null,
+   "request_id": "req_011CedV3bH7e7fXS2MViTmUj",
+   "usable": true,
+   "unusable_reason": null,
+   "evidence_provenance": [
+    "botsv1 replay | sigma | 2016-08-24T15:30:36+00:00 | finding[0]",
+    "botsv1 replay | sigma | 2016-08-24T15:30:36+00:00 | finding[1]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:21+00:00 | finding[2]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:23+00:00 | finding[3]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:23+00:00 | finding[4]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:23+00:00 | finding[5]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:23+00:00 | finding[6]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:31+00:00 | finding[7]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:45+00:00 | finding[8]",
+    "botsv1 replay | sigma | 2016-08-24T15:33:54+00:00 | finding[9]"
+   ]
+  }
+ ],
+ "usage": {
+  "input_tokens": 112948,
+  "output_tokens": 29749
+ }
+}

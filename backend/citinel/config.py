@@ -75,6 +75,12 @@ class Settings(BaseSettings):
     auto_swarm: bool = Field(default=False)
     auto_swarm_max_per_cycle: int = Field(default=3)
 
+    # The console's own "run the swarm" control. On by default: a console that
+    # cannot run its pipeline is a mockup. Every run is real model spend (about
+    # 86K input / 35K output tokens for INC-0417), so the route demands an
+    # explicit {"confirm": true} body and runs one incident at a time.
+    ui_swarm_enabled: bool = Field(default=True)
+
     # --- credentials (names only; values come from the environment) --------
     anthropic_api_key: str | None = Field(default=None)
     # Required by newer identity-linked API keys -- confirmed live, 1 Sep 2026:
@@ -106,6 +112,12 @@ class Settings(BaseSettings):
     # actually selects which agent answers.
     lyzr_guard_url: str | None = Field(default=None)
     lyzr_agent_id: str | None = Field(default=None)
+    # Additional Lyzr Studio agents, each with its own id and its own job in
+    # the pipeline (connectors/lyzr_agents.py). Optional one by one: an unset
+    # id means that seam reports not_configured rather than faking an answer.
+    lyzr_triage_agent_id: str | None = Field(default=None)
+    lyzr_review_agent_id: str | None = Field(default=None)
+    lyzr_handover_agent_id: str | None = Field(default=None)
 
     @property
     def has_swarm_credentials(self) -> bool:

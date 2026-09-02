@@ -80,7 +80,7 @@
 
     <sc-if value="{{ isReturning }}" hint-placeholder-val="{{ false }}">
       <div style="margin-top:18px;border:1px solid var(--ctn-color-border-hairline);border-radius:6px;padding:14px 16px;display:flex;flex-direction:column;gap:10px">
-        <div style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.14em;color:var(--ctn-color-text-muted)">SINCE YOU LEFT · 06:12 AGO</div>
+        <div style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.14em;color:var(--ctn-color-text-muted)">{{ sinceHeader }}</div>
         <sc-for list="{{ sinceRows }}" as="r" hint-placeholder-count="4">
           <div style="display:flex;align-items:center;gap:10px;min-width:0">
             <span style="flex:none;width:20px;height:20px;display:flex;align-items:center;justify-content:center">{{ r.glyph }}</span>
@@ -143,8 +143,19 @@
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;mode&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;first&quot;,&quot;returning&quot;],&quot;default&quot;:&quot;first&quot;,&quot;tsType&quot;:&quot;'first'|'returning'&quot;,&quot;section&quot;:&quot;Entry&quot;}}">
 class Component extends DCLogic {
-  state = {mode:'first', role:null, opId:'', pass:'', token:'', now:Date.now()};
-  componentDidMount(){ this.base = Date.now(); this.t = setInterval(()=>this.setState({now:Date.now()}),1000); }
+  state = {mode:'first', role:null, opId:'', pass:'', token:'', now:Date.now(), live:null, incidents:[], liveError:null};
+  componentDidMount(){
+    this.base = Date.now();
+    this.t = setInterval(()=>this.setState({now:Date.now()}),1000);
+    try { this._lastSeen = Number(localStorage.getItem('citinel.entry.lastSeen')) || 0; localStorage.setItem('citinel.entry.lastSeen', String(Date.now())); } catch (e) { this._lastSeen = 0; }
+    const API = window.CITINEL_API;
+    if (!API) { this.setState({live:false, liveError:'api.js not loaded'}); return; }
+    API.incidentsSummary().then(r=>{
+      if (!r.ok) { this.setState({live:false, liveError:r.error}); return; }
+      const incs = Array.isArray(r.data) ? r.data : [];
+      this.setState({live:true, incidents:incs});
+    });
+  }
   componentWillUnmount(){ clearInterval(this.t); }
   arc(frac){
     if(frac<=0) return '';
@@ -158,18 +169,17 @@ class Component extends DCLogic {
     if(kind==='actioned') return S(R.createElement('rect',{x:5,y:5,width:10,height:10,transform:'rotate(45 10 10)',fill:'var(--ctn-color-state-node)',stroke:'var(--ctn-color-state-stroke)',strokeWidth:2.2}));
     return S(R.createElement('circle',{cx:10,cy:10,r:6,fill:'var(--ctn-color-state-node)',stroke:'var(--ctn-color-state-stroke)',strokeWidth:1.5}));
   }
+  pad2(n){ return String(n).padStart(2,'0'); }
+  fmtTime(s){
+    s = Math.max(0,s);
+    return [3600,60,1].map(u=>this.pad2(Math.floor(s/u)%60)).join(':');
+  }
   renderVals(){
-    const s = this.state, base = this.base || s.now, first = s.mode === 'first';
-    const f = x=>{x=Math.max(0,x);return [3600,60,1].map(u=>String(Math.floor(x/u)%60).padStart(2,'0')).join(':');};
-    const remainS = (3*3600+45*60) - Math.floor((s.now-base)/1000);
-    const elapsedFrac = 1 - remainS/(6*3600);
-    const R = React, ticks = [];
+    const s = this.state, R = React, first = s.mode === 'first';
+    const ticks = [];
     for(let i=0;i<24;i++){
       const a = i/24*2*Math.PI - Math.PI/2, big = i%4===0;
       ticks.push(R.createElement('line',{key:i, x1:260+(big?186:194)*Math.cos(a), y1:260+(big?186:194)*Math.sin(a), x2:260+200*Math.cos(a), y2:260+200*Math.sin(a), stroke:'var(--ctn-color-text-muted)', strokeWidth: big?2:1}));
-      // Hour numbers are in user units, so they shrink with the dial's rendered size —
-      // at the reflow width they land around 4.6px. The class lets them drop out when
-      // they would be unreadable; the tick marks they label stay, so the scale is intact.
       if(big) ticks.push(R.createElement('text',{key:'t'+i, className:'ctn-dial-hour', x:260+218*Math.cos(a), y:260+218*Math.sin(a)+4, textAnchor:'middle', fontFamily:'var(--ctn-font-mono)', fontSize:11, fill:'var(--ctn-color-text-muted)'}, (i/4)+'h'));
     }
     const ready = s.opId.trim().length>2 && s.pass.length>3 && s.token.replace(/\D/g,'').length===6 && !!s.role;
@@ -177,37 +187,70 @@ class Component extends DCLogic {
       {id:'analyst', name:'ANALYST', desc:'the floor: queue, glass-box replay, the gate. every verdict opens to its log line.'},
       {id:'ciso', name:'CISO', desc:'the position: statutory windows, value protected, ledger. citations one click deeper.'}
     ];
+
+    // Live data derived from incidents when live===true
+    let gateCount = '··', windowsBreached = '··', remainS = 0, elapsedFrac = 0, dialEyebrow = 'READING', dialDigits = '··:··:··', dialSub = 'contacting citinel-web';
+    if (s.live === true && s.incidents.length > 0) {
+      gateCount = this.pad2(s.incidents.filter(i=>i.state==='gated').length);
+      windowsBreached = this.pad2(s.incidents.filter(i=>i.state!=='closed' && Date.parse(i.opened_ts||'')+6*3600*1000 < s.now).length);
+      const oldestOpened = s.incidents.reduce((acc,i)=>{
+        const ts = Date.parse(i.opened_ts||'');
+        return !isNaN(ts) && (ts < acc || acc===0) ? ts : acc;
+      }, 0);
+      remainS = oldestOpened ? Math.max(0, Math.floor((oldestOpened + 6*3600*1000 - s.now)/1000)) : 0;
+      elapsedFrac = oldestOpened ? 1 - remainS/(6*3600) : 0;
+      dialEyebrow = 'CERT-IN · INC-0417';
+      dialDigits = this.fmtTime(remainS);
+      dialSub = remainS <= 0 ? 'window expired' : 'time remaining';
+    } else if (s.live === false) {
+      // Fallback to authored demo
+      gateCount = '02';
+      windowsBreached = '00';
+      const base = this.base || s.now;
+      remainS = Math.max(0, (3*3600+45*60) - Math.floor((s.now-base)/1000));
+      elapsedFrac = 1 - remainS/(6*3600);
+      dialEyebrow = first ? 'NEAREST WINDOW' : 'CERT-IN · INC-0417';
+      dialDigits = this.fmtTime(remainS);
+      dialSub = first ? 'runs whether or not anyone is signed in' : 'ran unattended 06:12 · no window missed';
+    }
+
     return {
-      // The readout sits inside the dial window (r=186 of a 520 viewBox), so the placard
-      // must fit that measure on one line and the caption within two.
-      dialEyebrow: first ? 'NEAREST WINDOW' : 'CERT-IN · INC-0417',
-      dialDigits: f(remainS),
-      dialSub: first ? 'runs whether or not anyone is signed in' : 'ran unattended 06:12 · no window missed',
-      elapsedArc: this.arc(elapsedFrac), handAngle: (elapsedFrac*360).toFixed(2), dialTicks: ticks,
-      // Display face is placards only, ~24 characters or fewer. The 46-character
-      // original also collapsed its own column at reflow widths.
+      dialEyebrow, dialDigits, dialSub, dialTicks: ticks,
+      elapsedArc: this.arc(elapsedFrac), handAngle: (elapsedFrac*360).toFixed(2),
       plateEyebrow: first ? 'BEFORE YOU SIGN IN' : 'STATE OF THE INSTALL',
       plateBody: first
-        ? 'CITINEL watches the bank\'s log streams beside its existing SIEM, normalises them to OCSF 1.4.0, matches a 3,000-rule Sigma corpus tagged to MITRE ATT&CK v16, and attaches the exact log line behind every verdict. It drafts containment and stops: an action executes only when a named human approves it at the gate, and reports are drafted for the bank to file. We draft, we never file.'
+        ? 'CITINEL watches the bank\'s log streams beside its existing SIEM, normalises them to OCSF 1.9.0, matches a 3,302-rule Sigma corpus at r2026-07-01 tagged to MITRE ATT&CK v16.1, and attaches the exact log line behind every verdict. It drafts containment and stops: an action executes only when a named human approves it at the gate, and reports are drafted for the bank to file. We draft, we never file.'
         : 'Nothing changed in your absence except what is on the tape. Six hours of ingest, one incident gated, two statutory clocks still running. The ledger is append-only. Nobody, CITINEL included, edited a line while you were gone.',
       plateStats: first
-        ? [{v:'3,000', k:'sigma rules'},{v:'214/823', k:'att&ck techniques'},{v:'0', k:'actions without a human'}]
-        : [{v:'06:12', k:'unattended'},{v:'02', k:'waiting at the gate'},{v:'00', k:'windows breached'}],
+        ? [{v:'3,302 · r2026-07-01', k:'sigma rules'},{v:'29', k:'techniques observed'},{v:'0', k:'actions without a human'}]
+        : [{v:gateCount, k:'waiting at the gate'},{v:windowsBreached, k:'windows breached'}],
       setFirst: ()=>this.setState({mode:'first'}), setReturning: ()=>this.setState({mode:'returning'}),
       firstBg: first?'var(--ctn-color-surface-navy)':'transparent', firstFg: first?'var(--ctn-color-text-on-navy)':'var(--ctn-color-text-muted)',
       retBg: !first?'var(--ctn-color-surface-navy)':'transparent', retFg: !first?'var(--ctn-color-text-on-navy)':'var(--ctn-color-text-muted)',
       isFirst: first, isReturning: !first,
-      authEyebrow: first ? 'FIRST SIGN-IN ON THIS INSTALL' : 'WELCOME BACK, A. DESHMUKH',
+      authEyebrow: first ? 'FIRST SIGN-IN ON THIS INSTALL' : s.live === true ? 'WELCOME BACK' : 'WELCOME BACK, A. DESHMUKH',
       authLead: first
         ? 'Your credentials are checked against the bank\'s directory; CITINEL stores no password of its own.'
-        : 'Session expired at 15:31 IST. Sign in again to resume the watch. The two open gates transfer to you.',
-      sinceRows: [
+        : s.live === true ? 'Sign in again to resume the watch. ' + (gateCount === '00' ? 'No gate is open; nothing transfers.' : 'The ' + gateCount + ' open gate' + (gateCount === '01' ? '' : 's') + ' transfer to you.') : 'Session expired at 15:31 IST. Sign in again to resume the watch. The two open gates transfer to you.',
+      sinceHeader: s.live === true ? 'SINCE YOU LEFT · ' + (this._lastSeen ? (() => { const m = Math.max(0, Math.round((Date.now() - this._lastSeen) / 60000)); return m >= 60 ? Math.floor(m/60) + 'H ' + String(m%60).padStart(2,'0') + 'M AGO' : String(Math.floor(m/60)).padStart(2,'0') + ':' + String(m%60).padStart(2,'0') + ' AGO'; })() : 'FIRST VISIT ON THIS BROWSER') : 'SINCE YOU LEFT · 06:12 AGO',
+      sinceRows: s.live === true ? [
+        {glyph:this.glyph('caught'), msg:'incidents on the record', n:this.pad2(s.incidents.length)},
+        {glyph:this.glyph('closed'), msg:'closed on the ledger', n:this.pad2(s.incidents.filter(i=>String(i.state).startsWith('closed')).length)},
+        {glyph:this.glyph('gated'), msg:'drafted actions still waiting at the gate', n:this.pad2(s.incidents.filter(i=>i.state==='gated').length)},
+        {glyph:this.glyph('actioned'), msg:'actioned under the policy gate', n:this.pad2(s.incidents.filter(i=>i.state==='actioned').length)}
+      ] : [
         {glyph:this.glyph('caught'), msg:'alerts caught and triaged', n:'412'},
         {glyph:this.glyph('closed'), msg:'closed with a citation attached', n:'59'},
         {glyph:this.glyph('gated'), msg:'drafted actions still waiting at the gate', n:'02'},
         {glyph:this.glyph('actioned'), msg:'approved and executed by r. iyer', n:'06'}
       ],
-      bindRows: [
+      bindRows: s.live === true ? [
+        {k:'service', v:'citinel-web · records read from the service'},
+        {k:'records', v:this.pad2(s.incidents.length) + ' incidents on the record'},
+        {k:'ledger', v:'append-only · SHA-256 chained · Lyzr witness when configured'},
+        {k:'connectors', v:'presence only · see Connectors'},
+        {k:'directory', v:'none bound · no password stored'}
+      ] : [
         {k:'institution', v:'Sahyadri District Cooperative Bank'},
         {k:'connector pack', v:'Finacle Connector Pack · UPI switch · AD'},
         {k:'regulator packs', v:'CERT-In · RBI · NPCI'},

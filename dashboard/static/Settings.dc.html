@@ -60,6 +60,7 @@
     <span style="flex:none;font-family:var(--ctn-font-mono);font-size:11.5px;color:var(--ctn-color-text-muted);white-space:nowrap">rig 2026.08.23-rc4</span>
   </header>
 
+  <sc-if value="{{ showInlets }}" hint-placeholder-val="{{ false }}">
   <div data-reflow-band style="flex:none;display:flex;align-items:stretch;border-bottom:1px solid var(--ctn-color-border-hairline);min-width:0">
 
     <section style="flex:1;min-width:0;display:flex;flex-direction:column;padding:13px 20px 14px;border-right:1px solid var(--ctn-color-border-hairline)">
@@ -124,6 +125,7 @@
       </div>
     </section>
   </div>
+  </sc-if>
 
   <section style="flex:1;min-height:0;min-width:0;display:flex;flex-direction:column;overflow:hidden">
     <div style="flex:none;display:flex;align-items:baseline;gap:8px 16px;flex-wrap:wrap;padding:14px 20px 10px;min-width:0">
@@ -186,7 +188,7 @@
 class Component extends DCLogic {
   constructor(p){
     super(p);
-    this.state = {role:this.roleInit(), now:Date.now(), eps:2380};
+    this.state = {role:this.roleInit(), now:Date.now(), eps:2380, live: null, connectorsResult: null, liveError: null};
     this.inletDefs = [
       {name:'UPI switch', transport:'upi-sw-01 · syslog tcp/6514', ocsf:'class 3001 · Application Activity', rate:'2,380/s', state:'OPEN', note:'last packet 0.4s ago', v:'open'},
       {name:'Finacle CBS audit trail', transport:'Finacle Connector Pack · CDC reader', ocsf:'class 6005 · Datastore Activity', rate:'41/min', state:'OPEN', note:'lag 2s · maker-checker fields present', v:'open'},
@@ -222,6 +224,16 @@ class Component extends DCLogic {
   componentDidMount(){
     this.roleMount();
     this.t = setInterval(()=>this.setState(s=>({now:Date.now(), eps: Math.max(1600,Math.min(3600, s.eps + Math.round((Math.random()-0.48)*180)))})),1000);
+    const API = window.CITINEL_API;
+    if (API) {
+      API.connectors().then(r => {
+        if (r.ok) {
+          this.setState({live: true, connectorsResult: r});
+        } else {
+          this.setState({live: false, connectorsResult: null, liveError: r.error});
+        }
+      });
+    }
   }
   componentWillUnmount(){ clearInterval(this.t); if(this.unsubRole) this.unsubRole(); }
   roleInit(){ try{ return (window.CitinelRole && window.CitinelRole.get()) || 'analyst'; }catch(e){ return 'analyst'; } }
@@ -243,6 +255,12 @@ class Component extends DCLogic {
       DEGRADED:{fg:'var(--ctn-color-severity-high)', style:'dashed', angle:30},
       PARTIAL:{fg:'var(--ctn-color-severity-high)', style:'dashed', angle:15}
     };
+    // Extract policy from connectors result; in live mode, use real data; in fallback, use authored
+    const connData = s.connectorsResult && s.connectorsResult.ok ? s.connectorsResult.data : null;
+    const policy = (connData && connData.policy) ? connData.policy : null;
+    const showInlets = s.live !== true;  // show in fallback/loading, hide in live
+    const showHeaderTank = s.live !== true;  // show in fallback/loading, hide in live
+
     return {
       ciso, analyst: !ciso,
       setAnalyst: ()=>{ this.setState({role:'analyst'}); if(window.CitinelRole) window.CitinelRole.set('analyst'); },
@@ -252,6 +270,7 @@ class Component extends DCLogic {
       cisoBg: ciso ? 'var(--ctn-color-surface-navy)' : 'transparent',
       cisoFg: ciso ? 'var(--ctn-color-text-on-navy)' : 'var(--ctn-color-text-muted)',
 
+      showInlets, showHeaderTank,
       inletSummary: '4 / 6 clean',
       epsTotal: s.eps.toLocaleString('en-IN'),
       inlets: this.inletDefs.map(i=>{
@@ -277,17 +296,38 @@ class Component extends DCLogic {
         {name:'AbuseDB community reports', ttl:'disabled', hit:'—', fg:'var(--ctn-color-text-muted)', op:0.5}
       ],
 
-      liveSummary: '0 of 7 live',
+      liveSummary: (() => {
+        const clauses = (policy && Array.isArray(policy.clauses)) ? policy.clauses : this.outletDefs;
+        const count = Array.isArray(clauses) ? clauses.length : 0;
+        return '0 of ' + (count > 0 ? count : 7) + ' live';
+      })(),
       outletClaim: ciso
         ? 'No response action in this product has ever touched a production system. Every approval shown on the approval card, every action in the demo, and every execution receipt in the ledger was satisfied by a simulator listed below. Six of the seven are blocked on credentials or consent rather than on engineering; one is blocked on an NPCI member contract that is a commercial decision, not a technical one.'
         : 'Every response action CITINEL can draft runs against a mock. The approvals you have given executed against the simulators named below. The drafting, the gate, the policy evaluation and the ledger entry are all real; the last inch to the production system is a blanking flange.',
       colFour: ciso ? 'WHAT IT TAKES TO GO LIVE' : 'WHAT WOULD HAPPEN IF IT WERE LIVE',
-      outlets: this.outletDefs.map(o=>({
-        action:o.action, sim:o.sim, simNote:o.simNote, last:o.last,
-        arcNote: 'the arc reaches Actioned against a simulator · the diamond is hollow for that reason',
-        colFourMain: ciso ? o.blocker : o.simNote.replace('accepts the call, returns','would instead issue').replace('validates','would validate'),
-        colFourSub: ciso ? o.owner + ' · ' + o.target : 'mock returns success unconditionally, so a failure path has never been exercised here'
-      })),
+      outlets: (() => {
+        const clauses = (policy && Array.isArray(policy.clauses)) ? policy.clauses : null;
+        return (clauses && clauses.length > 0)
+          ? clauses.map(c => ({
+              action: c.action_class.toUpperCase(),
+              sim: 'citinel-mock · simulated',
+              simNote: 'simulated endpoint · ' + c.description,
+              last: '—',
+              arcNote: 'the arc reaches Actioned against a simulator · the diamond is hollow for that reason',
+              colFourMain: ciso
+                ? 'tier: ' + c.tier + ' · approval: ' + c.approval + ' · max ' + c.max_assets_auto + ' assets/auto'
+                : c.description + ' (mocked).',
+              colFourSub: ciso
+                ? (c.reversible ? 'reversible' : 'not reversible') + ' · ' + c.description
+                : 'mock returns success unconditionally, so a failure path has never been exercised here'
+            }))
+          : this.outletDefs.map(o => ({
+              action: o.action, sim: o.sim, simNote: o.simNote, last: o.last,
+              arcNote: 'the arc reaches Actioned against a simulator · the diamond is hollow for that reason',
+              colFourMain: ciso ? o.blocker : o.simNote.replace('accepts the call, returns','would instead issue').replace('validates','would validate'),
+              colFourSub: ciso ? o.owner + ' · ' + o.target : 'mock returns success unconditionally, so a failure path has never been exercised here'
+            }));
+      })(),
       footNote: ciso
         ? 'Going live changes the risk profile of every dial on the policy screen. The autonomy detents were set while every outlet was blanked; they should be re-read before the first flange comes off.'
         : 'The mocks return success unconditionally. That means the happy path is well tested and the failure path is untested. Treat a green execution receipt on this build as evidence that CITINEL called the right endpoint with the right arguments, not that a production system did anything.'

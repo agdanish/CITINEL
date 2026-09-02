@@ -57,8 +57,8 @@
       <button onClick="{{ setAnalyst }}" style="font-family:var(--ctn-font-display);font-size:8.5px;letter-spacing:0.1em;padding:6px 11px;border:none;border-radius:4px;cursor:pointer;background:{{ analystBg }};color:{{ analystFg }}">ANALYST</button>
       <button onClick="{{ setCiso }}" style="font-family:var(--ctn-font-display);font-size:8.5px;letter-spacing:0.1em;padding:6px 11px;border:none;border-radius:4px;cursor:pointer;background:{{ cisoBg }};color:{{ cisoFg }}">CISO</button>
     </div>
-    <span style="flex:none;font-family:var(--ctn-font-mono);font-size:12px;color:var(--ctn-color-text-primary);white-space:nowrap">INC-0417</span>
-    <a href="Replay.dc.html?at=78" style="flex:none;font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:9px 14px;background:var(--ctn-color-surface-navy);color:var(--ctn-color-text-on-navy);border-radius:6px;text-decoration:none;white-space:nowrap">◀ RETURN TO REPLAY</a>
+    <span style="flex:none;font-family:var(--ctn-font-mono);font-size:12px;color:var(--ctn-color-text-primary);white-space:nowrap">{{ incId }}</span>
+    <a href="{{ replayHref }}" style="flex:none;font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:9px 14px;background:var(--ctn-color-surface-navy);color:var(--ctn-color-text-on-navy);border-radius:6px;text-decoration:none;white-space:nowrap">◀ RETURN TO REPLAY</a>
   </header>
 
   <div data-reflow-band style="flex:none;display:flex;align-items:stretch;border-bottom:1px solid var(--ctn-color-border-strong);background:var(--ctn-color-surface-panel);min-width:0">
@@ -137,7 +137,7 @@
         <sc-if value="{{ cntEmpty }}" hint-placeholder-val="{{ false }}">
           <div style="flex:1;min-height:0;margin-top:7px;border:1px dashed var(--ctn-color-border-strong);border-radius:6px;display:flex;flex-direction:column;justify-content:center;padding:14px 16px;min-width:0">
             <div style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.12em;color:var(--ctn-color-text-muted)">NONE FOUND · COLUMN LEFT OPEN</div>
-            <div style="font-size:12px;color:var(--ctn-color-text-secondary);margin-top:6px;line-height:1.45;text-wrap:pretty">The Correlator searched change tickets, maintenance windows, the allowlist, and prior benign patterns for this account and found nothing that argues the other way. An empty column is a result. It is shown so you can see the search happened.</div>
+            <div style="font-size:12px;color:var(--ctn-color-text-secondary);margin-top:6px;line-height:1.45;text-wrap:pretty">{{ cntEmptyBody }}</div>
           </div>
         </sc-if>
         <sc-if value="{{ cntPresent }}" hint-placeholder-val="{{ true }}">
@@ -168,7 +168,7 @@
     <div style="flex:none;display:flex;align-items:baseline;gap:8px 14px;flex-wrap:wrap;padding:14px 24px 10px;min-width:0">
       <span style="font-family:var(--ctn-font-display);font-size:11.5px;letter-spacing:0.14em;color:var(--ctn-color-text-primary);flex:none">DISCARD TRAY · EVIDENCE CHECKED, THEN CUT</span>
       <span style="font-family:var(--ctn-font-display);font-size:26px;color:var(--ctn-color-text-primary);font-variant-numeric:tabular-nums slashed-zero;flex:none;margin-right:auto">{{ retiredCount }}</span>
-      <span style="flex:1 1 100%;order:2;font-size:12.5px;color:var(--ctn-color-text-secondary);min-width:0;max-width:110ch;line-height:1.5;text-wrap:pretty">every line the swarm put on a pan and then took off, with the reason it came off. a verdict built only from what survived is not auditable. this is the part that was thrown away.</span>
+      <span style="flex:1 1 100%;order:2;font-size:12.5px;color:var(--ctn-color-text-secondary);min-width:0;max-width:110ch;line-height:1.5;text-wrap:pretty">{{ trayNote }}</span>
       <button onClick="{{ toggleAll }}" style="flex:none;font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:8px 13px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;background:none;color:var(--ctn-color-text-primary);cursor:pointer">{{ toggleAllLabel }}</button>
     </div>
 
@@ -215,8 +215,8 @@
         </div>
       </sc-for>
       <div style="display:flex;align-items:center;gap:12px;padding:12px 0 0;min-width:0">
-        <span style="font-size:11.5px;color:var(--ctn-color-text-muted);flex:1;min-width:0;line-height:1.5;text-wrap:pretty">restoring a line puts it back on its pan and re-weighs the balance above. The restore is itself a ledger entry, so a wrong cut leaves a trace of having been wrong. cuts are never deleted from this tray.</span>
-        <a href="Audit.dc.html" style="flex:none;font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:8px 13px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;color:var(--ctn-color-text-primary);text-decoration:none">SEE THE CUTS IN THE LEDGER</a>
+        <span style="font-size:11.5px;color:var(--ctn-color-text-muted);flex:1;min-width:0;line-height:1.5;text-wrap:pretty">{{ trayFooter }}</span>
+        <a href="{{ ledgerHref }}" style="flex:none;font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:8px 13px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;color:var(--ctn-color-text-primary);text-decoration:none">SEE THE CUTS IN THE LEDGER</a>
       </div>
     </div>
   </section>
@@ -226,6 +226,8 @@
 class Component extends DCLogic {
   constructor(p){
     super(p);
+    // Authored fallback ledger: shown only when the service is not read (live === false).
+    // It narrates a fictional case and never mixes with a real verdict; the badge says DEMO DATA.
     this.support = [
       {id:'s1', w:5, claim:'Nine payout beneficiaries registered from one UPI session in 71 seconds.', locator:'upi-switch/2026-08-23.log:41113'},
       {id:'s2', w:5, claim:'Bulk payout template modified with maker-checker bypassed, +14 beneficiaries.', locator:'finacle/audit_trail:88412'},
@@ -277,8 +279,22 @@ class Component extends DCLogic {
        reasonTag:'SCOPE DOES NOT COVER',
        reason:'A live maintenance window would have argued the whole thing was routine. Its scope is branch network only and explicitly excludes CBS and payout systems, so it cannot excuse the template change.'}
     ];
-    this.state = {role:this.roleInit(), restored:{}};
+    this.incId = 'INC-0417';
+    try { const id = new URLSearchParams(window.location.search).get('id'); if (id && /^INC-\d+$/.test(id)) this.incId = id; } catch(e) {}
+    this.state = {role:this.roleInit(), restored:{},
+      // live: null = reading · true = the real verdict on the pans · false = authored fallback
+      live:null, liveError:null, incident:null, verdict:null, chain:[]};
   }
+  componentDidMount(){ this.roleMount();
+    const API = window.CITINEL_API;
+    if (!API) { this.setState({live:false, liveError:'api.js not loaded'}); return; }
+    const id = this.incId;
+    Promise.all([API.incident(id), API.verdictFor(id), API.auditFor(id)]).then(([inc, vd, ch]) => {
+      if (!inc.ok) { this.setState({live:false, liveError:inc.error}); return; }
+      this.setState({live:true, incident:inc.data, verdict: vd.ok ? vd.data : null, chain: ch.ok ? ch.data : []});
+    });
+  }
+  componentWillUnmount(){ if(this.unsubRole) this.unsubRole(); }
   ringGlyph(kind){
     const R = React;
     if(kind==='cut') return R.createElement('svg',{width:16,height:16,viewBox:'0 0 18 18'},[
@@ -294,6 +310,104 @@ class Component extends DCLogic {
     return {...r, isInternal: !ext, isExternal: ext,
       extSource: ext ? r.ext.source : '', extUrl: ext ? r.ext.url : '', extFetched: ext ? r.ext.fetchedAt : ''};
   }
+  fmtN(n){ return Number(n || 0).toLocaleString('en-IN'); }
+  ist(ts){ const d = new Date(ts); if (isNaN(d)) return '—'; return new Date(d.getTime()+330*60000).toISOString().slice(11,19); }
+  locatorOf(f, idx){
+    const raw = String((f||{}).evidence_raw || ''), host = String((f||{}).host||'').split('.')[0] || 'host';
+    const logName = (/LogName=([^\r\n]+)/.exec(raw) || [])[1], rec = (/RecordNumber=(\d+)/.exec(raw) || [])[1];
+    const prov = (/Provider Name='([^']+)'/.exec(raw) || [])[1];
+    return host + ' · ' + (logName ? 'WinEventLog:' + logName.trim() : prov || (f||{}).source || 'finding') + (rec ? ' · record ' + rec : ' · finding #' + idx);
+  }
+
+  /* ── live: the narrator's real two-column ledger, weighed by verified citations ── */
+  liveVals(){
+    const s = this.state, inc = s.incident || {}, fs = inc.findings || [], vd = s.verdict, v = vd && vd.verdict;
+    const chain = Array.isArray(s.chain) ? s.chain : [];
+    const claims = v ? (v.claims || []) : [];
+    const mk = (c, i) => {
+      const cits = c.citations || [], first = cits[0] || {}, idx = first.finding_index, f = fs[idx];
+      return {id: 'c' + i, w: cits.length, claim: c.text, locator: idx != null ? this.locatorOf(f, idx) : 'no citation attached', findingIndex: idx,
+              spans: cits.map(x => x.quoted_span), side: c.support === 'counter' ? 'counter' : 'support'};
+    };
+    const all = claims.map(mk);
+    // the citation gate's own record of what it cut on this chain
+    const gateFrames = chain.filter(e => e.actor === 'sentinel' && e.kind === 'decision' && (e.payload||{}).check === 'citation_verification');
+    const lastGate = gateFrames[gateFrames.length-1] || null;
+    const narratorF = chain.filter(e => e.actor === 'narrator').pop() || null;
+    const dropped = (vd && vd.dropped_claims) || [];
+    const retiredDefs = dropped.map((text, i) => ({id: 'd' + i, cutAt: lastGate ? this.ist(lastGate.ts) : (narratorF ? this.ist(narratorF.ts) : '—'),
+      by: 'citation gate · sentinel', seq: lastGate ? String(lastGate.seq) : '—', side: 'support', w: 0,
+      line: text, locator: 'no verified citation', reasonTag: 'CITATION FAILED',
+      reason: lastGate ? String((lastGate.payload||{}).reason || '') : 'the quoted span was absent from the cited log line, or no citation was attached'}));
+    const back = retiredDefs.filter(r => s.restored[r.id]);
+    const supRows = all.filter(r => r.side === 'support').concat(back);
+    const cntRows = all.filter(r => r.side === 'counter');
+    const supW = supRows.reduce((n,r)=>n+r.w,0), cntW = cntRows.reduce((n,r)=>n+r.w,0);
+    const diff = (supW-cntW)/Math.max(supW+cntW,1);
+    const bands = [{name:'CONTESTED', max:0.15},{name:'LEANS', max:0.45},{name:'HOLDS', max:0.75},{name:'STRONG', max:1.01}];
+    const bandIdx = bands.findIndex(b=>diff < b.max); const bi = bandIdx < 0 ? 3 : bandIdx;
+    const hosts = new Set(supRows.map(r => r.findingIndex != null && fs[r.findingIndex] ? fs[r.findingIndex].host : '')); hosts.delete('');
+    const conf = v ? Number(v.confidence) : null;
+    const searched = v ? !!v.counter_evidence_searched : false;
+    const noVerdict = !v;
+    const tally = {}; retiredDefs.forEach(r=>{ tally[r.reasonTag] = (tally[r.reasonTag]||0)+1; });
+    const restoredCount = back.length;
+    return {
+      incId: inc.incident_id || this.incId, replayHref: 'Replay.dc.html?id=' + this.incId + '&at=100',
+      beamAngle: (-diff*13).toFixed(2),
+      supWeight: supW, cntWeight: cntW,
+      bandTicks: [0,25,50,75,100].map(p=>({left:p+'%'})),
+      bandLabels: bands.map((b,i)=>({name:b.name, fg: i===bi && !noVerdict ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-text-muted)'})),
+      riderLeft: Math.max(2, Math.min(98, ((diff+1)/2)*100)).toFixed(1)+'%',
+      bandName: noVerdict ? 'NO VERDICT SAVED' : bands[bi].name + ' · ' + supW + ' CITATIONS AGAINST ' + cntW + ' · CONFIDENCE ' + conf.toFixed(2),
+      bandStatement: noVerdict ? 'No swarm run is persisted for this record, so there is nothing on either pan. Run the swarm from the replay screen.'
+        : 'The beam weighs verified citations, one per log line the citation gate checked: ' + supRows.length + ' supporting claim' + (supRows.length===1?'':'s') + ' carry ' + supW + ', across ' + hosts.size + ' host' + (hosts.size===1?'':'s') + '; ' + cntRows.length + ' counter claim' + (cntRows.length===1?'':'s') + ' carry ' + cntW + '. The narrator states confidence ' + conf.toFixed(2) + ', its own assessment; counter-evidence was ' + (searched ? 'searched for' : 'NOT searched for') + '.' + (vd.lyzr_triage && vd.lyzr_triage.status === 'ok' ? ' An independent Lyzr triage agent read the same evidence summary and put the lane at ' + vd.lyzr_triage.lane + ' with confidence ' + (vd.lyzr_triage.confidence != null ? Number(vd.lyzr_triage.confidence).toFixed(2) : '—') + (vd.lyzr_triage.agrees_with_router === false ? ', disagreeing with the router.' : ', agreeing with the router.') : ''),
+      bandCaveat: noVerdict ? '' : 'The innocent reading the narrator had to consider: ' + String(v.benign_explanation_considered || '') + ' This band is not a probability that the attack happened, and it covers only the ' + this.fmtN(vd.findings_examined) + ' of ' + this.fmtN(vd.findings_total) + ' findings the run examined.',
+      supNote: 'weight = verified citations · each row opens its log line', supCount: String(supRows.length).padStart(2,'0'),
+      cntNote: cntRows.length ? 'read these before approving anything' : (searched ? 'searched for, none found' : 'not searched for on this run'),
+      cntCount: String(cntRows.length).padStart(2,'0'),
+      cntEmpty: cntRows.length === 0, cntPresent: cntRows.length > 0,
+      cntEmptyBody: searched ? 'The narrator was required to look for evidence against its own verdict and reported none. An empty column with counter_evidence_searched=true is a result; without that flag it would be an unasked question.' : 'This run did not search for counter-evidence, so this column is an unasked question, not a clean bill of health.',
+      supporting: supRows.map(r=>this.dress(r)),
+      countering: cntRows.map(r=>this.dress(r)),
+      retiredCount: String(retiredDefs.length).padStart(2,'0'),
+      trayNote: noVerdict ? 'nothing to weigh: no run is saved' : retiredDefs.length ? 'every claim the narrator wrote that the citation gate then struck, with the gate\'s reason. a verdict built only from what survived is not auditable; this is what was thrown away.' : 'the citation gate re-checked every quoted span against its log line before the verdict reached you' + (lastGate ? ' · kept ' + (lastGate.payload||{}).kept + ', dropped ' + (lastGate.payload||{}).dropped : '') + ' · nothing was cut on this run, and that is a checked result, not an assumption',
+      toggleAll: ()=>this.setState(x=>{
+        const allOn = retiredDefs.length > 0 && retiredDefs.every(r=>x.restored[r.id]);
+        if(allOn) return {restored:{}};
+        const m = {}; retiredDefs.forEach(r=>{ m[r.id]=true; });
+        return {restored:m};
+      }),
+      toggleAllLabel: retiredDefs.length === 0 ? 'NOTHING CUT' : restoredCount === retiredDefs.length ? 'CUT ALL AGAIN' : 'WHAT IF · RESTORE ALL',
+      retired: retiredDefs.length ? retiredDefs.map(r=>{
+        const on = !!s.restored[r.id];
+        return {...this.dress(r), glyph: this.ringGlyph(on ? 'back' : 'cut'), opacity: on ? 1 : 0.62,
+          lineFg: on ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-text-muted)', strike: on ? 'none' : 'line-through',
+          btn: on ? 'CUT AGAIN' : 'WHAT IF · RESTORE', btnBorder: on ? 'solid' : 'dashed',
+          toggle: ()=>this.setState(x=>({restored:{...x.restored, [r.id]: !x.restored[r.id]}}))};
+      }) : [this.dress({id:'none', cutAt: lastGate ? this.ist(lastGate.ts) : '—', by:'citation gate · sentinel', seq: lastGate ? String(lastGate.seq) : '—',
+          line: noVerdict ? 'no run saved for this record' : 'no claim was cut · ' + claims.length + ' of ' + claims.length + ' survived the citation gate',
+          locator: 'every claim above carries its verified span', reasonTag: noVerdict ? '—' : 'ALL CITATIONS VERIFIED',
+          reason: lastGate ? String((lastGate.payload||{}).reason || 'every quoted span was found verbatim in its cited log line') : 'every quoted span was found verbatim in its cited log line',
+          glyph: this.ringGlyph('back'), opacity: 0.8, lineFg: 'var(--ctn-color-text-secondary)', strike: 'none', btn: '—', btnBorder: 'dashed', toggle: ()=>{}})],
+      trayFooter: 'restoring a struck claim here is a what-if on this screen only: it puts the claim back on its pan so you can see what the cut cost the beam. it writes nothing to the ledger; the gate\'s cut stands there.',
+      ledgerHref: 'Audit.dc.html?id=' + this.incId + '&q=citation_verification',
+      cutTally: Object.keys(tally).length ? Object.keys(tally).map(k=>({k, n:String(tally[k]).padStart(2,'0')})) : [{k:'CLAIMS CUT', n:'00'}],
+      cutNote: retiredDefs.length ? retiredDefs.length + ' claim' + (retiredDefs.length===1?'':'s') + ' the narrator wrote failed citation verification and never reached you as evidence. They are listed struck through with the gate\'s reason; nothing else was cut on this run.' : 'Nothing was cut on this run: every claim the narrator wrote quoted a span the gate found verbatim in the cited log line. The counter column, not this tray, is where to argue.',
+      _top: supRows.slice().sort((a,c)=>c.w-a.w).slice(0,3).map(r=>this.dress(r))
+    };
+  }
+  loadingVals(){
+    const muted = 'var(--ctn-color-text-muted)';
+    return {
+      incId: this.incId, replayHref: 'Replay.dc.html?id=' + this.incId, beamAngle: '0', supWeight: '', cntWeight: '', bandTicks: [], bandLabels: [], riderLeft: '50%',
+      bandName: 'READING THE VERDICT', bandStatement: 'the record, its persisted verdict and its chain are being read from the service; nothing authored is drawn while they load', bandCaveat: '',
+      supNote: 'reading…', supCount: '··', cntNote: 'reading…', cntCount: '··', cntEmpty: false, cntPresent: true, cntEmptyBody: '', supporting: [], countering: [],
+      retiredCount: '··', trayNote: 'reading…', toggleAll: ()=>{}, toggleAllLabel: 'READING', retired: [], trayFooter: '', ledgerHref: 'Audit.dc.html', cutTally: [], cutNote: ''
+    };
+  }
+
+  /* ── authored fallback ───────────────────────────────────────────────────── */
   baseVals(){
     const s = this.state;
     const back = this.retiredDefs.filter(r=>s.restored[r.id]);
@@ -302,17 +416,13 @@ class Component extends DCLogic {
     const supW = supRows.reduce((n,r)=>n+r.w,0);
     const cntW = cntRows.reduce((n,r)=>n+r.w,0);
     const diff = (supW-cntW)/Math.max(supW+cntW,1);
-    const bands = [
-      {name:'CONTESTED', max:0.15},
-      {name:'LEANS', max:0.45},
-      {name:'HOLDS', max:0.75},
-      {name:'STRONG', max:1.01}
-    ];
+    const bands = [{name:'CONTESTED', max:0.15},{name:'LEANS', max:0.45},{name:'HOLDS', max:0.75},{name:'STRONG', max:1.01}];
     const bandIdx = bands.findIndex(b=>diff < b.max);
     const bi = bandIdx < 0 ? 3 : bandIdx;
     const indep = new Set(supRows.map(r=>r.ext ? 'ext:'+r.ext.source : (r.locator||'').split('/')[0])).size;
     const restoredCount = back.length;
     return {
+      incId: 'INC-0417', replayHref: 'Replay.dc.html?at=78',
       beamAngle: (-diff*13).toFixed(2),
       supWeight: supW, cntWeight: cntW,
       bandTicks: [0,25,50,75,100].map(p=>({left:p+'%'})),
@@ -325,9 +435,11 @@ class Component extends DCLogic {
       cntNote: cntRows.length ? 'read these before approving' : 'searched, nothing found',
       cntCount: String(cntRows.length).padStart(2,'0'),
       cntEmpty: cntRows.length === 0, cntPresent: cntRows.length > 0,
+      cntEmptyBody: 'The Correlator searched change tickets, maintenance windows, the allowlist, and prior benign patterns for this account and found nothing that argues the other way. An empty column is a result. It is shown so you can see the search happened.',
       supporting: supRows.map(r=>this.dress(r)),
       countering: cntRows.map(r=>this.dress(r)),
       retiredCount: String(this.retiredDefs.length).padStart(2,'0'),
+      trayNote: 'every line the swarm put on a pan and then took off, with the reason it came off. a verdict built only from what survived is not auditable. this is the part that was thrown away.',
       toggleAll: ()=>this.setState(x=>{
         const all = this.retiredDefs.every(r=>x.restored[r.id]);
         if(all) return {restored:{}};
@@ -338,21 +450,18 @@ class Component extends DCLogic {
       retired: this.retiredDefs.map(r=>{
         const on = !!s.restored[r.id];
         return {...this.dress(r),
-          glyph: this.ringGlyph(on ? 'back' : 'cut'),
-          opacity: on ? 1 : 0.62,
-          lineFg: on ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-text-muted)',
-          strike: on ? 'none' : 'line-through',
-          btn: on ? 'CUT AGAIN' : 'RESTORE',
-          btnBorder: on ? 'solid' : 'dashed',
-          toggle: ()=>this.setState(x=>({restored:{...x.restored, [r.id]: !x.restored[r.id]}}))
-        };
-      })
+          glyph: this.ringGlyph(on ? 'back' : 'cut'), opacity: on ? 1 : 0.62,
+          lineFg: on ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-text-muted)', strike: on ? 'none' : 'line-through',
+          btn: on ? 'CUT AGAIN' : 'RESTORE', btnBorder: on ? 'solid' : 'dashed',
+          toggle: ()=>this.setState(x=>({restored:{...x.restored, [r.id]: !x.restored[r.id]}}))};
+      }),
+      trayFooter: 'restoring a line puts it back on its pan and re-weighs the balance above. The restore is itself a ledger entry, so a wrong cut leaves a trace of having been wrong. cuts are never deleted from this tray.',
+      ledgerHref: 'Audit.dc.html'
     };
   }
 
   roleInit(){ try{ return (window.CitinelRole && window.CitinelRole.get()) || 'analyst'; }catch(e){ return 'analyst'; } }
   roleMount(){ if(window.CitinelRole) this.unsubRole = window.CitinelRole.subscribe(r=>{ if(r !== this.state.role) this.setState({role:r}); }); }
-  componentWillUnmount_role(){ if(this.unsubRole) this.unsubRole(); }
   roleVals(){
     const ciso = this.state.role === 'ciso';
     return { ciso, analyst: !ciso,
@@ -369,9 +478,22 @@ class Component extends DCLogic {
       this.svgText(270, 64, b.cntWeight, {size:12, fill:'var(--ctn-color-text-primary)', tab:true})
     ].map((el,i)=>React.cloneElement(el,{key:i}))};
   }
-  renderVals(){ const b = this.baseVals(); return Object.assign({}, b, this.roleVals(), this.depthVals ? this.depthVals(b) : {}, this.svgLabels(b)); }
-  componentDidMount(){ this.roleMount(); }
-
+  renderVals(){
+    const s = this.state;
+    if (s.live === null) { const b = this.loadingVals(); return Object.assign({}, b, this.roleVals(), this.svgLabels(b)); }
+    if (s.live === true) { const b = this.liveVals(); return Object.assign({}, b, this.roleVals(), this.liveDepthVals(b), this.svgLabels(b)); }
+    const b = this.baseVals(); return Object.assign({}, b, this.roleVals(), this.depthVals(b), this.svgLabels(b));
+  }
+  liveDepthVals(b){
+    if(this.state.role !== 'ciso') return {};
+    const rest = Math.max(0, b.supporting.length - b._top.length);
+    return {
+      supporting: b._top,
+      supNote: b._top.length + ' most-cited supporting claim' + (b._top.length===1?'':'s') + (rest ? ' · ' + rest + ' more in the analyst depth' : ''),
+      cntNote: 'read in full · this is what an authority must weigh',
+      bandCaveat: 'You are being asked to sign against this. ' + b.bandCaveat
+    };
+  }
   depthVals(b){
     if(this.state.role !== 'ciso') return {};
     const top = b.supporting.slice().sort((a,c)=>c.w-a.w).slice(0,3);
@@ -388,7 +510,6 @@ class Component extends DCLogic {
       bandCaveat: 'You are being asked to sign against this. The band says how strongly the system holds its verdict on the evidence it kept. It is not a probability that fraud occurred, and it covers nothing outside the bank\'s telemetry. The counter-evidence column, not this reading, is the part to argue with.'
     };
   }
-
   svgText(x,y,str,opts){
     const o = opts || {};
     return React.createElement('text', {x, y, textAnchor:o.anchor||'middle',

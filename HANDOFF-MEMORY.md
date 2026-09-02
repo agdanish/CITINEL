@@ -343,3 +343,38 @@ Danish, after the wiring session: *"hereafter we will deploy online and use all 
 | Startuped / CodeMate / Gemini | Not code. Startuped is a platform run Danish does; CodeMate is tooling use; Gemini has no seam yet (the SDD's cross-model citation verifier needs persisted verdicts first, §18). | — | per `PARTNER-ONBOARDING.md` |
 
 **"Many agents in Lyzr" — the honest boundary.** [[feedback-real-value-not-padding]] still governs: a Lyzr agent earns its place only when a real CITINEL call site sends it real work and does something with the answer. Three such sites exist today (above). Candidates for more that would be genuinely wired rather than decorative, each a small backend seam plus a Studio agent: (a) a CERT-In field-completeness reviewer on the same draft the PII guard already screens (which mandatory fields are thin, before sign-off); (b) a triage second opinion recorded on the ledger as a `decision` beside the Router's, so disagreement is a fact a human sees, not a hidden vote; (c) a handover summariser for the Handover screen once that page is wired. What is not worth credits: agents that re-narrate what the Claude swarm already produced, or anything whose output is not stored or shown. **Before designing any of these, get the list of agents Danish has already built in Studio (name, role, what each answers) — the `.env` agent id proves at least one exists, and the direction says "many".**
+
+## 20. 2 Sep 2026, second pass: the console became a working product, not a set of mockups
+
+Danish's words: "The UI is full of mock data on how the pages work! I need actual working of the how really works in prod, not just mockups! I need live backend data to run and use." Then, with a Lyzr Studio screenshot showing one agent (CITINEL Compliance Monitor, 196 runs in 7 days): "we have 1 agent in lyzer, I need more + use more tavily effectively."
+
+### What exists now that did not this morning
+
+**The pipeline's outputs are persisted and served.** A swarm run used to be printed and discarded. Now `agents/store.py` writes `data/incidents/swarm/<id>.json` (+ `.runs.jsonl` history) and `GET /api/incidents/{id}/verdict` serves it: claims with citations, kill chain, proposals, calls, usage, and the runs. `GET /api/incidents?summary=true` overlays a **ledger-derived state** (`incidents/state.py`: `policy_check` → gated, `action_executed` → actioned, `human_signoff` → closed, a `state_transition` frame with `reopened:true` reopens) and a `swarm` summary per incident.
+
+**Every operation the product claims is a real route** (all in `web/app.py`, all tested in `tests/test_web_ops.py`):
+`POST …/swarm` (202, background thread, real model spend, one at a time, 503 without credentials) · `GET …/swarm/status` · `POST /api/actions/execute` (policy gate → simulated endpoint → rollback token; 403 carries the gate's decision) · `POST /api/actions/deny` · `POST /api/actions/rollback/{token}` · `POST …/signoff` (records the signer's answers + draft kind + attestation, dispatches to n8n) · `POST …/reopen` (409 unless closed) · `GET/POST …/context` (Tavily) · `GET/POST …/handover` (Lyzr) · `GET /api/corpus` · `GET /api/connectors` (presence only, never a key value) · `GET /api/eval` (falls back to the shipped report, says so via `served_from`).
+
+**Tavily is now genuinely wired**, not a rubric line: `agents/context.py` plans ≤4 technique queries from the verdict's correlation stages and ≤2 from the noisiest Sigma rules, calls `TavilyConnector.search`, and persists per-query provenance (query, status, cached, URLs, scores, fetched_at). Gathered live for both incidents on 2 Sep: 10 credits, 30 sources (MITRE ATT&CK pages, Detection.FYI rule pages). The payload carries `not_evidence`: public context can never support a claim; citations still point only at the record's own findings. Replay's PUBLIC CONTEXT · TAVILY block shows it.
+
+**Three more Lyzr agents have real seams** (`connectors/lyzr_agents.py`), each degrading to `not_configured` without its agent id:
+- `lyzr-triage`: an independent second opinion on the lane, recorded as a `decision` frame and annotated onto the verdict file (`lyzr_triage`) after every swarm run (web route and CLI). Replay lists it as a produced item; Confidence names it in the band statement; disagreement with the router is shown, not hidden.
+- `lyzr-review`: reads the CERT-In draft and names thin fields; Compliance stamps them LYZR · THIN with the reason.
+- `lyzr-handover`: writes a shift handover note from the ledger frames; Handover shows it under NEXT MOVE with a WRITE NOTE · LYZR button.
+The Studio recipes (role, goal, instructions, exact JSON contract) are in `LYZR-AGENT-CONFIG.md`; the ids are `CITINEL_LYZR_TRIAGE_AGENT_ID`, `…_REVIEW_…`, `…_HANDOVER_…` (declared `sync: false` in render.yaml, so Danish sets them in the Render dashboard). **Danish has not built these three agents yet**; until he does, every one of those surfaces says "not configured" honestly.
+
+**All 18 console pages read the service.** Ten were wired by Haiku agents (Shell, Handover, Narrow, Executive, Settings, Entry, Eval, Policy, Corpus, Demo), then adversarially re-reviewed by a second Haiku pass; the residuals (Shell's footer constants and Overview badge, Handover's gate/watch lists and sign handler, Entry's returning-session numbers and name, Corpus's authored fallback word) were fixed by hand. The three-state rule holds everywhere: nothing authored is drawn while `live === true`; what has no backend is cut or labelled on screen.
+
+### Things that bit, so the next session does not repeat them
+- The Lyzr witness mirror added ~7 s per ledger append (28 s per gate execution). `LyzrLedgerMirror.record()` now posts from a single-worker background executor; synchronous only when a `sender` is injected (tests).
+- `int(body.get("assets_affected") or 1)` turned 0 into 1; the gate's `max_assets_auto: 0` classes escalate at any count ≥1. Explicit None check now.
+- Both incidents derived as CLOSED from the 1 Sep CLI sign-off tests; that is why `reopen` exists. Every test sign-off on the live ledger must be followed by a reopen or the queue empties.
+- `API.verdictFor` collided with the badge helper of the same name; the badge one is `API.badgeVerdict`.
+- Haiku page agents were told not to touch api.js and reported "api.js modified" on seeing my own uncommitted diff; treat that finding as noise when the seam diff is yours.
+- The DC runtime runs helmet scripts twice; the browser pane's hidden state gives `innerWidth` 0 and route.js bounces to Narrow (`?force=console`). Verify by DOM reads through iframes in one tab: fast, and the navigate tool is often denied.
+
+### Still not done, said plainly
+- The three new Lyzr agents exist only as recipes; Render has none of the Lyzr variables at all (key, guard URL, base agent id, three new ids). n8n webhook URL and Swytchcode key are empty everywhere.
+- Handover's register sign-off is still session-local (no shift-register route); its button says so.
+- The swarm's `lyzr_triage` annotation is written only for runs made after 2 Sep; the two existing verdict files carry `not_configured`.
+- A swarm run costs ~100K+ input tokens; the console button asks for confirmation and runs one at a time, but nothing meters spend across sessions.

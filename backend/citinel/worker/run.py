@@ -26,6 +26,7 @@ import time
 from pathlib import Path
 
 from citinel.agents.pipeline import SwarmPipeline
+from citinel.agents.store import save_result
 from citinel.audit.ledger import AuditLedger
 from citinel.config import settings
 from citinel.connectors.lyzr import LyzrLedgerMirror
@@ -96,6 +97,7 @@ def _run_auto_swarm(pipeline: SwarmPipeline) -> None:
     for inc in batch:
         try:
             result = pipeline.run(inc)
+            save_result(result, INCIDENTS_DIR)
             log.info("auto-swarm: %s -> mode=%s", inc.incident_id, result.mode.value)
         except Exception:
             log.exception("auto-swarm: %s failed; will retry next cycle "

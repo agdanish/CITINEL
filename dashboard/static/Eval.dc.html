@@ -57,141 +57,64 @@
       <button onClick="{{ setAnalyst }}" style="font-family:var(--ctn-font-display);font-size:8.5px;letter-spacing:0.1em;padding:6px 11px;border:none;border-radius:4px;cursor:pointer;background:{{ analystBg }};color:{{ analystFg }}">ANALYST</button>
       <button onClick="{{ setCiso }}" style="font-family:var(--ctn-font-display);font-size:8.5px;letter-spacing:0.1em;padding:6px 11px;border:none;border-radius:4px;cursor:pointer;background:{{ cisoBg }};color:{{ cisoFg }}">CISO</button>
     </div>
-    <span style="flex:none;font-family:var(--ctn-font-mono);font-size:11.5px;color:var(--ctn-color-text-muted);white-space:nowrap">{{ runRef }}</span>
+    <span style="flex:none;font-family:var(--ctn-font-mono);font-size:11.5px;color:var(--ctn-color-text-muted);white-space:nowrap">{{ runRef }} · {{ runGenerated }}</span>
   </header>
 
   <div style="flex:1;min-height:0;min-width:0;display:flex" data-reflow-band>
 
     <section style="flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;overflow-y:auto;padding:16px 24px 22px;border-right:1px solid var(--ctn-color-border-strong)">
 
-      <div style="flex:none;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;min-width:0">
-        <span style="font-family:var(--ctn-font-display);font-size:11px;letter-spacing:0.14em;color:var(--ctn-color-text-primary);flex:none">MEASURED · FALSE-POSITIVE RATE</span>
-        <span style="font-family:var(--ctn-font-display);font-size:8px;letter-spacing:0.1em;color:var(--ctn-color-text-primary);border:1px solid var(--ctn-color-text-primary);padding:3px 8px;border-radius:999px;flex:none">DIRECT MEASUREMENT</span>
-        <span style="flex:1 1 100%;font-size:12px;color:var(--ctn-color-text-muted);line-height:1.5;max-width:104ch;text-wrap:pretty">{{ fpFraming }}</span>
-      </div>
-
-      <sc-if value="{{ unmeasuredState }}" hint-placeholder-val="{{ false }}">
+      <sc-if value="{{ live }}" hint-placeholder-val="{{ null }}">
         <div style="flex:none;margin-top:12px;border:1px dashed var(--ctn-color-border-strong);border-radius:6px;padding:18px 20px;min-width:0">
-          <div style="font-family:var(--ctn-font-display);font-size:10px;letter-spacing:0.12em;color:var(--ctn-color-text-primary)">NO RATE PUBLISHED · THE HARNESS HAS NOT RUN HERE</div>
-          <div style="font-size:13px;color:var(--ctn-color-text-secondary);margin-top:9px;line-height:1.55;max-width:100ch;text-wrap:pretty">There is no false-positive rate for this install. The corpus of labelled alerts does not exist yet, so there is no denominator, and a rate without a denominator is a claim rather than a measurement. This panel will stay empty rather than show you the figure from another deployment.</div>
-          <div style="display:flex;gap:26px;margin-top:14px;flex-wrap:wrap">
-            <div><div style="font-family:var(--ctn-font-display);font-size:22px;color:var(--ctn-color-text-primary);font-variant-numeric:tabular-nums slashed-zero">10%</div><div style="font-size:10.5px;color:var(--ctn-color-text-muted);font-variant-caps:all-small-caps">target ceiling, set in advance</div></div>
-            <div><div style="font-family:var(--ctn-font-display);font-size:22px;color:var(--ctn-color-text-muted);font-variant-numeric:tabular-nums slashed-zero">—</div><div style="font-size:10.5px;color:var(--ctn-color-text-muted);font-variant-caps:all-small-caps">measured rate</div></div>
-            <div><div style="font-family:var(--ctn-font-display);font-size:22px;color:var(--ctn-color-text-primary);font-variant-numeric:tabular-nums slashed-zero">0</div><div style="font-size:10.5px;color:var(--ctn-color-text-muted);font-variant-caps:all-small-caps">labelled alerts in corpus</div></div>
-            <div><div style="font-family:var(--ctn-font-display);font-size:22px;color:var(--ctn-color-text-primary);font-variant-numeric:tabular-nums slashed-zero">100</div><div style="font-size:10.5px;color:var(--ctn-color-text-muted);font-variant-caps:all-small-caps">sample floor per class</div></div>
-          </div>
-          <div style="font-size:11.5px;color:var(--ctn-color-text-muted);margin-top:13px;line-height:1.5;max-width:100ch;text-wrap:pretty">The ceiling above is a target that existed before any measurement and is not a result. Nothing on this screen may be quoted as performance until a run appears in the ledger.</div>
+          <div style="font-family:var(--ctn-font-display);font-size:10px;letter-spacing:0.12em;color:var(--ctn-color-text-primary)">READING HARNESS REPORT…</div>
+          <div style="font-size:13px;color:var(--ctn-color-text-secondary);margin-top:8px;line-height:1.55">Contacting the service to read the evaluation report.</div>
         </div>
       </sc-if>
-      <sc-if value="{{ measuredState }}" hint-placeholder-val="{{ true }}">
-      <div style="flex:none;display:flex;align-items:flex-end;gap:26px;margin-top:12px;flex-wrap:wrap;min-width:0">
-        <div style="flex:none">
-          <div style="font-family:var(--ctn-font-display);font-size:76px;line-height:1;color:var(--ctn-color-text-primary);font-variant-numeric:tabular-nums slashed-zero">{{ fpRate }}</div>
-          <div style="font-family:var(--ctn-font-mono);font-size:12px;color:var(--ctn-color-text-secondary);margin-top:5px">{{ fpFraction }}</div>
-          <div style="font-size:11.5px;color:var(--ctn-color-text-muted);margin-top:2px">{{ fpDenominator }}</div>
-        </div>
-        <div style="flex:1;min-width:420px">
-          <svg viewBox="0 0 620 108" style="width:100%;height:108px;display:block">
-            <rect x="0" y="34" width="{{ bandW }}" height="26" fill="var(--ctn-color-surface-panel)" stroke="var(--ctn-color-border-strong)" stroke-width="1"></rect>
-            <line x1="{{ bandW }}" y1="20" x2="{{ bandW }}" y2="74" stroke="var(--ctn-color-text-secondary)" stroke-width="1.6" stroke-dasharray="4 3"></line>
-            <text x="{{ bandWLabelX }}" y="7" text-anchor="end" font-family="var(--ctn-font-display)" font-size="7.5" letter-spacing="0.8" fill="var(--ctn-color-text-muted)">CEILING 10%</text>
-            <line x1="0" y1="60" x2="620" y2="60" stroke="var(--ctn-color-border-hairline)" stroke-width="1"></line>
-            <g>{{ ticks }}</g>
-            <g>{{ runMarks }}</g>
-            <g>{{ classMarks }}</g>
-            <line x1="{{ curX }}" y1="26" x2="{{ curX }}" y2="68" stroke="var(--ctn-color-text-primary)" stroke-width="2.5"></line>
-            {{ curLabel }}
-            <text x="{{ curX }}" y="102" text-anchor="middle" font-family="var(--ctn-font-mono)" font-size="9" fill="var(--ctn-color-text-muted)">run 14</text>
-          </svg>
-        </div>
-      </div>
 
+      <sc-if value="{{ measuredFpRate }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:none;margin-top:12px;border:1px dashed var(--ctn-color-border-strong);border-radius:6px;padding:18px 20px;min-width:0">
+          <div style="font-family:var(--ctn-font-display);font-size:10px;letter-spacing:0.12em;color:var(--ctn-color-text-primary)">NO RATE PUBLISHED · THE HARNESS REPORTS NO MEASUREMENT</div>
+          <div style="font-size:13px;color:var(--ctn-color-text-secondary);margin-top:9px;line-height:1.55;max-width:100ch;text-wrap:pretty">{{ fpRateReason }}</div>
+          <div style="font-size:11.5px;color:var(--ctn-color-text-muted);margin-top:13px;line-height:1.5;max-width:100ch;text-wrap:pretty">Nothing on this screen may be quoted as performance until a complete measurement appears in the harness report.</div>
+        </div>
       </sc-if>
       <div style="flex:none;display:flex;gap:10px;margin-top:10px;flex-wrap:wrap;min-width:0">
-        <dc-import name="StandardRef" standard="OCSF" version="1.4.0" locator="harness corpus normalised" size="sm" hint-size="300px,24px"></dc-import>
-        <dc-import name="StandardRef" standard="MITRE ATT&amp;CK" version="v16.1" locator="enterprise · 214 of 823 techniques mapped" size="sm" hint-size="340px,24px"></dc-import>
-        <dc-import name="StandardRef" standard="SIGMA" version="spec 2.0" locator="corpus @ 7f31c0d · synced 22 Aug 04:10 IST" size="sm" hint-size="340px,24px"></dc-import>
+        <dc-import name="StandardRef" standard="OCSF" version="1.9.0" locator="harness corpus normalised" size="sm" hint-size="300px,24px"></dc-import>
+        <dc-import name="StandardRef" standard="MITRE ATT&amp;CK" version="v16.1" locator="enterprise · {{ attackTechniques }} techniques observed" size="sm" hint-size="340px,24px"></dc-import>
+        <dc-import name="StandardRef" standard="SIGMA" version="r2026-07-01" locator="3,302 rules" size="sm" hint-size="340px,24px"></dc-import>
       </div>
 
       <div style="flex:none;margin-top:18px;min-width:0">
         <div style="display:flex;align-items:baseline;gap:12px;min-width:0">
-          <span style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.14em;color:var(--ctn-color-text-muted);flex:none">BY DETECTION CLASS · EACH WITH ITS OWN DENOMINATOR</span>
-          <span style="font-size:11.5px;color:var(--ctn-color-text-muted);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">a class with too few samples reports no rate at all</span>
+          <span style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.14em;color:var(--ctn-color-text-muted);flex:none">MEASURED STATISTICS</span>
         </div>
-        <div style="display:grid;grid-template-columns:minmax(0,1fr) 96px 96px 92px minmax(105px,150px);gap:0 14px;padding:9px 0 5px;border-bottom:1px solid var(--ctn-color-border-strong);font-family:var(--ctn-font-display);font-size:8px;letter-spacing:0.11em;color:var(--ctn-color-text-muted);margin-top:8px;min-width:0">
-          <span>CLASS</span><span>ALERTS (n)</span><span>FALSE POS.</span><span>RATE</span><span>AGAINST CEILING</span>
+        <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(100px,140px);gap:0 14px;padding:9px 0 5px;border-bottom:1px solid var(--ctn-color-border-strong);font-family:var(--ctn-font-display);font-size:8px;letter-spacing:0.11em;color:var(--ctn-color-text-muted);margin-top:8px;min-width:0">
+          <span>METRIC</span><span>VALUE</span>
         </div>
-        <sc-for list="{{ classes }}" as="c" hint-placeholder-count="6">
-          <div style="display:grid;grid-template-columns:minmax(0,1fr) 96px 96px 92px minmax(105px,150px);gap:0 14px;align-items:center;padding:9px 0;border-bottom:1px solid var(--ctn-color-border-hairline);min-width:0">
+        <sc-for list="{{ measuredStats }}" as="m" hint-placeholder-count="8">
+          <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(100px,140px);gap:0 14px;align-items:baseline;padding:9px 0;border-bottom:1px solid var(--ctn-color-border-hairline);min-width:0">
             <div style="min-width:0">
-              <div style="font-size:12.5px;color:var(--ctn-color-text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.name }}</div>
-              <div style="font-family:var(--ctn-font-mono);font-size:10.5px;color:var(--ctn-color-text-muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.tech }}</div>
+              <div style="font-size:12.5px;color:var(--ctn-color-text-primary);line-height:1.4">{{ m.label }}</div>
+              <div style="font-family:var(--ctn-font-mono);font-size:10.5px;color:var(--ctn-color-text-muted);margin-top:2px;line-height:1.4">{{ m.note }}</div>
             </div>
-            <span data-token style="font-family:var(--ctn-font-mono);font-size:12px;color:var(--ctn-color-text-primary);font-variant-numeric:tabular-nums">{{ c.n }}</span>
-            <span data-token style="font-family:var(--ctn-font-mono);font-size:12px;color:var(--ctn-color-text-muted);font-variant-numeric:tabular-nums">{{ c.fp }}</span>
-            <span style="font-family:var(--ctn-font-display);font-size:14px;color:{{ c.rateFg }};font-variant-numeric:tabular-nums slashed-zero">{{ c.rate }}</span>
-            <div style="min-width:0">
-              <div style="height:6px;background:var(--ctn-color-surface-well);border:1px solid var(--ctn-color-border-hairline);border-radius:3px;overflow:hidden;position:relative">
-                <div style="height:100%;width:{{ c.barW }};background:{{ c.barFill }}"></div>
-                <span style="position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--ctn-color-text-secondary)"></span>
-              </div>
-              <div style="font-size:10px;color:var(--ctn-color-text-muted);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.note }}</div>
+            <div style="text-align:right">
+              <div data-token style="font-family:var(--ctn-font-mono);font-size:13px;color:var(--ctn-color-text-primary);font-variant-numeric:tabular-nums">{{ m.display }}</div>
             </div>
           </div>
         </sc-for>
       </div>
 
+      <sc-if value="{{ live === true }}" hint-placeholder-val="{{ true }}">
       <div style="flex:none;margin-top:18px;min-width:0">
-        <div style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.14em;color:var(--ctn-color-text-muted)">HOW THIS WAS COUNTED</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px 22px;margin-top:9px;min-width:0">
-          <sc-for list="{{ method }}" as="m" hint-placeholder-count="6">
-            <div style="display:flex;gap:10px;min-width:0">
-              <span style="font-family:var(--ctn-font-display);font-size:8px;letter-spacing:0.1em;color:var(--ctn-color-text-muted);width:84px;flex:none;padding-top:2px">{{ m.k }}</span>
-              <span style="font-size:12px;color:var(--ctn-color-text-secondary);flex:1;min-width:0;line-height:1.45">{{ m.v }}</span>
-            </div>
-          </sc-for>
-        </div>
+        <div style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.14em;color:var(--ctn-color-text-muted)">MEASUREMENT SCOPE</div>
+        <div style="font-size:12px;color:var(--ctn-color-text-secondary);margin-top:8px;line-height:1.5;max-width:100ch;text-wrap:pretty">{{ scope }}</div>
       </div>
+      </sc-if>
     </section>
 
     <aside data-reflow-rail style="width:clamp(260px, 11.67rem + 12.87vw, 372px);flex:none;box-sizing:border-box;display:flex;flex-direction:column;min-height:0;min-width:0;overflow-y:auto;padding:16px 18px 20px;gap:16px">
 
-      <div style="min-width:0;border:1px dashed var(--ctn-color-border-strong);border-radius:6px;padding:14px 15px">
-        <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;min-width:0">
-          <span style="font-family:var(--ctn-font-display);font-size:10px;letter-spacing:0.14em;color:var(--ctn-color-text-primary);flex:none">COST PER INCIDENT</span>
-          <span style="font-size:11px;color:var(--ctn-color-text-muted);border:1px dashed var(--ctn-color-border-strong);padding:3px 8px;border-radius:999px;flex:none">INFERRED · NOT A BENCHMARK</span>
-        </div>
-        <div style="display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;margin-top:10px;min-width:0">
-          <span style="font-family:var(--ctn-font-display);font-size:36px;line-height:1;color:var(--ctn-color-text-primary);font-variant-numeric:tabular-nums slashed-zero">{{ costRange }}</span>
-          <span style="font-size:11.5px;color:var(--ctn-color-text-muted);flex:1;min-width:0;line-height:1.35">{{ costUnit }}</span>
-        </div>
-        <div style="font-size:11.5px;color:var(--ctn-color-text-secondary);margin-top:9px;line-height:1.5;text-wrap:pretty">{{ costFraming }}</div>
-        <div style="font-family:var(--ctn-font-display);font-size:8px;letter-spacing:0.11em;color:var(--ctn-color-text-muted);margin-top:12px">THE INFERENCE CHAIN</div>
-        <div style="display:flex;flex-direction:column;margin-top:7px">
-          <sc-for list="{{ costChain }}" as="c" hint-placeholder-count="5">
-            <div style="display:flex;align-items:baseline;gap:9px;padding:6px 0;border-bottom:1px solid var(--ctn-color-border-hairline);min-width:0">
-              <span style="font-family:var(--ctn-font-display);font-size:7px;letter-spacing:0.09em;color:var(--ctn-color-text-muted);border:1px {{ c.style }} var(--ctn-color-border-strong);padding:2px 5px;border-radius:3px;flex:none;width:58px;text-align:center">{{ c.tag }}</span>
-              <span style="font-size:11.5px;color:var(--ctn-color-text-secondary);flex:1;min-width:0;line-height:1.4">{{ c.k }}</span>
-              <span data-token style="font-family:var(--ctn-font-mono);font-size:11.5px;color:var(--ctn-color-text-primary);flex:none;font-variant-numeric:tabular-nums">{{ c.v }}</span>
-            </div>
-          </sc-for>
-        </div>
-        <div style="font-size:11px;color:var(--ctn-color-text-muted);margin-top:9px;line-height:1.5;text-wrap:pretty">{{ costCaveat }}</div>
-      </div>
 
-      <div style="min-width:0">
-        <div style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.14em;color:var(--ctn-color-text-muted)">RUN HISTORY · PUBLISHED ONLY AFTER MEASUREMENT</div>
-        <div style="display:flex;flex-direction:column;margin-top:8px">
-          <sc-for list="{{ runs }}" as="r" hint-placeholder-count="5">
-            <div style="display:flex;align-items:baseline;gap:10px;padding:7px 0;border-bottom:1px solid var(--ctn-color-border-hairline);min-width:0">
-              <span data-token style="font-family:var(--ctn-font-mono);font-size:11px;color:var(--ctn-color-text-muted);flex:none;width:44px">run {{ r.n }}</span>
-              <span style="font-family:var(--ctn-font-display);font-size:13px;color:{{ r.fg }};font-variant-numeric:tabular-nums slashed-zero;flex:none;width:52px">{{ r.rate }}</span>
-              <span data-token style="font-family:var(--ctn-font-mono);font-size:10.5px;color:var(--ctn-color-text-muted);flex:none;width:78px">n={{ r.n2 }}</span>
-              <span style="font-size:11px;color:var(--ctn-color-text-muted);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.note }}</span>
-            </div>
-          </sc-for>
-        </div>
-      </div>
 
       <div style="min-width:0;border-top:1px solid var(--ctn-color-border-hairline);padding-top:14px">
         <div style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.14em;color:var(--ctn-color-text-muted)">NOT YET MEASURED · CLAIMED NOWHERE IN THIS PRODUCT</div>
@@ -206,7 +129,9 @@
       </div>
 
       <div style="min-width:0;margin-top:auto;border-top:1px solid var(--ctn-color-border-hairline);padding-top:13px">
-        <x-import component-from-global-scope="CITINELDesignSystem_fdfd66.Provenance" timestamp="{{ runWhen }}" source="eval harness · citinel-eval @ 3c17ba9" hash="{{ runHash }}" hint-size="100%,20px"></x-import>
+        <sc-if value="{{ live === true }}" hint-placeholder-val="{{ true }}">
+        <x-import component-from-global-scope="CITINELDesignSystem_fdfd66.Provenance" timestamp="{{ runWhen }}" source="eval harness · deterministic layers" hash="{{ detectionHash }}" hint-size="100%,20px"></x-import>
+        </sc-if>
         <div style="font-size:11px;color:var(--ctn-color-text-muted);margin-top:8px;line-height:1.5;text-wrap:pretty">Every figure on this page came out of a harness run that is itself in the audit ledger. Nothing here was set as a goal in a slide and then reported as achieved. The target ceiling existed before the measurement; the number came after it.</div>
       </div>
     </aside>
@@ -217,52 +142,50 @@
 class Component extends DCLogic {
   constructor(p){
     super(p);
-    this.state = {role:this.roleInit()};
-    this.classDefs = [
-      {name:'Payment and UPI switch anomalies', tech:'T1657 · financial theft', n:412, fp:19},
-      {name:'Identity and authentication', tech:'T1078.002 · domain accounts · T1110.001', n:1188, fp:106},
-      {name:'Endpoint process and credential access', tech:'T1003.001 · T1059.001', n:906, fp:71},
-      {name:'Network and egress', tech:'T1071.004 · T1046', n:604, fp:88},
-      {name:'Cloud and SaaS grants', tech:'T1528 · T1583.001', n:41, fp:null},
-      {name:'Core banking data manipulation', tech:'T1565.001', n:126, fp:14}
-    ];
+    this.state = {
+      role: this.roleInit(),
+      live: null,
+      liveError: null,
+      report: null
+    };
   }
-  componentDidMount(){ this.roleMount(); }
-  componentWillUnmount(){ if(this.unsubRole) this.unsubRole(); }
-  roleInit(){ try{ return (window.CitinelRole && window.CitinelRole.get()) || 'analyst'; }catch(e){ return 'analyst'; } }
-  roleMount(){ if(window.CitinelRole) this.unsubRole = window.CitinelRole.subscribe(r=>{ if(r !== this.state.role) this.setState({role:r}); }); }
+  componentDidMount(){
+    this.roleMount();
+    const API = window.CITINEL_API;
+    if (!API) {
+      this.setState({live: false, liveError: 'API not available'});
+      return;
+    }
+    API.evalReport().then(r => {
+      if (!r.ok) {
+        this.setState({live: false, liveError: r.error});
+        return;
+      }
+      this.setState({live: true, report: r.data});
+    });
+  }
+  componentWillUnmount(){
+    if(this.unsubRole) this.unsubRole();
+  }
+  roleInit(){
+    try{ return (window.CitinelRole && window.CitinelRole.get()) || 'analyst'; }catch(e){ return 'analyst'; }
+  }
+  roleMount(){
+    if(window.CitinelRole) this.unsubRole = window.CitinelRole.subscribe(r=>{
+      if(r !== this.state.role) this.setState({role:r});
+    });
+  }
+  fmtN(n){
+    return Number(n || 0).toLocaleString('en-IN');
+  }
+  fmtHash(h){
+    if(!h) return '—';
+    return h.slice(0,16) + '…' + h.slice(-8);
+  }
   baseVals(){
     const ciso = this.state.role === 'ciso';
-    const R = React;
-    const totalN = this.classDefs.reduce((a,c)=>a+c.n,0);
-    const totalFp = this.classDefs.reduce((a,c)=>a+(c.fp||0),0);
-    const measuredN = this.classDefs.filter(c=>c.fp !== null).reduce((a,c)=>a+c.n,0);
-    const rate = totalFp/measuredN;
-    const SCALE = 20, W = 620;
-    const x = r => (r/SCALE)*W;
-    const ticks = [];
-    for(let i=0;i<=SCALE;i+=2){
-      ticks.push(R.createElement('line',{key:'t'+i,x1:x(i),y1:60,x2:x(i),y2:i%4===0?68:64,stroke:'var(--ctn-color-text-muted)',strokeWidth:i%4===0?1.4:1}));
-      if(i%4===0) ticks.push(R.createElement('text',{key:'l'+i,x:x(i),y:80,textAnchor:'middle',fontFamily:'var(--ctn-font-mono)',fontSize:9,fill:'var(--ctn-color-text-muted)'},i+'%'));
-    }
-    const hist = [
-      {n:'14', r:0.0847, n2:'3,277', note:'current · corpus @ 7f31c0d'},
-      {n:'13', r:0.0912, n2:'3,102', note:'after dns_vol_anom retune'},
-      {n:'12', r:0.1104, n2:'2,940', note:'over ceiling · published anyway'},
-      {n:'11', r:0.1188, n2:'2,714', note:'over ceiling · published anyway'},
-      {n:'10', r:0.1361, n2:'2,455', note:'first run with the branch corpus'}
-    ];
-    const runMarks = hist.slice(1).map((h,i)=>R.createElement('circle',{key:i,cx:x(h.r*100),cy:47,r:3.4,fill:'none',stroke:'var(--ctn-color-text-muted)',strokeWidth:1.4}));
-    const shortNames = {'Payment and UPI switch anomalies':'payments','Identity and authentication':'identity','Endpoint process and credential access':'endpoint','Network and egress':'network','Core banking data manipulation':'core banking'};
-    const classMarks = [];
-    this.classDefs.filter(cd=>cd.fp !== null).forEach((cd,i)=>{
-      const r = cd.fp/cd.n*100, cx = x(r), lift = (i%2===0) ? 27 : 17; // clear of the y=7 ceiling label's own band
-      classMarks.push(R.createElement('rect',{key:'m'+i,x:cx-3.2,y:36.8,width:6.4,height:6.4,transform:'rotate(45 '+cx+' 40)',fill:'var(--ctn-color-surface-panel)',stroke: r>10 ? 'var(--ctn-color-severity-critical-text)' : 'var(--ctn-color-text-secondary)',strokeWidth:1.6}));
-      classMarks.push(R.createElement('line',{key:'s'+i,x1:cx,y1:lift+3,x2:cx,y2:34,stroke:'var(--ctn-color-border-hairline)',strokeWidth:1}));
-      classMarks.push(R.createElement('text',{key:'t'+i,x:cx,y:lift,textAnchor:'middle',fontFamily:'var(--ctn-font-mono)',fontSize:8.5,fill: r>10 ? 'var(--ctn-color-severity-critical-text)' : 'var(--ctn-color-text-muted)'}, shortNames[cd.name]+' n='+cd.n));
-    });
-    // one decimal is as honest as two and fits whole; a truncated rate is worse than a rounded one
-    const pct = v => (v*100).toFixed(1)+'%';
+    const {report} = this.state;
+    const hasFpRate = report && report.unmeasured && report.unmeasured.some(u => u.name === 'false-positive rate');
     return {
       ciso, analyst: !ciso,
       setAnalyst: ()=>{ this.setState({role:'analyst'}); if(window.CitinelRole) window.CitinelRole.set('analyst'); },
@@ -271,102 +194,57 @@ class Component extends DCLogic {
       analystFg: ciso ? 'var(--ctn-color-text-muted)' : 'var(--ctn-color-text-on-navy)',
       cisoBg: ciso ? 'var(--ctn-color-surface-navy)' : 'transparent',
       cisoFg: ciso ? 'var(--ctn-color-text-on-navy)' : 'var(--ctn-color-text-muted)',
-
-      runRef: 'harness run 14 · 22 Aug 2026 04:40 IST · ledger #87904',
-      fpFraming: ciso
-        ? 'Target: under 10%. Not reported until run 13 measured it. Runs 10 to 12 published above the ceiling. That history stays on this page.'
-        : 'Measured by replaying a fixed corpus of labelled alerts through the current rule set and counting dispositions the analysts overturned. The ceiling was set before the first run; the rate is whatever the harness returns.',
-      fpRate: pct(rate),
-      fpFraction: totalFp+' overturned of '+measuredN.toLocaleString('en-IN')+' dispositions',
-      fpDenominator: 'denominator: '+measuredN.toLocaleString('en-IN')+' labelled alerts across 5 measured classes ('+(totalN-measuredN)+' held back as under-sampled)',
-      bandW: x(10).toFixed(1),
-      bandWLabelX: (x(10)-6).toFixed(1),
-      curX: x(rate*100).toFixed(1),
-      ticks, runMarks, classMarks,
-
-      classes: this.classDefs.map(c=>{
-        if(c.fp === null) return {name:c.name, tech:c.tech, n:String(c.n), fp:'—', rate:'—',
-          rateFg:'var(--ctn-color-text-disabled)', barW:'0%', barFill:'transparent',
-          note:'n below the 100-sample floor · no rate published'};
-        const r = c.fp/c.n;
-        return {name:c.name, tech:c.tech, n:c.n.toLocaleString('en-IN'), fp:String(c.fp), rate:pct(r),
-          rateFg: r > 0.10 ? 'var(--ctn-color-severity-critical-text)' : 'var(--ctn-color-text-primary)',
-          barW: Math.min(100, (r/0.20)*100).toFixed(1)+'%',
-          barFill: r > 0.10 ? 'var(--ctn-color-severity-critical)' : 'var(--ctn-color-text-secondary)',
-          note: r > 0.10 ? 'above the ceiling on this class' : 'within the ceiling on this class'};
-      }),
-
-      method: [
-        {k:'CORPUS', v:'3,277 labelled alerts drawn from 14 months of this bank\'s own telemetry, plus 412 synthetic payment cases built from CERT-In advisories.'},
-        {k:'LABEL', v:'ground truth is the analyst disposition recorded in the ledger, not a re-read by the model that produced the alert.'},
-        {k:'FALSE POSITIVE', v:'an alert CITINEL cited as malicious that a named human later overturned. Alerts closed benign with a citation are not counted as positives at all.'},
-        {k:'EXCLUDED', v:'the 41 cloud and SaaS alerts, because the class is under the 100-sample floor and a rate on 41 samples would be noise.'},
-        {k:'RULE SET', v:'Sigma corpus pinned at commit 7f31c0d, 3,000 rules, synced 22 Aug 04:10 IST. Re-running against a later corpus produces a different number.'},
-        {k:'REPRODUCE', v:'harness is citinel-eval @ 3c17ba9; the corpus manifest and the run output are both in the audit ledger at entry #87904.'}
-      ],
-
-      costRange: '₹740–₹1,180',
-      costUnit: 'per incident carried from catch to disposition',
-      costFraming: 'This is CITINEL\'s own instrumentation of its own compute, not an industry benchmark and not a comparison against analyst salary. It is reported as a range because two of its four inputs are estimates.',
-      costChain: [
-        {tag:'MEASURED', style:'solid', k:'model tokens per incident, metered at the gateway', v:'118k–214k'},
-        {tag:'MEASURED', style:'solid', k:'external lookups per incident, metered at egress', v:'3.2 avg'},
-        {tag:'MEASURED', style:'solid', k:'ledger writes and storage per incident', v:'27 entries'},
-        {tag:'ESTIMATE', style:'dashed', k:'amortised ingest and normalisation compute', v:'±22%'},
-        {tag:'ESTIMATE', style:'dashed', k:'share of always-on Sentinel tailing attributed here', v:'±31%'}
-      ],
-      costCaveat: 'The two dashed rows are apportionments rather than meter readings. Always-on ingest divides unevenly per incident, so any exact figure there is a modelling choice. Treat this as CITINEL\'s working number, not as a fact about the market.',
-
-      runs: hist.map(h=>({n:h.n, rate:pct(h.r), n2:h.n2, note:h.note,
-        fg: h.r > 0.10 ? 'var(--ctn-color-severity-critical-text)' : 'var(--ctn-color-text-primary)'})),
-
-      unmeasured: ciso ? [
-        'Mean time to containment against a human-only baseline. No controlled comparison has been run, so no speed claim appears anywhere in this product.',
-        'False-negative rate. The harness can only score alerts that fired; what the corpus never caught is not in the denominator and we do not estimate it.',
-        'Analyst hours saved. Frequently asked for, never measured here, and therefore never stated.',
-        'Detection quality on institutions other than this one. Every figure on this page is this bank\'s telemetry.',
-        'Cost at ten times the current alert volume. The inference chain above holds only at measured volume.'
-      ] : [
-        'False-negative rate. The harness scores alerts that fired; what was never caught leaves no record to score.',
-        'Mean time to containment against a human-only baseline.',
-        'Analyst hours saved.',
-        'Performance on institutions other than this one.'
-      ],
-
-      runWhen: '22 Aug 2026 04:40 IST',
-      runHash: 'sha256:b71fa0…3d54'
+      runRef: report ? 'harness run' : '—',
+      runGenerated: report && report.generated_at ? new Date(report.generated_at).toISOString().slice(0,10) : '—',
+      scope: report ? report.scope : '—',
+      measuredFpRate: hasFpRate,
+      fpRateReason: hasFpRate && report && report.unmeasured
+        ? report.unmeasured.find(u => u.name === 'false-positive rate').reason
+        : '—',
+      measuredStats: this.buildMeasuredStats(report),
+      unmeasured: this.buildUnmeasured(report),
+      runWhen: report && report.generated_at
+        ? new Date(report.generated_at).toISOString().replace('T',' ').slice(0,19) + 'Z'
+        : '—',
+      detectionHash: report && report.provenance ? this.fmtHash(report.provenance.detections_sha256) : '—',
+      attackTechniques: report && report.measured
+        ? (report.measured.find(m => m.name.includes('ATT&CK techniques')) || {}).value || '—'
+        : '—'
     };
   }
-
-  stateVals(b){
-    let m = 'normal';
-    try{ m = new URLSearchParams(window.location.search).get('state') || 'normal'; }catch(e){}
-    if(m !== 'firstrun') return {measuredState:true, unmeasuredState:false};
-    return {
-      measuredState:false, unmeasuredState:true,
-      runRef:'no harness run on this install',
-      fpFraming:'The target ceiling was set before deployment. Whether this install meets it is unknown and is reported as unknown.',
-      classes: this.classDefs.map(c=>({name:c.name, tech:c.tech, n:'0', fp:'—', rate:'—',
-        rateFg:'var(--ctn-color-text-disabled)', barW:'0%', barFill:'transparent',
-        note:'no samples on this install'})),
-      costRange:'not inferred', costUnit:'insufficient metering history',
-      costFraming:'Cost per incident cannot be inferred yet. Three of its five inputs are metered per incident and no incident has closed here.',
-      costChain: [{tag:'PENDING', style:'dashed', k:'awaiting the first closed incident', v:'—'}],
-      costCaveat:'A figure quoted from another deployment would be a marketing number, so none is shown.',
-      runs: [], runWhen:'—', runHash:'—', classMarks: []
-    };
+  buildMeasuredStats(report){
+    if(!report || !report.measured) return [];
+    return report.measured.map(m => {
+      let label = m.name;
+      let note = m.note || '';
+      let display = String(m.value);
+      if(m.denominator !== undefined) {
+        display = m.value + ' of ' + this.fmtN(m.denominator);
+      }
+      if(m.unit) {
+        display += ' ' + m.unit;
+      }
+      if(m.rate !== undefined) {
+        display = (m.rate * 100).toFixed(1) + '%';
+        if(m.denominator) {
+          display = m.value + ' of ' + this.fmtN(m.denominator) + ' (' + display + ')';
+        }
+      }
+      return {label, note, display};
+    });
   }
-  svgLabels(b){ return {curLabel: this.svgText(parseFloat(b.curX), 88, b.fpRate, {size:11, fill:'var(--ctn-color-text-primary)', tab:true})}; }
-  renderVals(){ const b = this.baseVals(); return Object.assign({}, b, this.stateVals(b), this.svgLabels(b)); }
-
-  svgText(x,y,str,opts){
-    const o = opts || {};
-    return React.createElement('text', {x, y, textAnchor:o.anchor||'middle',
-      fontFamily:o.mono ? 'var(--ctn-font-mono)' : 'var(--ctn-font-display)',
-      fontSize:o.size||10, letterSpacing:o.track, fill:o.fill||'var(--ctn-color-text-muted)',
-      style:o.tab ? {fontVariantNumeric:'tabular-nums slashed-zero'} : undefined}, str);
+  buildUnmeasured(report){
+    if(!report || !report.unmeasured) return [];
+    return report.unmeasured.map(u => u.reason || u.name);
+  }
+  renderVals(){
+    const base = this.baseVals();
+    return Object.assign({}, base, {
+      live: this.state.live
+    });
   }
 }
+
 </script>
 </body>
 </html>

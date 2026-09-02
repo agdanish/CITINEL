@@ -269,13 +269,24 @@ class Component extends DCLogic {
     super(p);
     let breached = false;
     try{ breached = new URLSearchParams(window.location.search).get('state') === 'breached'; }catch(e){}
-    this.state = {role:this.roleInit(), now:Date.now(), armed:false, decided:null, open:{}, breached};
+    this.state = {role:this.roleInit(), now:Date.now(), armed:false, decided:null, open:{}, breached,
+      live:null, incidents:[], audit:null};
   }
   roleInit(){ try{ return (window.CitinelRole && window.CitinelRole.get()) || 'analyst'; }catch(e){ return 'analyst'; } }
   componentDidMount(){
     if(window.CitinelRole) this.unsubRole = window.CitinelRole.subscribe(r=>{ if(r !== this.state.role) this.setState({role:r}); });
     this.base = Date.now();
     this.t = setInterval(()=>this.setState({now:Date.now()}), 1000);
+
+    const API = window.CITINEL_API;
+    if(!API) { this.setState({live:false}); return; }
+    API.incidentsSummary().then(r => {
+      if(!r.ok) { this.setState({live:false}); return; }
+      const incs = Array.isArray(r.data) ? r.data : [];
+      return API.auditFor(API.INCIDENT_PRIMARY).then(ar => {
+        this.setState({live:true, incidents:incs, audit:ar.ok && ar.data ? ar.data : null});
+      });
+    });
   }
   componentWillUnmount(){ clearInterval(this.t); if(this.unsubRole) this.unsubRole(); }
   arc(cx,cy,r,frac){
@@ -299,9 +310,23 @@ class Component extends DCLogic {
   renderVals(){
     const s = this.state, ciso = s.role === 'ciso', R = React;
     const f = x=>{x=Math.max(0,x);return [3600,60,1].map(u=>String(Math.floor(x/u)%60).padStart(2,'0')).join(':');};
-    const base = this.base || s.now;
-    const remain = (3*3600+45*60) - Math.floor((s.now-base)/1000);
-    const breached = s.breached;
+
+    // STATION 1: The clock (real, uses opened_ts from API incident)
+    let opened = null, remain = 0, breached = s.breached;
+    if(s.live === true && s.incidents.length > 0) {
+      const primary = s.incidents.find(i => i.incident_id === (window.CITINEL_API ? window.CITINEL_API.INCIDENT_PRIMARY : 'INC-0417'));
+      if(primary && primary.opened_ts) {
+        try {
+          opened = new Date(primary.opened_ts).getTime();
+          const sixHours = 6*3600*1000;
+          const elapsed = s.now - opened;
+          remain = Math.max(0, sixHours - elapsed);
+        } catch(e) {}
+      }
+    }
+    const base = opened || this.base || s.now;
+    if(!remain && !breached) remain = (3*3600+45*60)*1000 - Math.floor((s.now-base)/1000)*1000;
+    remain = Math.floor(remain/1000);
 
     const ticks = [];
     for(let i=0;i<12;i++){
@@ -310,21 +335,51 @@ class Component extends DCLogic {
         x2:120+92*Math.cos(a),y2:120+92*Math.sin(a),stroke:'var(--ctn-color-text-muted)',strokeWidth:big?1.8:1}));
     }
 
-    // ratified drop order · the narrow view is where columns actually drop
-    const inc = [
-      {sev:'CRITICAL', id:'INC-0417', ageS:2489, lane:'LANE B · HELD FOR A HUMAN', reached:3,
-       desc:'UPI beneficiary burst into a modified payout template · ₹18,40,000 held.', href:'Replay.dc.html'},
-      {sev:'HIGH', id:'INC-0846', ageS:1620, lane:'LANE B · HELD FOR A HUMAN', reached:2,
-       desc:'RDP relay account used outside the broker set; isolation drafted, undecided at relief.', href:'Replay.dc.html'},
-      {sev:'MEDIUM', id:'ALR-99138', ageS:940, lane:'LANE B · HELD FOR A HUMAN', reached:1,
-       desc:'OAuth consent to an unverified publisher. One mailbox readable by an unlisted app.', href:'Queue.dc.html'},
-      {sev:'LOW', id:'ALR-99120', ageS:410, lane:'LANE A · CLOSED ON CITATION', reached:4,
-       desc:'Benign parent MsMpEng.exe cited; closed deterministically without a model.', href:'Queue.dc.html'}
-    ];
-    const sevFg = {CRITICAL:'var(--ctn-color-severity-critical-text)', HIGH:'var(--ctn-color-severity-high)',
-      MEDIUM:'var(--ctn-color-text-primary)', LOW:'var(--ctn-color-text-muted)'};
+    // STATION 3: The rounds (real when live, loading state when reading, fallback when offline)
+    const sevFg = {critical:'var(--ctn-color-severity-critical-text)', high:'var(--ctn-color-severity-high)',
+      medium:'var(--ctn-color-text-primary)', low:'var(--ctn-color-text-muted)'};
+    const stateLookup = ['caught','cited','gated','actioned','closed'];
+    const stateIndex = state => Math.max(0, stateLookup.indexOf(String(state).replace(/_.*/,'')));
 
+    let inc, laneCount = 0;
+    if(s.live === true && s.incidents.length > 0) {
+      inc = s.incidents.map(i => {
+        const opened = i.opened_ts ? new Date(i.opened_ts).getTime() : s.now;
+        const ageS = Math.max(0, Math.floor((s.now - opened)/1000));
+        const reached = stateIndex(i.state);
+        const isClosed = String(i.state).startsWith('closed');
+        const laneTag = isClosed ? 'LANE A · CLOSED ON THE LEDGER' : 'LANE B · HELD FOR A HUMAN';
+        return {
+          sev:String(i.severity||'medium').toUpperCase(),
+          id:i.incident_id, ageS, lane:laneTag, reached,
+          desc:i.finding_count + ' findings', href:'Replay.dc.html?id='+i.incident_id
+        };
+      });
+      laneCount = s.incidents.filter(i => i.state === 'gated').length;
+    } else if(s.live === false) {
+      // Fallback: authored demo data (service unreachable)
+      inc = [
+        {sev:'CRITICAL', id:'INC-0417', ageS:2489, lane:'LANE B · HELD FOR A HUMAN', reached:3,
+         desc:'UPI beneficiary burst into a modified payout template · ₹18,40,000 held.', href:'Replay.dc.html'},
+        {sev:'HIGH', id:'INC-0846', ageS:1620, lane:'LANE B · HELD FOR A HUMAN', reached:2,
+         desc:'RDP relay account used outside the broker set; isolation drafted, undecided at relief.', href:'Replay.dc.html'},
+        {sev:'MEDIUM', id:'ALR-99138', ageS:940, lane:'LANE B · HELD FOR A HUMAN', reached:1,
+         desc:'OAuth consent to an unverified publisher. One mailbox readable by an unlisted app.', href:'Queue.dc.html'},
+        {sev:'LOW', id:'ALR-99120', ageS:410, lane:'LANE A · CLOSED ON THE LEDGER', reached:4,
+         desc:'Benign parent MsMpEng.exe cited; closed deterministically without a model.', href:'Queue.dc.html'}
+      ];
+      laneCount = 2;
+    } else {
+      // Loading state (live === null): honest empty state, no authored data
+      inc = [];
+      laneCount = 0;
+    }
+
+    // STATION 2: Lanes (real when live, fallback when offline, empty when loading)
+    const laneA = s.live === true ? s.incidents.filter(i => String(i.state).startsWith('closed')).length : (s.live === false ? 39 : 0);
     const decided = s.decided;
+
+    // STATION 5: The ledger (real from audit when live, fallback otherwise)
     const led = window.CitinelLedger ? window.CitinelLedger.all() : [];
     const sessionFrames = led.slice(-3).reverse().map((e,i)=>({
       seq:e.seq, t:new Date(e.at+330*60000).toISOString().slice(11,19), kind:e.kind,
@@ -332,18 +387,29 @@ class Component extends DCLogic {
       outcome:'this session', hash:'sha256:'+(88400+i).toString(16).padStart(7,'0'),
       full:'sha256:'+(88400+i).toString(16).padStart(7,'0')+'c41e9b7ad0288f31447a92e11c04b5d6f0a3'
     }));
-    const baseFrames = [
-      {seq:'88425', t:'23:14:06', kind:'HUMAN', actor:'a. deshmukh · L2', action:'SEAL_DRAFT certin_6hr_INC-0417', outcome:'sealed, unfiled',
-       hash:'e11c04b', full:'sha256:e11c04b5d6f0a3c41e9b7ad0288f31447a92e11c04b5d6f0a3c41e9b7ad0288f'},
-      {seq:'88423', t:'21:52:41', kind:'HUMAN', actor:'a. deshmukh · L2', action:'APPROVE egress_block_segment', outcome:'applied, 38 hosts',
-       hash:'c8b2049', full:'sha256:c8b2049f31447a92e11c04b5d6f0a3c41e9b7ad0288f31447a92e11c04b5d6f0'},
-      {seq:'88421', t:'21:52:08', kind:'HUMAN', actor:'a. deshmukh · L2', action:'APPROVE freeze_payout_template', outcome:'applied, 14 held',
-       hash:'a30f912', full:'sha256:a30f912e11c04b5d6f0a3c41e9b7ad0288f31447a92e11c04b5d6f0a3c41e9b7'},
-      {seq:'88418', t:'21:08:33', kind:'DECISION', actor:'Response Marshal', action:'GATE_HOLD freeze_payout_template', outcome:'held for a name',
-       hash:'7ad0288', full:'sha256:7ad0288f31447a92e11c04b5d6f0a3c41e9b7ad0288f31447a92e11c04b5d6f0'},
-      {seq:'88412', t:'21:03:52', kind:'DECISION', actor:'Correlator', action:'CHAIN_STITCH INC-0417', outcome:'6 citations',
-       hash:'f31447a', full:'sha256:f31447a92e11c04b5d6f0a3c41e9b7ad0288f31447a92e11c04b5d6f0a3c41e9'}
-    ];
+
+    let baseFrames = [];
+    if(s.live === true && s.audit && Array.isArray(s.audit)) {
+      baseFrames = s.audit.slice(0,6).map(e => ({
+        seq:String(e.seq), t:new Date(e.ts).toISOString().slice(11,19), kind:String(e.kind||'').toUpperCase(),
+        actor:e.actor||'unknown', action:e.kind,
+        outcome:(e.payload && e.payload.detail) || '', hash:String(e.entry_hash||'').slice(0,7),
+        full:String(e.entry_hash||'')
+      }));
+    } else {
+      baseFrames = [
+        {seq:'88425', t:'23:14:06', kind:'HUMAN', actor:'a. deshmukh · L2', action:'SEAL_DRAFT certin_6hr_INC-0417', outcome:'sealed, unfiled',
+         hash:'e11c04b', full:'sha256:e11c04b5d6f0a3c41e9b7ad0288f31447a92e11c04b5d6f0a3c41e9b7ad0288f'},
+        {seq:'88423', t:'21:52:41', kind:'HUMAN', actor:'a. deshmukh · L2', action:'APPROVE egress_block_segment', outcome:'applied, 38 hosts',
+         hash:'c8b2049', full:'sha256:c8b2049f31447a92e11c04b5d6f0a3c41e9b7ad0288f31447a92e11c04b5d6f0'},
+        {seq:'88421', t:'21:52:08', kind:'HUMAN', actor:'a. deshmukh · L2', action:'APPROVE freeze_payout_template', outcome:'applied, 14 held',
+         hash:'a30f912', full:'sha256:a30f912e11c04b5d6f0a3c41e9b7ad0288f31447a92e11c04b5d6f0a3c41e9b7'},
+        {seq:'88418', t:'21:08:33', kind:'DECISION', actor:'Response Marshal', action:'GATE_HOLD freeze_payout_template', outcome:'held for a name',
+         hash:'7ad0288', full:'sha256:7ad0288f31447a92e11c04b5d6f0a3c41e9b7ad0288f31447a92e11c04b5d6f0'},
+        {seq:'88412', t:'21:03:52', kind:'DECISION', actor:'Correlator', action:'CHAIN_STITCH INC-0417', outcome:'6 citations',
+         hash:'f31447a', full:'sha256:f31447a92e11c04b5d6f0a3c41e9b7ad0288f31447a92e11c04b5d6f0a3c41e9'}
+      ];
+    }
 
     return {
       setAnalyst: ()=>{ this.setState({role:'analyst'}); if(window.CitinelRole) window.CitinelRole.set('analyst'); },
@@ -367,25 +433,43 @@ class Component extends DCLogic {
         : ' CITINEL drafts the filing; a human signs it; the bank files it. Nothing on this card files anything.',
 
       lanes: [
-        {tag:'LANE A · AUTONOMOUS', count:'39', name:'closed on a citation alone', border:'var(--ctn-color-border-hairline)', href:'Queue.dc.html'},
-        {tag:'LANE B · AT THE GATE', count:'02', name:'waiting for a named human', border:'var(--ctn-color-text-primary)', href:'Approvals.dc.html'}
+        {tag:'LANE A · AUTONOMOUS', count:String(laneA).padStart(2,'0'), name:'closed on a citation alone', border:'var(--ctn-color-border-hairline)', href:'Queue.dc.html'},
+        {tag:'LANE B · AT THE GATE', count:String(laneCount).padStart(2,'0'), name:'waiting for a named human', border:'var(--ctn-color-text-primary)', href:'Approvals.dc.html'}
       ].map(l=>({...l, size: l.count.length >= 5 ? '19px' : l.count.length === 4 ? '24px' : '30px'})),
 
       roundsNote: ciso
         ? 'severity, id and age hold at every width. At this width the lane tag is kept. After severity, the second question is whether a machine closed it or a human still owes it a decision.'
         : 'Severity, id and age never drop. Description drops first at this width, then rule id. The lane tag stays: it answers whether this needs you at all.',
       rounds: inc.map(i=>({
-        sev:i.sev, sevFg:sevFg[i.sev], id:i.id, lane:i.lane, desc:i.desc, href:i.href,
+        sev:i.sev, sevFg:sevFg[String(i.sev||'medium').toLowerCase()], id:i.id, lane:i.lane, desc:i.desc, href:i.href,
         age: String(Math.floor(i.ageS/60)).padStart(2,'0')+':'+String(i.ageS%60).padStart(2,'0'),
         ageFg: i.ageS>1200 ? 'var(--ctn-color-severity-critical-text)' : i.ageS>600 ? 'var(--ctn-color-clock)' : 'var(--ctn-color-text-primary)',
-        edge: sevFg[i.sev],
+        edge: sevFg[String(i.sev||'medium').toLowerCase()],
         arc: this.arc(17,17,13, i.reached/4),
         nodes: this.nodes(17,17,13,i.reached),
         showLane: true, showDesc: ciso
       })),
 
       hasGate: !!decided || true, noGate: false,
-      gate: {
+      gate: s.live === true ? (() => {
+        const withProps = (s.incidents || []).filter(i => i.swarm && i.swarm.proposals);
+        const g = withProps[0];
+        const quiet = {armLabel:'', armBg:'transparent', arm:()=>{}, apprLabel:'', apprBg:'transparent', apprFg:'var(--ctn-color-text-muted)', apprCursor:'default', approve:()=>{}, deny:()=>{}, outcome:'', outcomeNote:''};
+        if (!g) return Object.assign({name:'no proposal drafted', what:'No incident on the record carries drafted proposals: the swarm has not run on one, or every proposal was decided.',
+          facts:[{v:String((s.incidents || []).length), k:'incidents'}, {v:'0', k:'proposals'}, {v:'—', k:'confidence'}],
+          clause:'Approval is a named human act in the wide console (Approvals). Nothing executes from the tour card.', undecided:false, decided:false}, quiet);
+        const n = Number(g.swarm.proposals) || 0;
+        const go = () => { window.location.href = 'Approvals.dc.html?id=' + g.incident_id; };
+        return Object.assign({}, quiet, {
+          name: n + ' proposal' + (n === 1 ? '' : 's') + ' drafted · ' + g.incident_id,
+          what: (String(g.swarm.headline || '').slice(0, 220) || ((g.finding_count || 0) + ' findings on the record')) + (String(g.swarm.headline || '').length > 220 ? '…' : ''),
+          facts: [{v:String(n), k:'proposals'}, {v:String((g.hosts || []).length), k:'hosts'}, {v: g.swarm.confidence != null ? Number(g.swarm.confidence).toFixed(2) : '—', k:'narrator confidence'}],
+          clause: 'Each proposal meets the policy gate by action class and asset count in the wide console. Approval is a named human act there; nothing executes from the tour card.',
+          undecided: true, decided: false,
+          armLabel: 'OPEN THE GATE · APPROVALS', arm: go,
+          apprLabel: 'NOTHING FIRES FROM THIS CARD', apprBg: 'var(--ctn-color-surface-well)', apprCursor: 'not-allowed'
+        });
+      })() : {
         name:'freeze:BULK_PAYOUT_TPL_07',
         what: ciso
           ? 'Freezes the payout template behind 14 staged beneficiaries. ₹18,40,000 at risk, none cleared. Your authority covers it; an L2 would need a second name above 60 nodes.'
@@ -415,7 +499,7 @@ class Component extends DCLogic {
           : 'The incident stays cited and open. Your reason is on the ledger and the drafts are gone; nothing was executed.'
       },
 
-      headSeq: led.length ? led[led.length-1].seq : '88425',
+      headSeq: baseFrames.length && baseFrames[0] ? baseFrames[0].seq : (led.length ? led[led.length-1].seq : '88425'),
       ledgerNote: 'Timestamp, actor, action, outcome and sequence hold at every width. The sequence is what makes a gap visible. The hash falls back to its first seven characters and reveals in full on tap.',
       frames: sessionFrames.concat(baseFrames).slice(0,6).map((fr,i)=>({
         seq:fr.seq, t:fr.t, kind:fr.kind, actor:fr.actor, action:fr.action, outcome:fr.outcome,
@@ -425,8 +509,11 @@ class Component extends DCLogic {
         reveal: ()=>this.setState(x=>({open:{...x.open, [fr.seq]: !x.open[fr.seq]}}))
       })),
 
-      exceptionIntro: 'Three instruments are not reflowed, each for a named reason rather than a blanket one. WCAG 1.4.10 excepts two-dimensional data visualisations from reflow. It does not excuse removing them, so each sits here at its natural width inside a panel you scroll in both directions. The link is an enhancement, not the only route.',
-      excepted: [
+      exceptionIntro: s.live === true
+        ? ''
+        : 'Three instruments are not reflowed, each for a named reason rather than a blanket one. WCAG 1.4.10 excepts two-dimensional data visualisations from reflow. It does not excuse removing them, so each sits here at its natural width inside a panel you scroll in both directions. The link is an enhancement, not the only route.',
+      excepted: s.live === false
+        ? [
         {name:'SEVEN-LANE INVESTIGATION RECORDER', href:'Replay.dc.html', natural:'760px', isRecorder:true,
          why:'Four parallel channels against one shared time axis. Stacking the lanes destroys the comparison the instrument exists to make. The claim is simultaneity.',
          scrollHint:'scroll sideways to follow the axis to 21:10. the lanes stay aligned to it',
@@ -446,6 +533,7 @@ class Component extends DCLogic {
          supports:['8 beneficiary adds in 41s on one session id','payout template modified with maker-checker bypassed','egress to 185.62.x.x, not a permitted destination'],
          counters:['a standing exception exists for opr_kiosk batch adds','the June maintenance window allows template writes, though its scope stops short of CBS']}
       ]
+        : []
     };
   }
 }

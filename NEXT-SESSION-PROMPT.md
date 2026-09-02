@@ -1,93 +1,19 @@
-You're picking up CITINEL — Autonomous Cyber SOC, a Decode SIH 2026 hackathon
-project (Team AeroFyta, Chennai Institute of Technology), finale 5 Sep 2026.
-Step 7 (the agent swarm) is done and confirmed live (1 Sep). **As of 2 Sep the
-dashboard has started reading the live service: Queue, Audit and Evidence are
-wired and browser-verified; the other 15 pages are not.** If you inherit a memory saying
-"the dashboard is not wired at all" or "Step 7 is blocked," both are stale;
-verify against `citinel status` and `git status`, not memory.
+# Next session prompt (written 2 Sep 2026, end of the second wiring pass)
 
-Before doing anything else, read these files in `/Users/danish/CITINEL/` in
-this order:
-1. `HANDOFF-MEMORY.md` — read it in full. **§18 (the 2 Sep dashboard-wiring
-   session), §16 (Step 7) and §17 (open items) matter most.** Sections 1–15
-   are historical record, still true, superseded where §16–§18 say so —
-   follow the "supersedes" notes rather than section order.
-2. `dashboard/static/HANDOFF.md` — the wiring manifest for the console. Its
-   §1 explains the seam (`api.js`) and why the badge is derived from what a
-   page *actually read* (`API.consumed`), its §2 table says which pages are
-   wired. Keep it in step with `API.PAGES` when you wire a page.
-3. `git log --oneline` — the 2 Sep work is committed and pushed. Render
-   auto-deploys `build/stage-1`, so **every push is a deploy**; that is
-   Danish's standing instruction since 2 Sep ("hereafter we will deploy
-   online"). After a push, confirm with
-   `curl -s https://citinel-web.onrender.com/api/source`.
-4. `CITINEL-SDD.md` / `CITINEL-PROPOSAL.md` only if you need the original spec.
-5. `PARTNER-ONBOARDING.md`, `PARTNER-SESSION-NOTES.md`, `STARTUPED-GTM-PLAYBOOK.md`
-   for sponsor-track and GTM-award status.
+You're picking up CITINEL — Autonomous Cyber SOC (finale 5 Sep 2026). Read `HANDOFF-MEMORY.md` §19–§20 and `dashboard/static/HANDOFF.md` first; check `citinel status` and `curl https://citinel-web.onrender.com/api/source` for ground truth before believing any doc.
 
-## What NOT to do
+## Where things stand
+- All 18 console pages read the live service; every operation the product claims has a route (swarm run, gate/execute, deny, rollback, sign-off, reopen, Tavily context, Lyzr handover). Suite: 231 tests. Deployed from `build/stage-1` (Render auto-deploys on push).
+- Tavily is genuinely wired (public context per technique/rule, persisted with provenance, labelled not-evidence). Both incidents gathered.
+- Lyzr: the base agent (guard + witness) works locally. Three more agent seams exist (`lyzr-triage`, `lyzr-review`, `lyzr-handover`) with Studio recipes in `LYZR-AGENT-CONFIG.md`. **Danish has to build them in Studio and set the ids**; until then those surfaces show "not configured".
 
-- **Do not re-run the dashboard-wiring audit, the deep-research passes, the
-  adversarial partner-track audit, or the Queue-wiring review.** All recorded
-  (HANDOFF-MEMORY §12–§13, §15, §18). The audit's per-page detail is in the
-  workflow journal named in §15; §18 says which verdicts still stand.
-- **Do not assume Replay/Confidence became wireable because Step 7 runs.**
-  §18's first bullet: the swarm's verdict/claims/citations/proposals are
-  printed and discarded; the ledger records facts only. Wiring those pages
-  needs a persistence decision plus a paid re-run — Danish's call, ask first.
-- **Do not raise Render/Anthropic spend without asking first**, even a small
-  amount. Every swarm run is real money; every model-tier choice is a decision.
-- **Do not offer a "guaranteed win" on any judged prize.** Rubric-completeness
-  honesty instead.
-- **Do not re-litigate** the Gemini/CodeMate tracks, shortlist status, or
-  eligibility — all resolved (§9/§10).
-- **Do not blanket-wire the remaining pages.** They are hand-crafted narrative
-  prototypes (§15). One page at a time: read it in full, map every rendered
-  value to a real field or cut it, keep the three states that never blend
-  (reading → live → authored fallback), leave the badge to `api.js`, swap
-  content not layout, honour `?id=`, verify in the browser preview. Queue,
-  Audit and Evidence are the worked examples.
-- **Do not trust a browser screenshot over a DOM read** for verification this
-  console; the pane's screenshot tooling was flaky on 2 Sep. Read the badge,
-  `window.CITINEL_API.consumed`, and the rendered text through
-  `javascript_tool`. And bust the HTTP cache once for any URL the browser had
-  loaded before the `Cache-Control: no-cache` middleware went in
-  (`fetch(url, {cache:'reload'})`).
+## This session's task (ask Danish if he wants a different one)
+1. Confirm which Render variables Danish has set (`/api/connectors` on the live site says which are present). If the Lyzr ids are in, exercise each seam once live and fix what breaks; record the frames.
+2. If Danish has built the three Studio agents, run one swarm from the console (`RUN THE SWARM` on Replay, ~100K+ input tokens: ask first) so a verdict file carries a real `lyzr_triage`.
+3. Then the finale story: which screens, in which order, with which incident (`?id=INC-0417` is the richer one: 2,487 findings, 3 proposals, 6 claims).
 
-## This session's task: continue wiring, one page at a time
-
-Run `cd /Users/danish/CITINEL/backend && ./.venv/bin/citinel status` first,
-then start the preview server (`.claude/launch.json` → `citinel-dashboard`,
-port 8000) and open a page with `?force=console` — the hidden browser pane
-reports zero width and `route.js` would otherwise bounce you to Narrow.
-
-Recommended order for the remaining PARTIAL pages, by value ÷ risk:
-1. **Shell** (`uses: ['incidents']` → add `policy`, `ledgerVerify`) — state
-   and severity tallies, clause count, ledger entry count are clean reads
-   (the audit's diff is in §15's journal, entry 9); label the eps meter and
-   statutory clocks as authored or cut them.
-2. **Overview** — highest visibility, most elaborate; read §15's warning first.
-3. **Compliance** (`draft`, `incident`) — the draft endpoint is real and now
-   returns the guard screen too; "we draft, we never file" must survive.
-4. Then Handover, Narrow, Settings, Entry. Eval already has a live route
-   (`/api/eval`) that its page does not read yet.
-
-**Standing direction from Danish (2 Sep, HANDOFF-MEMORY §19): deploy online,
-use all partner credits effectively, many agents in Lyzr AI.** Before
-designing any new Lyzr agent, ask Danish for the list of agents already built
-in Studio (name, role, what each answers) and wire each to a real call site
-or say plainly it would be decorative. Three Lyzr seams are already live
-locally (guard, observer, ledger witness); on Render they run
-`not_configured` until Danish sets `CITINEL_LYZR_API_KEY`,
-`CITINEL_LYZR_GUARD_URL` and `CITINEL_LYZR_AGENT_ID` in the Render dashboard.
-
-Manual items only Danish can do, still open (§17): n8n webhook URL into
-`.env`/Render, the Lyzr Studio agent (recipe in `connectors/lyzr.py`'s
-docstring), the Swytchcode credit claim. After any swarm run that should show online,
-copy `data/incidents/ledger.jsonl` over `data/seed/ledger.jsonl` and push
-(§18 deploy caveat). Then
-Step 14 (demo fallback capture), the one unbuilt ladder step.
-
-Don't guess at anything time-sensitive (shortlist status, event dates,
-credit-claim deadlines) — recompute or ask rather than trusting a number
-that may have gone stale between sessions.
+## Do not
+- Do not fabricate a metric, a count, or a name. The false-positive rate is UNMEASURED; the sign-off is a draft ("we draft, we never file"); response actions hit simulated endpoints only.
+- Do not raise Render or Anthropic spend without asking; a swarm run is real money.
+- Do not sign off an incident on the live ledger for a test without reopening it after (`POST /api/incidents/{id}/reopen`), or the queue empties.
+- Do not touch the pitch deck unless Danish asks. Do not promise a judged prize.
