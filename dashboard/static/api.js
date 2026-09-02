@@ -48,7 +48,28 @@
     reachable: null,           // null = not probed, true/false after probe()
     service: null,             // /healthz's service name once probed
     corpus: null,              // /api/source's answer: 'live' pipeline output or the committed 'seed'
-    consumed: {}               // endpoint name -> 'live' | 'failed', written by API.get as pages read
+    consumed: {},              // endpoint name -> 'live' | 'failed', written by API.get as pages read
+    demoServed: {},            // endpoint name -> true when that specific read came back with X-Citinel-Demo
+    DEMO_MODE: false           // Step 14: replay a captured run instead of live for GETs that support it
+  };
+
+  // Sticky across navigation, not just this page: a presenter flips it on once (Settings, or
+  // ?demo=1 on any URL) and every screen they click through afterward stays in capture mode.
+  // Never throws if storage is unavailable (a private window, a locked-down embed).
+  (function () {
+    try {
+      if (new URLSearchParams(location.search).get('demo') === '1') {
+        API.DEMO_MODE = true;
+        localStorage.setItem('citinel.demoMode', '1');
+      } else {
+        API.DEMO_MODE = localStorage.getItem('citinel.demoMode') === '1';
+      }
+    } catch (e) { API.DEMO_MODE = false; }
+  })();
+
+  API.setDemoMode = function (on) {
+    API.DEMO_MODE = !!on;
+    try { localStorage.setItem('citinel.demoMode', on ? '1' : '0'); } catch (e) {}
   };
 
   /* ── The contract ─────────────────────────────────────────────────────────────
@@ -129,7 +150,7 @@
     audit:      { uses: ['audit', 'ledgerVerify'],            scripted: [] },
     handover:   { uses: ['incidentsSummary', 'audit', 'handover'],        scripted: [] },
     executive:  { uses: ['incidentsSummary', 'policy', 'ledgerVerify'], scripted: [] },
-    settings:   { uses: ['connectors'],                       scripted: [] },
+    settings:   { uses: ['connectors', 'source'],              scripted: [] },
     demo:       { uses: ['incidentsSummary'],                                   scripted: ['guided walkthrough of the live screens'] },
     narrow:     { uses: ['incidentsSummary', 'audit'],        scripted: [] }
   };
@@ -146,12 +167,14 @@
     if (!ep.live) return Promise.resolve({ ok: false, source: 'scripted', error: 'endpoint not built: ' + ep.note });
 
     var url = API.BASE + ep.path(a, b);
+    if (API.DEMO_MODE) url += (url.indexOf('?') === -1 ? '?' : '&') + 'demo=1';
     var ctl = typeof AbortController !== 'undefined' ? new AbortController() : null;
     var timer = setTimeout(function () { if (ctl) ctl.abort(); }, opts.timeoutMs || API.TIMEOUT_MS);
 
     function record(res) {
       if (!opts.probe) {
         API.consumed[name] = res.ok ? 'live' : 'failed';
+        if (res.demo) API.demoServed[name] = true;
         paint();                                   // the badge follows the read, not the registry
       }
       return res;
@@ -162,8 +185,9 @@
       signal: ctl ? ctl.signal : undefined
     }).then(function (r) {
       clearTimeout(timer);
-      if (!r.ok) return { ok: false, source: 'scripted', status: r.status, error: r.status + ' from ' + url };
-      return r.json().then(function (d) { return { ok: true, source: 'live', data: d, url: url }; });
+      var demo = r.headers.get('X-Citinel-Demo') === '1';
+      if (!r.ok) return { ok: false, source: 'scripted', status: r.status, error: r.status + ' from ' + url, demo: demo };
+      return r.json().then(function (d) { return { ok: true, source: 'live', data: d, url: url, demo: demo }; });
     }).catch(function (e) {
       clearTimeout(timer);
       return { ok: false, source: 'scripted', error: String(e && e.message || e) + ' · ' + url };
@@ -242,6 +266,7 @@
   API.handoverFor = function (id) { return API.get('handover', id || API.INCIDENT_PRIMARY); };
   API.writeHandover = function (id) { return API.post('handoverWrite', id || API.INCIDENT_PRIMARY, { confirm: true }); };
   API.connectors = function () { return API.get('connectors'); };
+  API.source = function () { return API.get('source'); };
 
   /* ── Data-source badge ────────────────────────────────────────────────────────
      Once some pages are wired and others are not, an unmarked mix misrepresents which
@@ -282,6 +307,12 @@
       if (unbuilt.length) parts.push('no route: ' + unbuilt.join(', '));
       return { tag: 'MIXED · ' + read.length + ' LIVE / ' + scripted + ' SCRIPTED',
                detail: parts.join(' · ') + still + corpus };
+    }
+    var allDemo = read.length > 0 && read.every(function (n) { return API.demoServed[n]; });
+    if (allDemo) {
+      return { tag: 'CAPTURED · ' + read.join(' '),
+               detail: 'replayed from a captured run, not the live service, at this reader\'s own request'
+                 + corpus + still };
     }
     return { tag: 'LIVE · ' + read.join(' '),
              detail: 'served by ' + (API.service || 'citinel-web') + corpus + still };

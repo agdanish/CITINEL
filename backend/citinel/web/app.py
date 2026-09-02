@@ -35,6 +35,7 @@ from citinel.connectors.lyzr_agents import handover_summary, review_draft, triag
 from citinel.audit.ledger import AuditLedger
 from citinel.compliance.drafter import draft_certin, draft_dpdp, render_text
 from citinel.config import settings
+from citinel.web.demo_capture import find_fixture, load_fixtures
 from citinel.connectors.lyzr import LyzrGuard, LyzrLedgerMirror
 from citinel.connectors.n8n import dispatch_signed
 from citinel.connectors.swytchcode import SwytchcodeExecutor
@@ -46,6 +47,18 @@ from citinel.policy.roles import Role, project_incident
 
 LIVE_DIR = settings.data_dir / "incidents"
 SEED_DIR = settings.data_dir / "seed"
+#: Step 14 -- see demo_capture.py's module docstring for what this is and is
+#: not. Ships inside data/seed/ so it is present in the Docker image without a
+#: separate COPY line, the same reason eval-report.json and swarm/*.json live
+#: there. Loaded once at import; a missing or malformed file means demo mode
+#: reports as unavailable rather than failing the service.
+DEMO_MANIFEST = load_fixtures(SEED_DIR / "demo-capture.json")
+#: Structural, not incidental: even a hand-edited or corrupted manifest file
+#: cannot make these servable from a fixture. capture_fixtures() never
+#: requests them either, but a test that planted them anyway (adversarially,
+#: on purpose) showed relying on that alone was not actually a second layer
+#: of defense -- this denylist is the real one.
+_NEVER_DEMO = frozenset({"/api/connectors", "/api/ledger/verify", "/api/source"})
 POLICY_PATH = settings.policy_dir / "citinel-policy.yaml"
 STATIC_DIR = settings.static_dir
 
@@ -145,6 +158,31 @@ async def _never_serve_a_stale_console(request, call_next):
     return response
 
 
+@app.middleware("http")
+async def _serve_demo_capture(request, call_next):
+    """?demo=1 on a GET request replays a captured fixture instead of
+    computing live -- Step 14. Deliberately a middleware, not a per-route
+    check: it runs before routing, so it can only ever answer a request that
+    (a) is a GET, (b) explicitly asked for it, and (c) matches a path this
+    deployment actually captured (never /api/connectors, /api/ledger/verify,
+    or any write route -- capture_fixtures() only ever issues GETs against
+    demo_capture.ROUTES, so no fixture for those can exist to be found here).
+    A response served this way carries X-Citinel-Demo so the console can show
+    it was a capture, not the live service, and never confuse the two.
+    """
+    if (request.method == "GET" and request.query_params.get("demo") == "1" and DEMO_MANIFEST
+            and request.url.path not in _NEVER_DEMO):
+        rest = "&".join(f"{k}={v}" for k, v in request.query_params.multi_items() if k != "demo")
+        key = request.url.path + (f"?{rest}" if rest else "")
+        fx = find_fixture(DEMO_MANIFEST, key)
+        if fx is not None:
+            from fastapi.responses import JSONResponse
+            resp = JSONResponse(content=fx["body"], status_code=fx["status_code"])
+            resp.headers["X-Citinel-Demo"] = "1"
+            return resp
+    return await call_next(request)
+
+
 # --- liveness and provenance ---------------------------------------------------
 
 @app.get("/healthz")
@@ -179,6 +217,12 @@ def data_source() -> dict:
         "context_gathered": sorted(p.stem for p in (INCIDENTS_DIR / "context").glob("*.json")) if (INCIDENTS_DIR / "context").is_dir() else [],
         "swarm_credentials": settings.has_swarm_credentials,
         "ui_swarm_enabled": settings.ui_swarm_enabled,
+        "demo_capture": {
+            "available": DEMO_MANIFEST is not None,
+            "captured_at": DEMO_MANIFEST.get("captured_at") if DEMO_MANIFEST else None,
+            "incident_ids": DEMO_MANIFEST.get("incident_ids", []) if DEMO_MANIFEST else [],
+            "routes_captured": len(DEMO_MANIFEST.get("routes", {})) if DEMO_MANIFEST else 0,
+        },
     }
 
 

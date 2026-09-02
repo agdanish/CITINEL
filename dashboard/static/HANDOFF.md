@@ -51,6 +51,7 @@ Wrappers: `API.incidents()`, `API.incident(id)`, `API.auditFor(id)`, `API.draftF
 | `signoff` / `reopen` | `POST /api/incidents/{id}/signoff` · `POST …/reopen` | human sign-off frame carrying the signer's answers + n8n dispatch · a named reopen frame (closed → caught) |
 | `context` / `contextGather` | `GET/POST /api/incidents/{id}/context` | public context via Tavily per technique and rule: query, URLs, fetch time · never evidence |
 | `handover` | `GET/POST /api/incidents/{id}/handover` | a Lyzr-written handover note from the ledger's frames · not_configured without its agent id |
+| `source` demo block | `GET /api/source` `.demo_capture` | `{available, captured_at, incident_ids, routes_captured}` · Step 14: pass `?demo=1` on a captured GET route to replay it (never `/api/connectors`, `/api/ledger/verify`, `/api/source`, or any write route) |
 | `corpusRules` | `GET /api/corpus` | release pin, rule count (or not shipped), fired rules with counts, techniques observed |
 | `connectors` | `GET /api/connectors` | rails, connectors configured (presence only), mock endpoint state, policy clauses |
 

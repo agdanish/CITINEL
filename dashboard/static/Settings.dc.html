@@ -135,6 +135,12 @@
       <span style="flex:1 1 100%;font-size:12.5px;color:var(--ctn-color-text-secondary);min-width:0;max-width:110ch;line-height:1.5;text-wrap:pretty">{{ outletClaim }}</span>
     </div>
 
+    <div style="flex:none;display:flex;align-items:center;gap:10px 16px;flex-wrap:wrap;padding:0 20px 14px;min-width:0">
+      <span style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.14em;color:var(--ctn-color-text-primary);flex:none">DEMO FALLBACK CAPTURE</span>
+      <span style="font-size:11.5px;color:var(--ctn-color-text-secondary);flex:1;min-width:0;line-height:1.4">{{ demoStatusLine }}</span>
+      <x-import component-from-global-scope="CITINELDesignSystem_fdfd66.Button" variant="{{ demoButtonVariant }}" size="sm" disabled="{{ demoButtonDisabled }}" on-click="{{ toggleDemoMode }}" hint-size="190px,32px">{{ demoButtonLabel }}</x-import>
+    </div>
+
     <div style="flex:none;display:grid;grid-template-columns:56px minmax(0,1fr) minmax(165px,250px) 1fr 116px;gap:0 16px;padding:0 20px 6px;border-bottom:1px solid var(--ctn-color-border-strong);font-family:var(--ctn-font-display);font-size:8px;letter-spacing:0.12em;color:var(--ctn-color-text-muted);min-width:0">
       <span>FLANGE</span><span>RESPONSE ACTION</span><span>WHAT THE MOCK DOES</span><span>{{ colFour }}</span><span>LAST RUN</span>
     </div>
@@ -188,7 +194,7 @@
 class Component extends DCLogic {
   constructor(p){
     super(p);
-    this.state = {role:this.roleInit(), now:Date.now(), eps:2380, live: null, connectorsResult: null, liveError: null};
+    this.state = {role:this.roleInit(), now:Date.now(), eps:2380, live: null, connectorsResult: null, liveError: null, sourceResult: null};
     this.inletDefs = [
       {name:'UPI switch', transport:'upi-sw-01 · syslog tcp/6514', ocsf:'class 3001 · Application Activity', rate:'2,380/s', state:'OPEN', note:'last packet 0.4s ago', v:'open'},
       {name:'Finacle CBS audit trail', transport:'Finacle Connector Pack · CDC reader', ocsf:'class 6005 · Datastore Activity', rate:'41/min', state:'OPEN', note:'lag 2s · maker-checker fields present', v:'open'},
@@ -233,7 +239,13 @@ class Component extends DCLogic {
           this.setState({live: false, connectorsResult: null, liveError: r.error});
         }
       });
+      API.source().then(r => { if (r.ok) this.setState({sourceResult: r}); });
     }
+  }
+  toggleDemoMode(){
+    const API = window.CITINEL_API; if (!API) return;
+    API.setDemoMode(!API.DEMO_MODE);
+    location.reload();
   }
   componentWillUnmount(){ clearInterval(this.t); if(this.unsubRole) this.unsubRole(); }
   roleInit(){ try{ return (window.CitinelRole && window.CitinelRole.get()) || 'analyst'; }catch(e){ return 'analyst'; } }
@@ -260,6 +272,10 @@ class Component extends DCLogic {
     const policy = (connData && connData.policy) ? connData.policy : null;
     const showInlets = s.live !== true;  // show in fallback/loading, hide in live
     const showHeaderTank = s.live !== true;  // show in fallback/loading, hide in live
+    const API = window.CITINEL_API;
+    const demoMode = !!(API && API.DEMO_MODE);
+    const demoCap = s.sourceResult && s.sourceResult.ok ? s.sourceResult.data.demo_capture : null;
+    const demoAvailable = !!(demoCap && demoCap.available);
 
     return {
       ciso, analyst: !ciso,
@@ -271,6 +287,20 @@ class Component extends DCLogic {
       cisoFg: ciso ? 'var(--ctn-color-text-on-navy)' : 'var(--ctn-color-text-muted)',
 
       showInlets, showHeaderTank,
+      demoStatusLine: !demoCap
+        ? 'reading capture status from citinel-web'
+        : !demoAvailable
+          ? 'no capture on this deployment yet -- run scripts/record_demo.py against a real, credentialed server'
+          : demoMode
+            ? 'DEMO MODE IS ON: reads that were captured on ' + demoCap.captured_at.slice(0, 10)
+              + ' (' + demoCap.incident_ids.join(', ') + ') are replayed instead of the live service; '
+              + 'connectors and the ledger check never are'
+            : demoCap.routes_captured + ' routes captured ' + demoCap.captured_at.slice(0, 10)
+              + ' for ' + demoCap.incident_ids.join(', ') + ' -- available as a fallback, not active',
+      demoButtonLabel: demoMode ? 'RETURN TO LIVE' : 'REPLAY THE CAPTURED DEMO',
+      demoButtonVariant: demoMode ? 'primary' : 'secondary',
+      demoButtonDisabled: !demoMode && !demoAvailable,
+      toggleDemoMode: () => this.toggleDemoMode(),
       inletSummary: '4 / 6 clean',
       epsTotal: s.eps.toLocaleString('en-IN'),
       inlets: this.inletDefs.map(i=>{
