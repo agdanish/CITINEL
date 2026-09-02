@@ -429,3 +429,22 @@ def test_draft_review_marks_thin_fields(sandbox, monkeypatch):
     monkeypatch.setattr(la, "review_agent", lambda sender=None: la.LyzrAgent("field_review", "agent-review", "s", sender=send))
     d = client.get("/api/incidents/INC-T1/draft?kind=certin").json()
     assert d["review"]["status"] == "ok" and d["review"]["thin"] == [{"key": "impact_severity", "why": "business impact unconfirmed"}]
+
+
+def test_connectors_environment_report_names_only(sandbox, monkeypatch):
+    """The report says WHICH variables the process sees, never what they hold."""
+    monkeypatch.setenv("CITINEL_TAVILY_API_KEY", "secret-value-that-must-not-leak-9f3a")
+    monkeypatch.setenv("TAVILY_API_KEY", "other-secret-that-must-not-leak-1c2b")
+    monkeypatch.setenv("RENDER_SERVICE_NAME", "citinel-web")
+    monkeypatch.setenv("RENDER_GIT_COMMIT", "0123456789abcdef")
+    r = client.get("/api/connectors")
+    assert r.status_code == 200
+    body = r.text
+    assert "secret-value-that-must-not-leak-9f3a" not in body
+    assert "other-secret-that-must-not-leak-1c2b" not in body
+    env = r.json()["environment"]
+    assert "CITINEL_TAVILY_API_KEY" in env["citinel_vars_present"]
+    assert "TAVILY_API_KEY" in env["unprefixed_candidates"]
+    assert env["platform"]["render_service"] == "citinel-web"
+    assert env["platform"]["render_git_commit"] == "0123456"
+    assert "names only" in env["note"]

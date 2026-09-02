@@ -16,6 +16,8 @@ site-packages, and a path derived from there broke the first deployment.
 
 from __future__ import annotations
 
+import os
+
 import threading
 from collections import Counter
 from datetime import datetime, timezone
@@ -387,6 +389,30 @@ def get_corpus() -> dict:
     return static
 
 
+def _environment_report() -> dict[str, Any]:
+    """What the running process can actually see of its configuration: variable
+    NAMES only. Never a value, a length, or a hash -- the point is to tell an
+    operator "the service is not reading the variables you set" (wrong name,
+    wrong service, an unlinked environment group) without turning a public
+    route into a secret oracle."""
+    watched = ("ANTHROPIC", "TAVILY", "LYZR", "N8N", "SWYTCH", "VIRUSTOTAL", "ABUSEIPDB",
+               "TRIAGE_MODEL", "REASONING_MODEL")
+    names = sorted(os.environ)
+    env_file = settings.model_config.get("env_file")
+    return {
+        "platform": {
+            "render_service": os.environ.get("RENDER_SERVICE_NAME"),
+            "render_git_commit": (os.environ.get("RENDER_GIT_COMMIT") or "")[:7] or None,
+            "render_external_url": os.environ.get("RENDER_EXTERNAL_URL"),
+        },
+        "citinel_vars_present": [n for n in names if n.upper().startswith("CITINEL_")],
+        "unprefixed_candidates": [n for n in names if not n.upper().startswith("CITINEL_")
+                                  and any(w in n.upper() for w in watched)],
+        "dotenv_present": bool(env_file) and Path(str(env_file)).exists(),
+        "note": "variable names only; no value, length or hash is ever exposed",
+    }
+
+
 @app.get("/api/connectors")
 def get_connectors() -> dict:
     """Which external services this deployment is actually configured to
@@ -431,6 +457,7 @@ def get_connectors() -> dict:
         },
         "policy": {"name": gate.name, "version": gate.version,
                    "policy_sha256": gate.policy_sha256, "clauses": gate.table()},
+        "environment": _environment_report(),
     }
 
 
