@@ -45,7 +45,12 @@ def _env(name: str) -> AliasChoices:
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=REPO_ROOT / ".env",
+        # Later entries win over earlier ones; the OS environment wins over
+        # all of them. The two extra paths are where a hosted deployment puts
+        # an uploaded secret file (Render mounts secret files under
+        # /etc/secrets/ and, for Docker services, nowhere near this package's
+        # REPO_ROOT, which is site-packages-derived once pip-installed).
+        env_file=(REPO_ROOT / ".env", Path("/app/.env"), Path("/etc/secrets/.env")),
         env_prefix="CITINEL_",
         extra="ignore",
         # Fields below carry explicit aliases; this keeps Settings(field=...)

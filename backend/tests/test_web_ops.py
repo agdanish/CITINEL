@@ -448,3 +448,11 @@ def test_connectors_environment_report_names_only(sandbox, monkeypatch):
     assert env["platform"]["render_service"] == "citinel-web"
     assert env["platform"]["render_git_commit"] == "0123456"
     assert "names only" in env["note"]
+
+
+def test_connectors_environment_report_names_dotenv_sources(sandbox):
+    env = client.get("/api/connectors").json()["environment"]
+    assert env["dotenv_paths_checked"][-1] == "/etc/secrets/.env"
+    assert "/app/.env" in env["dotenv_paths_checked"]
+    assert isinstance(env["secret_files_present"], list)
+    assert "file names" in env["note"]

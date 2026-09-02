@@ -48,3 +48,20 @@ def test_every_aliased_field_reads_both_spellings(monkeypatch):
 
 def test_field_name_still_works_from_code():
     assert Settings(_env_file=None, tavily_api_key="in-code").tavily_api_key == "in-code"
+
+
+def test_dotenv_sources_include_hosted_secret_file_mounts():
+    paths = [str(p) for p in Settings.model_config["env_file"]]
+    assert paths[-1] == "/etc/secrets/.env"
+    assert "/app/.env" in paths
+
+
+def test_a_dotenv_file_is_read_and_the_os_environment_still_wins(tmp_path, monkeypatch):
+    for k in list(os.environ):
+        if k.upper().endswith("TAVILY_API_KEY"):
+            monkeypatch.delenv(k, raising=False)
+    f = tmp_path / ".env"
+    f.write_text("CITINEL_TAVILY_API_KEY=from-file\n", encoding="utf-8")
+    assert Settings(_env_file=f).tavily_api_key == "from-file"
+    monkeypatch.setenv("TAVILY_API_KEY", "from-os")
+    assert Settings(_env_file=f).tavily_api_key == "from-os"

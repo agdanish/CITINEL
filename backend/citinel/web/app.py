@@ -399,6 +399,12 @@ def _environment_report() -> dict[str, Any]:
                "TRIAGE_MODEL", "REASONING_MODEL")
     names = sorted(os.environ)
     env_file = settings.model_config.get("env_file")
+    dotenv_paths = [Path(str(p)) for p in (env_file if isinstance(env_file, (tuple, list)) else [env_file]) if p]
+    secrets_dir = Path("/etc/secrets")
+    try:
+        secret_files = sorted(p.name for p in secrets_dir.iterdir()) if secrets_dir.is_dir() else []
+    except OSError:
+        secret_files = []
     return {
         "platform": {
             "render_service": os.environ.get("RENDER_SERVICE_NAME"),
@@ -408,8 +414,10 @@ def _environment_report() -> dict[str, Any]:
         "citinel_vars_present": [n for n in names if n.upper().startswith("CITINEL_")],
         "unprefixed_candidates": [n for n in names if not n.upper().startswith("CITINEL_")
                                   and any(w in n.upper() for w in watched)],
-        "dotenv_present": bool(env_file) and Path(str(env_file)).exists(),
-        "note": "variable names only; no value, length or hash is ever exposed",
+        "dotenv_present": any(p.exists() for p in dotenv_paths),
+        "dotenv_paths_checked": [str(p) for p in dotenv_paths],
+        "secret_files_present": secret_files,
+        "note": "variable and file names only; no value, length or hash is ever exposed",
     }
 
 
