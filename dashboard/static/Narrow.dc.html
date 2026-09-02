@@ -51,6 +51,32 @@ addEventListener('DOMContentLoaded', function () {
       : '<span data-m>this width is below the console floor of 720px.</span>');
   var host = document.querySelector('[data-screen-label]') || document.body;
   host.insertBefore(el, host.firstChild);
+
+  // route.js's own comment calls the width switch "live, not load-only" --
+  // true only in one direction until now. Landing here never listened for
+  // the window growing back past the floor, so a browser that reported a
+  // narrow width once (a resize mid-flight, a viewport that settles after
+  // load) left the reader stranded on the tour card at any width afterward,
+  // including a full desktop window -- confirmed live, 2 Sep 2026: a 1637px
+  // screen still showed "NARROW VIEW" with no way back but a manual edit of
+  // the URL. Symmetric with route.js: crossing back over 720 hands off
+  // immediately, to the same page that sent the reader here, no forcing --
+  // that page's own route.js runs fresh and simply renders, since it is
+  // wide enough. Only when `from` is a real page name; there is nowhere
+  // sensible to send the reader back to otherwise.
+  var handedBack = false;
+  function checkWide() {
+    var kEl = el.querySelector('[data-k]');
+    if (kEl) kEl.textContent = 'NARROW VIEW · ' + window.innerWidth + 'px';
+    if (handedBack || !from || window.innerWidth < 720) return;
+    handedBack = true;
+    location.replace(from);
+  }
+  addEventListener('resize', checkWide, { passive: true });
+  checkWide();  // the reported case needs no further resize: the window was
+                // already wide when this page loaded, stuck there by the
+                // stale width route.js redirected on -- check once now, not
+                // only on the next resize event.
 });
 </script>
 <script src="ledger.js"></script>
