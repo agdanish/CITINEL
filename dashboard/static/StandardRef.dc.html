@@ -5,6 +5,25 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="vendor/resources.js"></script>
 <script src="./support.js"></script>
+<!-- Render-blocking, deliberately. The same sheets are declared again in the
+     helmet block below, which the DC runtime injects into the document head
+     with JavaScript AFTER support.js boots -- so until this block existed the
+     browser painted the entire document with no CSS at all, on every single
+     load. Ordinary navigation hid that behind the browser paint-holding; a
+     cross-document view transition does not, because it captures the incoming
+     page at its first render opportunity and animates to whatever is there,
+     which was an unstyled page (confirmed live on the audit screen, 2 Sep
+     2026). The duplicate links cost one cache hit each and nothing else; the
+     unstyled frame is now unpaintable. -->
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/fonts.css">
+<link rel="stylesheet" href="vendor/fonts.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/colors.primitive.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/colors.semantic.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/typography.css">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/component.css">
+<link rel="stylesheet" href="a11y.css">
+<link rel="stylesheet" href="motion.css">
+<link rel="stylesheet" href="transitions.css">
 </head>
 <body>
 <x-dc>
