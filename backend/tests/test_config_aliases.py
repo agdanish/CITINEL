@@ -53,3 +53,26 @@ def test_a_blank_variable_does_not_wipe_a_real_value(tmp_path, monkeypatch):
     blank.write_text("CITINEL_TAVILY_API_KEY=\n", encoding="utf-8")
     monkeypatch.delenv("CITINEL_TAVILY_API_KEY", raising=False)
     assert Settings(_env_file=(f, blank)).tavily_api_key == "from-file"
+
+
+def test_a_whitespace_only_value_does_not_crash_an_enum_or_bool_field(monkeypatch):
+    """env_ignore_empty only catches the exact empty string; a single stray
+    space used to reach pydantic's own coercion and abort the whole process
+    at import time for every enum/bool safety-rail field. Confirmed live,
+    2 Sep 2026, for all four before this validator: default_autonomy
+    (enum), simulated_endpoints_only, auto_swarm, ui_swarm_enabled (bool)."""
+    monkeypatch.setenv("CITINEL_DEFAULT_AUTONOMY", " ")
+    monkeypatch.setenv("CITINEL_SIMULATED_ENDPOINTS_ONLY", " ")
+    monkeypatch.setenv("CITINEL_AUTO_SWARM", "\t")
+    monkeypatch.setenv("CITINEL_UI_SWARM_ENABLED", "  ")
+    s = Settings(_env_file=None)
+    assert s.default_autonomy.value == "shadow"  # falls back to the coded default
+    assert s.simulated_endpoints_only is True
+    assert s.auto_swarm is False
+    assert s.ui_swarm_enabled is True
+
+
+def test_a_whitespace_only_credential_is_treated_as_unset(monkeypatch):
+    _clear(monkeypatch, "TAVILY_API_KEY")
+    monkeypatch.setenv("CITINEL_TAVILY_API_KEY", "   ")
+    assert Settings(_env_file=None).tavily_api_key is None

@@ -462,15 +462,39 @@ def _environment_report() -> dict[str, Any]:
         other_secret_files = 0
     return {
         "platform": {
-            "render_service": env.get("RENDER_SERVICE_NAME"),
-            "render_git_commit": (env.get("RENDER_GIT_COMMIT") or "")[:7] or None,
-            "render_external_url": env.get("RENDER_EXTERNAL_URL"),
+            # Presence only, like everything else in this function: an
+            # earlier cut returned these three verbatim (an adversarial
+            # review caught it, 2 Sep 2026) -- RENDER_SERVICE_NAME and
+            # RENDER_EXTERNAL_URL are operator-chosen strings (the latter can
+            # reveal the true onrender.com origin behind a custom domain),
+            # and RENDER_GIT_COMMIT is literally a hash fingerprinting the
+            # exact deployed code. None of that belongs on a public route.
+            "render_service_name": _presence(env.get("RENDER_SERVICE_NAME")),
+            "render_git_commit": _presence(env.get("RENDER_GIT_COMMIT")),
+            "render_external_url": _presence(env.get("RENDER_EXTERNAL_URL")),
             "process_started_at": _PROCESS_STARTED_AT,
         },
         "expected": expected,
         "blueprint": blueprint,
         "unprefixed_seen": unprefixed_seen,
         "unprefixed_hint": "this service reads only the CITINEL_-prefixed spelling" if unprefixed_seen else None,
+        # Presence data alone cannot tell "never configured" apart from
+        # "configured on a different Render service, or in an Environment
+        # Group this service isn't linked to" -- both look identical from
+        # inside this process. When the platform clearly reaches this service
+        # (the blueprint's own vars are set) but not one expected credential
+        # is visible anywhere this process looks, say so plainly rather than
+        # let the report imply it is conclusive.
+        "credential_source_hint": (
+            "platform env reaches this service (blueprint vars are set) but none of the expected "
+            "credential names are visible here or in a dotenv file -- this looks identical to "
+            "'never configured' and to 'configured on a different Render service, or in an "
+            "Environment Group not linked to this one'; check the Render dashboard's Environment "
+            "tab for this exact service"
+        ) if any(v == "set" for v in blueprint.values()) and not (
+            any(v == "set" for v in expected.values())
+            or any(row.get("defines") and any(v == "set" for v in row["defines"].values()) for row in dotenv)
+        ) else None,
         "unknown_citinel_names": unknown,
         "dotenv": dotenv,
         "secret_env_file_present": (secrets_dir / ".env").is_file(),

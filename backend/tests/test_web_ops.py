@@ -456,13 +456,37 @@ def test_connectors_environment_report_speaks_only_in_fixed_names(sandbox, monke
     closest = [x["closest_expected"] for x in env["unknown_citinel_names"]]
     assert "CITINEL_LYZR_API_KEY" in closest
     assert all(set(x) == {"closest_expected", "similarity"} for x in env["unknown_citinel_names"])
-    assert env["platform"]["render_service"] == "citinel-web"
-    assert env["platform"]["render_git_commit"] == "0123456"
+    # Presence only -- an adversarial review caught the first cut echoing
+    # these verbatim (the operator-chosen service name, the external URL,
+    # a hash of the deployed commit), all real secrets on a public route.
+    assert env["platform"]["render_service_name"] == "set"
+    assert env["platform"]["render_git_commit"] == "set"
+    assert "citinel-web" not in body and "0123456789abcdef" not in body
     assert env["platform"]["process_started_at"].endswith("+00:00")
     assert env["dotenv"][-1]["path"] == "/etc/secrets/.env"
     assert "/app/.env" in [d["path"] for d in env["dotenv"]]
     assert isinstance(env["other_secret_files"], int)
     assert "fixed names only" in env["note"]
+
+
+def test_connectors_environment_report_credential_source_hint(sandbox, monkeypatch, tmp_path):
+    """Blueprint reaches the process but no expected credential does anywhere
+    -- the exact shape of the 2 Sep 2026 Render deployment -- gets a plain
+    hint instead of silence; any expected name being set (OS env or dotenv)
+    clears it."""
+    from citinel.web import app as web_app
+    empty_env = tmp_path / ".env"
+    empty_env.write_text("", encoding="utf-8")
+    monkeypatch.setitem(web_app.settings.model_config, "env_file", (empty_env,))
+    monkeypatch.setenv("CITINEL_ROLE", "web")
+    for name in web_app._EXPECTED_ENV:
+        monkeypatch.delenv(name, raising=False)
+    env = client.get("/api/connectors").json()["environment"]
+    assert env["credential_source_hint"] is not None
+    assert "different Render service" in env["credential_source_hint"]
+    monkeypatch.setenv("CITINEL_TAVILY_API_KEY", "some-value")
+    env = client.get("/api/connectors").json()["environment"]
+    assert env["credential_source_hint"] is None
 
 
 def test_connectors_environment_report_dotenv_defines_names_not_values(sandbox, monkeypatch, tmp_path):

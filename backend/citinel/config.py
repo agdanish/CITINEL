@@ -15,7 +15,7 @@ from __future__ import annotations
 from enum import Enum
 from pathlib import Path
 
-from pydantic import Field
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -48,6 +48,28 @@ class Settings(BaseSettings):
         # saved on a host, must not wipe a real value from an earlier source.
         env_ignore_empty=True,
     )
+
+    @model_validator(mode="before")
+    @classmethod
+    def _drop_whitespace_only_values(cls, data):
+        # env_ignore_empty (above) only catches the exact empty string
+        # (confirmed against the installed pydantic-settings: its filter is
+        # `v == ""`, nothing broader) -- a single stray space, a completely
+        # plausible paste artifact from a hosting dashboard's text box or a
+        # dotenv line, sails through untouched. For a plain bool/enum field
+        # (default_autonomy, simulated_endpoints_only, ...) a before-validator
+        # that returns None doesn't help either -- None isn't a valid bool or
+        # enum value, so it still raises. Dropping the key from the merged
+        # source dict entirely, before per-field validation ever sees it, is
+        # what actually reproduces "this variable was never set": the field's
+        # own coded default applies, for every field type uniformly, the same
+        # outcome a truly-empty value already gets. Confirmed live, 2 Sep
+        # 2026: a single space in CITINEL_DEFAULT_AUTONOMY or any of the three
+        # boolean safety-rail fields aborted `citinel.config` import entirely
+        # -- a full outage from one pasted space.
+        if isinstance(data, dict):
+            return {k: v for k, v in data.items() if not (isinstance(v, str) and v.strip() == "")}
+        return data
     # Only the CITINEL_-prefixed names are read. Unprefixed conventional names
     # (ANTHROPIC_API_KEY, TAVILY_API_KEY, ...) are deliberately NOT accepted:
     # the OS environment outranks every dotenv file, so a generic key exported
