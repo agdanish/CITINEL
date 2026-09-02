@@ -431,28 +431,49 @@ def test_draft_review_marks_thin_fields(sandbox, monkeypatch):
     assert d["review"]["status"] == "ok" and d["review"]["thin"] == [{"key": "impact_severity", "why": "business impact unconfirmed"}]
 
 
-def test_connectors_environment_report_names_only(sandbox, monkeypatch):
-    """The report says WHICH variables the process sees, never what they hold."""
+def test_connectors_environment_report_speaks_only_in_fixed_names(sandbox, monkeypatch):
+    """Set / blank / absent per expected name; planted values, an unknown
+    operator-chosen name and a misspelling never appear in the response."""
     monkeypatch.setenv("CITINEL_TAVILY_API_KEY", "secret-value-that-must-not-leak-9f3a")
     monkeypatch.setenv("TAVILY_API_KEY", "other-secret-that-must-not-leak-1c2b")
+    monkeypatch.setenv("CITINEL_LYZR_API_KEY", "   ")
+    monkeypatch.setenv("CITINEL_LYZR_API_KEI", "misspelled-secret-must-not-leak-77aa")
+    monkeypatch.setenv("CITINEL_sk-live-looks-like-a-key-in-a-name", "x")
     monkeypatch.setenv("RENDER_SERVICE_NAME", "citinel-web")
     monkeypatch.setenv("RENDER_GIT_COMMIT", "0123456789abcdef")
     r = client.get("/api/connectors")
     assert r.status_code == 200
     body = r.text
-    assert "secret-value-that-must-not-leak-9f3a" not in body
-    assert "other-secret-that-must-not-leak-1c2b" not in body
+    for planted in ("secret-value-that-must-not-leak-9f3a", "other-secret-that-must-not-leak-1c2b",
+                    "misspelled-secret-must-not-leak-77aa", "CITINEL_LYZR_API_KEI", "sk-live-looks-like"):
+        assert planted not in body, planted
     env = r.json()["environment"]
-    assert "CITINEL_TAVILY_API_KEY" in env["citinel_vars_present"]
-    assert "TAVILY_API_KEY" in env["unprefixed_candidates"]
+    assert env["expected"]["CITINEL_TAVILY_API_KEY"] == "set"
+    assert env["expected"]["CITINEL_LYZR_API_KEY"] == "blank"
+    assert env["expected"]["CITINEL_LYZR_TRIAGE_AGENT_ID"] in ("absent", "set")
+    assert "TAVILY_API_KEY" in env["unprefixed_seen"]
+    assert "CITINEL_-prefixed" in env["unprefixed_hint"]
+    closest = [x["closest_expected"] for x in env["unknown_citinel_names"]]
+    assert "CITINEL_LYZR_API_KEY" in closest
+    assert all(set(x) == {"closest_expected", "similarity"} for x in env["unknown_citinel_names"])
     assert env["platform"]["render_service"] == "citinel-web"
     assert env["platform"]["render_git_commit"] == "0123456"
-    assert "names only" in env["note"]
+    assert env["platform"]["process_started_at"].endswith("+00:00")
+    assert env["dotenv"][-1]["path"] == "/etc/secrets/.env"
+    assert "/app/.env" in [d["path"] for d in env["dotenv"]]
+    assert isinstance(env["other_secret_files"], int)
+    assert "fixed names only" in env["note"]
 
 
-def test_connectors_environment_report_names_dotenv_sources(sandbox):
-    env = client.get("/api/connectors").json()["environment"]
-    assert env["dotenv_paths_checked"][-1] == "/etc/secrets/.env"
-    assert "/app/.env" in env["dotenv_paths_checked"]
-    assert isinstance(env["secret_files_present"], list)
-    assert "file names" in env["note"]
+def test_connectors_environment_report_dotenv_defines_names_not_values(sandbox, monkeypatch, tmp_path):
+    f = tmp_path / ".env"
+    f.write_text("CITINEL_LYZR_AGENT_ID=agent-value-must-not-leak-4d4d\nCITINEL_N8N_WEBHOOK_URL=\nUNRELATED=1\n",
+                 encoding="utf-8")
+    from citinel.web import app as web_app
+    monkeypatch.setitem(web_app.settings.model_config, "env_file", (f,))
+    r = client.get("/api/connectors")
+    body = r.text
+    assert "agent-value-must-not-leak-4d4d" not in body and "UNRELATED" not in body
+    row = r.json()["environment"]["dotenv"][0]
+    assert row["present"] is True
+    assert row["defines"] == {"CITINEL_LYZR_AGENT_ID": "set", "CITINEL_N8N_WEBHOOK_URL": "blank"}

@@ -389,35 +389,93 @@ def get_corpus() -> dict:
     return static
 
 
+#: Recorded once at import: lets an operator tell "the process restarted after
+#: I saved the variables" from "it never did" (both otherwise look identical).
+_PROCESS_STARTED_AT = datetime.now(timezone.utc).isoformat(timespec="seconds")
+
+#: The variables this service reads for credentials and model ids. Fixed by the
+#: code, so echoing them back is not echoing anything an operator typed.
+_EXPECTED_ENV = (
+    "CITINEL_ANTHROPIC_API_KEY", "CITINEL_ANTHROPIC_WORKSPACE_ID", "CITINEL_TAVILY_API_KEY",
+    "CITINEL_VIRUSTOTAL_API_KEY", "CITINEL_ABUSEIPDB_API_KEY", "CITINEL_TRIAGE_MODEL",
+    "CITINEL_REASONING_MODEL", "CITINEL_N8N_WEBHOOK_URL", "CITINEL_SWYTCHCODE_API_KEY",
+    "CITINEL_LYZR_API_KEY", "CITINEL_LYZR_GUARD_URL", "CITINEL_LYZR_AGENT_ID",
+    "CITINEL_LYZR_TRIAGE_AGENT_ID", "CITINEL_LYZR_REVIEW_AGENT_ID", "CITINEL_LYZR_HANDOVER_AGENT_ID",
+)
+#: Set by the blueprint / Dockerfile with values; their presence proves the
+#: platform's environment reaches the process at all.
+_BLUEPRINT_ENV = (
+    "CITINEL_ROLE", "CITINEL_SIMULATED_ENDPOINTS_ONLY", "CITINEL_DEFAULT_AUTONOMY",
+    "CITINEL_AUTO_SWARM", "CITINEL_AUTO_SWARM_MAX_PER_CYCLE", "CITINEL_DATABASE_URL",
+    "CITINEL_DATA_DIR", "CITINEL_POLICY_DIR", "CITINEL_STATIC_DIR", "CITINEL_EVALS_DIR",
+)
+
+
+def _presence(value: str | None) -> str:
+    return "absent" if value is None else ("blank" if value.strip() == "" else "set")
+
+
 def _environment_report() -> dict[str, Any]:
-    """What the running process can actually see of its configuration: variable
-    NAMES only. Never a value, a length, or a hash -- the point is to tell an
-    operator "the service is not reading the variables you set" (wrong name,
-    wrong service, an unlinked environment group) without turning a public
-    route into a secret oracle."""
-    watched = ("ANTHROPIC", "TAVILY", "LYZR", "N8N", "SWYTCH", "VIRUSTOTAL", "ABUSEIPDB",
-               "TRIAGE_MODEL", "REASONING_MODEL")
-    names = sorted(os.environ)
+    """What the running process can see of its configuration, described ONLY
+    in names the code itself defines: for each expected variable whether it is
+    set, blank or absent; which conventional unprefixed spellings exist (so an
+    operator who set ANTHROPIC_API_KEY is told the name this service reads);
+    for an unknown CITINEL_* name only the closest expected name and a
+    similarity, never the unknown name itself; and for each dotenv location
+    whether it exists and which expected keys it defines. No value, length,
+    hash or operator-chosen string ever leaves this function -- the route is
+    public, and a diagnostic must not double as a secret oracle."""
+    import difflib
+    env = os.environ
+    expected = {name: _presence(env.get(name)) for name in _EXPECTED_ENV}
+    blueprint = {name: _presence(env.get(name)) for name in _BLUEPRINT_ENV}
+    unprefixed_seen = sorted(
+        name[len("CITINEL_"):] for name in _EXPECTED_ENV if env.get(name[len("CITINEL_"):]) is not None)
+    known = set(_EXPECTED_ENV) | set(_BLUEPRINT_ENV)
+    unknown: list[dict[str, Any]] = []
+    for name in sorted(env):
+        if not name.upper().startswith("CITINEL_") or name in known:
+            continue
+        match = difflib.get_close_matches(name.upper(), _EXPECTED_ENV, n=1, cutoff=0.0)
+        ratio = difflib.SequenceMatcher(None, name.upper(), match[0]).ratio() if match else 0.0
+        unknown.append({"closest_expected": match[0] if match else None, "similarity": round(ratio, 2)})
+
     env_file = settings.model_config.get("env_file")
-    dotenv_paths = [Path(str(p)) for p in (env_file if isinstance(env_file, (tuple, list)) else [env_file]) if p]
+    paths = [Path(str(p)) for p in (env_file if isinstance(env_file, (tuple, list)) else [env_file]) if p]
+    dotenv: list[dict[str, Any]] = []
+    for p in paths:
+        row: dict[str, Any] = {"path": str(p), "present": p.is_file()}
+        if row["present"]:
+            try:
+                from dotenv import dotenv_values
+                values = dotenv_values(p)
+                row["defines"] = {k: _presence(values.get(k)) for k in _EXPECTED_ENV if k in values}
+            except Exception as exc:  # unreadable or unparsable: say so, show nothing
+                row["defines"] = None
+                row["error"] = type(exc).__name__
+        dotenv.append(row)
     secrets_dir = Path("/etc/secrets")
     try:
-        secret_files = sorted(p.name for p in secrets_dir.iterdir()) if secrets_dir.is_dir() else []
+        other_secret_files = sum(1 for p in secrets_dir.iterdir() if not p.name.startswith("..")) \
+            if secrets_dir.is_dir() else 0
     except OSError:
-        secret_files = []
+        other_secret_files = 0
     return {
         "platform": {
-            "render_service": os.environ.get("RENDER_SERVICE_NAME"),
-            "render_git_commit": (os.environ.get("RENDER_GIT_COMMIT") or "")[:7] or None,
-            "render_external_url": os.environ.get("RENDER_EXTERNAL_URL"),
+            "render_service": env.get("RENDER_SERVICE_NAME"),
+            "render_git_commit": (env.get("RENDER_GIT_COMMIT") or "")[:7] or None,
+            "render_external_url": env.get("RENDER_EXTERNAL_URL"),
+            "process_started_at": _PROCESS_STARTED_AT,
         },
-        "citinel_vars_present": [n for n in names if n.upper().startswith("CITINEL_")],
-        "unprefixed_candidates": [n for n in names if not n.upper().startswith("CITINEL_")
-                                  and any(w in n.upper() for w in watched)],
-        "dotenv_present": any(p.exists() for p in dotenv_paths),
-        "dotenv_paths_checked": [str(p) for p in dotenv_paths],
-        "secret_files_present": secret_files,
-        "note": "variable and file names only; no value, length or hash is ever exposed",
+        "expected": expected,
+        "blueprint": blueprint,
+        "unprefixed_seen": unprefixed_seen,
+        "unprefixed_hint": "this service reads only the CITINEL_-prefixed spelling" if unprefixed_seen else None,
+        "unknown_citinel_names": unknown,
+        "dotenv": dotenv,
+        "secret_env_file_present": (secrets_dir / ".env").is_file(),
+        "other_secret_files": other_secret_files,
+        "note": "fixed names only: no value, length, hash or operator-chosen string is ever exposed",
     }
 
 

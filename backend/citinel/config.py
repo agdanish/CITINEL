@@ -15,7 +15,7 @@ from __future__ import annotations
 from enum import Enum
 from pathlib import Path
 
-from pydantic import AliasChoices, Field
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -33,16 +33,6 @@ class AutonomyTier(str, Enum):
     AUTONOMOUS = "autonomous"  # execute without waiting, still policy-gated
 
 
-def _env(name: str) -> AliasChoices:
-    """The documented CITINEL_-prefixed name first, the conventional unprefixed
-    name second. An operator who sets ANTHROPIC_API_KEY on Render instead of
-    CITINEL_ANTHROPIC_API_KEY is then not silently ignored (confirmed live,
-    2 Sep 2026: every connector read "not configured" on a deployment whose
-    environment the operator had filled in). validation_alias bypasses
-    env_prefix, so the prefixed form must be spelled out here."""
-    return AliasChoices(f"CITINEL_{name}", name)
-
-
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         # Later entries win over earlier ones; the OS environment wins over
@@ -53,10 +43,17 @@ class Settings(BaseSettings):
         env_file=(REPO_ROOT / ".env", Path("/app/.env"), Path("/etc/secrets/.env")),
         env_prefix="CITINEL_",
         extra="ignore",
-        # Fields below carry explicit aliases; this keeps Settings(field=...)
-        # working in code and tests.
-        populate_by_name=True,
+        # A present-but-empty variable means "unset", not "the empty string":
+        # a blank CITINEL_X= line in the last dotenv file, or a blank variable
+        # saved on a host, must not wipe a real value from an earlier source.
+        env_ignore_empty=True,
     )
+    # Only the CITINEL_-prefixed names are read. Unprefixed conventional names
+    # (ANTHROPIC_API_KEY, TAVILY_API_KEY, ...) are deliberately NOT accepted:
+    # the OS environment outranks every dotenv file, so a generic key exported
+    # on a developer's shell would silently replace the project's own. The
+    # /api/connectors environment report names such variables instead, so a
+    # deployment that set the wrong spelling is told, not humoured.
 
     # --- paths -------------------------------------------------------------
     # These defaults assume the repo layout, which holds for local runs and
@@ -100,25 +97,25 @@ class Settings(BaseSettings):
     ui_swarm_enabled: bool = Field(default=True)
 
     # --- credentials (names only; values come from the environment) --------
-    anthropic_api_key: str | None = Field(default=None, validation_alias=_env("ANTHROPIC_API_KEY"))
+    anthropic_api_key: str | None = Field(default=None)
     # Required by newer identity-linked API keys -- confirmed live, 1 Sep 2026:
     # the API rejects such a key with 400 invalid_request_error unless every
     # request names the workspace it acts in. Optional here because a classic
     # (non-identity-linked) key does not need it; sent as a header only when set.
-    anthropic_workspace_id: str | None = Field(default=None, validation_alias=_env("ANTHROPIC_WORKSPACE_ID"))
-    tavily_api_key: str | None = Field(default=None, validation_alias=_env("TAVILY_API_KEY"))
-    virustotal_api_key: str | None = Field(default=None, validation_alias=_env("VIRUSTOTAL_API_KEY"))
-    abuseipdb_api_key: str | None = Field(default=None, validation_alias=_env("ABUSEIPDB_API_KEY"))
+    anthropic_workspace_id: str | None = Field(default=None)
+    tavily_api_key: str | None = Field(default=None)
+    virustotal_api_key: str | None = Field(default=None)
+    abuseipdb_api_key: str | None = Field(default=None)
 
     # Model identifiers, resolved from env so the L9 live-check duty is not
     # silently baked into source. Unset until Step 7 verifies them live.
-    triage_model: str | None = Field(default=None, validation_alias=_env("TRIAGE_MODEL"))
-    reasoning_model: str | None = Field(default=None, validation_alias=_env("REASONING_MODEL"))
+    triage_model: str | None = Field(default=None)
+    reasoning_model: str | None = Field(default=None)
 
     # --- sponsor integrations (Step 12; names only, values from env) -------
-    n8n_webhook_url: str | None = Field(default=None, validation_alias=_env("N8N_WEBHOOK_URL"))
-    swytchcode_api_key: str | None = Field(default=None, validation_alias=_env("SWYTCHCODE_API_KEY"))
-    lyzr_api_key: str | None = Field(default=None, validation_alias=_env("LYZR_API_KEY"))
+    n8n_webhook_url: str | None = Field(default=None)
+    swytchcode_api_key: str | None = Field(default=None)
+    lyzr_api_key: str | None = Field(default=None)
     # Lyzr Agent API endpoint. The exact host must be taken from the operator's
     # Lyzr Studio (it is set per deployment), so it is configured rather than
     # hardcoded; the connector adds this host to the egress allow-list only
@@ -128,14 +125,14 @@ class Settings(BaseSettings):
     # fixed https://agent-prod.studio.lyzr.ai/v3/inference/chat/, the same
     # for every agent; lyzr_agent_id below (sent in the request body) is what
     # actually selects which agent answers.
-    lyzr_guard_url: str | None = Field(default=None, validation_alias=_env("LYZR_GUARD_URL"))
-    lyzr_agent_id: str | None = Field(default=None, validation_alias=_env("LYZR_AGENT_ID"))
+    lyzr_guard_url: str | None = Field(default=None)
+    lyzr_agent_id: str | None = Field(default=None)
     # Additional Lyzr Studio agents, each with its own id and its own job in
     # the pipeline (connectors/lyzr_agents.py). Optional one by one: an unset
     # id means that seam reports not_configured rather than faking an answer.
-    lyzr_triage_agent_id: str | None = Field(default=None, validation_alias=_env("LYZR_TRIAGE_AGENT_ID"))
-    lyzr_review_agent_id: str | None = Field(default=None, validation_alias=_env("LYZR_REVIEW_AGENT_ID"))
-    lyzr_handover_agent_id: str | None = Field(default=None, validation_alias=_env("LYZR_HANDOVER_AGENT_ID"))
+    lyzr_triage_agent_id: str | None = Field(default=None)
+    lyzr_review_agent_id: str | None = Field(default=None)
+    lyzr_handover_agent_id: str | None = Field(default=None)
 
     @property
     def has_swarm_credentials(self) -> bool:
