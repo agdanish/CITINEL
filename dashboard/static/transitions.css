@@ -1,0 +1,63 @@
+/* CITINEL — page-to-page transitions.
+ *
+ * Deliberate exception to motion.css's own "no decorative animation" law, made
+ * with Danish's explicit sign-off, 2 Sep 2026: motion.css binds every effect
+ * to a datum changing, on purpose, because a shimmering SOC console reads as
+ * a marketing site. Switching screens is not that -- it is real navigation
+ * traffic, not an ornament -- but the treatment here is more expressive than
+ * anything else in the console: intentional, asked for, kept in this file so
+ * motion.css's own documented rule stays true of everything else in it.
+ *
+ * Mechanism: the browser's native cross-document View Transitions API. Every
+ * .dc.html page is its own document (no client-side router here), so a plain
+ * <a href> or `location.href = ...` is a full navigation -- normally an
+ * instant, hard cut. `@view-transition { navigation: auto }` asks the browser
+ * to animate that cut instead, on both the page being left and the page
+ * arriving, with zero JavaScript. Chromium-based browsers only, as of this
+ * writing (Chrome/Edge 111+) -- everything else keeps the plain instant
+ * navigation it already had. Nothing here can make a lesser browser worse.
+ */
+
+@view-transition {
+  navigation: auto;
+}
+
+:root {
+  --ctn-page-out-ms: 260ms;
+  --ctn-page-in-ms: 360ms;
+  /* The same signature curve motion.css uses for the arc-draw and needle-sweep
+     devices (a fast start, a soft settle) -- borrowed on purpose, so this new
+     file still moves like the rest of the console's own vocabulary. */
+  --ctn-page-ease: cubic-bezier(0.22, 0.75, 0.25, 1);
+}
+
+@keyframes ctn-page-leave {
+  from { opacity: 1; transform: scale(1) translateY(0); }
+  to   { opacity: 0; transform: scale(1.015) translateY(-6px); }
+}
+@keyframes ctn-page-enter {
+  from { opacity: 0; transform: scale(0.975) translateY(10px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+::view-transition-old(root) {
+  animation: ctn-page-leave var(--ctn-page-out-ms) var(--ctn-page-ease) both;
+}
+::view-transition-new(root) {
+  animation: ctn-page-enter var(--ctn-page-in-ms) var(--ctn-page-ease) both;
+  /* the entering page draws over the leaving one; without this the browser's
+     default cross-fade blend fights the scale and reads muddy for a frame */
+  animation-delay: 40ms;
+}
+
+/* An OS-level "reduce motion" request is not part of what Danish asked to
+   relax -- that preference is the reader's, not the brand's, and motion.js
+   already honours it everywhere else in the console. Cut straight to the
+   new page with no animation at all, same as a browser that lacks the API. */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
