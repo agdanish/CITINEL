@@ -21,6 +21,8 @@ from citinel.config import settings
 from citinel.incidents.state import derive_state
 from citinel.policy.actions import MockEndpoints
 
+from tests.conftest import WRITE_HEADERS
+
 client = TestClient(app_mod.app)
 
 RAW = "EventCode=4624 Account=opr_kiosk LogonType=3 SourceIP=10.4.7.112 Workstation=BR-KIOSK-07"
@@ -107,17 +109,17 @@ class _FakePipeline:
 
 def test_swarm_route_requires_confirm_and_credentials(sandbox, monkeypatch):
     monkeypatch.setattr(settings, "anthropic_api_key", None)
-    assert client.post("/api/incidents/INC-T1/swarm", json={"confirm": True}).status_code == 503
+    assert client.post("/api/incidents/INC-T1/swarm", json={"confirm": True}, headers=WRITE_HEADERS).status_code == 503
     monkeypatch.setattr(settings, "anthropic_api_key", "test-key")
-    assert client.post("/api/incidents/INC-T1/swarm", json={}).status_code == 400
-    assert client.post("/api/incidents/INC-T1/swarm", json={"confirm": True, "x": 1}).status_code in (202, 409) or True
+    assert client.post("/api/incidents/INC-T1/swarm", json={}, headers=WRITE_HEADERS).status_code == 400
+    assert client.post("/api/incidents/INC-T1/swarm", json={"confirm": True, "x": 1}, headers=WRITE_HEADERS).status_code in (202, 409) or True
 
 
 def test_swarm_route_runs_in_background_and_persists(sandbox, monkeypatch):
     monkeypatch.setattr(settings, "anthropic_api_key", "test-key")
     fake = _FakePipeline(_fake_result())
     monkeypatch.setattr(app_mod, "_build_pipeline", lambda ledger: fake)
-    r = client.post("/api/incidents/INC-T1/swarm", json={"confirm": True})
+    r = client.post("/api/incidents/INC-T1/swarm", json={"confirm": True}, headers=WRITE_HEADERS)
     assert r.status_code == 202 and r.json()["running"] is True
     for _ in range(100):
         st = client.get("/api/incidents/INC-T1/swarm/status").json()
@@ -136,7 +138,7 @@ def test_swarm_route_reports_a_failed_run_instead_of_raising(sandbox, monkeypatc
     def boom(ledger):
         raise RuntimeError("model verification failed")
     monkeypatch.setattr(app_mod, "_build_pipeline", boom)
-    assert client.post("/api/incidents/INC-T1/swarm", json={"confirm": True}).status_code == 202
+    assert client.post("/api/incidents/INC-T1/swarm", json={"confirm": True}, headers=WRITE_HEADERS).status_code == 202
     for _ in range(100):
         st = client.get("/api/incidents/INC-T1/swarm/status").json()
         if not st["running"]:
@@ -151,11 +153,11 @@ def test_execute_autonomous_action_writes_the_ledger_and_moves_state(sandbox):
     # query_logs is autonomous with max_assets_auto 0: it touches no bank asset,
     # so a proposal that claims to touch one is escalated to a human (SAFE-F07).
     held = client.post("/api/actions/execute", json={
-        "incident_id": "INC-T1", "action_class": "query_logs", "target": "h1.example", "assets_affected": 1})
+        "incident_id": "INC-T1", "action_class": "query_logs", "target": "h1.example", "assets_affected": 1}, headers=WRITE_HEADERS)
     assert held.status_code == 200 and held.json()["receipt"]["status"] == "awaiting_approval"
     assert held.json()["state"]["state"] == "gated"
     r = client.post("/api/actions/execute", json={
-        "incident_id": "INC-T1", "action_class": "query_logs", "target": "h1.example", "assets_affected": 0})
+        "incident_id": "INC-T1", "action_class": "query_logs", "target": "h1.example", "assets_affected": 0}, headers=WRITE_HEADERS)
     assert r.status_code == 200, r.text
     d = r.json()
     assert d["receipt"]["status"] == "executed" and d["simulated"] is True
@@ -167,26 +169,26 @@ def test_execute_autonomous_action_writes_the_ledger_and_moves_state(sandbox):
 
 def test_execute_assist_action_returns_a_rollback_token_that_really_reverses(sandbox):
     r = client.post("/api/actions/execute", json={
-        "incident_id": "INC-T1", "action_class": "block_ip", "target": "185.151.160.15"})
+        "incident_id": "INC-T1", "action_class": "block_ip", "target": "185.151.160.15"}, headers=WRITE_HEADERS)
     assert r.status_code == 200, r.text
     tok = r.json()["receipt"]["rollback_token"]
     assert tok and "185.151.160.15" in client.get("/api/connectors").json()["mock_endpoints"]["blocked_ips"]
-    rb = client.post(f"/api/actions/rollback/{tok}", json={"incident_id": "INC-T1", "actor": "analyst@x"})
+    rb = client.post(f"/api/actions/rollback/{tok}", json={"incident_id": "INC-T1", "actor": "analyst@x"}, headers=WRITE_HEADERS)
     assert rb.status_code == 200 and rb.json()["receipt"]["status"] == "executed"
     assert "185.151.160.15" not in client.get("/api/connectors").json()["mock_endpoints"]["blocked_ips"]
-    assert client.post("/api/actions/rollback/rbk-nope", json={"incident_id": "INC-T1"}).status_code == 404
+    assert client.post("/api/actions/rollback/rbk-nope", json={"incident_id": "INC-T1"}, headers=WRITE_HEADERS).status_code == 404
 
 
 def test_disable_account_is_held_for_a_named_human_and_executes_only_with_one(sandbox):
     # clause 4.2: approval "always" is structural and outranks the shadow dial.
     held = client.post("/api/actions/execute", json={
-        "incident_id": "INC-T1", "action_class": "disable_account", "target": "WAYNE\\admin"})
+        "incident_id": "INC-T1", "action_class": "disable_account", "target": "WAYNE\\admin"}, headers=WRITE_HEADERS)
     assert held.status_code == 200 and held.json()["receipt"]["status"] == "awaiting_approval"
     assert held.json()["decision"]["verdict"] == "require_approval"
     assert held.json()["state"]["state"] == "gated"
     ok = client.post("/api/actions/execute", json={
         "incident_id": "INC-T1", "action_class": "disable_account", "target": "WAYNE\\admin",
-        "approver": "ciso@bank.example"})
+        "approver": "ciso@bank.example"}, headers=WRITE_HEADERS)
     assert ok.status_code == 200 and ok.json()["receipt"]["status"] == "executed"
     assert "WAYNE\\admin" in client.get("/api/connectors").json()["mock_endpoints"]["disabled_accounts"]
     frames = [(e.actor, e.kind) for e in AuditLedger(sandbox / "ledger.jsonl").entries_for("INC-T1")]
@@ -195,7 +197,7 @@ def test_disable_account_is_held_for_a_named_human_and_executes_only_with_one(sa
 
 def test_execute_unknown_action_class_is_denied_with_the_reason(sandbox):
     r = client.post("/api/actions/execute", json={
-        "incident_id": "INC-T1", "action_class": "block_source_ip", "target": "1.2.3.4"})
+        "incident_id": "INC-T1", "action_class": "block_source_ip", "target": "1.2.3.4"}, headers=WRITE_HEADERS)
     assert r.status_code == 403
     detail = r.json()["detail"]
     assert detail["decision"]["verdict"] == "deny" and "undefined actions are denied" in detail["refused"]
@@ -204,11 +206,11 @@ def test_execute_unknown_action_class_is_denied_with_the_reason(sandbox):
 # --- sign-off ------------------------------------------------------------------
 
 def test_signoff_records_the_human_and_degrades_honestly_without_n8n(sandbox):
-    r = client.post("/api/incidents/INC-T1/signoff", json={"signed_by": "ciso@bank.example"})
+    r = client.post("/api/incidents/INC-T1/signoff", json={"signed_by": "ciso@bank.example"}, headers=WRITE_HEADERS)
     assert r.status_code == 200, r.text
     d = r.json()
     assert d["dispatch"]["status"] == "not_configured" and d["state"]["state"] == "closed"
-    assert client.post("/api/incidents/INC-T1/signoff", json={}).status_code == 400
+    assert client.post("/api/incidents/INC-T1/signoff", json={}, headers=WRITE_HEADERS).status_code == 400
     kinds = [(e.actor, e.kind) for e in AuditLedger(sandbox / "ledger.jsonl").entries_for("INC-T1")]
     assert ("ciso@bank.example", "human_signoff") in kinds and ("n8n", "tool_call") in kinds
 
@@ -256,10 +258,10 @@ def test_explicit_transition_frames_are_honoured_as_written_including_a_reopen()
 
 
 def test_reopen_is_a_named_ledger_frame_and_only_for_closed_records(sandbox):
-    assert client.post("/api/incidents/INC-T1/reopen", json={"by": "a@x", "reason": "r"}).status_code == 409
-    assert client.post("/api/incidents/INC-T1/signoff", json={"signed_by": "ciso@x"}).json()["state"]["state"] == "closed"
-    assert client.post("/api/incidents/INC-T1/reopen", json={"by": "a@x"}).status_code == 400
-    r = client.post("/api/incidents/INC-T1/reopen", json={"by": "analyst@x", "reason": "re-investigation after a rule change"})
+    assert client.post("/api/incidents/INC-T1/reopen", json={"by": "a@x", "reason": "r"}, headers=WRITE_HEADERS).status_code == 409
+    assert client.post("/api/incidents/INC-T1/signoff", json={"signed_by": "ciso@x"}, headers=WRITE_HEADERS).json()["state"]["state"] == "closed"
+    assert client.post("/api/incidents/INC-T1/reopen", json={"by": "a@x"}, headers=WRITE_HEADERS).status_code == 400
+    r = client.post("/api/incidents/INC-T1/reopen", json={"by": "analyst@x", "reason": "re-investigation after a rule change"}, headers=WRITE_HEADERS)
     assert r.status_code == 200 and r.json()["state"]["state"] == "caught"
     frames = [(e.actor, e.kind, e.payload.get("to")) for e in AuditLedger(sandbox / "ledger.jsonl").entries_for("INC-T1")]
     assert ("analyst@x", "state_transition", "caught") in frames
@@ -267,9 +269,9 @@ def test_reopen_is_a_named_ledger_frame_and_only_for_closed_records(sandbox):
 
 
 def test_deny_is_a_named_ledger_frame_that_executes_nothing(sandbox):
-    assert client.post("/api/actions/deny", json={"incident_id": "INC-T1", "action_class": "block_ip", "by": "x"}).status_code == 400
+    assert client.post("/api/actions/deny", json={"incident_id": "INC-T1", "action_class": "block_ip", "by": "x"}, headers=WRITE_HEADERS).status_code == 400
     r = client.post("/api/actions/deny", json={"incident_id": "INC-T1", "action_class": "block_ip", "target": "1.2.3.4",
-                                              "by": "ciso@bank.example", "reason": "the address is a partner VPN egress"})
+                                              "by": "ciso@bank.example", "reason": "the address is a partner VPN egress"}, headers=WRITE_HEADERS)
     assert r.status_code == 200 and r.json()["denied"] is True
     frames = [(e.actor, e.kind, e.payload.get("decision")) for e in AuditLedger(sandbox / "ledger.jsonl").entries_for("INC-T1")]
     assert ("ciso@bank.example", "decision", "proposal_denied") in frames
@@ -279,7 +281,7 @@ def test_deny_is_a_named_ledger_frame_that_executes_nothing(sandbox):
 def test_signoff_carries_the_human_answers_on_the_frame(sandbox):
     r = client.post("/api/incidents/INC-T1/signoff", json={
         "signed_by": "ciso@bank.example", "draft_kind": "certin", "attested": True,
-        "answers": {"financial_loss": "no · held before release", "law_enforcement": "not yet"}})
+        "answers": {"financial_loss": "no · held before release", "law_enforcement": "not yet"}}, headers=WRITE_HEADERS)
     assert r.status_code == 200, r.text
     d = r.json()
     assert d["seq"] and d["entry_hash"] and d["answers"]["law_enforcement"] == "not yet"
@@ -309,8 +311,8 @@ def test_context_is_gathered_from_the_verdict_and_served_with_urls(sandbox, monk
     fake = _FakeTavily()
     monkeypatch.setattr(app_mod, "_tavily", lambda: fake)
     assert client.get("/api/incidents/INC-T1/context").status_code == 404
-    assert client.post("/api/incidents/INC-T1/context", json={}).status_code == 400
-    r = client.post("/api/incidents/INC-T1/context", json={"confirm": True})
+    assert client.post("/api/incidents/INC-T1/context", json={}, headers=WRITE_HEADERS).status_code == 400
+    r = client.post("/api/incidents/INC-T1/context", json={"confirm": True}, headers=WRITE_HEADERS)
     assert r.status_code == 200, r.text
     d = r.json()
     assert d["provider"] == "tavily" and d["credits_used"] == 1 and d["sources"] == 1
@@ -323,7 +325,7 @@ def test_context_is_gathered_from_the_verdict_and_served_with_urls(sandbox, monk
 
 def test_context_refuses_without_a_tavily_key(sandbox, monkeypatch):
     monkeypatch.setattr(settings, "tavily_api_key", None)
-    assert client.post("/api/incidents/INC-T1/context", json={"confirm": True}).status_code == 503
+    assert client.post("/api/incidents/INC-T1/context", json={"confirm": True}, headers=WRITE_HEADERS).status_code == 503
 
 
 def test_plan_queries_names_techniques_first_then_the_noisiest_rules(sandbox):
@@ -383,7 +385,7 @@ def test_handover_note_is_written_by_the_agent_and_served(sandbox, monkeypatch):
     send = _lyzr_sender({"summary": "One record, caught, two findings, no swarm run.", "open_items": ["run the swarm", "confirm the host owner"]})
     monkeypatch.setattr(la, "handover_agent", lambda sender=None: la.LyzrAgent("handover_summary", "agent-handover", "s", sender=send))
     assert client.get("/api/incidents/INC-T1/handover").status_code == 404
-    r = client.post("/api/incidents/INC-T1/handover", json={"confirm": True})
+    r = client.post("/api/incidents/INC-T1/handover", json={"confirm": True}, headers=WRITE_HEADERS)
     assert r.status_code == 200, r.text
     assert r.json()["status"] == "ok" and r.json()["open_items"] == ["run the swarm", "confirm the host owner"]
     assert client.get("/api/incidents/INC-T1/handover").json()["summary"].startswith("One record")
@@ -502,13 +504,13 @@ def test_notify_still_executes_and_isolate_host_still_gates(sandbox):
     while an asset action at its cap still executes as before."""
     r = client.post("/api/actions/execute", json={
         "incident_id": "INC-T1", "action_class": "notify",
-        "target": "SOC on-call", "assets_affected": 0})
+        "target": "SOC on-call", "assets_affected": 0}, headers=WRITE_HEADERS)
     assert r.status_code == 200, r.text
     assert r.json()["receipt"]["status"] == "executed"
 
     r = client.post("/api/actions/execute", json={
         "incident_id": "INC-T1", "action_class": "revoke_sessions",
-        "target": "svc_account", "assets_affected": 1})
+        "target": "svc_account", "assets_affected": 1}, headers=WRITE_HEADERS)
     assert r.status_code == 200, r.text
     assert r.json()["receipt"]["status"] == "executed"
 
@@ -518,7 +520,7 @@ def test_isolate_host_claiming_zero_is_gated_on_one_not_zero(sandbox):
     enforced radius, not the caller's claim."""
     r = client.post("/api/actions/execute", json={
         "incident_id": "INC-T1", "action_class": "isolate_host",
-        "target": "h1.example", "assets_affected": 0})
+        "target": "h1.example", "assets_affected": 0}, headers=WRITE_HEADERS)
     assert r.status_code == 200, r.text
     preview = r.json()["decision"]["intent_preview"]
     assert "assets affected: 1" in preview, preview

@@ -124,6 +124,16 @@ class Settings(BaseSettings):
     # click-through console for the write API. On for local development.
     api_docs: bool = Field(default=False)
 
+    # Gates every state-changing /api/ route. Unset means writes are OFF, not
+    # open -- confirmed live 2 Sep 2026: with no auth of any kind, anyone who
+    # could reach the deployment could forge a human_signoff frame under a
+    # real person's name and the ledger's own verifier would call the
+    # resulting chain "intact". This is a single deployment-wide operator
+    # token (there is no session/user model here), sent as
+    # X-Citinel-Write-Token. Reads are never gated -- the glass-box console
+    # being fully browsable without a login is the product's own thesis.
+    write_token: str | None = Field(default=None)
+
     # --- credentials (names only; values come from the environment) --------
     anthropic_api_key: str | None = Field(default=None)
     # Required by newer identity-linked API keys -- confirmed live, 1 Sep 2026:

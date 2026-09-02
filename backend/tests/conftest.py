@@ -13,6 +13,15 @@ from citinel.policy.actions import MockEndpoints
 
 RAW = "EventCode=4624 Account=opr_kiosk LogonType=3 SourceIP=10.4.7.112 Workstation=BR-KIOSK-07"
 
+#: The sandbox authenticates every write for the duration of the test that
+#: asked for it (via client.headers, reverted after) -- tests exercise the
+#: real authenticated path, not a bypass of the guard added for the
+#: unauthenticated-ledger-forgery finding. A handful of dedicated tests in
+#: test_write_guard.py use a bare TestClient with no header at all to prove
+#: the guard itself: no token configured -> 503, wrong token -> 401.
+TEST_WRITE_TOKEN = "test-write-token-not-a-real-secret"
+WRITE_HEADERS = {"X-Citinel-Write-Token": TEST_WRITE_TOKEN}
+
 
 @pytest.fixture
 def sandbox(tmp_path, monkeypatch):
@@ -46,4 +55,5 @@ def sandbox(tmp_path, monkeypatch):
                 "swytchcode_api_key", "tavily_api_key", "virustotal_api_key", "abuseipdb_api_key"):
         monkeypatch.setattr(settings, key, None)
     monkeypatch.setattr(settings, "simulated_endpoints_only", True)
+    monkeypatch.setattr(settings, "write_token", TEST_WRITE_TOKEN)
     return tmp_path

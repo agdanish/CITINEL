@@ -14,6 +14,8 @@ from fastapi.testclient import TestClient
 import citinel.web.app as app_mod
 from citinel.web.demo_capture import capture_fixtures, find_fixture, load_fixtures
 
+from tests.conftest import WRITE_HEADERS
+
 client = TestClient(app_mod.app)
 
 
@@ -137,7 +139,7 @@ def test_demo_equals_1_never_serves_a_fixture_for_a_write_route(demo_manifest, s
     demo_manifest["routes"]["/api/actions/deny"] = {"status_code": 200, "body": {"denied": True, "faked": True}}
     r = client.post("/api/actions/deny?demo=1", json={
         "incident_id": "INC-T1", "action_class": "notify", "target": "x", "by": "t", "reason": "r",
-    })
+    }, headers=WRITE_HEADERS)
     assert r.status_code == 200
     assert r.json().get("faked") is not True  # the real handler ran, not the planted fixture
 

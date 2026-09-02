@@ -50,7 +50,24 @@
     corpus: null,              // /api/source's answer: 'live' pipeline output or the committed 'seed'
     consumed: {},              // endpoint name -> 'live' | 'failed', written by API.get as pages read
     demoServed: {},            // endpoint name -> true when that specific read came back with X-Citinel-Demo
-    DEMO_MODE: false           // Step 14: replay a captured run instead of live for GETs that support it
+    DEMO_MODE: false,          // Step 14: replay a captured run instead of live for GETs that support it
+    WRITE_TOKEN: null          // operator token sent as X-Citinel-Write-Token on every write; unset -> writes 503
+  };
+
+  // sessionStorage, not localStorage: the token should not outlive the tab it was
+  // typed into on a machine other people may share (a demo laptop at a booth).
+  // Never throws if storage is unavailable (a private window, a locked-down embed).
+  (function () {
+    try { API.WRITE_TOKEN = sessionStorage.getItem('citinel.writeToken') || null; }
+    catch (e) { API.WRITE_TOKEN = null; }
+  })();
+
+  API.setWriteToken = function (token) {
+    API.WRITE_TOKEN = token || null;
+    try {
+      if (token) sessionStorage.setItem('citinel.writeToken', token);
+      else sessionStorage.removeItem('citinel.writeToken');
+    } catch (e) {}
   };
 
   // Sticky across navigation, not just this page: a presenter flips it on once (Settings, or
@@ -203,9 +220,11 @@
     var url = API.BASE + ep.path(a);
     var ctl = typeof AbortController !== 'undefined' ? new AbortController() : null;
     var timer = setTimeout(function () { if (ctl) ctl.abort(); }, opts.timeoutMs || API.WRITE_TIMEOUT_MS);
+    var writeHeaders = { accept: 'application/json', 'content-type': 'application/json' };
+    if (API.WRITE_TOKEN) writeHeaders['X-Citinel-Write-Token'] = API.WRITE_TOKEN;
     return fetch(url, {
       method: 'POST',
-      headers: { accept: 'application/json', 'content-type': 'application/json' },
+      headers: writeHeaders,
       body: JSON.stringify(body || {}),
       signal: ctl ? ctl.signal : undefined
     }).then(function (r) {

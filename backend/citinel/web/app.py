@@ -17,6 +17,7 @@ site-packages, and a path derived from there broke the first deployment.
 from __future__ import annotations
 
 import os
+import secrets
 
 import threading
 from collections import Counter
@@ -26,7 +27,7 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, Header, HTTPException
-from fastapi.responses import RedirectResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
 from citinel.agents.context import gather_context, load_context
@@ -193,6 +194,45 @@ async def _serve_demo_capture(request, call_next):
             resp = JSONResponse(content=fx["body"], status_code=fx["status_code"])
             resp.headers["X-Citinel-Demo"] = "1"
             return resp
+    return await call_next(request)
+
+
+@app.middleware("http")
+async def _guard_writes(request, call_next):
+    """Every state-changing /api/ route requires a token. Confirmed live,
+    2 Sep 2026: with no auth of any kind, an anonymous caller could POST a
+    human_signoff naming a real person, and /api/ledger/verify would call
+    the resulting hash-chained record "intact" -- an append-only ledger
+    proves nothing about who really wrote to it without this.
+
+    Deliberately a middleware, not per-route Depends(): it covers every
+    current write route AND any future one without a second place to
+    remember, and it runs before routing, so a malformed or unrouted
+    request never reaches a handler either. Reads are never touched --
+    GET/HEAD/OPTIONS pass straight through regardless of path, because a
+    console nobody can browse without a login defeats the entire premise
+    of a glass-box audit trail.
+
+    Unset CITINEL_WRITE_TOKEN means writes are OFF, not open: a deployment
+    that forgot to set it is a safe read-only demo, never an exposed one.
+    That is deliberately a different status (503, "not configured") from a
+    present-but-wrong token (401, "wrong credential") -- an operator
+    debugging a stuck console needs to tell those apart at a glance.
+    """
+    if request.method not in ("GET", "HEAD", "OPTIONS") and request.url.path.startswith("/api/"):
+        token = settings.write_token
+        if not token:
+            return JSONResponse(
+                {"detail": "write operations are disabled on this deployment "
+                            "(CITINEL_WRITE_TOKEN is not configured)"},
+                status_code=503,
+            )
+        supplied = request.headers.get("X-Citinel-Write-Token", "")
+        if not supplied or not secrets.compare_digest(supplied, token):
+            return JSONResponse(
+                {"detail": "write operations require a valid X-Citinel-Write-Token header"},
+                status_code=401,
+            )
     return await call_next(request)
 
 

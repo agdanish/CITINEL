@@ -163,6 +163,14 @@
       <x-import component-from-global-scope="CITINELDesignSystem_fdfd66.Button" variant="{{ demoButtonVariant }}" size="sm" disabled="{{ demoButtonDisabled }}" on-click="{{ toggleDemoMode }}" hint-size="190px,32px">{{ demoButtonLabel }}</x-import>
     </div>
 
+    <div style="flex:none;display:flex;align-items:center;gap:10px 16px;flex-wrap:wrap;padding:0 20px 16px;min-width:0;border-bottom:1px solid var(--ctn-color-border-hairline)">
+      <span style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.14em;color:var(--ctn-color-text-primary);flex:none">WRITE TOKEN</span>
+      <span style="font-size:11.5px;color:var(--ctn-color-text-secondary);flex:1;min-width:0;line-height:1.4">{{ writeTokenStatusLine }}</span>
+      <input type="password" value="{{ writeTokenInput }}" onChange="{{ onWriteTokenInput }}" placeholder="paste the operator token" style="font-family:var(--ctn-font-mono);font-size:12px;letter-spacing:0;padding:7px 10px;background:var(--ctn-color-surface-well);border:1px solid var(--ctn-color-border-strong);border-radius:6px;color:var(--ctn-color-text-primary);width:220px;flex:none">
+      <x-import component-from-global-scope="CITINELDesignSystem_fdfd66.Button" variant="secondary" size="sm" disabled="{{ writeTokenSaveDisabled }}" on-click="{{ saveWriteToken }}" hint-size="70px,32px">SAVE</x-import>
+      <x-import component-from-global-scope="CITINELDesignSystem_fdfd66.Button" variant="secondary" size="sm" disabled="{{ writeTokenClearDisabled }}" on-click="{{ clearWriteToken }}" hint-size="70px,32px">CLEAR</x-import>
+    </div>
+
     <div style="flex:none;display:grid;grid-template-columns:56px minmax(0,1fr) minmax(165px,250px) 1fr 116px;gap:0 16px;padding:0 20px 6px;border-bottom:1px solid var(--ctn-color-border-strong);font-family:var(--ctn-font-display);font-size:8px;letter-spacing:0.12em;color:var(--ctn-color-text-muted);min-width:0">
       <span>FLANGE</span><span>RESPONSE ACTION</span><span>WHAT THE MOCK DOES</span><span>{{ colFour }}</span><span>LAST RUN</span>
     </div>
@@ -216,7 +224,7 @@
 class Component extends DCLogic {
   constructor(p){
     super(p);
-    this.state = {role:this.roleInit(), now:Date.now(), eps:2380, live: null, connectorsResult: null, liveError: null, sourceResult: null};
+    this.state = {role:this.roleInit(), now:Date.now(), eps:2380, live: null, connectorsResult: null, liveError: null, sourceResult: null, writeTokenDraft: ''};
     this.inletDefs = [
       {name:'UPI switch', transport:'upi-sw-01 · syslog tcp/6514', ocsf:'class 3001 · Application Activity', rate:'2,380/s', state:'OPEN', note:'last packet 0.4s ago', v:'open'},
       {name:'Finacle CBS audit trail', transport:'Finacle Connector Pack · CDC reader', ocsf:'class 6005 · Datastore Activity', rate:'41/min', state:'OPEN', note:'lag 2s · maker-checker fields present', v:'open'},
@@ -268,6 +276,19 @@ class Component extends DCLogic {
     const API = window.CITINEL_API; if (!API) return;
     API.setDemoMode(!API.DEMO_MODE);
     location.reload();
+  }
+  onWriteTokenInput(e){ this.setState({writeTokenDraft: (e && e.target ? e.target.value : e) || ''}); }
+  saveWriteToken(){
+    const API = window.CITINEL_API; if (!API) return;
+    const draft = this.state.writeTokenDraft.trim();
+    if (!draft) return;
+    API.setWriteToken(draft);
+    this.setState({writeTokenDraft: ''});
+  }
+  clearWriteToken(){
+    const API = window.CITINEL_API; if (!API) return;
+    API.setWriteToken(null);
+    this.setState({writeTokenDraft: ''});
   }
   componentWillUnmount(){ clearInterval(this.t); if(this.unsubRole) this.unsubRole(); }
   roleInit(){ try{ return (window.CitinelRole && window.CitinelRole.get()) || 'analyst'; }catch(e){ return 'analyst'; } }
@@ -323,6 +344,19 @@ class Component extends DCLogic {
       demoButtonVariant: demoMode ? 'primary' : 'secondary',
       demoButtonDisabled: !demoMode && !demoAvailable,
       toggleDemoMode: () => this.toggleDemoMode(),
+
+      writeTokenStatusLine: (API && API.WRITE_TOKEN)
+        ? 'a token is set for this browser tab -- executing, denying, signing off, reopening, running the swarm, '
+          + 'and gathering context/handover will send it; it is never written to this file or shown again once saved'
+        : 'no token set -- every write in this tab will be refused until one is entered here (from citinel-web, '
+          + 'not shown by the console); reads are never affected',
+      writeTokenInput: s.writeTokenDraft,
+      onWriteTokenInput: (e) => this.onWriteTokenInput(e),
+      writeTokenSaveDisabled: !s.writeTokenDraft || !s.writeTokenDraft.trim(),
+      writeTokenClearDisabled: !(API && API.WRITE_TOKEN),
+      saveWriteToken: () => this.saveWriteToken(),
+      clearWriteToken: () => this.clearWriteToken(),
+
       inletSummary: '4 / 6 clean',
       epsTotal: s.eps.toLocaleString('en-IN'),
       inlets: this.inletDefs.map(i=>{
