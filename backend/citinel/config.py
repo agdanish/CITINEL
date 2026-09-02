@@ -118,6 +118,12 @@ class Settings(BaseSettings):
     # explicit {"confirm": true} body and runs one incident at a time.
     ui_swarm_enabled: bool = Field(default=True)
 
+    # The interactive API console (/docs, /redoc, /openapi.json). Off by
+    # default: these routes are unauthenticated and this API writes to the
+    # audit ledger, so the framework default handed every visitor a
+    # click-through console for the write API. On for local development.
+    api_docs: bool = Field(default=False)
+
     # --- credentials (names only; values come from the environment) --------
     anthropic_api_key: str | None = Field(default=None)
     # Required by newer identity-linked API keys -- confirmed live, 1 Sep 2026:

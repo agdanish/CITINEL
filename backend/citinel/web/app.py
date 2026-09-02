@@ -89,10 +89,23 @@ ENDPOINTS = MockEndpoints()
 _SWARM_RUNS: dict[str, dict[str, Any]] = {}
 _SWARM_LOCK = threading.Lock()
 
+#: The interactive API console is off unless a deployment asks for it. FastAPI
+#: serves /docs, /redoc and /openapi.json to anyone by default, and this API's
+#: write routes append to the audit ledger, execute policy-gated actions and
+#: spend real model tokens -- so the default shipped a no-tooling, click-through
+#: UI for forging ledger frames to every visitor (confirmed live, 200 on all
+#: three, 2 Sep 2026). The schema is not a secret, but handing an anonymous
+#: caller a Try-It-Out button for the write API is a different thing entirely.
+#: CITINEL_API_DOCS=true restores them for local work.
+_DOCS = settings.api_docs
+
 app = FastAPI(
     title="CITINEL",
     description="Caught. Cited. Gated. Actioned. Closed.",
     version="0.2.0",
+    docs_url="/docs" if _DOCS else None,
+    redoc_url="/redoc" if _DOCS else None,
+    openapi_url="/openapi.json" if _DOCS else None,
 )
 
 
@@ -737,6 +750,44 @@ def write_handover(incident_id: str, body: dict | None = None) -> dict:
     return note
 
 
+#: Classes that touch no bank asset at all -- they read intel, run a scoped
+#: query, or message a human. Their honest radius is 0, and the policy caps
+#: them at 0 precisely so that a proposal CLAIMING one escalates.
+_ASSET_FREE_CLASSES = frozenset({"enrich_ioc", "query_logs", "notify"})
+
+
+def _enforced_blast_radius(action_class: str, claimed: int) -> int:
+    """The radius the gate actually gates on -- floored here, never lowered.
+
+    SAFE-F07 escalates an action whose blast radius exceeds its clause's
+    automatic cap. Until now that radius arrived in the request body and was
+    used as given, so the one number the safety rail turns on was chosen by the
+    caller: an anonymous POST claiming assets_affected 0 for isolate_host
+    walked past the cap. The console forwards the Marshal's own figure, so a
+    hallucinated count had the same effect with no attacker present.
+
+    The rule is a FLOOR and nothing else, in one direction only:
+
+      - an asset-touching class is floored to 1, because an action executed
+        against a named target touches at least that target
+      - an asset-free class passes through untouched. Flooring those would be
+        actively wrong: claiming 1 for query_logs is anomalous and the policy
+        escalates it on purpose, and an earlier cut of this function pinned
+        them to 0 in both directions -- which deleted that fail-safe. The
+        existing suite caught it.
+
+    Overstating is always allowed: it can only escalate, never authorise.
+
+    What is NOT closed, stated plainly: a caller can still understate a
+    genuinely bulk action as a small one -- 50 hosts declared as 3. Closing
+    that needs the server to compute the real target set per action class,
+    which is a larger change than this boundary fix.
+    """
+    if action_class in _ASSET_FREE_CLASSES:
+        return claimed
+    return max(1, claimed)
+
+
 @app.post("/api/actions/execute")
 def execute_action(body: dict) -> dict:
     """Run one proposal through the gate and, if it clears, carry it out on the
@@ -756,11 +807,12 @@ def execute_action(body: dict) -> dict:
     try:
         # 0 is a real value here: the policy's "touches no bank asset" classes cap at 0,
         # so a falsy-default would silently turn every such proposal into an escalation
-        assets = 1 if raw_assets is None or raw_assets == "" else int(raw_assets)
+        claimed = 1 if raw_assets is None or raw_assets == "" else int(raw_assets)
     except (TypeError, ValueError):
         raise HTTPException(400, "assets_affected must be an integer")
-    if assets < 0:
+    if claimed < 0:
         raise HTTPException(400, "assets_affected cannot be negative")
+    assets = _enforced_blast_radius(action_class, claimed)
     approver = body.get("approver")
 
     decision = PolicyGate(POLICY_PATH).check(action_class, assets, target)

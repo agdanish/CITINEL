@@ -469,3 +469,56 @@ def test_connectors_environment_report_dotenv_defines_names_not_values(sandbox, 
     row = r.json()["environment"]["dotenv"][0]
     assert row["present"] is True
     assert row["defines"] == {"CITINEL_LYZR_AGENT_ID": "set", "CITINEL_N8N_WEBHOOK_URL": "blank"}
+
+
+# --- SAFE-F07: the gate must not turn on a number the caller chose -----------
+
+def test_understated_blast_radius_cannot_slip_an_asset_action_past_the_cap(sandbox):
+    """An asset-touching class claiming 0 is floored to 1. Before this, the one
+    number SAFE-F07 gates on arrived in the request body and was used as given."""
+    from citinel.web.app import _enforced_blast_radius
+    assert _enforced_blast_radius("isolate_host", 0) == 1
+    assert _enforced_blast_radius("block_ip", 0) == 1
+    assert _enforced_blast_radius("quarantine_file", -0) == 1
+
+
+def test_asset_free_classes_pass_through_so_the_fail_safe_survives(sandbox):
+    """enrich_ioc / query_logs / notify are 0 honestly, and a claim of 1 is
+    anomalous -- the policy escalates it deliberately (SAFE-F07). Flooring
+    these would delete that behaviour, so they pass through untouched."""
+    from citinel.web.app import _enforced_blast_radius
+    for cls in ("enrich_ioc", "query_logs", "notify"):
+        assert _enforced_blast_radius(cls, 0) == 0
+        assert _enforced_blast_radius(cls, 1) == 1   # still escalates downstream
+
+
+def test_overstating_is_allowed_because_it_only_ever_escalates(sandbox):
+    from citinel.web.app import _enforced_blast_radius
+    assert _enforced_blast_radius("block_ip", 50) == 50
+
+
+def test_notify_still_executes_and_isolate_host_still_gates(sandbox):
+    """The demo path must not regress: notify is asset-free and autonomous,
+    while an asset action at its cap still executes as before."""
+    r = client.post("/api/actions/execute", json={
+        "incident_id": "INC-T1", "action_class": "notify",
+        "target": "SOC on-call", "assets_affected": 0})
+    assert r.status_code == 200, r.text
+    assert r.json()["receipt"]["status"] == "executed"
+
+    r = client.post("/api/actions/execute", json={
+        "incident_id": "INC-T1", "action_class": "revoke_sessions",
+        "target": "svc_account", "assets_affected": 1})
+    assert r.status_code == 200, r.text
+    assert r.json()["receipt"]["status"] == "executed"
+
+
+def test_isolate_host_claiming_zero_is_gated_on_one_not_zero(sandbox):
+    """The end-to-end proof: the decision the gate records must show the
+    enforced radius, not the caller's claim."""
+    r = client.post("/api/actions/execute", json={
+        "incident_id": "INC-T1", "action_class": "isolate_host",
+        "target": "h1.example", "assets_affected": 0})
+    assert r.status_code == 200, r.text
+    preview = r.json()["decision"]["intent_preview"]
+    assert "assets affected: 1" in preview, preview
