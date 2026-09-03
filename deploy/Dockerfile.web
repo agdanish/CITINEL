@@ -40,4 +40,9 @@ ENV CITINEL_DATA_DIR=/app/data \
 # Render provides $PORT; the web role binds it.
 ENV CITINEL_ROLE=web
 EXPOSE 8000
-CMD ["sh", "-c", "uvicorn citinel.web.app:app --host 0.0.0.0 --port ${PORT:-8000}"]
+# First boot on a fresh disk only: copy the shipped ledger onto it so the
+# audit screen opens with the corpus's own history instead of an empty chain.
+# Idempotent -- once the file exists, later restarts keep everything appended
+# since. Fails open: if the copy cannot happen the service still starts, and
+# the ledger is simply created on first append.
+CMD ["sh", "-c", "if [ -n \"$CITINEL_LEDGER_PATH\" ] && [ ! -f \"$CITINEL_LEDGER_PATH\" ]; then mkdir -p \"$(dirname \"$CITINEL_LEDGER_PATH\")\" && cp /app/data/seed/ledger.jsonl \"$CITINEL_LEDGER_PATH\" 2>/dev/null || true; fi; uvicorn citinel.web.app:app --host 0.0.0.0 --port ${PORT:-8000}"]

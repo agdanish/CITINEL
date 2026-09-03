@@ -26,6 +26,70 @@
 # dashboard as environment variables, never committed. sync:false marks them as
 # dashboard-managed so the Blueprint never carries a value.
 
+# =========================================================================
+# Shared configuration, set once. Every secret below was previously declared
+# TWICE -- once on citinel-web, once on citinel-pipeline -- which meant
+# entering each value twice in the dashboard and a standing risk of the two
+# drifting apart. Values still never live in this file: sync:false means
+# "prompt me in the dashboard".
+# =========================================================================
+envVarGroups:
+  - name: citinel-shared
+    envVars:
+      # --- safety rails (identical on both services by design) -------------
+      - key: CITINEL_SIMULATED_ENDPOINTS_ONLY
+        value: "true"
+      - key: CITINEL_DEFAULT_AUTONOMY
+        value: shadow
+      - key: CITINEL_AUTO_SWARM
+        value: "false"
+      - key: CITINEL_AUTO_SWARM_MAX_PER_CYCLE
+        value: "3"
+      # --- the swarm's models ----------------------------------------------
+      - key: CITINEL_ANTHROPIC_API_KEY
+        sync: false
+      - key: CITINEL_ANTHROPIC_WORKSPACE_ID
+        sync: false
+      - key: CITINEL_TRIAGE_MODEL
+        sync: false
+      - key: CITINEL_REASONING_MODEL
+        sync: false
+      # --- enrichment and partner seams ------------------------------------
+      - key: CITINEL_TAVILY_API_KEY
+        sync: false
+      - key: CITINEL_VIRUSTOTAL_API_KEY
+        sync: false
+      - key: CITINEL_ABUSEIPDB_API_KEY
+        sync: false
+      - key: CITINEL_N8N_WEBHOOK_URL
+        sync: false
+      - key: CITINEL_SWYTCHCODE_API_KEY
+        sync: false
+      # --- gemini: the wide-lens sweep over findings nobody read -----------
+      - key: CITINEL_GEMINI_API_KEY
+        sync: false
+      - key: CITINEL_GEMINI_MODEL
+        value: gemini-3.1-flash-lite
+      # --- lyzr: the governance agent and its six seams --------------------
+      - key: CITINEL_LYZR_API_KEY
+        sync: false
+      - key: CITINEL_LYZR_GUARD_URL
+        sync: false
+      - key: CITINEL_LYZR_AGENT_ID
+        sync: false
+      - key: CITINEL_LYZR_TRIAGE_AGENT_ID
+        sync: false
+      - key: CITINEL_LYZR_REVIEW_AGENT_ID
+        sync: false
+      - key: CITINEL_LYZR_HANDOVER_AGENT_ID
+        sync: false
+      - key: CITINEL_LYZR_VERDICT_AGENT_ID
+        sync: false
+      - key: CITINEL_LYZR_RESPONSE_AGENT_ID
+        sync: false
+      - key: CITINEL_LYZR_CORPUS_AGENT_ID
+        sync: false
+
 services:
   # --- web: glass-box dashboard + API ---------------------------------------
   # Plan note: `starter`, not `free`. Free web services spin down after 15
@@ -41,64 +105,42 @@ services:
     dockerfilePath: ./deploy/Dockerfile.web
     plan: starter
     healthCheckPath: /healthz
+    # The container filesystem is ephemeral: without this disk every sign-off,
+    # gate decision and swarm result written during a demo is gone on the next
+    # deploy, and the service silently falls back to the committed seed
+    # corpus. Mounted at its own path, NOT over /app/data -- a disk there
+    # would shadow the seed corpus baked into the image and leave the service
+    # with no data at all.
+    disk:
+      name: citinel-ledger
+      mountPath: /var/citinel
+      sizeGB: 1
     envVars:
+      # Points the ledger at the disk above. Unset (locally, in tests, on the
+      # worker) means the default beside the corpus -- see config.py.
+      - key: CITINEL_LEDGER_PATH
+        value: /var/citinel/ledger.jsonl
+      # every shared secret and rail comes from one place
+      - fromGroup: citinel-shared
       - key: CITINEL_ROLE
         value: web
-      - key: CITINEL_SIMULATED_ENDPOINTS_ONLY
-        value: "true"
-      - key: CITINEL_DEFAULT_AUTONOMY
-        value: shadow
       # Off by default, deliberately: the worker auto-running the swarm on
       # every CAUGHT incident risks silently re-billing already-investigated
       # incidents on a rebuild (see worker/run.py's own comment). Opt in only
       # once that's understood. Declared on both services for config
       # completeness even though only the worker actually reads it.
-      - key: CITINEL_AUTO_SWARM
-        value: "false"
-      - key: CITINEL_AUTO_SWARM_MAX_PER_CYCLE
-        value: "3"
-      - key: CITINEL_ANTHROPIC_API_KEY
-        sync: false
       # Only needed for an identity-linked API key (confirmed live, 1 Sep
       # 2026: such a key is rejected with 400 unless every request names the
       # workspace it acts in). Find it at platform.claude.com -> Settings ->
       # Workspaces. Leave blank for a classic key; the header is only sent
       # when this is set.
-      - key: CITINEL_ANTHROPIC_WORKSPACE_ID
-        sync: false
-      - key: CITINEL_TAVILY_API_KEY
-        sync: false
-      - key: CITINEL_VIRUSTOTAL_API_KEY
-        sync: false
-      - key: CITINEL_ABUSEIPDB_API_KEY
-        sync: false
       # Model ids are chosen deliberately and verified live against
       # GET /v1/models before use (ledger rule L9) -- never defaulted in code,
       # so they must be set here or the swarm refuses to start.
-      - key: CITINEL_TRIAGE_MODEL
-        sync: false
-      - key: CITINEL_REASONING_MODEL
-        sync: false
       # Sponsor integrations. Every one degrades gracefully when unset
       # (connector reports not_configured), so leaving them blank is safe --
       # but they are declared here so Render prompts for them rather than
       # leaving an operator to discover the names from source.
-      - key: CITINEL_N8N_WEBHOOK_URL
-        sync: false
-      - key: CITINEL_SWYTCHCODE_API_KEY
-        sync: false
-      - key: CITINEL_LYZR_API_KEY
-        sync: false
-      - key: CITINEL_LYZR_GUARD_URL
-        sync: false
-      - key: CITINEL_LYZR_AGENT_ID
-        sync: false
-      - key: CITINEL_LYZR_TRIAGE_AGENT_ID
-        sync: false
-      - key: CITINEL_LYZR_REVIEW_AGENT_ID
-        sync: false
-      - key: CITINEL_LYZR_HANDOVER_AGENT_ID
-        sync: false
       - key: CITINEL_DATABASE_URL
         fromDatabase:
           name: citinel-postgres
@@ -116,57 +158,21 @@ services:
     # a worker service.
     plan: starter
     envVars:
+      # every shared secret and rail comes from one place
+      - fromGroup: citinel-shared
       - key: CITINEL_ROLE
         value: worker
-      - key: CITINEL_SIMULATED_ENDPOINTS_ONLY
-        value: "true"
       # Was missing entirely on this service (coherence-audit finding, fixed
       # here rather than left as a note) -- the worker is the service that
       # actually executes autonomy-gated actions, so relying on the
       # in-code default matching by coincidence was the wrong call.
-      - key: CITINEL_DEFAULT_AUTONOMY
-        value: shadow
-      - key: CITINEL_AUTO_SWARM
-        value: "false"
-      - key: CITINEL_AUTO_SWARM_MAX_PER_CYCLE
-        value: "3"
-      - key: CITINEL_ANTHROPIC_API_KEY
-        sync: false
-      - key: CITINEL_ANTHROPIC_WORKSPACE_ID
-        sync: false
-      - key: CITINEL_TAVILY_API_KEY
-        sync: false
-      - key: CITINEL_VIRUSTOTAL_API_KEY
-        sync: false
-      - key: CITINEL_ABUSEIPDB_API_KEY
-        sync: false
       # Model ids are chosen deliberately and verified live against
       # GET /v1/models before use (ledger rule L9) -- never defaulted in code,
       # so they must be set here or the swarm refuses to start.
-      - key: CITINEL_TRIAGE_MODEL
-        sync: false
-      - key: CITINEL_REASONING_MODEL
-        sync: false
       # Sponsor integrations. Every one degrades gracefully when unset
       # (connector reports not_configured), so leaving them blank is safe --
       # but they are declared here so Render prompts for them rather than
       # leaving an operator to discover the names from source.
-      - key: CITINEL_N8N_WEBHOOK_URL
-        sync: false
-      - key: CITINEL_SWYTCHCODE_API_KEY
-        sync: false
-      - key: CITINEL_LYZR_API_KEY
-        sync: false
-      - key: CITINEL_LYZR_GUARD_URL
-        sync: false
-      - key: CITINEL_LYZR_AGENT_ID
-        sync: false
-      - key: CITINEL_LYZR_TRIAGE_AGENT_ID
-        sync: false
-      - key: CITINEL_LYZR_REVIEW_AGENT_ID
-        sync: false
-      - key: CITINEL_LYZR_HANDOVER_AGENT_ID
-        sync: false
       - key: CITINEL_DATABASE_URL
         fromDatabase:
           name: citinel-postgres
@@ -199,6 +205,31 @@ services:
   # 2GB is what n8n's own docs recommend as a minimum. ~$25/mo against the
   # $50 hackathon credit, prorated for the days remaining -- a few dollars,
   # not a real budget risk.
+  # --- cron: scheduled tamper check on the audit ledger ---------------------
+  # A hash-chained ledger only protects anything if somebody verifies it. The
+  # console verifies on demand -- that is, exactly when a human happens to
+  # look. This runs the same check every six hours from outside the web
+  # service and escalates through n8n when the chain does not hold. It talks
+  # HTTP on purpose: a cron gets its own container and cannot see the web
+  # service's disk, and asking the running deployment tests what is actually
+  # served rather than some other copy of the data.
+  - type: cron
+    name: citinel-ledger-watch
+    runtime: docker
+    dockerfilePath: ./deploy/Dockerfile.web
+    plan: starter
+    schedule: "0 */6 * * *"
+    dockerCommand: python -m citinel.ops.ledger_watch
+    envVars:
+      # the n8n webhook the alert goes to, shared with everything else
+      - fromGroup: citinel-shared
+      - key: CITINEL_ROLE
+        value: cron
+      # The public URL, deliberately: verifying over the front door proves
+      # what a visitor actually gets, TLS and routing included.
+      - key: CITINEL_WEB_URL
+        value: https://citinel-web.onrender.com
+
   - type: web
     name: citinel-n8n
     runtime: image
