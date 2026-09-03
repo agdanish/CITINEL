@@ -302,7 +302,30 @@ class _FakeTavily:
                                 source_url="https://attack.mitre.org/techniques/T1078/",
                                 fetched_at="2026-09-02T00:00:00+00:00",
                                 detail={"results": [{"title": "Valid Accounts, Technique T1078",
-                                                     "url": "https://attack.mitre.org/techniques/T1078/", "score": 0.9}]})
+                                                     "url": "https://attack.mitre.org/techniques/T1078/", "score": 0.9}],
+                                        "answer": "an answer"})
+
+    def extract(self, url, max_chars=4000):
+        from citinel.connectors.base import EnrichmentResult
+        self.queries.append("extract:" + url)
+        return EnrichmentResult("tavily", "extract:" + url, "url", "ok", verdict="the full CERT-In text",
+                                source_url=url, fetched_at="2026-09-02T00:00:00+00:00",
+                                detail={"truncated": False, "full_length": 22})
+
+    def map_site(self, url, limit=10, select_paths=None):
+        from citinel.connectors.base import EnrichmentResult
+        self.queries.append("map:" + url)
+        return EnrichmentResult("tavily", "map:" + url, "url", "ok", verdict="2 page(s) discovered",
+                                source_url=url, fetched_at="2026-09-02T00:00:00+00:00",
+                                detail={"urls": ["https://attack.mitre.org/techniques/T1078/001/",
+                                                 "https://attack.mitre.org/techniques/T1078/002/"]})
+
+    def crawl(self, url, limit=3, select_paths=None, max_chars=2500):
+        from citinel.connectors.base import EnrichmentResult
+        self.queries.append("crawl:" + url)
+        return EnrichmentResult("tavily", "crawl:" + url, "url", "ok", verdict="1 page(s) crawled",
+                                source_url=url, fetched_at="2026-09-02T00:00:00+00:00",
+                                detail={"pages": [{"url": url, "text": "the full ATT&CK technique page"}]})
 
 
 def test_context_is_gathered_from_the_verdict_and_served_with_urls(sandbox, monkeypatch):
@@ -315,12 +338,60 @@ def test_context_is_gathered_from_the_verdict_and_served_with_urls(sandbox, monk
     r = client.post("/api/incidents/INC-T1/context", json={"confirm": True}, headers=WRITE_HEADERS)
     assert r.status_code == 200, r.text
     d = r.json()
-    assert d["provider"] == "tavily" and d["credits_used"] == 1 and d["sources"] == 1
+    # no correlation -> one rule query, plus the always-fireable regulatory query
+    # (no campaign query: that needs two distinct techniques, and there are none);
+    # the regulatory query also spends one Extract call on its top source
+    assert d["provider"] == "tavily" and d["credits_used"] == 3 and d["sources"] == 2
     assert d["queries"][0]["kind"] == "rule" and d["queries"][0]["for"] == "Suspicious Logon"
     assert d["queries"][0]["results"][0]["url"].startswith("https://attack.mitre.org")
+    assert d["queries"][1]["kind"] == "regulatory"
+    assert d["queries"][1]["extracted"]["status"] == "ok"
+    assert d["queries"][1]["extracted"]["text"] == "the full CERT-In text"
     assert "not_evidence" in d
-    assert client.get("/api/incidents/INC-T1/context").json()["sources"] == 1
+    assert client.get("/api/incidents/INC-T1/context").json()["sources"] == 2
     assert client.get("/api/source").json()["context_gathered"] == ["INC-T1"]
+
+
+def test_attack_map_and_crawl_run_once_for_the_first_technique_only(sandbox, monkeypatch):
+    """Four primitives, and the ATT&CK pair bounded to one technique: two
+    technique queries must still produce exactly one map + one crawl call."""
+    from citinel.agents.contracts import Correlation, KillChainStage
+    r = _fake_result()
+    r.correlation = Correlation(
+        stages=[KillChainStage(technique_id="T1078.002", technique_name="Domain Accounts",
+                               what_happened="A domain account logged on from a kiosk."),
+                KillChainStage(technique_id="T1021.002", technique_name="SMB Admin Shares",
+                               what_happened="It then reached an admin share.")],
+        summary="Valid accounts, then lateral movement.", hosts_involved=["BR-KIOSK-07"])
+    save_result(r, sandbox)
+    monkeypatch.setattr(settings, "tavily_api_key", "tvly-test")
+    fake = _FakeTavily()
+    monkeypatch.setattr(app_mod, "_tavily", lambda: fake)
+    d = client.post("/api/incidents/INC-T1/context", json={"confirm": True},
+                    headers=WRITE_HEADERS).json()
+
+    # exactly one map and one crawl, despite two technique queries
+    assert sum(1 for q in fake.queries if q.startswith("map:")) == 1
+    assert sum(1 for q in fake.queries if q.startswith("crawl:")) == 1
+    # the sub-technique id resolved to its ROOT ATT&CK page
+    assert "map:https://attack.mitre.org/techniques/T1078/" in fake.queries
+
+    techs = [q for q in d["queries"] if q["kind"] == "technique"]
+    assert "attack_detail" in techs[0] and "attack_detail" not in techs[1]
+    det = techs[0]["attack_detail"]
+    assert det["map_status"] == "ok" and det["crawl_status"] == "ok"
+    assert len(det["mapped_urls"]) == 2 and det["crawled"][0]["text"].startswith("the full ATT&CK")
+    # all four primitives recorded, from what actually happened
+    assert d["primitives_used"] == ["search", "extract", "map", "crawl"]
+    # one extracted regulatory page + one crawled ATT&CK page, counted apart from search hits
+    assert d["pages_retrieved"] == 2
+
+
+def test_attack_url_resolves_a_root_page_or_nothing():
+    from citinel.agents.context import attack_url
+    assert attack_url("T1078.002") == "https://attack.mitre.org/techniques/T1078/"
+    assert attack_url("t1059") == "https://attack.mitre.org/techniques/T1059/"
+    assert attack_url("") == "" and attack_url("not-a-technique") == ""
 
 
 def test_context_refuses_without_a_tavily_key(sandbox, monkeypatch):
@@ -336,7 +407,10 @@ def test_plan_queries_names_techniques_first_then_the_noisiest_rules(sandbox):
                                            {"technique_id": "T1078", "technique_name": "dup"},
                                            {"technique_id": "T1021.002", "technique_name": "SMB/Windows Admin Shares"}]}}
     plan = plan_queries(inc, verdict)
-    assert [q["for"] for q in plan] == ["T1078", "T1021.002", "Suspicious Logon"]
+    # technique, then rule, then the always-fireable regulatory query, then the
+    # campaign query (fires because two distinct techniques were found)
+    assert [q["for"] for q in plan] == ["T1078", "T1021.002", "Suspicious Logon", "high", "T1078 and T1021.002"]
+    assert [q["kind"] for q in plan] == ["technique", "technique", "rule", "regulatory", "campaign"]
     assert all("Tavily" not in q["query"] for q in plan)
 
 

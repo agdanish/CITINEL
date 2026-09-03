@@ -3,6 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CITINEL · Confidence panel</title>
+<meta name="description" content="The verdict as a two-column ledger of supporting and counter claims, each pinned to the exact log line that carries it.">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<meta name="theme-color" content="#0B1F3A">
 <script src="vendor/resources.js"></script>
 <script src="./support.js"></script>
 <!-- Render-blocking, deliberately. The same sheets are declared again in the
@@ -55,16 +63,16 @@
 <div data-screen-label="Confidence panel" data-citinel-page="confidence" style="display:flex;flex-direction:column;height:100vh;min-width:1280px;background:var(--ctn-color-surface-shell)">
 
   <header style="display:flex;align-items:center;gap:18px;padding:0 18px;height:52px;flex:none;border-bottom:1px solid var(--ctn-color-border-strong);background:var(--ctn-color-surface-panel);min-width:0">
-    <img src="assets/mark-white.png" alt="CITINEL · caught, cited, gated, actioned, closed" style="height:34px;width:90px;display:block;flex:none">
+    <a href="Overview.dc.html" aria-label="CITINEL — back to the overview" style="display:block;flex:none;line-height:0;text-decoration:none"><picture><source type="image/webp" srcset="assets/mark-white-254.webp"><img src="assets/mark-white-254.png" alt="CITINEL · caught, cited, gated, actioned, closed" width="254" height="96" style="height:34px;width:90px;display:block;flex:none"></picture></a>
     <nav style="display:flex;gap:2px;min-width:0;overflow-x:auto;scrollbar-width:thin;flex:1">
       <a href="Overview.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">OVERVIEW</a>
       <a href="Queue.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">QUEUE</a>
-      <a href="Replay.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">REPLAY</a>
-      <a href="Confidence.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-primary);background:var(--ctn-color-surface-raised);border-radius:6px;white-space:nowrap">CONFIDENCE</a>
-      <a href="Evidence.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">EVIDENCE</a>
-      <a href="Approvals.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">APPROVALS</a>
-      <a href="Compliance.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">COMPLIANCE</a>
-      <a href="Audit.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">AUDIT</a>
+      <a href="{{ navReplayHref }}" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">REPLAY</a>
+      <a href="{{ navConfidenceHref }}" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-primary);background:var(--ctn-color-surface-raised);border-radius:6px;white-space:nowrap">CONFIDENCE</a>
+      <a href="{{ navEvidenceHref }}" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">EVIDENCE</a>
+      <a href="{{ navApprovalsHref }}" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">APPROVALS</a>
+      <a href="{{ navComplianceHref }}" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">COMPLIANCE</a>
+      <a href="{{ navAuditHref }}" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">AUDIT</a>
       <a href="Corpus.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">CORPUS</a>
       <a href="Eval.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">EVAL</a>
       <a href="Policy.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">POLICY</a>
@@ -90,7 +98,7 @@
       <svg viewBox="0 0 312 108" style="width:100%;height:108px;display:block;flex:none;margin-top:4px">
         <line x1="156" y1="30" x2="156" y2="96" stroke="var(--ctn-color-border-strong)" stroke-width="2"></line>
         <polygon points="146,96 166,96 156,86" fill="var(--ctn-color-border-strong)"></polygon>
-        <g transform="rotate({{ beamAngle }} 156 30)" style="transition:transform 0.55s cubic-bezier(0.25,1.2,0.4,1)">
+        <g sc-camel-transform="rotate({{ beamAngle }} 156 30)" style="transition:transform 0.55s cubic-bezier(0.25,1.2,0.4,1)">
           <line x1="42" y1="30" x2="270" y2="30" stroke="var(--ctn-color-text-primary)" stroke-width="2.5" stroke-linecap="round"></line>
           <line x1="42" y1="30" x2="42" y2="52" stroke="var(--ctn-color-border-strong)" stroke-width="1.2"></line>
           <line x1="270" y1="30" x2="270" y2="52" stroke="var(--ctn-color-border-strong)" stroke-width="1.2"></line>
@@ -144,6 +152,9 @@
                 <sc-if value="{{ r.isExternal }}" hint-placeholder-val="{{ false }}">
                   <dc-import name="ExternalCitationChip" source="{{ r.extSource }}" url="{{ r.extUrl }}" fetched-at="{{ r.extFetched }}" size="sm" hint-size="290px,24px"></dc-import>
                 </sc-if>
+                <sc-if value="{{ r.hasSemanticSupport }}" hint-placeholder-val="{{ false }}">
+                  <span data-token style="font-family:var(--ctn-font-display);font-size:8px;letter-spacing:0.1em;color:var(--ctn-color-text-muted);margin-left:8px">{{ r.semanticSupportLabel }}</span>
+                </sc-if>
               </div>
             </div>
           </sc-for>
@@ -176,6 +187,9 @@
                   </sc-if>
                   <sc-if value="{{ r.isExternal }}" hint-placeholder-val="{{ false }}">
                     <dc-import name="ExternalCitationChip" source="{{ r.extSource }}" url="{{ r.extUrl }}" fetched-at="{{ r.extFetched }}" size="sm" hint-size="290px,24px"></dc-import>
+                  </sc-if>
+                  <sc-if value="{{ r.hasSemanticSupport }}" hint-placeholder-val="{{ false }}">
+                    <span data-token style="font-family:var(--ctn-font-display);font-size:8px;letter-spacing:0.1em;color:var(--ctn-color-text-muted);margin-left:8px">{{ r.semanticSupportLabel }}</span>
                   </sc-if>
                 </div>
               </div>
@@ -332,6 +346,21 @@ class Component extends DCLogic {
     return {...r, isInternal: !ext, isExternal: ext,
       extSource: ext ? r.ext.source : '', extUrl: ext ? r.ext.url : '', extFetched: ext ? r.ext.fetchedAt : ''};
   }
+  /* ── MAT-F01: drill-down must carry this incident's id forward, never reset ── */
+  navHref(page){
+    try { return window.CITINEL_API.incidentLink(page, this.incId); }
+    catch(e) { return page + '?id=' + encodeURIComponent(this.incId); }
+  }
+  navVals(){
+    return {
+      navReplayHref: this.navHref('Replay.dc.html'),
+      navConfidenceHref: this.navHref('Confidence.dc.html'),
+      navEvidenceHref: this.navHref('Evidence.dc.html'),
+      navApprovalsHref: this.navHref('Approvals.dc.html'),
+      navComplianceHref: this.navHref('Compliance.dc.html'),
+      navAuditHref: this.navHref('Audit.dc.html')
+    };
+  }
   fmtN(n){ return Number(n || 0).toLocaleString('en-IN'); }
   ist(ts){ const d = new Date(ts); if (isNaN(d)) return '—'; return new Date(d.getTime()+330*60000).toISOString().slice(11,19); }
   locatorOf(f, idx){
@@ -348,8 +377,14 @@ class Component extends DCLogic {
     const claims = v ? (v.claims || []) : [];
     const mk = (c, i) => {
       const cits = c.citations || [], first = cits[0] || {}, idx = first.finding_index, f = fs[idx];
+      const sem = c.semantic_support || null;
       return {id: 'c' + i, w: cits.length, claim: c.text, locator: idx != null ? this.locatorOf(f, idx) : 'no citation attached', findingIndex: idx,
-              spans: cits.map(x => x.quoted_span), side: c.support === 'counter' ? 'counter' : 'support'};
+              spans: cits.map(x => x.quoted_span), side: c.support === 'counter' ? 'counter' : 'support',
+              // DEEP-F14/DEEP-F22: advisory only, never the citation proof
+              // above -- absent (null) on a claim not assessed, including
+              // every verdict persisted before this feature existed.
+              hasSemanticSupport: !!sem,
+              semanticSupportLabel: sem ? 'AI ESTIMATE · ' + sem.toUpperCase() + ' SUPPORT (NOT A VERIFICATION)' : ''};
     };
     const all = claims.map(mk);
     // the citation gate's own record of what it cut on this chain
@@ -375,7 +410,7 @@ class Component extends DCLogic {
     const tally = {}; retiredDefs.forEach(r=>{ tally[r.reasonTag] = (tally[r.reasonTag]||0)+1; });
     const restoredCount = back.length;
     return {
-      incId: inc.incident_id || this.incId, replayHref: 'Replay.dc.html?id=' + this.incId + '&at=100',
+      incId: inc.incident_id || this.incId, replayHref: this.navHref('Replay.dc.html') + '&at=100',
       beamAngle: (-diff*13).toFixed(2),
       supWeight: supW, cntWeight: cntW,
       bandTicks: [0,25,50,75,100].map(p=>({left:p+'%'})),
@@ -413,7 +448,7 @@ class Component extends DCLogic {
           reason: lastGate ? String((lastGate.payload||{}).reason || 'every quoted span was found verbatim in its cited log line') : 'every quoted span was found verbatim in its cited log line',
           glyph: this.ringGlyph('back'), opacity: 0.8, lineFg: 'var(--ctn-color-text-secondary)', strike: 'none', btn: '—', btnBorder: 'dashed', toggle: ()=>{}})],
       trayFooter: 'restoring a struck claim here is a what-if on this screen only: it puts the claim back on its pan so you can see what the cut cost the beam. it writes nothing to the ledger; the gate\'s cut stands there.',
-      ledgerHref: 'Audit.dc.html?id=' + this.incId + '&q=citation_verification',
+      ledgerHref: this.navHref('Audit.dc.html') + '&q=citation_verification',
       cutTally: Object.keys(tally).length ? Object.keys(tally).map(k=>({k, n:String(tally[k]).padStart(2,'0')})) : [{k:'CLAIMS CUT', n:'00'}],
       cutNote: retiredDefs.length ? retiredDefs.length + ' claim' + (retiredDefs.length===1?'':'s') + ' the narrator wrote failed citation verification and never reached you as evidence. They are listed struck through with the gate\'s reason; nothing else was cut on this run.' : 'Nothing was cut on this run: every claim the narrator wrote quoted a span the gate found verbatim in the cited log line. The counter column, not this tray, is where to argue.',
       _top: supRows.slice().sort((a,c)=>c.w-a.w).slice(0,3).map(r=>this.dress(r))
@@ -422,10 +457,10 @@ class Component extends DCLogic {
   loadingVals(){
     const muted = 'var(--ctn-color-text-muted)';
     return {
-      incId: this.incId, replayHref: 'Replay.dc.html?id=' + this.incId, beamAngle: '0', supWeight: '', cntWeight: '', bandTicks: [], bandLabels: [], riderLeft: '50%',
+      incId: this.incId, replayHref: this.navHref('Replay.dc.html'), beamAngle: '0', supWeight: '', cntWeight: '', bandTicks: [], bandLabels: [], riderLeft: '50%',
       bandName: 'READING THE VERDICT', bandStatement: 'the record, its persisted verdict and its chain are being read from the service; nothing authored is drawn while they load', bandCaveat: '',
       supNote: 'reading…', supCount: '··', cntNote: 'reading…', cntCount: '··', cntEmpty: false, cntPresent: true, cntEmptyBody: '', supporting: [], countering: [],
-      retiredCount: '··', trayNote: 'reading…', toggleAll: ()=>{}, toggleAllLabel: 'READING', retired: [], trayFooter: '', ledgerHref: 'Audit.dc.html', cutTally: [], cutNote: ''
+      retiredCount: '··', trayNote: 'reading…', toggleAll: ()=>{}, toggleAllLabel: 'READING', retired: [], trayFooter: '', ledgerHref: this.navHref('Audit.dc.html'), cutTally: [], cutNote: ''
     };
   }
 
@@ -444,7 +479,7 @@ class Component extends DCLogic {
     const indep = new Set(supRows.map(r=>r.ext ? 'ext:'+r.ext.source : (r.locator||'').split('/')[0])).size;
     const restoredCount = back.length;
     return {
-      incId: 'INC-0417', replayHref: 'Replay.dc.html?at=78',
+      incId: 'INC-0417', replayHref: this.navHref('Replay.dc.html') + '&at=78',
       beamAngle: (-diff*13).toFixed(2),
       supWeight: supW, cntWeight: cntW,
       bandTicks: [0,25,50,75,100].map(p=>({left:p+'%'})),
@@ -478,7 +513,7 @@ class Component extends DCLogic {
           toggle: ()=>this.setState(x=>({restored:{...x.restored, [r.id]: !x.restored[r.id]}}))};
       }),
       trayFooter: 'restoring a line puts it back on its pan and re-weighs the balance above. The restore is itself a ledger entry, so a wrong cut leaves a trace of having been wrong. cuts are never deleted from this tray.',
-      ledgerHref: 'Audit.dc.html'
+      ledgerHref: this.navHref('Audit.dc.html')
     };
   }
 
@@ -502,9 +537,10 @@ class Component extends DCLogic {
   }
   renderVals(){
     const s = this.state;
-    if (s.live === null) { const b = this.loadingVals(); return Object.assign({}, b, this.roleVals(), this.svgLabels(b)); }
-    if (s.live === true) { const b = this.liveVals(); return Object.assign({}, b, this.roleVals(), this.liveDepthVals(b), this.svgLabels(b)); }
-    const b = this.baseVals(); return Object.assign({}, b, this.roleVals(), this.depthVals(b), this.svgLabels(b));
+    const nav = this.navVals();
+    if (s.live === null) { const b = this.loadingVals(); return Object.assign({}, b, this.roleVals(), this.svgLabels(b), nav); }
+    if (s.live === true) { const b = this.liveVals(); return Object.assign({}, b, this.roleVals(), this.liveDepthVals(b), this.svgLabels(b), nav); }
+    const b = this.baseVals(); return Object.assign({}, b, this.roleVals(), this.depthVals(b), this.svgLabels(b), nav);
   }
   liveDepthVals(b){
     if(this.state.role !== 'ciso') return {};

@@ -3,6 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CITINEL · Incident replay</title>
+<meta name="description" content="Frame-by-frame replay of one investigation: every agent call, every cited claim and every gate decision, reconstructed from the audit ledger.">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<meta name="theme-color" content="#0B1F3A">
 <script src="vendor/resources.js"></script>
 <script src="./support.js"></script>
 <!-- Render-blocking, deliberately. The same sheets are declared again in the
@@ -56,16 +64,16 @@
 <div data-screen-label="Incident replay" data-citinel-page="replay" style="display:flex;flex-direction:column;height:100vh;min-width:1280px;background:var(--ctn-color-surface-shell)">
 
   <header style="display:flex;align-items:center;gap:18px;padding:0 18px;height:52px;flex:none;border-bottom:1px solid var(--ctn-color-border-strong);background:var(--ctn-color-surface-panel);min-width:0">
-    <img src="assets/mark-white.png" alt="CITINEL · caught, cited, gated, actioned, closed" style="height:34px;width:90px;display:block;flex:none">
+    <a href="Overview.dc.html" aria-label="CITINEL — back to the overview" style="display:block;flex:none;line-height:0;text-decoration:none"><picture><source type="image/webp" srcset="assets/mark-white-254.webp"><img src="assets/mark-white-254.png" alt="CITINEL · caught, cited, gated, actioned, closed" width="254" height="96" style="height:34px;width:90px;display:block;flex:none"></picture></a>
     <nav style="display:flex;gap:2px;min-width:0;overflow-x:auto;scrollbar-width:thin;flex:1">
       <a href="Overview.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">OVERVIEW</a>
       <a href="Queue.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">QUEUE</a>
-      <a href="Replay.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-primary);background:var(--ctn-color-surface-raised);border-radius:6px;white-space:nowrap">REPLAY</a>
-      <a href="Confidence.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">CONFIDENCE</a>
-      <a href="Evidence.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">EVIDENCE</a>
-      <a href="Approvals.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">APPROVALS</a>
-      <a href="Compliance.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">COMPLIANCE</a>
-      <a href="Audit.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">AUDIT</a>
+      <a href="{{ navReplayHref }}" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-primary);background:var(--ctn-color-surface-raised);border-radius:6px;white-space:nowrap">REPLAY</a>
+      <a href="{{ navConfidenceHref }}" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">CONFIDENCE</a>
+      <a href="{{ navEvidenceHref }}" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">EVIDENCE</a>
+      <a href="{{ navApprovalsHref }}" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">APPROVALS</a>
+      <a href="{{ navComplianceHref }}" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">COMPLIANCE</a>
+      <a href="{{ navAuditHref }}" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">AUDIT</a>
       <a href="Corpus.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">CORPUS</a>
       <a href="Eval.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">EVAL</a>
       <a href="Policy.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">POLICY</a>
@@ -102,7 +110,7 @@
       <div style="flex:1;min-height:0;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:6px 0;position:relative">
         <svg viewBox="0 0 220 220" style="width:100%;max-width:min(100%, 220px);max-height:100%;height:auto;aspect-ratio:1;min-width:0;display:block;flex:0 1 auto;margin-inline:auto">
           <circle cx="110" cy="110" r="86" fill="none" stroke="var(--ctn-color-border-hairline)" stroke-width="1"></circle>
-          <path d="{{ ringArc }}" fill="none" stroke="var(--ctn-color-state-cited)" stroke-width="{{ ringWeight }}" stroke-linecap="butt"></path>
+          <path sc-camel-d="{{ ringArc }}" fill="none" stroke="var(--ctn-color-state-cited)" stroke-width="{{ ringWeight }}" stroke-linecap="butt"></path>
           <g>{{ ringNodes }}</g>
         </svg>
       <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;gap:2px">
@@ -217,6 +225,9 @@
                 <dc-import name="ExternalCitationChip" source="{{ c.extSource }}" url="{{ c.extUrl }}" fetched-at="{{ c.extFetched }}" size="sm" hint-size="300px,24px"></dc-import>
               </sc-if>
               <span data-token style="font-family:var(--ctn-font-mono);font-size:11px;color:var(--ctn-color-text-muted)">{{ c.technique }}</span>
+              <sc-if value="{{ c.hasSemanticSupport }}" hint-placeholder-val="{{ false }}">
+                <span data-token style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;color:var(--ctn-color-text-muted)">{{ c.semanticSupportLabel }}</span>
+              </sc-if>
             </div>
             <sc-if value="{{ c.open }}" hint-placeholder-val="{{ true }}">
               <div style="margin-top:10px;display:flex;flex-direction:column;gap:7px;min-width:0">
@@ -288,6 +299,43 @@
           <div style="display:flex;align-items:center;gap:10px;margin-top:8px;flex-wrap:wrap">
             <button onClick="{{ gatherContext }}" style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:8px 12px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;background:none;color:var(--ctn-color-text-primary);cursor:pointer">{{ gatherLabel }}</button>
             <span data-token style="font-family:var(--ctn-font-mono);font-size:10.5px;color:var(--ctn-color-text-muted);flex:1;min-width:0">{{ gatherStatus }}</span>
+          </div>
+        </sc-if>
+      </div>
+      <div style="padding:10px 20px 4px;flex:none;border-top:1px solid var(--ctn-color-border-hairline)">
+        <div style="display:flex;align-items:baseline;gap:10px;min-width:0;flex-wrap:wrap">
+          <span style="font-family:var(--ctn-font-display);font-size:10px;letter-spacing:0.14em;color:var(--ctn-color-text-muted);flex:none">WIDE-LENS SWEEP · GEMINI</span>
+          <sc-if value="{{ hasSweep }}" hint-placeholder-val="{{ false }}">
+            <span data-token style="font-family:var(--ctn-font-display);font-size:8px;letter-spacing:0.1em;color:var(--ctn-color-text-muted);border:1px {{ sweepRiskStyle }} var(--ctn-color-border-strong);padding:2px 6px;border-radius:3px;flex:none">{{ sweepRisk }}</span>
+          </sc-if>
+          <span style="font-size:11px;color:var(--ctn-color-text-muted);flex:1 1 100%;min-width:0;line-height:1.4;max-width:110ch">{{ sweepNote }}</span>
+        </div>
+
+        <div style="margin-top:9px;min-width:0">
+          <div style="position:relative;height:9px;background:var(--ctn-color-surface-well);border:1px solid var(--ctn-color-border-hairline);border-radius:2px;overflow:hidden">
+            <div style="position:absolute;left:0;top:0;bottom:0;width:{{ sweepBarSwept }};background:var(--ctn-color-surface-raised);border-right:1px solid var(--ctn-color-border-strong)"></div>
+            <div style="position:absolute;left:0;top:0;bottom:0;width:{{ sweepBarExamined }};background:var(--ctn-color-state-cited)"></div>
+          </div>
+          <div data-token style="font-family:var(--ctn-font-mono);font-size:10px;color:var(--ctn-color-text-muted);margin-top:5px;line-height:1.4">{{ sweepScale }}</div>
+        </div>
+
+        <sc-if value="{{ hasSweep }}" hint-placeholder-val="{{ false }}">
+          <div style="font-size:12px;color:var(--ctn-color-text-secondary);margin-top:8px;line-height:1.5;text-wrap:pretty;max-width:110ch">{{ sweepSummary }}</div>
+          <div style="display:flex;flex-direction:column;gap:5px;margin-top:8px">
+            <sc-for list="{{ sweepRows }}" as="o" hint-placeholder-count="3">
+              <div style="display:flex;align-items:baseline;gap:9px;padding:6px 0;border-bottom:1px solid var(--ctn-color-border-hairline);min-width:0">
+                <span data-token style="font-family:var(--ctn-font-mono);font-size:11px;color:var(--ctn-color-text-primary);flex:none">{{ o.what }}</span>
+                <span data-token style="font-family:var(--ctn-font-mono);font-size:10.5px;color:var(--ctn-color-text-muted);flex:none">×{{ o.count }}</span>
+                <span style="font-size:11px;color:var(--ctn-color-text-muted);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="{{ o.why }}">{{ o.why }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ sweepGatherable }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;align-items:center;gap:10px;margin-top:8px;flex-wrap:wrap">
+            <button onClick="{{ runSweep }}" style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:8px 12px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;background:none;color:var(--ctn-color-text-primary);cursor:pointer">{{ sweepLabel }}</button>
+            <span data-token style="font-family:var(--ctn-font-mono);font-size:10.5px;color:var(--ctn-color-text-muted);flex:1;min-width:0">{{ sweepStatus }}</span>
           </div>
         </sc-if>
       </div>
@@ -501,7 +549,10 @@ class Component extends DCLogic {
     }catch(err){}
     this.state = {role:this.roleInit(), which:'live', pos:at, playing, openClaim:open, now:Date.now(),
       // live: null = reading · true = a real record and its run on the strip · false = authored fallback
-      live:null, liveError:null, ids:[], rows:[], incident:null, chain:null, verdict:null, verdictMissing:false,
+      // refreshing: MAT-F02 -- true only while a re-load (switch incident, post-action reload) is in
+      // flight AFTER something has already loaded once; the old record/chain/verdict stay on screen
+      // the whole time so the strip never blanks back to the reading skeleton for a background refresh.
+      live:null, liveError:null, refreshing:false, ids:[], rows:[], incident:null, chain:null, verdict:null, verdictMissing:false,
       running:false, runStatus:null, context:null, gathering:false, gatherStatus:''};
   }
   componentDidMount(){ this.roleMount();
@@ -533,12 +584,20 @@ class Component extends DCLogic {
   load(id){
     const API = window.CITINEL_API;
     this.incId = id; this._d = null;
-    this.setState({live:null, incident:null, chain:null, verdict:null, verdictMissing:false, pos:0, playing:true, openClaim:null});
-    Promise.all([API.incident(id), API.auditFor(id), API.verdictFor(id), API.contextFor(id)]).then(([inc, ch, vd, cx]) => {
-      if (!inc.ok) { this.setState({live:false, liveError:inc.error}); return; }
+    // MAT-F02: only the very first-ever load (nothing has read successfully yet, live is
+    // still null) shows the reading skeleton. A re-load past that point -- switching to the
+    // other incident, or the post-swarm-run/reopen reload -- keeps whatever is already on
+    // screen exactly as it is and just marks it "refreshing" for a small, subtle indicator.
+    const firstLoad = this.state.live === null;
+    this.setState(firstLoad
+      ? {live:null, incident:null, chain:null, verdict:null, verdictMissing:false, refreshing:false, pos:0, playing:true, openClaim:null}
+      : {refreshing:true, pos:0, playing:true, openClaim:null});
+    Promise.all([API.incident(id), API.auditFor(id), API.verdictFor(id), API.contextFor(id), API.sweepFor(id)]).then(([inc, ch, vd, cx, sw]) => {
+      if (!inc.ok) { this.setState({live:false, liveError:inc.error, refreshing:false}); return; }
       this._d = null;
       this.setState({live:true, incident:inc.data, chain: ch.ok ? ch.data : [], verdict: vd.ok ? vd.data : null,
-                     verdictMissing: !vd.ok, context: cx.ok ? cx.data : null, pos:0, playing:true, openClaim:null});
+                     verdictMissing: !vd.ok, context: cx.ok ? cx.data : null, sweep: sw.ok ? sw.data : null,
+                     refreshing:false, pos:0, playing:true, openClaim:null});
     });
   }
   gatherContext(){
@@ -550,14 +609,78 @@ class Component extends DCLogic {
       this.setState({gathering:false, gatherStatus:'gathered ' + r.data.sources + ' sources for ' + r.data.credits_used + ' credit' + (r.data.credits_used===1?'':'s'), context: r.data});
     });
   }
+  runSweep(){
+    const API = window.CITINEL_API, id = this.incId;
+    if (!API || this.state.sweeping) return;
+    this.setState({sweeping:true, sweepStatus:'reading every finding on this record through Gemini\'s long context · one call'});
+    API.runSweep(id).then(r => {
+      if (!r.ok) { this.setState({sweeping:false, sweepStatus:'could not sweep: ' + (r.error || 'unknown')}); return; }
+      const d = r.data;
+      this.setState({sweeping:false, sweep:d,
+        sweepStatus: d.status === 'ok' ? 'swept ' + d.findings_swept + ' findings'
+                   : d.status === 'not_needed' ? 'nothing to sweep: the investigation examined every finding'
+                   : d.status === 'not_configured' ? 'no Gemini key on this deployment'
+                   : 'the model answered in an unusable shape · nothing was recorded'});
+    });
+  }
+  sweepVals(liveMode){
+    const s = this.state, sw = liveMode ? s.sweep : null, vd = liveMode ? s.verdict : null;
+    if (!liveMode) return { sweepNote:'authored demo · no wide-lens sweep run', sweepRows:[], sweepSummary:'',
+      sweepRisk:'', sweepRiskStyle:'solid', hasSweep:false, sweepGatherable:false, runSweep:()=>{},
+      sweepLabel:'', sweepStatus:'', sweepBarExamined:'0%', sweepBarSwept:'0%', sweepScale:'' };
+    const total = vd ? Number(vd.findings_total||0) : 0, examined = vd ? Number(vd.findings_examined||0) : 0;
+    const ok = !!(sw && sw.status === 'ok');
+    const swept = ok ? Number(sw.findings_swept||0) : 0;
+    const pct = n => total ? Math.max(0.6, n/total*100).toFixed(1) + '%' : '0%';
+    return {
+      hasSweep: ok,
+      sweepBarExamined: pct(examined),
+      sweepBarSwept: ok ? pct(swept) : '0%',
+      sweepScale: total ? this.fmtN(examined) + ' examined by the investigation · ' + this.fmtN(total) + ' on the record'
+                        + (ok ? ' · ' + this.fmtN(Math.max(0, swept - examined)) + ' read only by the sweep' : '') : '',
+      sweepNote: ok
+        ? 'gemini ' + (sw.model||'') + ' · swept ' + this.fmtN(swept) + ' finding' + (swept===1?'':'s')
+          + ' · ' + String(sw.fetched_at||'').slice(0,16).replace('T',' ') + 'Z'
+          + ' · context only, never evidence: no verdict, lane or gate decision moves because of it'
+        : (sw && sw.status === 'not_configured') ? 'no Gemini key on this deployment · the sweep reports that rather than inventing one'
+        : (sw && sw.status === 'not_needed') ? 'the investigation examined every finding on this record · there is no unread region'
+        : (sw && sw.status) ? 'the last sweep did not return a usable answer · nothing was recorded'
+        : 'not swept · ' + (total && examined ? this.fmtN(total - examined) + ' findings on this record have not been read by any model' : 'the unexamined region has not been read'),
+      sweepSummary: ok ? String(sw.summary||'') : '',
+      sweepRisk: ok ? 'BLIND SPOT · ' + String(sw.blind_spot_risk||'').toUpperCase() : '',
+      sweepRiskStyle: ok && sw.blind_spot_risk === 'high' ? 'dashed' : 'solid',
+      sweepRows: ok ? (sw.only_outside_window||[]).slice(0,6).map(o => ({
+        what: String(o.what||''), count: this.fmtN(Number(o.count||0)), why: String(o.why||'') })) : [],
+      sweepGatherable: !!vd,
+      runSweep: ()=>this.runSweep(),
+      sweepLabel: s.sweeping ? 'SWEEPING…' : (ok ? 'SWEEP AGAIN' : 'RUN WIDE-LENS SWEEP'),
+      sweepStatus: s.sweepStatus || ''
+    };
+  }
   contextVals(liveMode){
     const s = this.state, cx = liveMode ? s.context : null;
     if (!liveMode) return { contextNote: 'authored demo · no public context gathered', contextRows: [], contextGatherable: false, gatherContext: ()=>{}, gatherLabel: '', gatherStatus: '' };
-    const rows = cx ? (cx.queries || []).map(q => ({ for: q.for, query: q.query + (q.status !== 'ok' ? ' · ' + (q.note || q.status) : ''),
-      chips: (q.results || []).map(r => ({ source: String(r.title || '').slice(0, 70) || 'untitled', url: r.url, fetchedAt: String(q.fetched_at || cx.gathered_at || '').slice(0, 16).replace('T', ' ') + 'Z' })) })) : [];
+    const rows = cx ? (cx.queries || []).map(q => {
+      const at = String(q.fetched_at || cx.gathered_at || '').slice(0, 16).replace('T', ' ') + 'Z';
+      const ad = q.attack_detail || {}, ex = q.extracted || {};
+      // full pages actually retrieved (Extract/Crawl) sit beside the ranked
+      // search hits as chips of their own, labelled so the two are never
+      // mistaken for each other: a link found vs a page read
+      const retrieved = []
+        .concat((ad.crawled || []).map(p => ({ source: 'CRAWLED · ' + String(p.url || '').replace(/^https?:\/\//, '').slice(0, 58), url: p.url, fetchedAt: String(ad.fetched_at || at).slice(0, 16).replace('T', ' ') + 'Z' })))
+        .concat(ex.status === 'ok' && ex.source_url ? [{ source: 'EXTRACTED · ' + String(ex.source_url).replace(/^https?:\/\//, '').slice(0, 56), url: ex.source_url, fetchedAt: String(ex.fetched_at || at).slice(0, 16).replace('T', ' ') + 'Z' }] : []);
+      const mapped = (ad.mapped_urls || []).length;
+      return { for: q.for,
+        query: q.query + (q.status !== 'ok' ? ' · ' + (q.note || q.status) : '')
+          + (mapped ? ' · ' + mapped + ' sub-technique page' + (mapped === 1 ? '' : 's') + ' mapped live from ATT&CK' : ''),
+        chips: (q.results || []).map(r => ({ source: String(r.title || '').slice(0, 70) || 'untitled', url: r.url, fetchedAt: at })).concat(retrieved) };
+    }) : [];
     return {
       contextRows: rows,
-      contextNote: cx ? cx.sources + ' source' + (cx.sources===1?'':'s') + ' for ' + (cx.queries||[]).length + ' quer' + ((cx.queries||[]).length===1?'y':'ies') + ' · gathered ' + String(cx.gathered_at||'').slice(0,16).replace('T',' ') + 'Z · context only, never evidence: claims cite the record\'s own findings' : 'nothing gathered yet · the open web has not been asked about these techniques',
+      contextNote: cx ? cx.sources + ' source' + (cx.sources===1?'':'s') + ' for ' + (cx.queries||[]).length + ' quer' + ((cx.queries||[]).length===1?'y':'ies')
+        + (cx.pages_retrieved ? ' · ' + cx.pages_retrieved + ' full page' + (cx.pages_retrieved===1?'':'s') + ' retrieved' : '')
+        + ((cx.primitives_used||[]).length > 1 ? ' · tavily ' + cx.primitives_used.join(' + ') : '')
+        + ' · gathered ' + String(cx.gathered_at||'').slice(0,16).replace('T',' ') + 'Z · context only, never evidence: claims cite the record\'s own findings' : 'nothing gathered yet · the open web has not been asked about these techniques',
       contextGatherable: !!s.verdict, gatherContext: ()=>this.gatherContext(),
       gatherLabel: s.gathering ? 'SEARCHING…' : (cx ? 'GATHER AGAIN' : 'GATHER PUBLIC CONTEXT'), gatherStatus: s.gatherStatus || (cx ? cx.credits_used + ' credit' + (cx.credits_used===1?'':'s') + ' spent last time' : '')
     };
@@ -685,12 +808,19 @@ class Component extends DCLogic {
       const counter = c.support === 'counter';
       const tech = (f.techniques || [])[0];
       const n = (c.citations || []).length;
+      const sem = c.semantic_support || null;
       return {
         pct: narratorPct, lane: 4, t: tOf(narratorF), counter,
         technique: (counter ? 'COUNTER-EVIDENCE' : 'SUPPORTING') + (tech ? ' · ' + tech : '') + ' · ' + n + ' citation' + (n===1?'':'s'),
         text: c.text, locator: idx != null ? locatorOf(f, idx) : 'no citation attached', source: idx != null ? String(f.host || '') : '—',
         hash: 'no digest recorded at collection', log: idx != null ? String(f.evidence_raw || '') : '',
-        span: cit.quoted_span || '', findingIndex: idx, order: i
+        span: cit.quoted_span || '', findingIndex: idx, order: i,
+        // DEEP-F14/DEEP-F22: advisory only, never the citation proof above --
+        // absent (null) on any claim not assessed, including every verdict
+        // persisted before this feature existed. Never render a badge here
+        // when sem is null.
+        hasSemanticSupport: !!sem,
+        semanticSupportLabel: sem ? 'AI ESTIMATE · ' + sem.toUpperCase() + ' SUPPORT (NOT A VERIFICATION)' : ''
       };
     });
     const stages = vd && vd.correlation ? vd.correlation.stages || [] : [];
@@ -799,7 +929,7 @@ class Component extends DCLogic {
     const isA = liveMode ? d.id === idA : live;
     const vdl = liveMode ? d.verdict : null;
     return Object.assign({
-      enteredFrom: d.entered, edgeCode: d.edge,
+      enteredFrom: d.entered + (s.refreshing ? ' · updating…' : ''), edgeCode: d.edge,
       pickLive: liveMode ? ()=>this.load(idA) : ()=>this.setState({which:'live', pos:0, playing:true, openClaim:null}),
       pickDemo: liveMode ? ()=>this.load(idB) : ()=>this.setState({which:'demo', pos:0, playing:true, openClaim:null}),
       liveLabel: liveMode ? idA : 'INC-0417', demoLabel: liveMode ? idB : 'DEMO INC-0416',
@@ -861,9 +991,23 @@ class Component extends DCLogic {
       approvalsHref: liveMode ? 'Approvals.dc.html?id=' + d.id : 'Approvals.dc.html',
       deskHref: liveMode ? 'Compliance.dc.html?id=' + d.id : 'Compliance.dc.html',
       auditHref: liveMode ? 'Audit.dc.html?id=' + d.id : 'Audit.dc.html'
-    }, this.contextVals(liveMode));
+    }, this.contextVals(liveMode), this.sweepVals(liveMode));
   }
 
+  /* MAT-F01: the top nav bar's own outgoing links must carry the incident this
+     page is currently looking at forward, not reset the next screen to the
+     default incident. Built through API.incidentLink() so it reads the same
+     ?id= this page itself was opened with (or falls back to plain page names
+     if api.js somehow didn't load, matching this file's existing !API guards). */
+  navVals(){
+    const API = window.CITINEL_API;
+    const link = page => API ? API.incidentLink(page) : page;
+    return {
+      navReplayHref: link('Replay.dc.html'), navConfidenceHref: link('Confidence.dc.html'),
+      navEvidenceHref: link('Evidence.dc.html'), navApprovalsHref: link('Approvals.dc.html'),
+      navComplianceHref: link('Compliance.dc.html'), navAuditHref: link('Audit.dc.html')
+    };
+  }
   roleInit(){ try{ return (window.CitinelRole && window.CitinelRole.get()) || 'analyst'; }catch(e){ return 'analyst'; } }
   roleMount(){ if(window.CitinelRole) this.unsubRole = window.CitinelRole.subscribe(r=>{ if(r !== this.state.role) this.setState({role:r}); }); }
   roleVals(){
@@ -914,10 +1058,10 @@ class Component extends DCLogic {
   }
   renderVals(){
     const s = this.state;
-    if (s.live === null) return Object.assign({}, this.loadingVals(), this.roleVals());
+    if (s.live === null) return Object.assign({}, this.loadingVals(), this.roleVals(), this.navVals());
     const b = this.baseVals();
-    if (s.live === true) return Object.assign({}, b, this.roleVals(), this.harvestVals(), this.liveDepthVals(b), this.liveStateVals(b), this.liveCloseVals());
-    return Object.assign({}, b, this.roleVals(), this.harvestVals(), this.depthVals(b), this.stateVals(b), this.closeVals());
+    if (s.live === true) return Object.assign({}, b, this.roleVals(), this.navVals(), this.harvestVals(), this.liveDepthVals(b), this.liveStateVals(b), this.liveCloseVals());
+    return Object.assign({}, b, this.roleVals(), this.navVals(), this.harvestVals(), this.depthVals(b), this.stateVals(b), this.closeVals());
   }
   loadingVals(){
     const id = this.incId || 'the record';

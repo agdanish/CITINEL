@@ -1,4 +1,4 @@
-"""Three more Lyzr Studio agents, each wired to one real seam in the pipeline.
+"""Six more Lyzr Studio agents, each wired to one real seam in the pipeline.
 
 The rule for adding an agent here is the project's own: it earns its place
 only when a real call site sends it real work and does something with the
@@ -18,6 +18,20 @@ recorded as opinions, reviews as reviews, summaries as summaries.
                           or need a human before sign-off, per field.
   handover summary        for the shift handover: a plain summary of where a
                           record stands, from the ledger's own frames.
+  verdict audit           an independent second opinion on whether an already-
+                          cited claim's quote actually supports it, beside
+                          the pipeline's own `_assess_semantic_support`
+                          estimate (A8 DEEP-F14/DEEP-F22). Disagreement is
+                          persisted and ledgered, same reasoning as triage.
+  response review         after the OPA policy gate has already decided: an
+                          independent opinion on whether a proposed action's
+                          scope looks proportionate to the evidence. Never
+                          gates -- the gate has already run by the time this
+                          is asked.
+  corpus advisory         a standing, deployment-wide (not per-incident)
+                          review of Sigma corpus coverage: which techniques
+                          or rule directories look thin, from the same stats
+                          `/api/corpus` already reports.
 """
 
 from __future__ import annotations
@@ -163,6 +177,136 @@ def handover_summary(incident_dict: dict[str, Any], chain: list, verdict_summary
         r = answer["reply"] or {}
         out["summary"] = str(r.get("summary") or "")[:1200]
         out["open_items"] = [str(x)[:200] for x in (r.get("open_items") or [])[:8]]
+    else:
+        out["detail"] = answer.get("detail", "")
+    return out
+
+
+#: The only values a verdict-audit reply's "support" is ever set to -- kept
+#: local rather than imported from agents.pipeline so this connector has no
+#: import-time dependency on the swarm package, same reasoning as the rest
+#: of this module.
+_SUPPORT_LEVELS = ("strong", "partial", "weak", "unclear")
+
+
+# -- 4. verdict audit ------------------------------------------------------
+
+def verdict_agent(sender=None) -> LyzrAgent:
+    return LyzrAgent("verdict_audit", settings.lyzr_verdict_agent_id, "citinel-lyzr-verdict", sender)
+
+
+def verdict_audit(incident_id: str, claims: list[dict[str, Any]], ledger, agent: LyzrAgent | None = None) -> dict[str, Any]:
+    """Independent second opinion on whether each already-cited claim's quote
+    actually supports what the claim says, beside the pipeline's own
+    `_assess_semantic_support` estimate. Reads only claims that already
+    survived citation_verification and carry a citation; never re-opens that
+    keep/drop decision and never changes a claim. Capped to the first 20
+    claims, same spirit as the pipeline's own MAX_SEMANTIC_SUPPORT_CLAIMS."""
+    agent = agent or verdict_agent()
+    items: list[dict[str, Any]] = []
+    for i, c in enumerate(claims[:20]):
+        cites = c.get("citations") or []
+        cite = cites[0] if cites else {}
+        items.append({
+            "index": i, "statement": str(c.get("text") or "")[:400],
+            "cited_quote": str((cite or {}).get("quoted_span") or "")[:400],
+            "pipeline_support": c.get("semantic_support"),
+        })
+    answer = agent.ask({"incident_id": incident_id, "claims": items})
+    out: dict[str, Any] = {"status": answer["status"], "agent_id": answer["agent_id"],
+                           "asked_at": answer["asked_at"], "claims": [], "agree_count": 0, "disagree_count": 0}
+    if answer["status"] == "ok":
+        r = answer["reply"] or {}
+        for item in (r.get("claims") or [])[:20]:
+            if not isinstance(item, dict):
+                continue
+            idx, support = item.get("index"), str(item.get("support") or "").strip().lower()
+            if not isinstance(idx, int) or not (0 <= idx < len(items)) or support not in _SUPPORT_LEVELS:
+                continue
+            base = items[idx]["pipeline_support"]
+            agrees = (support == base) if base else None
+            if agrees is True:
+                out["agree_count"] += 1
+            elif agrees is False:
+                out["disagree_count"] += 1
+            out["claims"].append({"index": idx, "support": support,
+                                  "note": str(item.get("note") or "")[:300], "agrees_with_pipeline": agrees})
+    else:
+        out["detail"] = answer.get("detail", "")
+    if ledger is not None and answer["status"] != "not_configured":
+        ledger.append(incident_id, "lyzr-verdict", "decision", {
+            "check": "verdict_audit", "status": answer["status"],
+            "claims_reviewed": len(out["claims"]), "agree_count": out["agree_count"],
+            "disagree_count": out["disagree_count"],
+            "reason": "independent second opinion on citation support, beside the "
+                      "pipeline's own semantic-support estimate -- advisory only, "
+                      "never re-opens which claims kept their citations",
+        })
+    return out
+
+
+# -- 5. response review -----------------------------------------------------
+
+def response_agent(sender=None) -> LyzrAgent:
+    return LyzrAgent("response_review", settings.lyzr_response_agent_id, "citinel-lyzr-response", sender)
+
+
+def response_review(incident_id: str, action_class: str, target: str, assets_affected: int,
+                    decision: dict[str, Any], ledger=None, agent: LyzrAgent | None = None) -> dict[str, Any]:
+    """Independent opinion on whether a proposed action's scope looks
+    proportionate to the evidence, asked after the OPA gate has already
+    decided. Never gates: this changes nothing about whether the action
+    executes, only adds a second, visible opinion beside the gate's own."""
+    agent = agent or response_agent()
+    answer = agent.ask({
+        "incident_id": incident_id, "action_class": action_class, "target": target,
+        "assets_affected": assets_affected,
+        "policy_clause": decision.get("clause"), "policy_effect": decision.get("effect"),
+        "autonomy": decision.get("autonomy"),
+    })
+    out: dict[str, Any] = {"status": answer["status"], "agent_id": answer["agent_id"],
+                           "asked_at": answer["asked_at"], "assessment": None, "rationale": ""}
+    if answer["status"] == "ok":
+        r = answer["reply"] or {}
+        assessment = str(r.get("assessment") or "").strip().lower()
+        out["assessment"] = assessment if assessment in ("proportionate", "over_scoped", "under_scoped") else "unparsed"
+        out["rationale"] = str(r.get("rationale") or "")[:300]
+    else:
+        out["detail"] = answer.get("detail", "")
+    if ledger is not None and answer["status"] != "not_configured":
+        ledger.append(incident_id, "lyzr-response", "decision", {
+            "check": "response_review", "status": answer["status"], "action_class": action_class,
+            "assessment": out["assessment"],
+            "reason": "independent proportionality opinion on a proposed action, asked "
+                      "after the OPA gate already decided -- advisory only, never gates",
+        })
+    return out
+
+
+# -- 6. corpus advisory ------------------------------------------------------
+
+def corpus_agent(sender=None) -> LyzrAgent:
+    return LyzrAgent("corpus_advisory", settings.lyzr_corpus_agent_id, "citinel-lyzr-corpus", sender)
+
+
+def corpus_advisory(stats: dict[str, Any], agent: LyzrAgent | None = None) -> dict[str, Any]:
+    """A standing, deployment-wide review of Sigma corpus coverage -- which
+    rule directories or techniques look thin -- from the same static and
+    fired-rule stats `/api/corpus` already reports. Not per-incident."""
+    agent = agent or corpus_agent()
+    answer = agent.ask({
+        "rules_total": stats.get("rules_total"), "by_dir": stats.get("by_dir"),
+        "distinct_rules_fired": stats.get("distinct_rules_fired"),
+        "detections_total": stats.get("detections_total"),
+        "techniques_observed": (stats.get("techniques_observed") or [])[:60],
+    })
+    out: dict[str, Any] = {"status": answer["status"], "agent_id": answer["agent_id"],
+                           "asked_at": answer["asked_at"], "gaps": [], "summary": ""}
+    if answer["status"] == "ok":
+        r = answer["reply"] or {}
+        out["summary"] = str(r.get("summary") or "")[:800]
+        out["gaps"] = [{"area": str(g.get("area") or "")[:120], "why": str(g.get("why") or "")[:300]}
+                       for g in (r.get("gaps") or [])[:12] if isinstance(g, dict)]
     else:
         out["detail"] = answer.get("detail", "")
     return out

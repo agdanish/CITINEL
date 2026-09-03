@@ -78,7 +78,19 @@ class Citation(BaseModel):
 
 
 class Claim(BaseModel):
-    """One assertion, with the evidence it rests on attached."""
+    """One assertion, with the evidence it rests on attached.
+
+    `semantic_support` / `semantic_support_note` are a second, later, and
+    strictly weaker signal than `citations`. `citations` is what
+    `verify_citations` checks -- exact-substring, deterministic, no model
+    involved, and the ONLY thing that can keep or drop a claim. The two
+    fields below are advisory, model-judged, added AFTER that gate has
+    already run and decided what survives -- see pipeline.py's
+    `_assess_semantic_support`. They can never gate: a claim that failed
+    citation verification never reaches this assessment at all, and a claim
+    that passes it keeps its citations and its place in the verdict
+    regardless of what this annotation says.
+    """
 
     text: str = Field(description="The assertion, in one plain sentence.")
     support: Support
@@ -86,6 +98,29 @@ class Claim(BaseModel):
         default_factory=list,
         description="Every finding this claim rests on. A claim with no citation "
                     "is rejected before it reaches a human.",
+    )
+    semantic_support: str | None = Field(
+        default=None,
+        description="Advisory ONLY -- never gates, never drops a claim, and is "
+                    "computed only for a claim that has ALREADY passed the "
+                    "exact-match citation gate (verify_citations). One of "
+                    "'strong' | 'partial' | 'weak' | 'unclear', or None when no "
+                    "assessment was made or the assessment call failed. Not a "
+                    "strict enum on purpose: the field must degrade to None on "
+                    "any failure (bad output, no credentials, an exception) "
+                    "without raising, which a validated enum would prevent. "
+                    "This estimates whether the cited quote LOGICALLY supports "
+                    "the claim, on top of the exact-match check already having "
+                    "confirmed the quote is really there -- current LLM "
+                    "evaluators, including GPT-4-class models, are frequently "
+                    "fooled by keyword overlap and judge partially-supportive "
+                    "evidence poorly (A8 DEEP-F14/DEEP-F22), so this is always "
+                    "surfaced to a reader as an estimate, never a verification.",
+    )
+    semantic_support_note: str | None = Field(
+        default=None,
+        description="One sentence of rationale for `semantic_support`, or None "
+                    "under the same conditions `semantic_support` is None.",
     )
 
     model_config = {"extra": "forbid"}
@@ -176,6 +211,25 @@ class CitationFailure(BaseModel):
     reason: str
     finding_index: int
     quoted_span: str
+
+
+class SemanticSupportAssessment(BaseModel):
+    """Structured-output shape for the advisory semantic-support judging call.
+
+    Deliberately separate from `Claim` itself: this is what one model call
+    returns for one already-cited claim, before pipeline.py copies its two
+    fields onto that claim. `support` is read informally as one of
+    'strong'|'partial'|'weak'|'unclear' -- see `Claim.semantic_support`'s own
+    docstring for why this stays a plain string rather than a strict enum.
+    """
+
+    support: str = Field(description="One of 'strong' | 'partial' | 'weak' | "
+                                     "'unclear' -- how well the quoted span "
+                                     "logically supports the claim, not just "
+                                     "whether the words appear in it.")
+    note: str = Field(description="One sentence of rationale.")
+
+    model_config = {"extra": "forbid"}
 
 
 def verify_citations(

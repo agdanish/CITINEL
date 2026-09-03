@@ -3,6 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CITINEL · App shell</title>
+<meta name="description" content="The CITINEL console shell: navigation, role switching and the fallback banner that names the mode the console is running in.">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<meta name="theme-color" content="#0B1F3A">
 <script src="vendor/resources.js"></script>
 <script src="./support.js"></script>
 <!-- Render-blocking, deliberately. The same sheets are declared again in the
@@ -55,7 +63,7 @@
 
   <header style="display:flex;align-items:stretch;height:56px;flex:none;background:var(--ctn-color-surface-panel);border-bottom:1px solid var(--ctn-color-border-strong);min-width:0">
     <div style="display:flex;align-items:center;gap:14px;padding:0 18px;border-right:1px solid var(--ctn-color-border-hairline);flex:none;width:246px;box-sizing:border-box">
-      <img src="assets/mark-white.png" alt="CITINEL · caught, cited, gated, actioned, closed" style="height:38px;width:auto;display:block;flex:none">
+      <a href="Overview.dc.html" aria-label="CITINEL — back to the overview" style="display:block;flex:none;line-height:0;text-decoration:none"><picture><source type="image/webp" srcset="assets/mark-white-254.webp"><img src="assets/mark-white-254.png" alt="CITINEL · caught, cited, gated, actioned, closed" width="254" height="96" style="height:38px;width:auto;display:block;flex:none"></picture></a>
     </div>
     <div style="display:flex;align-items:center;gap:20px;padding:0 20px;flex:1;min-width:0">
       <div style="min-width:0">
@@ -72,9 +80,9 @@
     <div style="display:flex;align-items:center;gap:18px;padding:0 22px;border-left:1px solid var(--ctn-color-border-strong);background:var(--ctn-color-surface-raised);flex:none">
       <svg width="34" height="34" viewBox="0 0 34 34" style="flex:none">
         <circle cx="17" cy="17" r="14" fill="none" stroke="var(--ctn-color-border-strong)" stroke-width="2"></circle>
-        <path d="{{ clockArc }}" fill="none" stroke="{{ clockFg }}" stroke-width="3.5"></path>
+        <path sc-camel-d="{{ clockArc }}" fill="none" stroke="{{ clockFg }}" stroke-width="3.5"></path>
         <sc-if value="{{ clockStruck }}" hint-placeholder-val="{{ false }}"><path d="M 5 29 L 29 5" stroke="var(--ctn-color-text-primary)" stroke-width="2"></path></sc-if>
-        <line x1="17" y1="17" x2="17" y2="6" stroke="var(--ctn-color-text-primary)" stroke-width="1.6" transform="rotate({{ clockHand }} 17 17)"></line>
+        <line x1="17" y1="17" x2="17" y2="6" stroke="var(--ctn-color-text-primary)" stroke-width="1.6" sc-camel-transform="rotate({{ clockHand }} 17 17)"></line>
       </svg>
       <div style="min-width:0">
         <div style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.14em;color:{{ clockLabelFg }};white-space:nowrap">{{ clockLabel2 }}</div>

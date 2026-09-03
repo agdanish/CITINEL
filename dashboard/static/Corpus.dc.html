@@ -3,6 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CITINEL · Rule corpus</title>
+<meta name="description" content="The Sigma detection corpus CITINEL runs, with a copyable, version-pinned rule id for every fired detection.">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<meta name="theme-color" content="#0B1F3A">
 <script src="vendor/resources.js"></script>
 <script src="./support.js"></script>
 <!-- Render-blocking, deliberately. The same sheets are declared again in the
@@ -55,7 +63,7 @@
 <div data-screen-label="Rule corpus" data-citinel-page="corpus" style="display:flex;flex-direction:column;height:100vh;min-width:1280px;background:var(--ctn-color-surface-shell)">
 
   <header style="display:flex;align-items:center;gap:16px;padding:0 18px;height:52px;flex:none;border-bottom:1px solid var(--ctn-color-border-strong);background:var(--ctn-color-surface-panel);min-width:0">
-    <img src="assets/mark-white.png" alt="CITINEL · caught, cited, gated, actioned, closed" style="height:34px;width:90px;display:block;flex:none">
+    <a href="Overview.dc.html" aria-label="CITINEL — back to the overview" style="display:block;flex:none;line-height:0;text-decoration:none"><picture><source type="image/webp" srcset="assets/mark-white-254.webp"><img src="assets/mark-white-254.png" alt="CITINEL · caught, cited, gated, actioned, closed" width="254" height="96" style="height:34px;width:90px;display:block;flex:none"></picture></a>
     <nav style="display:flex;gap:2px;min-width:0;overflow-x:auto;scrollbar-width:thin;flex:1">
       <a href="Overview.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">OVERVIEW</a>
       <a href="Queue.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">QUEUE</a>
@@ -120,7 +128,7 @@
               <div style="flex:none;display:flex;flex-direction:column;align-items:center;gap:5px;width:56px">
                 <svg width="52" height="52" viewBox="0 0 52 52">
                   <circle cx="26" cy="26" r="20" fill="none" stroke="var(--ctn-color-border-strong)" stroke-width="1.4"></circle>
-                  <path d="{{ p.arc }}" fill="none" stroke="var(--ctn-color-state-cited)" stroke-width="3.2"></path>
+                  <path sc-camel-d="{{ p.arc }}" fill="none" stroke="var(--ctn-color-state-cited)" stroke-width="3.2"></path>
                   <g>{{ p.nodes }}</g>
                 </svg>
                 <span style="font-family:var(--ctn-font-display);font-size:6.5px;letter-spacing:0.06em;color:var(--ctn-color-text-muted);text-align:center;line-height:1.3;width:100%;overflow-wrap:anywhere">{{ p.stageLabel }}</span>
@@ -195,6 +203,18 @@
             <div><div style="font-family:var(--ctn-font-display);font-size:15px;color:var(--ctn-color-text-primary);font-variant-numeric:tabular-nums slashed-zero">{{ t.v }}</div><div style="font-size:10px;color:var(--ctn-color-text-muted);font-variant-caps:all-small-caps;white-space:nowrap">{{ t.k }}</div></div>
           </sc-for>
         </div>
+        <div style="flex:none;margin-top:10px;padding-top:9px;border-top:1px solid var(--ctn-color-border-hairline)">
+          <span style="font-family:var(--ctn-font-display);font-size:8.5px;letter-spacing:0.12em;color:var(--ctn-color-text-muted)">COVERAGE ADVISORY · LYZR</span>
+          <div style="font-size:10.5px;color:var(--ctn-color-text-muted);margin-top:5px;line-height:1.4;text-wrap:pretty">{{ advisoryNote }}</div>
+          <sc-for list="{{ advisoryGaps }}" as="g" hint-placeholder-count="2">
+            <div style="font-size:10.5px;color:var(--ctn-color-text-secondary);margin-top:4px;line-height:1.35"><strong style="color:var(--ctn-color-text-primary)">{{ g.area }}</strong> — {{ g.why }}</div>
+          </sc-for>
+          <div style="display:flex;align-items:center;gap:9px;margin-top:8px;min-width:0">
+            <button onClick="{{ genAdvisory }}" style="font-family:var(--ctn-font-display);font-size:8px;letter-spacing:0.1em;padding:6px 10px;border:1px solid var(--ctn-color-border-strong);border-radius:5px;background:none;color:var(--ctn-color-text-primary);cursor:pointer;flex:none">{{ advisoryBtnLabel }}</button>
+            <span data-token style="font-family:var(--ctn-font-mono);font-size:9.5px;color:var(--ctn-color-text-muted);flex:1;min-width:0">{{ advisoryStatus || advisoryWrittenNote }}</span>
+          </div>
+        </div>
+
         <div style="flex:1;min-height:0;overflow-y:auto;margin-top:10px">
           <sc-for list="{{ corpus }}" as="c" hint-placeholder-count="10">
             <div style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--ctn-color-border-hairline);min-width:0">
@@ -352,7 +372,8 @@ level: medium`,
     const sel = {};
     if(focus) this.pendingDefs.forEach(p=>{ if(p.fromId === focus) sel[p.id] = true; });
 
-    this.state = {role:this.roleInit(), filter:'ALL', det:{}, sel, q:'', exported:false, focus, live: null, corpusData: null, corpusError: null};
+    this.state = {role:this.roleInit(), filter:'ALL', det:{}, sel, q:'', exported:false, focus, live: null, corpusData: null, corpusError: null,
+      advisory: null, generatingAdvisory: false, advisoryStatus: ''};
   }
   componentDidMount(){
     this.roleMount();
@@ -361,6 +382,16 @@ level: medium`,
     API.corpusRules().then(r => {
       if (!r.ok) { this.setState({live:false, corpusError:r.error}); return; }
       this.setState({live:true, corpusData:r.data});
+    });
+    API.corpusReview().then(r => { if (r.ok) this.setState({advisory:r.data}); });
+  }
+  genAdvisory(){
+    const API = window.CITINEL_API;
+    if (!API || this.state.generatingAdvisory) return;
+    this.setState({generatingAdvisory:true, advisoryStatus:'asking the corpus advisor about coverage · one Lyzr call'});
+    API.writeCorpusReview().then(r => {
+      if (!r.ok) { this.setState({generatingAdvisory:false, advisoryStatus:'could not generate: ' + (r.error || 'unknown')}); return; }
+      this.setState({generatingAdvisory:false, advisoryStatus:'', advisory:r.data});
     });
   }
   roleInit(){ try{ return (window.CitinelRole && window.CitinelRole.get()) || 'analyst'; }catch(e){ return 'analyst'; } }
@@ -472,7 +503,21 @@ level: medium`,
       analystBg: ciso ? 'transparent' : 'var(--ctn-color-surface-navy)',
       analystFg: ciso ? 'var(--ctn-color-text-muted)' : 'var(--ctn-color-text-on-navy)',
       cisoBg: ciso ? 'var(--ctn-color-surface-navy)' : 'transparent',
-      cisoFg: ciso ? 'var(--ctn-color-text-on-navy)' : 'var(--ctn-color-text-muted)'
+      cisoFg: ciso ? 'var(--ctn-color-text-on-navy)' : 'var(--ctn-color-text-muted)',
+      ...this.advisoryVals()
+    };
+  }
+  advisoryVals(){
+    const s = this.state, a = s.advisory;
+    return {
+      advisoryNote: !a ? 'not generated yet · a standing review of the corpus, not per-incident'
+        : a.status === 'ok' ? (a.summary || 'reviewed · nothing further to add')
+        : String(a.status).replace(/_/g, ' '),
+      advisoryGaps: (a && a.status === 'ok' ? (a.gaps || []) : []),
+      advisoryWrittenNote: a ? 'last reviewed ' + String(a.written_at || '').slice(0, 16).replace('T', ' ') + 'Z' : '',
+      genAdvisory: () => this.genAdvisory(),
+      advisoryBtnLabel: s.generatingAdvisory ? 'ASKING…' : (a ? 'REVIEW AGAIN' : 'REVIEW CORPUS COVERAGE'),
+      advisoryStatus: s.advisoryStatus || '',
     };
   }
   loadingVals(){
@@ -480,7 +525,8 @@ level: medium`,
       pendingCount: '··', benchNote: 'Reading from citinel-web.', typeFilters: [], pendingTabs: [], pending: [],
       benchEmpty: true, emptyTitle: 'READING THE CORPUS FROM CITINEL-WEB', emptyBody: 'Nothing authored is shown while loading, so a scripted card is never mistaken for a real one.',
       corpusNote: '· of · rules', corpusTally: [], corpus: [], noCorpus: false, corpusTotal: 0,
-      selCount: '··', packNote: 'Reading', exportDisabled: true, exportLabel: 'READING', exported: false
+      selCount: '··', packNote: 'Reading', exportDisabled: true, exportLabel: 'READING', exported: false,
+      advisoryNote: 'reading…', advisoryGaps: [], advisoryWrittenNote: '', genAdvisory: ()=>{}, advisoryBtnLabel: '', advisoryStatus: ''
     };
   }
 
@@ -606,7 +652,9 @@ level: medium`,
       clearSel: ()=>this.setState({sel:{}, exported:false}),
       exported: s.exported,
       exportFile: 'citinel-duplicates-2026-08-23-'+String(selIds.length).padStart(2,'0')+'.tar.gz',
-      exportNote: 'written to the analyst workstation. The provenance manifest travels with it, so whoever receives these can trace every rule back to the incident that produced it.'
+      exportNote: 'written to the analyst workstation. The provenance manifest travels with it, so whoever receives these can trace every rule back to the incident that produced it.',
+      advisoryNote: 'authored demo · no coverage advisory generated', advisoryGaps: [], advisoryWrittenNote: '',
+      genAdvisory: ()=>{}, advisoryBtnLabel: '', advisoryStatus: ''
     };
   }
 

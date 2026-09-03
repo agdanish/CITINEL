@@ -3,6 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CITINEL · Standard reference component</title>
+<meta name="description" content="Shared component: a version-pinned citation of a regulatory or technical standard.">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<meta name="theme-color" content="#0B1F3A">
 <script src="vendor/resources.js"></script>
 <script src="./support.js"></script>
 <!-- Render-blocking, deliberately. The same sheets are declared again in the
@@ -40,7 +48,7 @@
 <script src="reveal.js"></script>
 </helmet>
 <button onClick="{{ copy }}" title="{{ full }}" style="display:inline-flex;align-items:center;gap:{{ gap }};max-width:100%;min-width:0;padding:{{ pad }};border:1px solid var(--ctn-color-border-strong);border-radius:6px;background:transparent;cursor:pointer;vertical-align:middle;text-align:left">
-  <svg width="{{ icon }}" height="{{ icon }}" viewBox="0 0 14 14" style="flex:none;display:block">
+  <svg sc-camel-width="{{ icon }}" sc-camel-height="{{ icon }}" viewBox="0 0 14 14" style="flex:none;display:block">
     <path d="M 7 1.8 V 8.4 M 4.6 6.2 L 7 8.6 L 9.4 6.2" fill="none" stroke="var(--ctn-color-text-muted)" stroke-width="1.2"></path>
     <path d="M 2.4 10.8 H 11.6" stroke="var(--ctn-color-text-secondary)" stroke-width="1.4"></path>
   </svg>

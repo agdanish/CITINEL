@@ -175,6 +175,7 @@ EGRESS_ALLOW: frozenset[str] = frozenset({
     "api.virustotal.com",
     "api.abuseipdb.com",
     "api.tavily.com",
+    "generativelanguage.googleapis.com",
 })
 
 

@@ -3,6 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CITINEL · Alert queue</title>
+<meta name="description" content="The two-lane alert queue: what CITINEL closed on citations alone, and what is held for a named human at the policy gate.">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<meta name="theme-color" content="#0B1F3A">
 <script src="vendor/resources.js"></script>
 <script src="./support.js"></script>
 <!-- Render-blocking, deliberately. The same sheets are declared again in the
@@ -55,20 +63,20 @@
 <div data-screen-label="Alert queue" data-citinel-page="queue" style="display:flex;flex-direction:column;height:100vh;min-width:1280px;background:var(--ctn-color-surface-shell)">
 
   <header style="display:flex;align-items:center;gap:18px;padding:0 18px;height:52px;flex:none;border-bottom:1px solid var(--ctn-color-border-strong);background:var(--ctn-color-surface-panel);min-width:0">
-    <img src="assets/mark-white.png" alt="CITINEL · caught, cited, gated, actioned, closed" style="height:34px;width:90px;display:block;flex:none">
+    <a href="Overview.dc.html" aria-label="CITINEL — back to the overview" style="display:block;flex:none;line-height:0;text-decoration:none"><picture><source type="image/webp" srcset="assets/mark-white-254.webp"><img src="assets/mark-white-254.png" alt="CITINEL · caught, cited, gated, actioned, closed" width="254" height="96" style="height:34px;width:90px;display:block;flex:none"></picture></a>
     <nav style="display:flex;gap:2px;min-width:0;overflow-x:auto;scrollbar-width:thin;flex:1">
       <a href="Overview.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">OVERVIEW</a>
       <a href="Queue.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-primary);background:var(--ctn-color-surface-raised);border-radius:6px;white-space:nowrap">QUEUE</a>
-      <a href="Replay.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">REPLAY</a>
-      <a href="Confidence.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">CONFIDENCE</a>
-      <a href="Evidence.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">EVIDENCE</a>
-      <a href="Approvals.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">APPROVALS</a>
-      <a href="Compliance.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">COMPLIANCE</a>
-      <a href="Audit.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">AUDIT</a>
+      <a href="{{ replayHref }}" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">REPLAY</a>
+      <a href="{{ confidenceHref }}" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">CONFIDENCE</a>
+      <a href="{{ evidenceHref }}" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">EVIDENCE</a>
+      <a href="{{ approvalsHref }}" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">APPROVALS</a>
+      <a href="{{ complianceHref }}" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">COMPLIANCE</a>
+      <a href="{{ auditHref }}" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">AUDIT</a>
       <a href="Corpus.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">CORPUS</a>
       <a href="Eval.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">EVAL</a>
       <a href="Policy.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">POLICY</a>
-      <a href="Handover.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">HANDOVER</a>
+      <a href="{{ handoverHref }}" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">HANDOVER</a>
       <a href="Executive.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">EXEC</a>
       <a href="Settings.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">CONNECTORS</a>
       <a href="Demo.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">DEMO</a>
@@ -125,7 +133,7 @@
 
     <div style="display:flex;gap:12px;padding:0 22px 6px;overflow-x:auto;min-width:0;align-items:stretch" data-keys="1" tabindex="0">
       <sc-for list="{{ escalated }}" as="e" hint-placeholder-count="7">
-        <a href="Replay.dc.html?id={{ e.id }}" style="flex:none;width:242px;display:flex;flex-direction:column;text-decoration:none;color:inherit;background:var(--ctn-color-surface-panel);border:1px solid var(--ctn-color-border-hairline);border-top:3px solid {{ e.edge }};border-radius:6px;min-width:0" style-hover="background:var(--ctn-color-surface-raised)">
+        <a href="{{ e.href }}" style="flex:none;width:242px;display:flex;flex-direction:column;text-decoration:none;color:inherit;background:var(--ctn-color-surface-panel);border:1px solid var(--ctn-color-border-hairline);border-top:3px solid {{ e.edge }};border-radius:6px;min-width:0" style-hover="background:var(--ctn-color-surface-raised)">
           <div style="display:flex;align-items:center;gap:8px;padding:10px 12px 0;min-width:0;overflow:hidden">
             <x-import component-from-global-scope="CITINELDesignSystem_fdfd66.SeverityBadge" level="{{ e.sev }}" size="sm" hint-size="80px,20px"></x-import>
             <span data-token style="font-family:var(--ctn-font-mono);font-size:11.5px;color:var(--ctn-color-text-primary);margin-left:auto;flex:none">{{ e.id }}</span>
@@ -160,7 +168,7 @@
           <div style="padding-bottom:14px;min-width:0">
             <div style="font-family:var(--ctn-font-display);font-size:8.5px;letter-spacing:0.13em;color:var(--ctn-color-text-muted);border-bottom:1px solid var(--ctn-color-border-strong);padding-bottom:4px">{{ g.hour }} · {{ g.n }} POSTED{{ g.drawn }}</div>
             <sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="8">
-              <a href="Replay.dc.html?id={{ r.inc }}" style="display:flex;align-items:baseline;gap:8px;padding:5px 0;border-bottom:1px solid var(--ctn-color-border-hairline);text-decoration:none;font-family:var(--ctn-font-mono);font-size:11px;line-height:15px;letter-spacing:0;min-width:0" style-hover="background:var(--ctn-color-surface-panel)">
+              <a href="{{ r.href }}" style="display:flex;align-items:baseline;gap:8px;padding:5px 0;border-bottom:1px solid var(--ctn-color-border-hairline);text-decoration:none;font-family:var(--ctn-font-mono);font-size:11px;line-height:15px;letter-spacing:0;min-width:0" style-hover="background:var(--ctn-color-surface-panel)">
                 <span style="color:var(--ctn-color-text-muted);font-variant-numeric:tabular-nums;flex:none">{{ r.t }}</span>
                 <span style="font-family:var(--ctn-font-display);font-size:7.5px;letter-spacing:0.08em;color:{{ r.sevFg }};flex:none;width:28px">{{ r.sev }}</span>
                 <span style="color:var(--ctn-color-text-secondary);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.what }}</span>
@@ -234,6 +242,26 @@ class Component extends DCLogic {
   componentWillUnmount(){ clearInterval(this.t); }
 
   /* ── helpers ─────────────────────────────────────────────────────────────── */
+  /* MAT-F01: every outgoing link to an incident-scoped screen carries the id the
+     reader actually meant -- this row's own incident for a per-row link, or
+     whatever ?id= this page itself was opened with for the top nav -- instead of
+     silently resetting to API.INCIDENT_PRIMARY. Routed through the one builder
+     api.js exposes for this so the id keeps propagating, screen to screen. */
+  linkFor(page, id){
+    const API = window.CITINEL_API;
+    return API ? API.incidentLink(page, id) : (id ? page + '?id=' + encodeURIComponent(id) : page);
+  }
+  navHrefs(){
+    return {
+      replayHref: this.linkFor('Replay.dc.html'),
+      confidenceHref: this.linkFor('Confidence.dc.html'),
+      evidenceHref: this.linkFor('Evidence.dc.html'),
+      approvalsHref: this.linkFor('Approvals.dc.html'),
+      complianceHref: this.linkFor('Compliance.dc.html'),
+      auditHref: this.linkFor('Audit.dc.html'),
+      handoverHref: this.linkFor('Handover.dc.html')
+    };
+  }
   fmtN(n){ return Number(n || 0).toLocaleString('en-IN'); }
   pad2(n){ return String(n).padStart(2,'0'); }
   fmtAge(s){
@@ -322,6 +350,7 @@ class Component extends DCLogic {
       const h = this.holderFor(i, s.trails[i.incident_id]);
       return {
         id: i.incident_id, sev: i.severity || 'medium',
+        href: this.linkFor('Replay.dc.html', i.incident_id),
         what: top + (tally[top] ? ' ×' + this.fmtN(tally[top]) : '') + ' · ' + this.fmtN(fs.length) + ' findings · ' + hosts.length + (hosts.length === 1 ? ' host' : ' hosts'),
         rule: tech.length ? tech.slice(0,2).join(' ') + (tech.length > 2 ? ' +' + (tech.length - 2) : '') : 'no technique ids',
         host: String(hosts[0] || 'no host').split('.')[0],
@@ -342,7 +371,7 @@ class Component extends DCLogic {
     rows.forEach(r => { const k = r.ts.slice(0,13); if (!byHour[k]) { byHour[k] = []; order.push(k); } byHour[k].push(r); });
     const groups = order.map(k => {
       const list = byHour[k];
-      const shown = list.slice(0, CAP).map(r => { const sv = sevMap[r.level] || 'LOW'; return { t: r.ts.slice(11,16), sev: sv, sevFg: sevFg[sv], what: r.title, inc: r.inc }; });
+      const shown = list.slice(0, CAP).map(r => { const sv = sevMap[r.level] || 'LOW'; return { t: r.ts.slice(11,16), sev: sv, sevFg: sevFg[sv], what: r.title, inc: r.inc, href: this.linkFor('Replay.dc.html', r.inc) }; });
       return { hour: k.slice(0,10) + ' ' + k.slice(11,13) + ':00 UTC', n: this.fmtN(list.length),
                drawn: list.length > shown.length ? ' · ' + shown.length + ' DRAWN' : '', rows: shown };
     });
@@ -398,13 +427,14 @@ class Component extends DCLogic {
       const ageS = Math.max(0, Math.floor((s.now-e.born)/1000));
       return Object.assign({}, e, {ageS,
         edge: sevEdge[e.sev],
+        href: this.linkFor('Replay.dc.html', e.id),
         holderDot: holderDots[e.holder] || 'var(--ctn-color-text-muted)',
         age: this.fmtAge(ageS)}, this.ageing(ageS));
     }).sort((a,b)=> b.ageS - a.ageS).map((e,i)=> Object.assign({}, e, {pos: i===0 ? 'DISCHARGE · WORK THIS' : 'POSITION ' + this.pad2(i+1)}));
     const sevFg = {CRIT:'var(--ctn-color-severity-critical-text)', HIGH:'var(--ctn-color-severity-high)', MED:'var(--ctn-color-text-secondary)', LOW:'var(--ctn-color-text-muted)'};
     const mkRow = (t,i)=>{
       const p = this.postedPool[i % this.postedPool.length];
-      return {t, sev:p[0], sevFg: sevFg[p[0]], what:p[1], inc:''};
+      return {t, sev:p[0], sevFg: sevFg[p[0]], what:p[1], inc:'', href: this.linkFor('Replay.dc.html', '')};
     };
     const groups = [
       {hour:'21:00 IST', n:'38', count:13},
@@ -471,9 +501,10 @@ class Component extends DCLogic {
   }
   renderVals(){
     const s = this.state;
-    if (s.live === true) { const b = this.liveVals(); return Object.assign(b, this.svgLabels(b)); }
+    const nav = this.navHrefs();
+    if (s.live === true) { const b = Object.assign(this.liveVals(), nav); return Object.assign(b, this.svgLabels(b)); }
     const b = this.baseVals();
-    const merged = Object.assign({}, b, s.live === null ? this.loadingVals(b) : this.stateVals(b));
+    const merged = Object.assign({}, b, nav, s.live === null ? this.loadingVals(b) : this.stateVals(b));
     return Object.assign(merged, this.svgLabels(merged));
   }
 

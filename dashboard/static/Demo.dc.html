@@ -3,6 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CITINEL · Demo mode</title>
+<meta name="description" content="A guided walkthrough of the CITINEL console screens and the prompt book behind the autonomous SOC pipeline.">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<meta name="theme-color" content="#0B1F3A">
 <script src="vendor/resources.js"></script>
 <script src="./support.js"></script>
 <!-- Render-blocking, deliberately. The same sheets are declared again in the
@@ -54,7 +62,7 @@
 <div data-screen-label="Demo mode" data-citinel-page="demo" style="display:flex;flex-direction:column;height:100vh;min-width:1280px;background:var(--ctn-color-surface-shell)">
 
   <header data-on-navy style="display:flex;align-items:center;gap:16px;padding:0 18px;height:52px;flex:none;border-bottom:2px solid var(--ctn-color-border-strong);background:var(--ctn-color-surface-navy);min-width:0">
-    <img src="assets/mark-white.png" alt="CITINEL · caught, cited, gated, actioned, closed" style="height:34px;width:90px;display:block;flex:none">
+    <a href="Overview.dc.html" aria-label="CITINEL — back to the overview" style="display:block;flex:none;line-height:0;text-decoration:none"><picture><source type="image/webp" srcset="assets/mark-white-254.webp"><img src="assets/mark-white-254.png" alt="CITINEL · caught, cited, gated, actioned, closed" width="254" height="96" style="height:34px;width:90px;display:block;flex:none"></picture></a>
     <span style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.14em;color:var(--ctn-color-text-on-navy);border:1px solid var(--ctn-color-text-on-navy);padding:5px 11px;border-radius:999px;flex:none">DEMO MODE · SCRIPTED PERFORMANCE, NOT LIVE DATA</span>
     <span data-reveal style="font-family:var(--ctn-font-mono);font-size:12px;color:var(--ctn-color-text-on-navy);opacity:0.72;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ demoSubject }}</span>
     <a href="Overview.dc.html" style="flex:none;font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:9px 15px;background:var(--ctn-color-white);color:var(--ctn-color-navy-900);border-radius:6px;text-decoration:none;white-space:nowrap">◀ RETURN TO LIVE OPERATION</a>
@@ -95,7 +103,7 @@
       <div style="flex:none;border-top:1px solid var(--ctn-color-border-hairline);padding:12px 16px;display:flex;align-items:center;gap:12px">
         <svg width="52" height="52" viewBox="0 0 52 52" style="flex:none">
           <circle cx="26" cy="26" r="20" fill="none" stroke="var(--ctn-color-border-strong)" stroke-width="1.5"></circle>
-          <path d="{{ arc }}" fill="none" stroke="var(--ctn-color-state-cited)" stroke-width="3.4"></path>
+          <path sc-camel-d="{{ arc }}" fill="none" stroke="var(--ctn-color-state-cited)" stroke-width="3.4"></path>
           <g>{{ arcNodes }}</g>
         </svg>
         <div style="flex:1;min-width:0">
@@ -220,7 +228,7 @@
               <svg data-radial-svg viewBox="0 0 300 300" style="width:100%;max-width:280px;aspect-ratio:1;display:block">
                 <circle cx="150" cy="150" r="128" fill="none" stroke="var(--ctn-color-border-strong)" stroke-width="1.6" stroke-dasharray="6 5"></circle>
                 <text x="150" y="16" text-anchor="middle" font-family="var(--ctn-font-display)" font-size="8" letter-spacing="1.4" fill="var(--ctn-color-text-muted)">OPA BLAST CAP · 250</text>
-                <circle cx="150" cy="150" r="{{ blastR }}" fill="none" stroke="var(--ctn-color-border-hairline)" stroke-width="1"></circle>
+                <circle cx="150" cy="150" sc-camel-r="{{ blastR }}" fill="none" stroke="var(--ctn-color-border-hairline)" stroke-width="1"></circle>
                 <g>{{ blastDots }}</g>
                 <circle cx="150" cy="150" r="42" fill="var(--ctn-color-surface-panel)" stroke="var(--ctn-color-border-strong)" stroke-width="1.5"></circle>
                 {{ blastLabel }}

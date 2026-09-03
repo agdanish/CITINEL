@@ -41,3 +41,4 @@ htmlcov/
 data/incidents/
 data/cache/enrichment/
 !data/seed/
+backend/uv.lock

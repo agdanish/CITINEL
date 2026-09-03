@@ -3,6 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CITINEL · Entry</title>
+<meta name="description" content="Sign in to the CITINEL autonomous Security Operations Center console. No gate is open and nothing transfers until a named role is chosen.">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<meta name="theme-color" content="#0B1F3A">
 <script src="vendor/resources.js"></script>
 <script src="./support.js"></script>
 <!-- Render-blocking, deliberately. The same sheets are declared again in the
@@ -55,7 +63,7 @@
 
   <section style="flex:1.35;min-width:0;background:var(--ctn-color-surface-panel);border-right:1px solid var(--ctn-color-border-strong);display:flex;flex-direction:column;padding:34px 40px;position:relative">
     <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;flex:none">
-      <img src="assets/mark-white.png" alt="CITINEL · caught, cited, gated, actioned, closed" style="height:48px;width:127px;display:block;flex:none">
+      <a href="Overview.dc.html" aria-label="CITINEL — back to the overview" style="display:block;flex:none;line-height:0;text-decoration:none"><picture><source type="image/webp" srcset="assets/mark-white-254.webp"><img src="assets/mark-white-254.png" alt="CITINEL · caught, cited, gated, actioned, closed" width="254" height="96" style="height:48px;width:127px;display:block;flex:none"></picture></a>
     </div>
     <div style="flex:1;min-height:0;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:20px 0">
       <div data-radial style="position:relative;width:min(100%, 520px);height:auto;aspect-ratio:1;container-type:inline-size;margin-inline:auto">
@@ -63,9 +71,9 @@
         <circle cx="260" cy="260" r="228" fill="none" stroke="var(--ctn-color-border-hairline)" stroke-width="1"></circle>
         <circle cx="260" cy="260" r="200" fill="none" stroke="var(--ctn-color-border-strong)" stroke-width="2"></circle>
         <g>{{ dialTicks }}</g>
-        <path d="{{ elapsedArc }}" fill="none" stroke="var(--ctn-color-clock)" stroke-width="12"></path>
+        <path sc-camel-d="{{ elapsedArc }}" fill="none" stroke="var(--ctn-color-clock)" stroke-width="12"></path>
         <circle cx="260" cy="260" r="186" fill="var(--ctn-color-surface-panel)"></circle>
-        <line data-needle x1="260" y1="70" x2="260" y2="46" stroke="var(--ctn-color-text-primary)" stroke-width="3" stroke-linecap="round" transform="rotate({{ handAngle }} 260 260)"></line>
+        <line data-needle x1="260" y1="70" x2="260" y2="46" stroke="var(--ctn-color-text-primary)" stroke-width="3" stroke-linecap="round" sc-camel-transform="rotate({{ handAngle }} 260 260)"></line>
       </svg>
       <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;gap:3px">
         <div style="font-family:var(--ctn-font-display);font-size:clamp(8px, 2.7cqw, 14px);letter-spacing:0.16em;color:var(--ctn-color-text-muted);text-align:center;width:60%">{{ dialEyebrow }}</div>

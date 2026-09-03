@@ -23,6 +23,9 @@ class TavilyConnector(Connector):
 
     provider = "tavily"
     endpoint = "https://api.tavily.com/search"
+    extract_endpoint = "https://api.tavily.com/extract"
+    crawl_endpoint = "https://api.tavily.com/crawl"
+    map_endpoint = "https://api.tavily.com/map"
 
     def search(self, query: str, max_results: int = 5) -> EnrichmentResult:
         cached = self.cache.get(self.provider, query)
@@ -35,9 +38,13 @@ class TavilyConnector(Connector):
             status, body = self._guarded_request(
                 "POST", self.endpoint,
                 headers={"Content-Type": "application/json"},
+                # include_answer asks Tavily for its own LLM-synthesized answer,
+                # not just ranked links -- without it "answer" is never in the
+                # response at all, so reading body.get("answer") below was a
+                # silent no-op until this was requested explicitly.
                 json_body={"api_key": settings.tavily_api_key, "query": query,
                            "max_results": max_results,
-                           "search_depth": "basic"},
+                           "search_depth": "basic", "include_answer": "basic"},
             )
         except Exception as e:
             return EnrichmentResult(self.provider, query, "query", "error",
@@ -54,7 +61,137 @@ class TavilyConnector(Connector):
             source_url=top.get("url", "https://tavily.com"),
             fetched_at=self._now(),
             detail={"results": [{"title": r.get("title"), "url": r.get("url"),
-                                 "score": r.get("score")} for r in results[:max_results]]},
+                                 "score": r.get("score")} for r in results[:max_results]],
+                    "answer": body.get("answer") or ""},
+        )
+        self.cache.put(result)
+        return result
+
+    def extract(self, url: str, max_chars: int = 4000) -> EnrichmentResult:
+        """Full page content, not a search snippet -- Tavily's own retrieval
+        primitive for grounding an LLM in a real source rather than a link a
+        human might never click (docs.tavily.com Extract endpoint). Cached
+        under a distinct provider key so it never collides with a search()
+        cache entry for the same URL string.
+        """
+        cache_key = f"extract:{url}"
+        cached = self.cache.get(self.provider, cache_key)
+        if cached:
+            return cached
+        if not settings.tavily_api_key:
+            return EnrichmentResult(self.provider, url, "url", "not_configured",
+                                    verdict="Tavily key not set; extraction skipped")
+        try:
+            status, body = self._guarded_request(
+                "POST", self.extract_endpoint,
+                headers={"Content-Type": "application/json"},
+                json_body={"api_key": settings.tavily_api_key, "urls": [url],
+                           "extract_depth": "basic", "format": "text"},
+            )
+        except Exception as e:
+            return EnrichmentResult(self.provider, url, "url", "error",
+                                    verdict=f"Tavily extract failed: {e}")
+        if status != 200:
+            return EnrichmentResult(self.provider, url, "url", "error",
+                                    verdict=f"Tavily extract HTTP {status}")
+        results = body.get("results", []) if isinstance(body, dict) else []
+        if not results:
+            failed = (body.get("failed_results") or [{}])[0] if isinstance(body, dict) else {}
+            return EnrichmentResult(self.provider, url, "url", "error",
+                                    verdict=f"Tavily could not extract this URL: {failed.get('error', 'unknown')}")
+        raw = str(results[0].get("raw_content") or "")
+        result = EnrichmentResult(
+            provider=self.provider, indicator=cache_key, indicator_type="url",
+            status="ok", verdict=raw[:max_chars],
+            source_url=results[0].get("url", url), fetched_at=self._now(),
+            detail={"truncated": len(raw) > max_chars, "full_length": len(raw)},
+        )
+        self.cache.put(result)
+        return result
+
+    def map_site(self, url: str, limit: int = 10, select_paths: list[str] | None = None) -> EnrichmentResult:
+        """URL discovery, not content: which pages actually exist under a
+        section of a site right now (docs.tavily.com Map endpoint). Used to
+        read a taxonomy live -- e.g. which sub-technique pages ATT&CK
+        currently publishes under a technique -- instead of hardcoding a list
+        that goes stale. Named map_site, not map, so it never shadows the
+        builtin on this class.
+        """
+        cache_key = f"map:{url}:{limit}"
+        cached = self.cache.get(self.provider, cache_key)
+        if cached:
+            return cached
+        if not settings.tavily_api_key:
+            return EnrichmentResult(self.provider, url, "url", "not_configured",
+                                    verdict="Tavily key not set; mapping skipped")
+        body_in: dict = {"api_key": settings.tavily_api_key, "url": url,
+                         "max_depth": 1, "max_breadth": limit, "limit": limit,
+                         "allow_external": False}
+        if select_paths:
+            body_in["select_paths"] = select_paths
+        try:
+            status, body = self._guarded_request(
+                "POST", self.map_endpoint,
+                headers={"Content-Type": "application/json"}, json_body=body_in)
+        except Exception as e:
+            return EnrichmentResult(self.provider, url, "url", "error",
+                                    verdict=f"Tavily map failed: {e}")
+        if status != 200:
+            return EnrichmentResult(self.provider, url, "url", "error",
+                                    verdict=f"Tavily map HTTP {status}")
+        urls = [u for u in (body.get("results") or []) if isinstance(u, str)] if isinstance(body, dict) else []
+        result = EnrichmentResult(
+            provider=self.provider, indicator=cache_key, indicator_type="url",
+            status="ok", verdict=f"{len(urls)} page(s) discovered under {url}",
+            source_url=url, fetched_at=self._now(),
+            detail={"urls": urls[:limit]},
+        )
+        self.cache.put(result)
+        return result
+
+    def crawl(self, url: str, limit: int = 3, select_paths: list[str] | None = None,
+              max_chars: int = 2500) -> EnrichmentResult:
+        """Full content from a page AND the pages it links to, in one call
+        (docs.tavily.com Crawl endpoint) -- where extract() reads one page,
+        this reads a small neighbourhood of them. Deliberately tight bounds:
+        depth 1 and a low `limit`, because ATT&CK pages are densely
+        cross-linked and an unbounded crawl is both slow and a real credit
+        cost (1 credit per 10 pages, 2 with instructions).
+        """
+        cache_key = f"crawl:{url}:{limit}"
+        cached = self.cache.get(self.provider, cache_key)
+        if cached:
+            return cached
+        if not settings.tavily_api_key:
+            return EnrichmentResult(self.provider, url, "url", "not_configured",
+                                    verdict="Tavily key not set; crawl skipped")
+        body_in: dict = {"api_key": settings.tavily_api_key, "url": url,
+                         "max_depth": 1, "max_breadth": limit, "limit": limit,
+                         "allow_external": False, "extract_depth": "basic",
+                         "format": "text"}
+        if select_paths:
+            body_in["select_paths"] = select_paths
+        try:
+            status, body = self._guarded_request(
+                "POST", self.crawl_endpoint,
+                headers={"Content-Type": "application/json"}, json_body=body_in)
+        except Exception as e:
+            return EnrichmentResult(self.provider, url, "url", "error",
+                                    verdict=f"Tavily crawl failed: {e}")
+        if status != 200:
+            return EnrichmentResult(self.provider, url, "url", "error",
+                                    verdict=f"Tavily crawl HTTP {status}")
+        pages = body.get("results", []) if isinstance(body, dict) else []
+        kept = [{"url": p.get("url", ""), "text": str(p.get("raw_content") or "")[:max_chars]}
+                for p in pages[:limit] if p.get("url")]
+        if not kept:
+            return EnrichmentResult(self.provider, url, "url", "error",
+                                    verdict=f"Tavily crawl returned no pages for {url}")
+        result = EnrichmentResult(
+            provider=self.provider, indicator=cache_key, indicator_type="url",
+            status="ok", verdict=f"{len(kept)} page(s) crawled from {url}",
+            source_url=body.get("base_url", url) if isinstance(body, dict) else url,
+            fetched_at=self._now(), detail={"pages": kept},
         )
         self.cache.put(result)
         return result

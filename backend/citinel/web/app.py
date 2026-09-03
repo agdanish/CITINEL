@@ -26,13 +26,20 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
-from fastapi import FastAPI, Header, HTTPException
-from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi import FastAPI, Header, HTTPException, Request
+from fastapi.exception_handlers import http_exception_handler
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from citinel.agents.context import gather_context, load_context
+from citinel.agents.pipeline import MAX_EVIDENCE_FINDINGS
+from citinel.agents.sweep import load_sweep, run_sweep
 from citinel.agents.store import annotate_result, load_result, load_runs, summaries, summary_of
-from citinel.connectors.lyzr_agents import handover_summary, review_draft, triage_second_opinion
+from citinel.connectors.lyzr_agents import (
+    corpus_advisory, handover_summary, response_review, review_draft,
+    triage_second_opinion, verdict_audit,
+)
 from citinel.audit.ledger import AuditLedger
 from citinel.compliance.drafter import draft_certin, draft_dpdp, render_text
 from citinel.config import settings
@@ -114,8 +121,18 @@ def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
+def _ledger_path() -> Path:
+    """The one place the ledger's location is decided.
+
+    Write path and read path must never diverge: a ledger appended in one file
+    and verified from another would report a clean chain while the real frames
+    went somewhere else. Everything below routes through here.
+    """
+    return settings.ledger_path or (INCIDENTS_DIR / "ledger.jsonl")
+
+
 def _ledger() -> AuditLedger:
-    return AuditLedger(INCIDENTS_DIR / "ledger.jsonl", sink=LyzrLedgerMirror())
+    return AuditLedger(_ledger_path(), sink=LyzrLedgerMirror())
 
 
 def _incidents() -> list:
@@ -131,7 +148,7 @@ def _incident(incident_id: str):
 
 def _chains() -> dict[str, list]:
     """Every case's ledger frames, from one pass over the file."""
-    path = INCIDENTS_DIR / "ledger.jsonl"
+    path = _ledger_path()
     out: dict[str, list] = {}
     if not path.exists():
         return out
@@ -256,7 +273,7 @@ def data_source() -> dict:
     badge reads rather than inferring liveness from an empty array.
     """
     incidents_file = INCIDENTS_DIR / "incidents.jsonl"
-    ledger_file = INCIDENTS_DIR / "ledger.jsonl"
+    ledger_file = _ledger_path()
     return {
         "source": DATA_SOURCE,
         "description": {
@@ -322,7 +339,7 @@ def get_incident(
 @app.get("/api/incidents/{incident_id}/audit")
 def get_audit_chain(incident_id: str) -> list[dict]:
     """SDD Section 16 finding 4: full chain reconstruction from the case id."""
-    chain = AuditLedger(INCIDENTS_DIR / "ledger.jsonl").entries_for(incident_id)
+    chain = AuditLedger(_ledger_path()).entries_for(incident_id)
     if not chain:
         raise HTTPException(404, f"no audit entries for {incident_id}")
     return [e.as_dict() for e in chain]
@@ -377,7 +394,7 @@ def verify_ledger() -> dict:
     mirror, which covers exactly that blind spot and nothing else. They are
     not merged into one boolean.
     """
-    ledger = AuditLedger(INCIDENTS_DIR / "ledger.jsonl")
+    ledger = AuditLedger(_ledger_path())
     ok, message = ledger.verify_chain()
     witness = LyzrLedgerMirror().compare(ledger)
     return {"intact": ok, "message": message, "witness": witness.as_dict()}
@@ -486,6 +503,38 @@ def get_corpus() -> dict:
     return static
 
 
+def _corpus_advisory_path() -> Path:
+    """Deployment-wide, not per-incident -- there is one corpus, not one per case."""
+    return INCIDENTS_DIR / "corpus_advisory.json"
+
+
+@app.get("/api/corpus/review")
+def get_corpus_review() -> dict:
+    """The standing Lyzr coverage advisory. 404 until generated -- a real call
+    site, not a value that appears from nowhere the first time this is read."""
+    p = _corpus_advisory_path()
+    if not p.exists():
+        raise HTTPException(404, "no corpus advisory has been generated yet")
+    import json as _json
+    return _json.loads(p.read_text(encoding="utf-8"))
+
+
+@app.post("/api/corpus/review")
+def write_corpus_review(body: dict | None = None) -> dict:
+    """Ask the corpus advisor for which rule directories or techniques look
+    thin, from the same stats /api/corpus already reports, and persist it.
+    Each call is a real Lyzr call, so it is gated the same way handover is."""
+    if not (body or {}).get("confirm"):
+        raise HTTPException(400, 'each advisory is a Lyzr call; send {"confirm": true} to write one')
+    advisory = corpus_advisory(get_corpus())
+    advisory["written_at"] = _now()
+    p = _corpus_advisory_path()
+    p.parent.mkdir(parents=True, exist_ok=True)
+    import json as _json
+    p.write_text(_json.dumps(advisory, ensure_ascii=False, indent=1), encoding="utf-8")
+    return advisory
+
+
 #: Recorded once at import: lets an operator tell "the process restarted after
 #: I saved the variables" from "it never did" (both otherwise look identical).
 _PROCESS_STARTED_AT = datetime.now(timezone.utc).isoformat(timespec="seconds")
@@ -498,6 +547,7 @@ _EXPECTED_ENV = (
     "CITINEL_REASONING_MODEL", "CITINEL_N8N_WEBHOOK_URL", "CITINEL_SWYTCHCODE_API_KEY",
     "CITINEL_LYZR_API_KEY", "CITINEL_LYZR_GUARD_URL", "CITINEL_LYZR_AGENT_ID",
     "CITINEL_LYZR_TRIAGE_AGENT_ID", "CITINEL_LYZR_REVIEW_AGENT_ID", "CITINEL_LYZR_HANDOVER_AGENT_ID",
+    "CITINEL_LYZR_VERDICT_AGENT_ID", "CITINEL_LYZR_RESPONSE_AGENT_ID", "CITINEL_LYZR_CORPUS_AGENT_ID",
 )
 #: Set by the blueprint / Dockerfile with values; their presence proves the
 #: platform's environment reaches the process at all.
@@ -624,6 +674,8 @@ def get_connectors() -> dict:
             c("anthropic", "the swarm's models", s.has_swarm_credentials,
               f"triage {s.triage_model or 'unset'} · reasoning {s.reasoning_model or 'unset'}"),
             c("tavily", "OSINT lookups for the Enrichment Squad", bool(s.tavily_api_key), "web search"),
+            c("gemini", "wide-lens sweep over findings the evidence window never reached",
+              bool(s.gemini_api_key), f"long-context read · {s.gemini_model}"),
             c("virustotal", "file and IP reputation for the Enrichment Squad", bool(s.virustotal_api_key), "reputation"),
             c("abuseipdb", "IP abuse reports for the Enrichment Squad", bool(s.abuseipdb_api_key), "reputation"),
             c("lyzr", "PII second opinion, swarm observer, ledger witness", lyzr_ok,
@@ -631,6 +683,9 @@ def get_connectors() -> dict:
             c("lyzr-triage", "independent triage lane beside the Router's, on the ledger", bool(lyzr_ok and s.lyzr_triage_agent_id), "CITINEL_LYZR_TRIAGE_AGENT_ID"),
             c("lyzr-review", "drafted-field review before sign-off", bool(lyzr_ok and s.lyzr_review_agent_id), "CITINEL_LYZR_REVIEW_AGENT_ID"),
             c("lyzr-handover", "shift-handover note from the ledger", bool(lyzr_ok and s.lyzr_handover_agent_id), "CITINEL_LYZR_HANDOVER_AGENT_ID"),
+            c("lyzr-verdict", "independent second opinion on citation support, beside the Narrator's own estimate", bool(lyzr_ok and s.lyzr_verdict_agent_id), "CITINEL_LYZR_VERDICT_AGENT_ID"),
+            c("lyzr-response", "independent proportionality review of a proposed action, beside the OPA gate", bool(lyzr_ok and s.lyzr_response_agent_id), "CITINEL_LYZR_RESPONSE_AGENT_ID"),
+            c("lyzr-corpus", "independent coverage advisory on the Sigma corpus", bool(lyzr_ok and s.lyzr_corpus_agent_id), "CITINEL_LYZR_CORPUS_AGENT_ID"),
             c("n8n", "post-sign-off automation (notify, export, ticket)", bool(s.n8n_webhook_url), "webhook"),
             c("swytchcode", "ticketing + comms after an executed action", bool(s.swytchcode_api_key), "ecosystem apis"),
         ],
@@ -670,6 +725,11 @@ def _swarm_worker(incident_id: str, inc) -> None:
         # recorded beside the Router's decision (not_configured when no id is set)
         opinion = triage_second_opinion(inc, result.as_dict(), _ledger())
         annotate_result(incident_id, INCIDENTS_DIR, "lyzr_triage", opinion)
+        # a second, independent opinion on citation support, beside the
+        # pipeline's own semantic-support estimate (not_configured when unset)
+        verdict_dict = result.as_dict().get("verdict") or {}
+        audit = verdict_audit(incident_id, verdict_dict.get("claims") or [], _ledger())
+        annotate_result(incident_id, INCIDENTS_DIR, "lyzr_verdict_audit", audit)
         run.update(mode=result.mode.value, banner=result.banner(),
                    summary=summary_of(result.as_dict()))
     except Exception as e:  # recorded, never raised into a thread
@@ -754,6 +814,36 @@ def gather_public_context(incident_id: str, body: dict | None = None) -> dict:
                           INCIDENTS_DIR, connector=_tavily())
 
 
+@app.get("/api/incidents/{incident_id}/sweep")
+def get_sweep(incident_id: str) -> dict:
+    """The Gemini wide-lens sweep for this record: what the long-context read
+    found in the findings the investigation's evidence window never reached.
+    404 until swept. Context, never evidence."""
+    _incident(incident_id)
+    d = load_sweep(INCIDENTS_DIR, incident_id)
+    if d is None:
+        raise HTTPException(404, f"no wide-lens sweep has been run for {incident_id} yet")
+    return d
+
+
+@app.post("/api/incidents/{incident_id}/sweep")
+def run_wide_sweep(incident_id: str, body: dict | None = None) -> dict:
+    """Read EVERY finding on this record through Gemini's long context --
+    including the region the swarm's own evidence window never reached -- and
+    persist what it found. One API call; the body must confirm. Nothing swept
+    becomes evidence: no verdict, lane or gate decision changes because of it.
+    """
+    inc = _incident(incident_id)
+    if not settings.gemini_api_key:
+        raise HTTPException(503, "no Gemini key configured on this deployment")
+    if not (body or {}).get("confirm"):
+        raise HTTPException(400, 'a sweep is one Gemini call; send {"confirm": true} to run it')
+    result = load_result(incident_id, INCIDENTS_DIR) or {}
+    examined = int(result.get("findings_examined") or MAX_EVIDENCE_FINDINGS)
+    return run_sweep(inc, examined, settings.data_dir / "cache" / "enrichment",
+                     INCIDENTS_DIR, ledger=_ledger())
+
+
 def _handover_path(incident_id: str) -> Path:
     return INCIDENTS_DIR / "handover" / f"{incident_id}.json"
 
@@ -765,7 +855,7 @@ def get_handover(incident_id: str) -> dict:
     _incident(incident_id)
     p = _handover_path(incident_id)
     if not p.exists():
-        raise HTTPException(404, f"no handover note for {incident_id}; POST /api/incidents/{incident_id}/handover to write one")
+        raise HTTPException(404, f"no handover note has been written for {incident_id} yet")
     import json as _json
     return _json.loads(p.read_text(encoding="utf-8"))
 
@@ -857,6 +947,10 @@ def execute_action(body: dict) -> dict:
 
     decision = PolicyGate(POLICY_PATH).check(action_class, assets, target)
     ledger = _ledger()
+    # an independent opinion on whether this scope looks proportionate, asked
+    # after the gate above has already decided; it never gates -- not_configured
+    # when no agent id is set, and nothing here changes what executes
+    review = response_review(incident_id, action_class, target, assets, decision.as_dict(), ledger)
     executor = ActionExecutor(ENDPOINTS, ledger)
     try:
         receipt = executor.execute(incident_id, decision, target)
@@ -872,7 +966,7 @@ def execute_action(body: dict) -> dict:
             swytch.append(r.as_dict())
     chain = ledger.entries_for(incident_id)
     return {"decision": decision.as_dict(), "receipt": receipt.as_dict(),
-            "swytchcode": swytch, "simulated": True,
+            "swytchcode": swytch, "simulated": True, "lyzr_response_review": review,
             "state": derive_state("caught", chain)}
 
 
@@ -975,6 +1069,38 @@ def reopen(incident_id: str, body: dict) -> dict:
                   {"to": "caught", "from": before, "reopened": True, "reason": reason})
     return {"incident_id": incident_id, "reopened_by": by, "reason": reason,
             "state": derive_state("caught", ledger.entries_for(incident_id))}
+
+
+# --- a wrong address gets the console's own 404 ------------------------------
+@app.exception_handler(StarletteHTTPException)
+async def _http_error(request: Request, exc: StarletteHTTPException):
+    """The console's own 404 for a wrong address; the JSON contract for
+    every machine path and every other status code.
+
+    StaticFiles is mounted at "/" as a catch-all (below), and a file it
+    cannot find raises a bare 404 that FastAPI answered with
+    {"detail": "Not Found"} -- so a mistyped screen name, a stale bookmark
+    or a QR code with a typo landed a judge on a raw JSON stub instead of
+    the console. Any non-API 404 now returns dashboard/static/404.dc.html:
+    read from STATIC_DIR at request time so it deploys like every other
+    screen, and carrying the same Cache-Control the console files carry so
+    a redeployed page is never served from a heuristic browser cache.
+
+    /api/* and /healthz deliberately keep the JSON shape. The console's
+    api.js, the demo-capture fixtures and the test suite all read
+    r.json()["detail"] on a 404, and a machine caller must never be handed
+    an HTML document where it expects a JSON error. Anything that is not a
+    console 404 -- an API 404, a 400/401/403/409/503, a 204/304 with no
+    body -- is delegated to FastAPI's own handler, so nothing else changes.
+    """
+    path = request.url.path
+    machine = path.startswith("/api/") or path == "/healthz"
+    if exc.status_code == 404 and not machine:
+        page = STATIC_DIR / "404.dc.html"
+        if page.is_file():
+            return HTMLResponse(page.read_text(encoding="utf-8"), status_code=404,
+                                headers={"Cache-Control": "no-cache"})
+    return await http_exception_handler(request, exc)
 
 
 # --- the glass-box UI ---------------------------------------------------------

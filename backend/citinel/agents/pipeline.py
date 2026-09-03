@@ -87,8 +87,10 @@ from typing import Any
 from pydantic import BaseModel
 
 from citinel.agents.contracts import (
+    Claim,
     Correlation,
     ProposedAction,
+    SemanticSupportAssessment,
     TriageDecision,
     Verdict,
     Lane,
@@ -117,6 +119,20 @@ MAX_EVIDENCE_FINDINGS = 40
 ROUTER_EVIDENCE_FINDINGS = 5
 
 MARSHAL_EVIDENCE_FINDINGS = 10
+
+#: DEEP-F14/DEEP-F22 (docs/A8-maturity-depth-and-ps-alignment.md): the advisory
+#: semantic-support judge is one extra model call per claim, so this bounds it
+#: at the first N kept claims -- mirrors MAX_EVIDENCE_FINDINGS's bounding
+#: style rather than adding a fourth, differently-shaped cap. The citation
+#: gate above has already run, unconditionally, on every claim regardless of
+#: this cap; only the advisory label is bounded, never the real check.
+MAX_SEMANTIC_SUPPORT_CLAIMS = 8
+
+#: The only values `Claim.semantic_support` is ever set to by this pipeline.
+#: Deliberately not a pydantic enum on the field itself (see Claim's own
+#: docstring) -- checked here, in code that can freely treat "not one of
+#: these" as just another failure mode instead of a validation error.
+_SEMANTIC_SUPPORT_LEVELS = frozenset({"strong", "partial", "weak", "unclear"})
 
 #: SEC-F06, confirmed 2 Sep 2026: a single Router call, reading evidence the
 #: attacker wrote, had unilateral and unreviewable power to end an
@@ -278,16 +294,26 @@ def evidence_for(
     review. Quoted citations are still checked against `evidence_raw` alone
     (verify_citations), never against the title.
     """
-    out: list[TaintedText] = []
-    for i, f in enumerate(incident.findings[:limit]):
-        body = f.evidence_raw or "(no raw log line captured for this finding)"
-        content = f"title: {f.title}\nraw: {body}"
-        out.append(quarantine(
-            content,
-            Provenance(source="botsv1 replay", event_class=f.source,
-                       timestamp=f.timestamp, detail=f"finding[{i}]"),
-        ))
-    return out
+    return [_quarantine_finding(incident, i) for i in range(min(len(incident.findings), limit))]
+
+
+def _quarantine_finding(incident: Incident, index: int) -> TaintedText:
+    """The one place a single finding is wrapped for prompt use.
+
+    Factored out of `evidence_for` so a caller that needs exactly one
+    finding -- `_assess_semantic_support`, below, needs only the finding a
+    claim actually cited, not the whole shown subset -- gets byte-identical
+    quarantining (same content shape, same provenance) rather than a second,
+    possibly-drifting copy of this wrapping logic.
+    """
+    f = incident.findings[index]
+    body = f.evidence_raw or "(no raw log line captured for this finding)"
+    content = f"title: {f.title}\nraw: {body}"
+    return quarantine(
+        content,
+        Provenance(source="botsv1 replay", event_class=f.source,
+                   timestamp=f.timestamp, detail=f"finding[{index}]"),
+    )
 
 
 class SwarmPipeline:
@@ -481,6 +507,13 @@ class SwarmPipeline:
             result.mode = Mode.CITATIONS_FAILED
             result.note = "no claim survived citation verification"
             return result
+
+        # Advisory-only, computed now that the real gate immediately above
+        # has already decided what survives -- never before it, never in
+        # place of it. See _assess_semantic_support's own docstring for why
+        # this can only ever add a label, never re-open that decision or
+        # touch `result.mode`.
+        verdict = self._assess_semantic_support(case, verdict, incident)
         result.verdict = verdict
 
         incident.transition(State.CITED)
@@ -572,6 +605,116 @@ class SwarmPipeline:
         if not kept:
             return None
         return verdict.model_copy(update={"claims": kept})
+
+    # -- the semantic-support signal (advisory, never gates) -----------------
+    #
+    # A8's own research (DEEP-F14/DEEP-F22, docs/A8-maturity-depth-and-ps-
+    # alignment.md) is explicit: exact-substring matching is not citation
+    # sufficiency -- a quote can be verbatim and still not actually say what
+    # a claim asserts. The academic next step is NLI/entailment-style
+    # judging, but the SAME research is equally explicit that current LLM
+    # evaluators, including GPT-4-class models, are frequently fooled by
+    # keyword overlap and judge partially-supportive evidence poorly. So this
+    # is built the way SAFE-F02 already requires quarantine.py to be built:
+    # it mitigates a real gap, it does not solve it, and it is never allowed
+    # to pretend otherwise -- everywhere this surfaces (this module's ledger
+    # entry, Claim's own fields, the console) it is labelled an estimate,
+    # never a verification. `_enforce_citations`, above, is and remains the
+    # only mechanism that can keep or drop a claim; everything below only
+    # ever runs on claims that call has ALREADY decided survive, and only
+    # ever adds two optional fields to them.
+
+    def _assess_semantic_support(
+        self, case: str, verdict: Verdict, incident: Incident,
+    ) -> Verdict:
+        """Advisory annotation pass. Runs only after `_enforce_citations` has
+        already produced `verdict` -- never before it, never in its place.
+
+        For each of the first `MAX_SEMANTIC_SUPPORT_CLAIMS` claims, judges
+        whether the citation already verified to be verbatim also actually
+        supports what the claim says, and records the estimate on that claim.
+        Every other claim -- beyond the cap -- is left exactly as
+        `_enforce_citations` produced it: same citations, same everything,
+        `semantic_support` still its default `None`. Never raises, never
+        changes `result.mode` (this method is not even passed a SwarmResult
+        to mutate), and never changes which claims are present or what they
+        cite -- only `Claim.model_copy` with the two new fields set, so a
+        claim's citations are provably untouched by this pass.
+        """
+        counts = {"strong": 0, "partial": 0, "weak": 0, "unclear": 0, "not_assessed": 0}
+        updated: list[Claim] = []
+        for i, claim in enumerate(verdict.claims):
+            if i >= MAX_SEMANTIC_SUPPORT_CLAIMS:
+                updated.append(claim)
+                counts["not_assessed"] += 1
+                continue
+            support, note = self._judge_semantic_support(claim, incident)
+            if support is None:
+                updated.append(claim)
+                counts["not_assessed"] += 1
+            else:
+                updated.append(claim.model_copy(update={
+                    "semantic_support": support,
+                    "semantic_support_note": note,
+                }))
+                counts[support] += 1
+
+        # Same actor, same "check" key convention as citation_verification
+        # above -- one fixed-vocabulary frame per run, not one per claim: the
+        # ledger stays forensic-but-bounded, not a decision-per-model-call log
+        # for a feature that only ever adds a label.
+        self._ledger(case, "sentinel", "decision", {
+            "check": "semantic_support_assessment",
+            "stage": "narrator",
+            "strong": counts["strong"],
+            "partial": counts["partial"],
+            "weak": counts["weak"],
+            "unclear": counts["unclear"],
+            "not_assessed": counts["not_assessed"],
+            "reason": "advisory estimate of whether each cited quote logically "
+                      "supports its claim, computed only for claims that "
+                      "already passed citation_verification above -- never "
+                      "re-opens that keep/drop decision and is not itself a "
+                      "verification (A8 DEEP-F14/DEEP-F22)",
+        })
+        return verdict.model_copy(update={"claims": updated})
+
+    def _judge_semantic_support(
+        self, claim: Claim, incident: Incident,
+    ) -> tuple[str | None, str | None]:
+        """One model call, judging one already-cited claim.
+
+        Returns `(None, None)` on ANY failure -- an unusable call (refusal,
+        truncation, malformed output), a raised exception (no credentials, a
+        transport error), or a support value outside the four the reader is
+        told to expect. Deliberately broader than Transport's own contract
+        ("transport failures raise -- broken plumbing, not a result"): this
+        call is a value-add annotation on a claim that has already survived
+        the real gate, so a broken advisory call must degrade to "no
+        annotation", never propagate and cost the investigation its already-
+        verified verdict.
+        """
+        if not claim.citations:
+            return None, None  # cannot happen for a kept claim, guarded anyway
+        cite = claim.citations[0]
+        if not 0 <= cite.finding_index < len(incident.findings):
+            return None, None
+        try:
+            call = self.reasoning_transport.parse(
+                agent="semantic-support",
+                system=BY_AGENT["semantic-support"],
+                instruction=_semantic_support_instruction(claim),
+                output_format=SemanticSupportAssessment,
+                evidence=[_quarantine_finding(incident, cite.finding_index)],
+            )
+        except Exception:
+            return None, None
+        if not call.usable:
+            return None, None
+        support = (call.parsed.support or "").strip().lower()
+        if support not in _SEMANTIC_SUPPORT_LEVELS:
+            return None, None
+        return support, call.parsed.note
 
     def _verify_and_drop_stages(
         self, case: str, correlation: Correlation, incident: Incident, result: SwarmResult,
@@ -755,6 +898,24 @@ def _marshal_instruction(inc: Incident, verdict: Verdict, policy_gate: Any = Non
         f"(stated confidence {verdict.confidence:.2f}). {counter_note} "
         f"Hosts: {', '.join(inc.hosts) or 'unknown'}. "
         f"Propose the narrowest containment actions the evidence supports. {classes_note}"
+    )
+
+
+def _semantic_support_instruction(claim: Claim) -> str:
+    """The claim's own text and its already-verified quoted span, both model/
+    schema-produced short fields -- same trust level `_marshal_instruction`
+    above already gives `verdict.headline`, not raw telemetry (that goes
+    through `evidence=`, fenced, below). The exact-match check already ran;
+    this only asks about meaning.
+    """
+    cite = claim.citations[0]
+    return (
+        f"Claim: {claim.text!r}\n"
+        "The quoted span below has already been verified to appear verbatim "
+        f"in the evidence: {cite.quoted_span!r}\n"
+        "Judge whether that quote actually supports what the claim asserts -- "
+        "not merely whether the same words appear in both. Rate support and "
+        "give one sentence of rationale."
     )
 
 

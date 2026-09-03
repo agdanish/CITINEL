@@ -21,8 +21,9 @@ import json
 import pytest
 
 from citinel.agents.contracts import (
-    Citation, Claim, Correlation, KillChainStage, Lane, ProposedAction, Support,
-    TriageDecision, Verdict, uncited, verify_citations,
+    Citation, Claim, Correlation, KillChainStage, Lane, ProposedAction,
+    SemanticSupportAssessment, Support, TriageDecision, Verdict, uncited,
+    verify_citations,
 )
 from citinel.agents.models import (
     ModelNotConfigured, ModelNotVerified, Role, VerifiedModel, verify,
@@ -177,6 +178,15 @@ class _ProposalsResponse:
     def __new__(cls, actions):
         from citinel.agents.pipeline import _ProposalList
         return _ok(_ProposalList(actions=actions))
+
+
+def _semantic_ok(support: str = "strong", note: str = "the quote states exactly what the claim asserts.") -> _Response:
+    """A schema-valid SemanticSupportAssessment success response -- one of
+    these is now consumed, in call order, per kept claim (capped at
+    MAX_SEMANTIC_SUPPORT_CLAIMS) between the Narrator's Verdict and the
+    Marshal's call, since _assess_semantic_support runs on the SAME shared
+    reasoning-transport script queue every other stage does."""
+    return _ok(SemanticSupportAssessment(support=support, note=note))
 
 
 # --- Transport: refusal and truncation never raise ---------------------------
@@ -627,6 +637,7 @@ def test_duplicate_claim_text_does_not_confuse_the_citation_gate(tmp_path):
         _ok(Correlation(stages=[], summary="s", hosts_involved=[])),
         _ok(Verdict(headline="h", counter_evidence_searched=True, confidence=0.5,
                    benign_explanation_considered="b", claims=[verified, fabricated])),
+        _semantic_ok(),  # the one surviving claim (verified) gets assessed
         _ProposalsResponse([]),
     ])
     r = p.run(inc)
@@ -655,6 +666,7 @@ def test_full_run_verifies_citations_and_advances_to_cited(tmp_path):
         _ok(Verdict(headline="Ransomware on we8105desk", counter_evidence_searched=True,
                    confidence=0.86, benign_explanation_considered="admin cleanup ruled out",
                    claims=[good, bad])),
+        _semantic_ok(),  # only `good` survives the gate, so exactly one assessment call
         _ProposalsResponse([ProposedAction(
             action_class="isolate_host", target="we8105desk", assets_affected=1,
             justification="contain", citations=[Citation(finding_index=0,
@@ -682,6 +694,7 @@ def test_marshal_refusal_after_a_verified_verdict_does_not_disown_it(tmp_path):
         _ok(Correlation(stages=[], summary="s", hosts_involved=[])),
         _ok(Verdict(headline="h", counter_evidence_searched=True, confidence=0.8,
                    benign_explanation_considered="b", claims=[good])),
+        _semantic_ok(),
         _refusal(category="cyber"),
     ])
     r = p.run(inc)
@@ -753,6 +766,7 @@ def test_uncited_proposed_action_is_dropped_before_a_human_sees_it(tmp_path):
         _ok(Correlation(stages=[], summary="s", hosts_involved=[])),
         _ok(Verdict(headline="h", counter_evidence_searched=True, confidence=0.5,
                    benign_explanation_considered="b", claims=[cited_claim])),
+        _semantic_ok(),
         _ProposalsResponse([ProposedAction(action_class="isolate_host", target="we8105desk",
                                            assets_affected=1, justification="contain",
                                            citations=[])]),
@@ -777,6 +791,7 @@ def test_mixed_cited_and_uncited_proposals_only_the_cited_one_survives(tmp_path)
         _ok(Correlation(stages=[], summary="s", hosts_involved=[])),
         _ok(Verdict(headline="h", counter_evidence_searched=True, confidence=0.5,
                    benign_explanation_considered="b", claims=[cited_claim])),
+        _semantic_ok(),
         _ProposalsResponse([
             ProposedAction(action_class="isolate_host", target="we8105desk", assets_affected=1,
                           justification="contain",
@@ -857,6 +872,7 @@ def test_ledger_records_tool_calls_and_decisions_for_a_full_run(tmp_path):
         _ok(Correlation(stages=[], summary="s", hosts_involved=[])),
         _ok(Verdict(headline="h", counter_evidence_searched=True, confidence=0.5,
                    benign_explanation_considered="b", claims=[good])),
+        _semantic_ok(),
         _ProposalsResponse([]),
     ])
     t = _transport(client)
@@ -864,7 +880,11 @@ def test_ledger_records_tool_calls_and_decisions_for_a_full_run(tmp_path):
 
     entries = ledger.entries_for("INC-0417")
     kinds = [e.kind for e in entries]
-    assert kinds.count("tool_call") == 4, "router, correlator, narrator, marshal"
+    assert kinds.count("tool_call") == 4, (
+        "router, correlator, narrator, marshal -- the advisory semantic-"
+        "support call is deliberately NOT ledgered per-call (see "
+        "_assess_semantic_support), only as one summary decision frame"
+    )
     assert "decision" in kinds and "state_transition" in kinds
     ok, msg = ledger.verify_chain()
     assert ok, msg
@@ -942,10 +962,15 @@ def test_call_count_and_as_dict_reflect_every_stage_including_a_refused_one(tmp_
         _ok(Correlation(stages=[], summary="s", hosts_involved=[])),
         _ok(Verdict(headline="h", counter_evidence_searched=True, confidence=0.5,
                    benign_explanation_considered="b", claims=[good])),
+        _semantic_ok(),
         _refusal(category="cyber"),  # marshal refuses after a real verdict
     ])
     r = p.run(_incident())
-    assert len(r.calls) == 4, "all four stages, including the refused marshal, must be recorded"
+    assert len(r.calls) == 4, (
+        "all four stages, including the refused marshal, must be recorded -- "
+        "the advisory semantic-support call is deliberately not one of "
+        "result.calls, only a summary ledger frame (see _assess_semantic_support)"
+    )
     d = r.as_dict()
     assert d["call_count"] == 4
     assert d["mode"] == "partial"
@@ -1071,6 +1096,7 @@ def test_every_ledger_entry_is_mirrored_to_the_observer(tmp_path):
         _ok(Correlation(stages=[], summary="s", hosts_involved=[])),
         _ok(Verdict(headline="h", counter_evidence_searched=True, confidence=0.8,
                    benign_explanation_considered="b", claims=[good, bad])),
+        _semantic_ok(),  # only `good` survives the gate
         _ProposalsResponse([]),
     ])
     t = _transport(client)
@@ -1230,7 +1256,7 @@ def test_enricher_calls_are_counted_in_the_result_not_just_the_ledger(tmp_path):
         citations=[Citation(finding_index=0, quoted_span=RANSOM[:20])])],
         counter_evidence_searched=True, confidence=0.5, benign_explanation_considered="n/a")
 
-    beta_script = [_ok(triage), _ok(corr), _ok(verdict), _ProposalsResponse([])]
+    beta_script = [_ok(triage), _ok(corr), _ok(verdict), _semantic_ok(), _ProposalsResponse([])]
     # The Enricher decides there is nothing worth checking and stops --
     # exactly the outcome the real live run produced.
     plain_script = [_Response(content=[_TextBlock("nothing here worth enriching")],
@@ -1254,4 +1280,222 @@ def test_enricher_calls_are_counted_in_the_result_not_just_the_ledger(tmp_path):
 
     enricher_ledger_entries = [e for e in ledger.entries() if e.actor == "enricher"]
     assert len(enricher_ledger_entries) == 1
-    assert enricher_ledger_entries[0].kind == "tool_call"
+
+
+# --- semantic support (advisory, never gates -- A8 DEEP-F14/DEEP-F22) -------
+# The exact-match citation gate (_enforce_citations, tested above) is and
+# remains the only mechanism that can keep or drop a claim. Everything below
+# only ever runs on claims that gate has ALREADY decided survive, and only
+# ever adds two optional, advisory fields -- it must never change which
+# claims are present, what they cite, or `result.mode`.
+
+def test_semantic_support_is_set_for_a_claim_that_passed_the_citation_gate(tmp_path):
+    inc = _incident()
+    good = Claim(text="Shadow copies deleted", support=Support.SUPPORTING,
+                citations=[Citation(finding_index=0,
+                                    quoted_span="vssadmin.exe delete shadows")])
+    p, _ = _pipeline(tmp_path, [
+        _ok(TriageDecision(lane=Lane.ESCALATE, rationale="r", confidence=0.8)),
+        _ok(Correlation(stages=[], summary="s", hosts_involved=[])),
+        _ok(Verdict(headline="h", counter_evidence_searched=True, confidence=0.8,
+                   benign_explanation_considered="b", claims=[good])),
+        _semantic_ok(support="strong", note="the quote directly states the shadow copies were deleted"),
+        _ProposalsResponse([]),
+    ])
+    r = p.run(inc)
+    assert r.mode is Mode.FULL
+    assert len(r.verdict.claims) == 1
+    kept = r.verdict.claims[0]
+    assert kept.semantic_support == "strong"
+    assert kept.semantic_support_note == "the quote directly states the shadow copies were deleted"
+    # advisory only: the citations verify_citations() already checked are
+    # untouched by this pass.
+    assert kept.citations == [Citation(finding_index=0, quoted_span="vssadmin.exe delete shadows")]
+    assert kept.text == "Shadow copies deleted"
+
+
+def test_semantic_support_call_being_unusable_leaves_the_claim_untouched(tmp_path):
+    """A refused (unusable) semantic-support call: the claim survives with
+    semantic_support/_note left at their None default, its original
+    citations untouched, and the run's mode unaffected."""
+    inc = _incident()
+    good = Claim(text="Shadow copies deleted", support=Support.SUPPORTING,
+                citations=[Citation(finding_index=0,
+                                    quoted_span="vssadmin.exe delete shadows")])
+    p, _ = _pipeline(tmp_path, [
+        _ok(TriageDecision(lane=Lane.ESCALATE, rationale="r", confidence=0.8)),
+        _ok(Correlation(stages=[], summary="s", hosts_involved=[])),
+        _ok(Verdict(headline="h", counter_evidence_searched=True, confidence=0.8,
+                   benign_explanation_considered="b", claims=[good])),
+        _refusal(category="cyber"),  # the semantic-support call itself is refused
+        _ProposalsResponse([]),
+    ])
+    r = p.run(inc)
+    assert r.mode is Mode.FULL, "an advisory call being unusable must never change the run's mode"
+    assert len(r.verdict.claims) == 1
+    kept = r.verdict.claims[0]
+    assert kept.semantic_support is None
+    assert kept.semantic_support_note is None
+    assert kept.citations == [Citation(finding_index=0, quoted_span="vssadmin.exe delete shadows")]
+    assert kept.text == "Shadow copies deleted"
+
+
+def test_semantic_support_call_raising_does_not_propagate_or_change_mode(tmp_path):
+    """Transport's own documented contract lets network/auth failures raise
+    (transport.py: "broken plumbing, not a result"). The advisory call is a
+    deliberate, documented exception to that (_judge_semantic_support's own
+    docstring): an exception here must degrade to no annotation, never cost
+    the run its already citation-verified verdict."""
+    inc = _incident()
+    good = Claim(text="Shadow copies deleted", support=Support.SUPPORTING,
+                citations=[Citation(finding_index=0,
+                                    quoted_span="vssadmin.exe delete shadows")])
+    p, _ = _pipeline(tmp_path, [
+        _ok(TriageDecision(lane=Lane.ESCALATE, rationale="r", confidence=0.8)),
+        _ok(Correlation(stages=[], summary="s", hosts_involved=[])),
+        _ok(Verdict(headline="h", counter_evidence_searched=True, confidence=0.8,
+                   benign_explanation_considered="b", claims=[good])),
+        _ProposalsResponse([]),
+    ])
+    real_parse = p.reasoning_transport.parse
+    def _boom(**kw):
+        if kw.get("agent") == "semantic-support":
+            raise RuntimeError("simulated transport failure")
+        return real_parse(**kw)
+    p.reasoning_transport.parse = _boom
+
+    r = p.run(inc)
+    assert r.mode is Mode.FULL, "an exception in the advisory call must never propagate or change mode"
+    assert r.verdict.claims[0].semantic_support is None
+    assert r.verdict.claims[0].semantic_support_note is None
+
+
+def test_semantic_support_fields_default_to_none_and_accept_legacy_json():
+    """Backward compatible with any verdict persisted before this feature
+    existed: pydantic defaults, it does not require the keys to be present."""
+    fresh = Claim(text="x", support=Support.SUPPORTING,
+                 citations=[Citation(finding_index=0, quoted_span="vssadmin.exe delete")])
+    assert fresh.semantic_support is None
+    assert fresh.semantic_support_note is None
+
+    legacy_json = {
+        "text": "Shadow copies deleted", "support": "supporting",
+        "citations": [{"finding_index": 0, "quoted_span": "vssadmin.exe delete shadows"}],
+    }
+    old = Claim.model_validate(legacy_json)
+    assert old.semantic_support is None
+    assert old.semantic_support_note is None
+
+
+def test_semantic_support_ledger_frame_has_the_expected_payload_shape(tmp_path):
+    inc = _incident()
+    c1 = Claim(text="Shadow copies deleted", support=Support.SUPPORTING,
+              citations=[Citation(finding_index=0, quoted_span="vssadmin.exe delete shadows")])
+    c2 = Claim(text="Beacon observed", support=Support.SUPPORTING,
+              citations=[Citation(finding_index=1, quoted_span="connection to 23.202.231.167:443")])
+    p, _ = _pipeline(tmp_path, [
+        _ok(TriageDecision(lane=Lane.ESCALATE, rationale="r", confidence=0.8)),
+        _ok(Correlation(stages=[], summary="s", hosts_involved=[])),
+        _ok(Verdict(headline="h", counter_evidence_searched=True, confidence=0.8,
+                   benign_explanation_considered="b", claims=[c1, c2])),
+        _semantic_ok(support="strong", note="direct statement"),
+        _semantic_ok(support="weak", note="only tangential overlap"),
+        _ProposalsResponse([]),
+    ])
+    r = p.run(inc)
+    entries = p.ledger.entries_for("INC-0417")
+    frames = [e for e in entries if e.kind == "decision"
+             and e.payload.get("check") == "semantic_support_assessment"]
+    assert len(frames) == 1, "exactly one summary frame per run, never one per claim"
+    frame = frames[0]
+    assert frame.actor == "sentinel", "same actor as the citation_verification frame"
+    assert frame.payload["stage"] == "narrator"
+    assert frame.payload["strong"] == 1
+    assert frame.payload["weak"] == 1
+    assert frame.payload["partial"] == 0
+    assert frame.payload["unclear"] == 0
+    assert frame.payload["not_assessed"] == 0
+
+
+def test_semantic_support_is_capped_at_the_first_eight_kept_claims(tmp_path):
+    from citinel.agents.pipeline import MAX_SEMANTIC_SUPPORT_CLAIMS
+    inc = _incident()
+    for i in range(2, 12):
+        inc.add_finding(Finding(source="anomaly", title=f"extra{i}", level="score:5",
+                                timestamp="2016-08-24T01:04:00Z", host="we8105desk",
+                                evidence_raw=f"benign scheduled task {i} ran as usual"))
+    claims = [
+        Claim(text=f"claim {i}", support=Support.SUPPORTING,
+             citations=[Citation(finding_index=i, quoted_span=f"benign scheduled task {i} ran")])
+        for i in range(2, 12)
+    ]
+    p, _ = _pipeline(tmp_path, [
+        _ok(TriageDecision(lane=Lane.ESCALATE, rationale="r", confidence=0.8)),
+        _ok(Correlation(stages=[], summary="s", hosts_involved=[])),
+        _ok(Verdict(headline="h", counter_evidence_searched=True, confidence=0.5,
+                   benign_explanation_considered="b", claims=claims)),
+        *[_semantic_ok(support="strong") for _ in range(MAX_SEMANTIC_SUPPORT_CLAIMS)],
+        _ProposalsResponse([]),
+    ])
+    r = p.run(inc)
+    assert len(r.verdict.claims) == 10, "the citation gate itself is not capped by this feature"
+    assessed = [c for c in r.verdict.claims if c.semantic_support is not None]
+    assert len(assessed) == MAX_SEMANTIC_SUPPORT_CLAIMS
+    entries = p.ledger.entries_for("INC-0417")
+    frame = next(e for e in entries if e.payload.get("check") == "semantic_support_assessment")
+    assert frame.payload["not_assessed"] == 10 - MAX_SEMANTIC_SUPPORT_CLAIMS
+
+
+def test_enforce_citations_keep_drop_decision_is_unaffected_by_semantic_support(tmp_path):
+    """The exact-match gate's own keep/drop decision, proven unaffected by
+    this advisory feature existing on top of it: same setup as
+    test_full_run_verifies_citations_and_advances_to_cited (one real
+    citation, one fabricated one) produces the identical kept/dropped
+    split, whether or not the semantic-support pass runs afterward."""
+    inc = _incident()
+    good = Claim(text="Shadow copies deleted", support=Support.SUPPORTING,
+                citations=[Citation(finding_index=0,
+                                    quoted_span="vssadmin.exe delete shadows")])
+    bad = Claim(text="C2 confirmed", support=Support.SUPPORTING,
+               citations=[Citation(finding_index=1, quoted_span="cobaltstrike beacon seen")])
+    p, _ = _pipeline(tmp_path, [
+        _ok(TriageDecision(lane=Lane.ESCALATE, rationale="chain", confidence=0.8)),
+        _ok(Correlation(stages=[], summary="ransomware chain", hosts_involved=[])),
+        _ok(Verdict(headline="Ransomware on we8105desk", counter_evidence_searched=True,
+                   confidence=0.86, benign_explanation_considered="admin cleanup ruled out",
+                   claims=[good, bad])),
+        _semantic_ok(support="strong", note="the quote directly states shadow copies were deleted"),
+        _ProposalsResponse([]),
+    ])
+    r = p.run(inc)
+    assert [c.text for c in r.verdict.claims] == ["Shadow copies deleted"], (
+        "unchanged from the citation-only test -- the gate's decision does "
+        "not shift because an advisory pass now runs after it"
+    )
+    assert r.dropped_claims == ["C2 confirmed"]
+    assert r.verdict.claims[0].semantic_support == "strong", (
+        "the one surviving claim was still assessed"
+    )
+
+
+def test_no_semantic_support_call_is_made_for_a_claim_the_gate_dropped(tmp_path):
+    """No SemanticSupportAssessment response is scripted here at all -- if
+    _assess_semantic_support ever ran on (or before) a claim the gate
+    dropped, or ran before the gate decided anything, this run would either
+    IndexError on an empty script or fail schema validation against the
+    wrong response type, not silently pass."""
+    inc = _incident()
+    c = Claim(text="wiper ran", support=Support.SUPPORTING,
+             citations=[Citation(finding_index=0, quoted_span="format the entire drive")])
+    p, _ = _pipeline(tmp_path, [
+        _ok(TriageDecision(lane=Lane.ESCALATE, rationale="chain", confidence=0.8)),
+        _ok(Correlation(stages=[], summary="chain", hosts_involved=[])),
+        _ok(Verdict(headline="Ransomware", counter_evidence_searched=True,
+                   confidence=0.9, benign_explanation_considered="admin cleanup",
+                   claims=[c])),
+    ])
+    r = p.run(inc)
+    assert r.mode is Mode.CITATIONS_FAILED
+    assert r.verdict is None
+    assert inc.state is State.CAUGHT, "must not reach CITED without evidence"
+    assert r.dropped_claims == ["wiper ran"]

@@ -3,6 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CITINEL · Audit log</title>
+<meta name="description" content="The append-only, hash-chained audit ledger for one incident: every frame, every hash link, verifiable against the incident's own logs.">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<meta name="theme-color" content="#0B1F3A">
 <script src="vendor/resources.js"></script>
 <script src="./support.js"></script>
 <!-- Render-blocking, deliberately. The same sheets are declared again in the
@@ -50,22 +58,24 @@
 <script src="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/_ds_bundle.js"></script>
 <script src="role.js"></script>
 <script src="ledger.js"></script>
+<!-- MAT-F03: shared DOM-node-pool virtualizer for the ledger-chain reel below. -->
+<script src="virtualize.js"></script>
 <style>html,body{height:100%;overflow-y:hidden;overflow-x:auto}</style>
 <script src="api.js"></script>
 </helmet>
 <div data-screen-label="Audit log" data-citinel-page="audit" style="display:flex;flex-direction:column;height:100vh;min-width:1280px;background:var(--ctn-color-surface-shell)">
 
   <header style="display:flex;align-items:center;gap:18px;padding:0 18px;height:52px;flex:none;border-bottom:1px solid var(--ctn-color-border-strong);background:var(--ctn-color-surface-panel);min-width:0">
-    <img src="assets/mark-white.png" alt="CITINEL · caught, cited, gated, actioned, closed" style="height:34px;width:90px;display:block;flex:none">
+    <a href="Overview.dc.html" aria-label="CITINEL — back to the overview" style="display:block;flex:none;line-height:0;text-decoration:none"><picture><source type="image/webp" srcset="assets/mark-white-254.webp"><img src="assets/mark-white-254.png" alt="CITINEL · caught, cited, gated, actioned, closed" width="254" height="96" style="height:34px;width:90px;display:block;flex:none"></picture></a>
     <nav style="display:flex;gap:2px;min-width:0;overflow-x:auto;scrollbar-width:thin;flex:1">
       <a href="Overview.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">OVERVIEW</a>
       <a href="Queue.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">QUEUE</a>
-      <a href="Replay.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">REPLAY</a>
-      <a href="Confidence.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">CONFIDENCE</a>
-      <a href="Evidence.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">EVIDENCE</a>
-      <a href="Approvals.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">APPROVALS</a>
-      <a href="Compliance.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">COMPLIANCE</a>
-      <a href="Audit.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-primary);background:var(--ctn-color-surface-raised);border-radius:6px;white-space:nowrap">AUDIT</a>
+      <a href="{{ navReplayHref }}" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">REPLAY</a>
+      <a href="{{ navConfidenceHref }}" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">CONFIDENCE</a>
+      <a href="{{ navEvidenceHref }}" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">EVIDENCE</a>
+      <a href="{{ navApprovalsHref }}" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">APPROVALS</a>
+      <a href="{{ navComplianceHref }}" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">COMPLIANCE</a>
+      <a href="{{ navAuditHref }}" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-primary);background:var(--ctn-color-surface-raised);border-radius:6px;white-space:nowrap">AUDIT</a>
       <a href="Corpus.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">CORPUS</a>
       <a href="Eval.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">EVAL</a>
       <a href="Policy.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">POLICY</a>
@@ -180,13 +190,16 @@
     </aside>
 
     <section style="flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;overflow:hidden">
-      <div style="flex:none;display:grid;grid-template-columns:64px 84px 106px 128px 1fr;gap:0 14px;padding:9px 22px 6px;border-bottom:1px solid var(--ctn-color-border-strong);font-family:var(--ctn-font-display);font-size:8px;letter-spacing:0.12em;color:var(--ctn-color-text-muted);min-width:0">
-        <span>FRAME</span><span>TIME IST</span><span>KIND</span><span>ACTOR</span><span>STRUCTURED RECORD · PREV → THIS</span>
-      </div>
+      <div role="table" aria-rowcount="{{ ariaRowCount }}" aria-label="Ledger reel · structured record frames" style="flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;overflow:hidden">
+        <!-- MAT-F04: one throttled role=status region for the whole reel -- sort/filter/count
+             changes are announced in words here instead of only as a redrawn row count. -->
+        <div role="status" aria-live="polite" aria-atomic="true" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">{{ liveRegionText }}</div>
+        <div role="row" style="flex:none;display:grid;grid-template-columns:64px 84px 106px 128px 1fr;gap:0 14px;padding:9px 22px 6px;border-bottom:1px solid var(--ctn-color-border-strong);font-family:var(--ctn-font-display);font-size:8px;letter-spacing:0.12em;color:var(--ctn-color-text-muted);min-width:0">
+          <span role="columnheader">FRAME</span><span role="columnheader">TIME IST</span><span role="columnheader">KIND</span><span role="columnheader">ACTOR</span><span role="columnheader">STRUCTURED RECORD · PREV → THIS</span>
+        </div>
 
-      <div style="flex:1;min-height:0;overflow-y:auto;padding:0 22px 20px;background-image:repeating-linear-gradient(to bottom, var(--ctn-color-surface-panel) 0 9px, transparent 9px 26px);background-position:left top;background-size:9px 100%;background-repeat:no-repeat">
         <sc-if value="{{ ciso }}" hint-placeholder-val="{{ false }}">
-          <div style="display:flex;gap:10px;flex-wrap:wrap;padding:12px 0 13px;border-bottom:1px solid var(--ctn-color-border-hairline);min-width:0">
+          <div style="flex:none;display:flex;gap:10px;flex-wrap:wrap;padding:12px 22px 13px;border-bottom:1px solid var(--ctn-color-border-hairline);min-width:0">
             <sc-for list="{{ exceptions }}" as="e" hint-placeholder-count="4">
               <div style="border:1px solid var(--ctn-color-border-strong);border-radius:6px;padding:9px 13px;min-width:0">
                 <div style="font-family:var(--ctn-font-display);font-size:17px;color:var(--ctn-color-text-primary);font-variant-numeric:tabular-nums slashed-zero">{{ e.v }}</div>
@@ -196,24 +209,15 @@
             <div style="flex:1;min-width:230px;font-size:12px;color:var(--ctn-color-text-secondary);line-height:1.5;text-wrap:pretty">{{ exceptionNote }}</div>
           </div>
         </sc-if>
-        <sc-for list="{{ rows }}" as="r" hint-placeholder-count="14">
-          <div style="display:grid;grid-template-columns:64px 84px 106px 128px 1fr;gap:0 14px;align-items:start;padding:9px 0;border-bottom:1px solid var(--ctn-color-border-hairline);background:{{ r.bg }};min-width:0">
-            <span data-token style="font-family:var(--ctn-font-mono);font-size:11.5px;color:{{ r.seqFg }};font-variant-numeric:tabular-nums">{{ r.seq }}</span>
-            <span data-token style="font-family:var(--ctn-font-mono);font-size:11.5px;color:var(--ctn-color-text-muted);font-variant-numeric:tabular-nums" title="{{ r.tFull }}">{{ r.t }}</span>
-            <span style="display:flex;align-items:center;gap:7px;min-width:0">
-              <span style="flex:none;width:13px;height:13px;display:flex;align-items:center;justify-content:center">{{ r.glyph }}</span>
-              <span style="font-family:var(--ctn-font-display);font-size:7.5px;letter-spacing:0.09em;color:var(--ctn-color-text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.kind }}</span>
-            </span>
-            <span data-reveal style="font-family:var(--ctn-font-mono);font-size:11px;color:var(--ctn-color-text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.actor }}</span>
-            <div style="min-width:0">
-              <div style="font-family:var(--ctn-font-mono);font-size:12px;letter-spacing:0;color:var(--ctn-color-text-primary);line-height:1.5;overflow-wrap:anywhere" title="{{ r.payloadFull }}">{{ r.record }}</div>
-              <div style="font-family:var(--ctn-font-mono);font-size:10.5px;letter-spacing:0;color:var(--ctn-color-text-muted);margin-top:3px;overflow-wrap:anywhere" title="{{ r.hashFull }}">{{ r.prev }} → {{ r.hash }}</div>
-            </div>
-          </div>
-        </sc-for>
         <sc-if value="{{ noRows }}" hint-placeholder-val="{{ false }}">
-          <div style="padding:22px 0;font-size:12.5px;color:var(--ctn-color-text-muted);line-height:1.5">No frame on this reel matches the query. {{ noRowsNote }} Clear the query to see it.</div>
+          <div style="flex:none;padding:22px;font-size:12.5px;color:var(--ctn-color-text-muted);line-height:1.5">No frame on this reel matches the query. {{ noRowsNote }} Clear the query to see it.</div>
         </sc-if>
+
+        <!-- MAT-F03: virtualized. dashboard/static/virtualize.js owns every child painted into
+             this div from here on (see mountLedgerVirtualizer/ledgerRowEl in the Component
+             script) -- no <sc-for>, so this element's own DOM-node count never grows with the
+             reel's length, however long a real deployment's audit trail gets. -->
+        <div ref="{{ ledgerScrollRef }}" role="rowgroup" style="flex:1;min-height:0;overflow-y:auto;padding:0 22px 20px;background-image:repeating-linear-gradient(to bottom, var(--ctn-color-surface-panel) 0 9px, transparent 9px 26px);background-position:left top;background-size:9px 100%;background-repeat:no-repeat;position:relative"></div>
       </div>
 
       <div style="flex:none;border-top:1px solid var(--ctn-color-border-hairline);padding:10px 22px;display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;min-width:0">
@@ -273,10 +277,28 @@ class Component extends DCLogic {
     this.state = {role:this.roleInit(), q:q0, kinds:{}, actors:{}, focus:null, verifying:false, vpos:0, verified:false,
       // live: null = reading this case's chain from citinel-web · true = real frames on the reel ·
       // false = service not reached, authored fallback. The three never blend.
-      live: null, liveError: null, chain: [], verifyResult: null, verifyError: null};
+      live: null, liveError: null, chain: [], verifyResult: null, verifyError: null,
+      // MAT-F04: text of the throttled live region announcing filter/count changes on the reel.
+      liveRegionText: ''};
+    // MAT-F03: the ledger reel is virtualized through the shared dashboard/static/virtualize.js
+    // pool -- see mountLedgerVirtualizer()/ledgerRowEl() below. ledgerScrollRef points at the
+    // plain, React-childless div the pool paints into; LEDGER_ROW_H is that pool's one fixed
+    // row height (about two lines of record text plus the hash line -- a payload long enough
+    // to spill past it clips inside its own row rather than pushing its neighbours down, and
+    // stays reachable through the row's own title tooltip, same as before virtualization).
+    this.ledgerScrollRef = React.createRef();
+    this.LEDGER_ROW_H = 76;
+    this._ledgerV = null;
+    this._ledgerRows = [];
+    this._lastComputedResultNote = '';
+    this._lastAnnounceAt = 0;
+    this._announceTimer = null;
   }
   componentWillUnmount(){ clearInterval(this.v); if(this.unsubLed) this.unsubLed(); if(this.unsubRole) this.unsubRole();
-    if(this.ro) this.ro.disconnect(); if(this.onResize) window.removeEventListener('resize', this.onResize); }
+    if(this.ro) this.ro.disconnect(); if(this.onResize) window.removeEventListener('resize', this.onResize);
+    clearTimeout(this._announceTimer);
+    if(this._ledgerV) this._ledgerV.destroy();
+    this.unmountLedgerRoots(); }
   componentDidMount(){
     this.ribbonRef = this.ribbonRef || React.createRef();
     const measure = () => {
@@ -291,6 +313,8 @@ class Component extends DCLogic {
     } else { window.addEventListener('resize', measure); this.onResize = measure; }
     this.roleMount();
     if(window.CitinelLedger) this.unsubLed = window.CitinelLedger.subscribe(()=>this.forceUpdate());
+    this.mountLedgerVirtualizer();
+    this.scheduleAnnounce(this._lastComputedResultNote);
 
     // The reel is this case's chain from the service's append-only ledger. The chain walk
     // (/api/ledger/verify) runs once on load and again on the button; it waits on the external
@@ -302,6 +326,87 @@ class Component extends DCLogic {
       this.setState({live:true, chain: Array.isArray(r.data) ? r.data : []});
       this.walk();
     });
+  }
+  componentDidUpdate(){
+    if (this._ledgerV) this._ledgerV.refresh(this._ledgerRows);
+    else this.mountLedgerVirtualizer();
+    this.scheduleAnnounce(this._lastComputedResultNote);
+  }
+
+  /* ── MAT-F03: the ledger-reel pool ────────────────────────────────────────
+     A fixed pool of DOM nodes reused for however long the reel gets, wired through
+     the shared dashboard/static/virtualize.js helper. Each pool slot is a plain div
+     virtualize.js itself owns (position, height); ledgerRowEl() renders this app's
+     own row markup into it via a small persistent React root per slot, so the row
+     the operator sees is pixel-identical to the pre-virtualization <sc-for> row --
+     same tokens, same title tooltips, same data-reveal/data-token hooks reveal.js
+     already sweeps for -- just painted into a reused node instead of a fresh one. */
+  mountLedgerVirtualizer(){
+    if (this._ledgerV || !window.CitinelVirtualize) return;
+    const el = this.ledgerScrollRef.current;
+    if (!el) return;
+    this._ledgerV = window.CitinelVirtualize(el, this._ledgerRows, this.LEDGER_ROW_H, (rowEl, item, idx) => {
+      if (!rowEl.__root) rowEl.__root = ReactDOM.createRoot(rowEl);
+      rowEl.__root.render(this.ledgerRowEl(item, idx));
+    });
+  }
+  unmountLedgerRoots(){
+    const el = this.ledgerScrollRef && this.ledgerScrollRef.current;
+    if (!el) return;
+    Array.prototype.forEach.call(el.querySelectorAll('*'), n => { if (n.__root) { try { n.__root.unmount(); } catch(e) {} } });
+  }
+  ledgerRowEl(r, idx){
+    const R = React;
+    return R.createElement('div', {
+      role:'row', 'aria-rowindex': idx + 1,
+      style:{display:'grid', gridTemplateColumns:'64px 84px 106px 128px 1fr', gap:'0 14px', alignItems:'start',
+        padding:'9px 0', borderBottom:'1px solid var(--ctn-color-border-hairline)', background:r.bg, minWidth:0,
+        height:'100%', boxSizing:'border-box', overflow:'hidden'}
+    }, [
+      R.createElement('span', {key:'seq', role:'cell', 'data-token':'', style:{fontFamily:'var(--ctn-font-mono)', fontSize:'11.5px', color:r.seqFg, fontVariantNumeric:'tabular-nums'}}, r.seq),
+      R.createElement('span', {key:'t', role:'cell', 'data-token':'', title:r.tFull, style:{fontFamily:'var(--ctn-font-mono)', fontSize:'11.5px', color:'var(--ctn-color-text-muted)', fontVariantNumeric:'tabular-nums'}}, r.t),
+      R.createElement('span', {key:'kind', role:'cell', style:{display:'flex', alignItems:'center', gap:'7px', minWidth:0}}, [
+        R.createElement('span', {key:'g', style:{flex:'none', width:'13px', height:'13px', display:'flex', alignItems:'center', justifyContent:'center'}}, r.glyph),
+        R.createElement('span', {key:'k', style:{fontFamily:'var(--ctn-font-display)', fontSize:'7.5px', letterSpacing:'0.09em', color:'var(--ctn-color-text-secondary)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis'}}, r.kind)
+      ]),
+      R.createElement('span', {key:'actor', role:'cell', 'data-reveal':'', style:{fontFamily:'var(--ctn-font-mono)', fontSize:'11px', color:'var(--ctn-color-text-primary)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis'}}, r.actor),
+      R.createElement('div', {key:'rec', role:'cell', style:{minWidth:0}}, [
+        R.createElement('div', {key:'r1', title:r.payloadFull, style:{fontFamily:'var(--ctn-font-mono)', fontSize:'12px', letterSpacing:0, color:'var(--ctn-color-text-primary)', lineHeight:1.5, overflowWrap:'anywhere'}}, r.record),
+        R.createElement('div', {key:'r2', title:r.hashFull, style:{fontFamily:'var(--ctn-font-mono)', fontSize:'10.5px', letterSpacing:0, color:'var(--ctn-color-text-muted)', marginTop:'3px', overflowWrap:'anywhere'}}, r.prev + ' → ' + r.hash)
+      ])
+    ]);
+  }
+
+  /* ── MAT-F04: throttled live region -- one screen-reader announcement per
+     ~1.2s even if the filtered count changes every keystroke or a session
+     action appends a frame mid-read. Reuses the same resultNote already
+     shown sighted users, so the two never say different things. */
+  scheduleAnnounce(text){
+    if (!text || text === this.state.liveRegionText || this._announceTimer) return;
+    const wait = Math.max(0, 1200 - (Date.now() - this._lastAnnounceAt));
+    this._announceTimer = setTimeout(() => {
+      this._announceTimer = null;
+      this._lastAnnounceAt = Date.now();
+      if (this._lastComputedResultNote && this._lastComputedResultNote !== this.state.liveRegionText) {
+        this.setState({liveRegionText: this._lastComputedResultNote});
+      }
+    }, wait);
+  }
+
+  /* ── MAT-F01: drill-down must carry this incident's id forward, never reset ── */
+  navHref(page){
+    try { return window.CITINEL_API.incidentLink(page, this.incId); }
+    catch(e) { return page + '?id=' + encodeURIComponent(this.incId); }
+  }
+  navVals(){
+    return {
+      navReplayHref: this.navHref('Replay.dc.html'),
+      navConfidenceHref: this.navHref('Confidence.dc.html'),
+      navEvidenceHref: this.navHref('Evidence.dc.html'),
+      navApprovalsHref: this.navHref('Approvals.dc.html'),
+      navComplianceHref: this.navHref('Compliance.dc.html'),
+      navAuditHref: this.navHref('Audit.dc.html')
+    };
   }
   walk(){
     const API = window.CITINEL_API;
@@ -746,11 +851,24 @@ class Component extends DCLogic {
   }
   renderVals(){
     const s = this.state;
-    if (s.live === true) { const b = this.liveVals(); return Object.assign({}, b, this.roleVals(), this.liveDepthVals(b)); }
-    if (s.live === null) return Object.assign({}, this.loadingVals(), this.roleVals());
-    const b0 = this.baseVals();
-    const b = Object.assign({}, b0, this.sessionVals(b0));   // session rows join the reel first...
-    return Object.assign({}, b, this.roleVals(), this.depthVals(b));   // ...so CISO depth filters them too
+    let out;
+    if (s.live === true) { const b = this.liveVals(); out = Object.assign({}, b, this.roleVals(), this.liveDepthVals(b)); }
+    else if (s.live === null) out = Object.assign({}, this.loadingVals(), this.roleVals());
+    else {
+      const b0 = this.baseVals();
+      const b = Object.assign({}, b0, this.sessionVals(b0));   // session rows join the reel first...
+      out = Object.assign({}, b, this.roleVals(), this.depthVals(b));   // ...so CISO depth filters them too
+    }
+    out = Object.assign({}, out, this.navVals());
+    // MAT-F03/F04: captured once here regardless of which branch produced `out`, so the
+    // virtualized pool and the throttled live region both always see this render's real rows,
+    // without repeating the same three fields inside loadingVals/liveVals/baseVals.
+    this._ledgerRows = out.rows || [];
+    this._lastComputedResultNote = out.resultNote;
+    out.ariaRowCount = this._ledgerRows.length;
+    out.liveRegionText = this.state.liveRegionText;
+    out.ledgerScrollRef = this.ledgerScrollRef;
+    return out;
   }
 }
 </script>

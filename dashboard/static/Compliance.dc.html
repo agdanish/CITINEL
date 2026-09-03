@@ -3,6 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CITINEL · Compliance clock</title>
+<meta name="description" content="The CERT-In six-hour reporting clock and the compliance drafting desk: CITINEL drafts the filing, a named human seals it, nothing is filed automatically.">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<meta name="theme-color" content="#0B1F3A">
 <script src="vendor/resources.js"></script>
 <script src="./support.js"></script>
 <!-- Render-blocking, deliberately. The same sheets are declared again in the
@@ -56,16 +64,16 @@
 <div data-screen-label="Compliance clock" data-citinel-page="compliance" style="display:flex;flex-direction:column;height:100vh;min-width:1280px;background:var(--ctn-color-surface-shell)">
 
   <header style="display:flex;align-items:center;gap:18px;padding:0 18px;height:52px;flex:none;border-bottom:1px solid var(--ctn-color-border-strong);background:var(--ctn-color-surface-panel);min-width:0">
-    <img src="assets/mark-white.png" alt="CITINEL · caught, cited, gated, actioned, closed" style="height:34px;width:90px;display:block;flex:none">
+    <a href="Overview.dc.html" aria-label="CITINEL — back to the overview" style="display:block;flex:none;line-height:0;text-decoration:none"><picture><source type="image/webp" srcset="assets/mark-white-254.webp"><img src="assets/mark-white-254.png" alt="CITINEL · caught, cited, gated, actioned, closed" width="254" height="96" style="height:34px;width:90px;display:block;flex:none"></picture></a>
     <nav style="display:flex;gap:2px;min-width:0;overflow-x:auto;scrollbar-width:thin;flex:1">
       <a href="Overview.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">OVERVIEW</a>
       <a href="Queue.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">QUEUE</a>
-      <a href="Replay.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">REPLAY</a>
-      <a href="Confidence.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">CONFIDENCE</a>
-      <a href="Evidence.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">EVIDENCE</a>
-      <a href="Approvals.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">APPROVALS</a>
-      <a href="Compliance.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-primary);background:var(--ctn-color-surface-raised);border-radius:6px;white-space:nowrap">COMPLIANCE</a>
-      <a href="Audit.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">AUDIT</a>
+      <a href="{{ navReplayHref }}" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">REPLAY</a>
+      <a href="{{ navConfidenceHref }}" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">CONFIDENCE</a>
+      <a href="{{ navEvidenceHref }}" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">EVIDENCE</a>
+      <a href="{{ navApprovalsHref }}" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">APPROVALS</a>
+      <a href="{{ navComplianceHref }}" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-primary);background:var(--ctn-color-surface-raised);border-radius:6px;white-space:nowrap">COMPLIANCE</a>
+      <a href="{{ navAuditHref }}" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">AUDIT</a>
       <a href="Corpus.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">CORPUS</a>
       <a href="Eval.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">EVAL</a>
       <a href="Policy.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">POLICY</a>
@@ -121,11 +129,36 @@
       </div>
 
       <div style="min-width:0;border-top:1px solid var(--ctn-color-border-hairline);padding-top:13px">
+        <span style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.14em;color:var(--ctn-color-text-muted)">REGULATORY GUIDANCE · TAVILY</span>
+        <div style="font-size:11px;color:var(--ctn-color-text-muted);margin-top:6px;line-height:1.4;text-wrap:pretty">{{ regContextNote }}</div>
+        <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px">
+          <sc-for list="{{ regContextChips }}" as="ch" hint-placeholder-count="2">
+            <dc-import name="ExternalCitationChip" source="{{ ch.source }}" url="{{ ch.url }}" fetched-at="{{ ch.fetchedAt }}" size="sm"></dc-import>
+          </sc-for>
+        </div>
+        <sc-if value="{{ regContextGatherable }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;align-items:center;gap:10px;margin-top:9px;min-width:0">
+            <button onClick="{{ gatherRegContext }}" style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:7px 11px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;background:none;color:var(--ctn-color-text-primary);cursor:pointer">{{ regGatherLabel }}</button>
+            <span data-token style="font-family:var(--ctn-font-mono);font-size:10px;color:var(--ctn-color-text-muted);flex:1;min-width:0">{{ regGatherStatus }}</span>
+          </div>
+        </sc-if>
+        <sc-if value="{{ regExtractShown }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ toggleRegExtract }}" style="margin-top:7px;font-family:var(--ctn-font-display);font-size:8px;letter-spacing:0.1em;padding:6px 10px;border:1px dashed var(--ctn-color-border-strong);border-radius:5px;background:none;color:var(--ctn-color-text-secondary);cursor:pointer">{{ regExtractLabel }}</button>
+          <sc-if value="{{ regExtractOpen }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top:7px">
+              <x-import component-from-global-scope="CITINELDesignSystem_fdfd66.LogWell" dense="{{ true }}" hint-size="100%,140px">{{ regExtractText }}</x-import>
+              <div style="font-size:9.5px;color:var(--ctn-color-text-muted);margin-top:5px;line-height:1.3">{{ regExtractSource }}</div>
+            </div>
+          </sc-if>
+        </sc-if>
+      </div>
+
+      <div style="min-width:0;border-top:1px solid var(--ctn-color-border-hairline);padding-top:13px">
         <div style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.14em;color:var(--ctn-color-text-muted)">INCIDENT ARC</div>
         <div style="display:flex;align-items:center;gap:13px;margin-top:9px;min-width:0">
           <svg width="72" height="72" viewBox="0 0 72 72" style="flex:none">
             <circle cx="36" cy="36" r="28" fill="none" stroke="var(--ctn-color-border-strong)" stroke-width="1.5"></circle>
-            <path d="{{ incArc }}" fill="none" stroke="var(--ctn-color-state-cited)" stroke-width="3.6"></path>
+            <path sc-camel-d="{{ incArc }}" fill="none" stroke="var(--ctn-color-state-cited)" stroke-width="3.6"></path>
             <g>{{ incNodes }}</g>
           </svg>
           <div style="flex:1;min-width:0">
@@ -303,7 +336,7 @@
     <svg width="104" height="88" viewBox="0 0 104 88" style="flex:none">
       <rect x="6" y="76" width="92" height="8" rx="2" fill="var(--ctn-color-surface-raised)" stroke="var(--ctn-color-border-strong)" stroke-width="1.4"></rect>
       <path d="M 14 76 V 12 H 90" fill="none" stroke="var(--ctn-color-border-strong)" stroke-width="2.5"></path>
-      <g transform="translate(0 {{ pressY }})" style="transition:transform 0.18s linear">
+      <g sc-camel-transform="translate(0 {{ pressY }})" style="transition:transform 0.18s linear">
         <line x1="62" y1="12" x2="62" y2="40" stroke="var(--ctn-color-text-secondary)" stroke-width="4"></line>
         <line x1="44" y1="12" x2="80" y2="12" stroke="var(--ctn-color-text-primary)" stroke-width="3.5" stroke-linecap="round"></line>
         <rect x="48" y="40" width="28" height="16" rx="2" fill="var(--ctn-color-surface-navy)" stroke="var(--ctn-color-text-secondary)" stroke-width="1.6"></rect>
@@ -405,16 +438,26 @@ class Component extends DCLogic {
       role: this.roleInit(), answers:{}, desc:'At 20:57:06 IST on 23 August 2026 nine payout beneficiaries were registered from a single UPI session in 71 seconds. Three failed su attempts on a core banking host followed. At 21:03:02 the bulk payout template was modified with maker-checker bypassed and fourteen beneficiaries appended, staging INR 18,40,000 for release. No payout cleared. Containment was drafted by policy and executed at 21:52 on the approval of a named operator.',
       descEdited:false, signName:'', attested:false, sealed:false, sealedAt:'', pressY:0, pressing:false,
       // live: null = reading · true = the real drafts, guard and chain · false = authored fallback
-      live:null, liveError:null, incident:null, certin:null, dpdp:null, chain:[], edits:{}, sealResult:null, sealError:''
+      live:null, liveError:null, incident:null, certin:null, dpdp:null, chain:[], edits:{}, sealResult:null, sealError:'',
+      context:null, gatheringReg:false, regGatherStatus:'', regExtractOpen:false
     };
   }
   componentDidMount(){ this.roleMount(); this.base = Date.now(); this.t = setInterval(()=>this.forceUpdate(),1000);
     const API = window.CITINEL_API;
     if (!API) { this.setState({live:false, liveError:'api.js not loaded'}); return; }
     const id = this.incId;
-    Promise.all([API.incident(id), API.draftFor(id, 'certin'), API.draftFor(id, 'dpdp'), API.auditFor(id)]).then(([inc, c, d, ch]) => {
+    Promise.all([API.incident(id), API.draftFor(id, 'certin'), API.draftFor(id, 'dpdp'), API.auditFor(id), API.contextFor(id)]).then(([inc, c, d, ch, cx]) => {
       if (!inc.ok || !c.ok) { this.setState({live:false, liveError: inc.error || c.error}); return; }
-      this.setState({live:true, incident:inc.data, certin:c.data, dpdp: d.ok ? d.data : null, chain: ch.ok ? ch.data : []});
+      this.setState({live:true, incident:inc.data, certin:c.data, dpdp: d.ok ? d.data : null, chain: ch.ok ? ch.data : [], context: cx.ok ? cx.data : null});
+    });
+  }
+  gatherRegContext(){
+    const API = window.CITINEL_API, id = this.incId;
+    if (!API || this.state.gatheringReg) return;
+    this.setState({gatheringReg:true, regGatherStatus:'searching the open web for CERT-In/DPDP guidance and related context · one Tavily credit per uncached query'});
+    API.gatherContext(id).then(r => {
+      if (!r.ok) { this.setState({gatheringReg:false, regGatherStatus:'could not gather: ' + (r.error || 'unknown')}); return; }
+      this.setState({gatheringReg:false, regGatherStatus:'gathered ' + r.data.sources + ' sources for ' + r.data.credits_used + ' credit' + (r.data.credits_used===1?'':'s'), context: r.data});
     });
   }
   componentWillUnmount(){ clearInterval(this.t); clearInterval(this.p); if(this.unsubRole) this.unsubRole(); }
@@ -456,6 +499,22 @@ class Component extends DCLogic {
       'SEALED': {fg:'var(--ctn-color-text-primary)', border:'var(--ctn-color-text-primary)', style:'solid'}
     };
     return S[stamp] || S['MACHINE'];
+  }
+
+  /* ── MAT-F01: drill-down must carry this incident's id forward, never reset ── */
+  navHref(page){
+    try { return window.CITINEL_API.incidentLink(page, this.incId); }
+    catch(e) { return page + '?id=' + encodeURIComponent(this.incId); }
+  }
+  navVals(){
+    return {
+      navReplayHref: this.navHref('Replay.dc.html'),
+      navConfidenceHref: this.navHref('Confidence.dc.html'),
+      navEvidenceHref: this.navHref('Evidence.dc.html'),
+      navApprovalsHref: this.navHref('Approvals.dc.html'),
+      navComplianceHref: this.navHref('Compliance.dc.html'),
+      navAuditHref: this.navHref('Audit.dc.html')
+    };
   }
 
   /* ── live: the drafter's real form, the guard's real screen, a real sign-off frame ── */
@@ -594,7 +653,7 @@ class Component extends DCLogic {
       ],
       whoFiles: 'the bank\'s compliance officer · CITINEL holds no portal credential and names nobody · window ' + (breached ? 'closed ' + this.fmtAge(Math.abs(remain)) + ' ago' : this.fmtAge(remain) + ' remaining'),
       draftHref: '/api/incidents/' + this.incId + '/draft?kind=certin', openFileLabel: 'OPEN THE RENDERED DRAFT',
-      ribbonHref: 'Audit.dc.html?id=' + this.incId + (sealedSeq != null ? '&q=' + sealedSeq : ''),
+      ribbonHref: this.navHref('Audit.dc.html') + (sealedSeq != null ? '&q=' + sealedSeq : ''),
       signTitle: breached ? 'SIGN-OFF · LATE, AND RECORDED AS LATE' : 'SIGN-OFF · THE HUMAN STEP',
       signGuidance: s.sealError ? s.sealError : humanOpen > 0
         ? 'Answer the ' + humanOpen + ' field' + (humanOpen>1?'s':'') + ' marked HUMAN REQUIRED above. The system will not fill them for you, and it will not let you sign around them.'
@@ -633,7 +692,30 @@ class Component extends DCLogic {
       dpdpOptions: [['NOT PERSONAL DATA','NO'],['PERSONAL DATA · PREPARE','YES'],['REFER TO COUNSEL','UNDETERMINED']].map(([label, val]) => ({label,
         pick: ()=>this.setState(x=>({answers: Object.assign({}, x.answers, {[piiKey]: val})})),
         border: piiVal===val ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-border-strong)', bg: piiVal===val ? 'var(--ctn-color-surface-raised)' : 'transparent', fg: piiVal===val ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-text-muted)'})),
-      _humanKeys: human.map(f => f.key).concat([piiKey]), _sigN: String(fieldsSrc.length+2).padStart(2,'0')
+      _humanKeys: human.map(f => f.key).concat([piiKey]), _sigN: String(fieldsSrc.length+2).padStart(2,'0'),
+      ...this.regContextVals()
+    };
+  }
+  regContextVals(){
+    const s = this.state, cx = s.context;
+    const regRows = cx ? (cx.queries || []).filter(q => q.kind === 'regulatory') : [];
+    const row = regRows[0];
+    const ext = row && row.extracted;
+    return {
+      regContextNote: !cx ? 'nothing gathered yet · CERT-In/DPDP guidance has not been asked for'
+        : row ? row.query + (row.status !== 'ok' ? ' · ' + (row.note || row.status) : ' · context only, never evidence: the drafted narrative still cites only the record\'s own findings')
+        : 'last gather did not include a regulatory query',
+      regContextChips: row ? (row.results || []).map(r => ({source: String(r.title || '').slice(0, 70) || 'untitled', url: r.url,
+        fetchedAt: String(row.fetched_at || cx.gathered_at || '').slice(0, 16).replace('T', ' ') + 'Z'})) : [],
+      regContextGatherable: true, gatherRegContext: () => this.gatherRegContext(),
+      regGatherLabel: s.gatheringReg ? 'SEARCHING…' : (cx ? 'GATHER AGAIN' : 'GATHER PUBLIC CONTEXT'),
+      regGatherStatus: s.regGatherStatus || (cx ? cx.credits_used + ' credit' + (cx.credits_used === 1 ? '' : 's') + ' spent last gather (all context queries)' : ''),
+      regExtractShown: !!(ext && ext.status === 'ok' && ext.text),
+      regExtractText: ext && ext.status === 'ok' ? ext.text + (ext.truncated ? '\n\n[extract truncated]' : '') : '',
+      regExtractOpen: s.regExtractOpen,
+      toggleRegExtract: () => this.setState(x => ({regExtractOpen: !x.regExtractOpen})),
+      regExtractLabel: s.regExtractOpen ? 'HIDE FULL TEXT' : 'READ FULL TEXT · TAVILY EXTRACT',
+      regExtractSource: ext ? 'extracted from ' + (ext.source_url || '') + ' · ' + String(ext.fetched_at || '').slice(0, 16).replace('T', ' ') + 'Z' : '',
     };
   }
   loadingVals(){
@@ -643,9 +725,11 @@ class Component extends DCLogic {
       machinePct: '··', machineW: '0%', answeredW: '0%', fillLegend: [], fillNote: 'the drafter and both guards are running on the service; the Lyzr second opinion takes a few seconds',
       incArc: '', incNodes: [], incState: 'READING', incNote: '', otherClocks: [], openFieldsTag: 'READING', openFieldsFg: muted, formSub: 'reading…', fields: [],
       hasRemnant: false, remnantTitle: '', remnantChip: '', remnantIsAttacker: false, remnantIsGuard: false, remnantWhy: '', remnantTs: '', remnantSource: '', remnantHash: '', remnantText: '', remnantNote: '',
-      dpdpStatusTag: '…', dpdpFraming: '', dpdpStages: [], preflight: [], notSealed: true, sealed: false, sealedAt: '', sealedBy: '', sealSeq: '', sealedHead: '', sealedProse: '', exportRows: [], whoFiles: '', draftHref: '#', openFileLabel: '', ribbonHref: 'Audit.dc.html',
+      dpdpStatusTag: '…', dpdpFraming: '', dpdpStages: [], preflight: [], notSealed: true, sealed: false, sealedAt: '', sealedBy: '', sealSeq: '', sealedHead: '', sealedProse: '', exportRows: [], whoFiles: '', draftHref: '#', openFileLabel: '', ribbonHref: this.navHref('Audit.dc.html'),
       signTitle: 'SIGN-OFF · THE HUMAN STEP', signGuidance: 'reading the record…', signPrompt: 'type your name or address to sign', signPlaceholder: '', attestText: '', signName: '', onSignName: ()=>{}, nameBorder: muted, attested: false, toggleAttest: ()=>{}, attestBorder: muted, attestBg: 'transparent',
-      sealDisabled: true, sealLabel: 'READING', pressY: 0, doSeal: ()=>{}, sealedLine: '', amendNote: '', unsealLabel: '', unseal: ()=>{}, dpdpCall: '', dpdpOptions: []
+      sealDisabled: true, sealLabel: 'READING', pressY: 0, doSeal: ()=>{}, sealedLine: '', amendNote: '', unsealLabel: '', unseal: ()=>{}, dpdpCall: '', dpdpOptions: [],
+      regContextNote: 'reading…', regContextChips: [], regContextGatherable: false, gatherRegContext: ()=>{}, regGatherLabel: '', regGatherStatus: '',
+      regExtractShown: false, regExtractText: '', regExtractOpen: false, toggleRegExtract: ()=>{}, regExtractLabel: '', regExtractSource: ''
     };
   }
 
@@ -767,7 +851,7 @@ class Component extends DCLogic {
         {k:'transmitted', v:'nothing · no portal credential exists on this system'}
       ],
       whoFiles: 'S. Kulkarni · Compliance Officer, Sahyadri DCB · notified on the share at ' + s.sealedAt + '. Deadline 03:03 IST, ' + this.fmt(certin) + ' remaining.',
-      draftHref: '#', openFileLabel: 'OPEN THE FILE', ribbonHref: 'Audit.dc.html',
+      draftHref: '#', openFileLabel: 'OPEN THE FILE', ribbonHref: this.navHref('Audit.dc.html'),
       signGuidance: openCount > 0
         ? 'Answer the '+openCount+' field'+(openCount>1?'s':'')+' marked HUMAN REQUIRED above. The system will not fill them for you, and it will not let you seal around them.'
         : nameOk ? (s.attested ? 'Drive the press. This writes your name onto the form and locks the draft.' : 'Give the accuracy attestation to free the press.')
@@ -803,7 +887,10 @@ class Component extends DCLogic {
       sealedLine: 'Sealed ' + s.sealedAt + ' IST by a. deshmukh · SOC L2 · draft locked, four human answers recorded against her name.',
       amendNote: 'Amending after seal produces draft 4 and a new ledger entry; the sealed version is never overwritten.',
       unsealLabel: 'AMEND · OPENS DRAFT 4',
-      unseal: ()=>this.setState({sealed:false, attested:false, signName:''})
+      unseal: ()=>this.setState({sealed:false, attested:false, signName:''}),
+      regContextNote: 'authored demo · no public context gathered', regContextChips: [], regContextGatherable: false,
+      gatherRegContext: ()=>{}, regGatherLabel: '', regGatherStatus: '',
+      regExtractShown: false, regExtractText: '', regExtractOpen: false, toggleRegExtract: ()=>{}, regExtractLabel: '', regExtractSource: ''
     };
   }
 
@@ -821,9 +908,10 @@ class Component extends DCLogic {
   }
   renderVals(){
     const s = this.state;
-    if (s.live === null) return Object.assign({}, this.loadingVals(), this.roleVals());
-    if (s.live === true) { const b = this.liveVals(); return Object.assign({}, b, this.roleVals(), this.liveDepthVals(b)); }
-    const b = this.baseVals(); return Object.assign({}, b, this.roleVals(), this.depthVals(b), this.stateVals(b));
+    const nav = this.navVals();
+    if (s.live === null) return Object.assign({}, this.loadingVals(), this.roleVals(), nav);
+    if (s.live === true) { const b = this.liveVals(); return Object.assign({}, b, this.roleVals(), this.liveDepthVals(b), nav); }
+    const b = this.baseVals(); return Object.assign({}, b, this.roleVals(), this.depthVals(b), this.stateVals(b), nav);
   }
   liveDepthVals(b){
     if(this.state.role !== 'ciso') return {};

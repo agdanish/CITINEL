@@ -3,6 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CITINEL · Executive view</title>
+<meta name="description" content="A printable board copy of the incident record and swarm verdicts, produced as-is for executive and regulator reading.">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<meta name="theme-color" content="#0B1F3A">
 <script src="vendor/resources.js"></script>
 <script src="./support.js"></script>
 <!-- Render-blocking, deliberately. The same sheets are declared again in the
@@ -53,7 +61,7 @@
 </helmet>
 <div data-screen-label="Executive view" data-citinel-page="executive" style="display:flex;flex-direction:column;height:100vh;background:var(--ctn-color-white)">
   <div style="display:flex;align-items:center;gap:20px;padding:0 20px;height:50px;flex:none;border-bottom:1px solid var(--ctn-color-border-hairline);background:var(--ctn-color-surface-panel)">
-    <img src="assets/mark-white.png" alt="CITINEL · caught, cited, gated, actioned, closed" style="height:34px;width:auto;display:block;flex:none">
+    <a href="Overview.dc.html" aria-label="CITINEL — back to the overview" style="display:block;flex:none;line-height:0;text-decoration:none"><picture><source type="image/webp" srcset="assets/mark-white-254.webp"><img src="assets/mark-white-254.png" alt="CITINEL · caught, cited, gated, actioned, closed" width="254" height="96" style="height:34px;width:auto;display:block;flex:none"></picture></a>
     <nav style="display:flex;gap:2px;min-width:0;overflow-x:auto;scrollbar-width:thin;flex:1">
       <a href="Overview.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">OVERVIEW</a>
       <a href="Queue.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">QUEUE</a>
@@ -79,7 +87,7 @@
     <div style="max-width:1080px;margin:0 auto;padding:44px 40px 60px;color:var(--ctn-color-navy-900)">
       <div style="display:flex;align-items:baseline;justify-content:space-between;border-bottom:3px solid var(--ctn-color-navy-900);padding-bottom:16px">
         <div style="display:flex;flex-direction:column;gap:7px;flex:none;min-width:0">
-          <img src="assets/mark-navy.png" alt="CITINEL" style="height:52px;width:auto;display:block">
+          <a href="Overview.dc.html" aria-label="CITINEL — back to the overview" style="display:block;flex:none;line-height:0;text-decoration:none"><picture><source type="image/webp" srcset="assets/mark-navy-104h.webp"><img src="assets/mark-navy-104h.png" alt="CITINEL" width="274" height="104" style="height:52px;width:auto;display:block"></picture></a>
           <div style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.16em;color:var(--ctn-color-navy-900)">CAUGHT. CITED. GATED. ACTIONED. CLOSED.</div>
         </div>
         <div style="font-size:13px;color:var(--ctn-color-navy-900)">Incident board · real incident records and swarm verdicts · {{ today }}</div>
@@ -112,7 +120,7 @@
                 <circle cx="13" cy="13" r="3.6" fill="var(--ctn-color-text-primary)"></circle>
               </sc-if>
               <sc-if value="{{ row.open }}" hint-placeholder-val="{{ false }}">
-                <path d="{{ row.arc }}" fill="none" stroke="var(--ctn-color-gold-500)" stroke-width="2.2"></path>
+                <path sc-camel-d="{{ row.arc }}" fill="none" stroke="var(--ctn-color-gold-500)" stroke-width="2.2"></path>
                 <circle cx="13" cy="13" r="3.6" fill="none" stroke="var(--ctn-color-border-strong)" stroke-width="1.6"></circle>
               </sc-if>
             </svg>

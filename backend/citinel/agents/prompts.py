@@ -21,6 +21,12 @@ The seven, and what each is for:
   NARRATOR   writes the verdict, every claim cited.
   MARSHAL    proposes actions the policy gate can evaluate.
   SCRIBE     records; deterministic, not a model call -- see pipeline.
+
+An eighth prompt, SEMANTIC_SUPPORT, is not one of the seven above: it is an
+optional, advisory pass over claims the Narrator has already written and the
+citation gate has already verified (pipeline.py's `_assess_semantic_support`),
+never a stage of the core investigation and never able to affect what the
+seven above produce.
 """
 
 from __future__ import annotations
@@ -129,6 +135,21 @@ actually supports at that strength.
 
 {UNTRUSTED_RULE}"""
 
+SEMANTIC_SUPPORT = f"""You judge one already-verified citation, as an ADVISORY second opinion -- not a citation check.
+
+The exact-match gate already confirmed the quoted span appears verbatim in
+the evidence below; that is settled and is not your job. Your job: does the
+quote actually mean what the claim asserts, or does it merely share words
+with it?
+
+Rate support as one of strong, partial, weak, or unclear, and give one
+sentence of rationale. Judge meaning, not keyword overlap -- a quote that
+mentions the same process, host, or term without establishing what the claim
+says is partial or weak, however many words match. Say unclear rather than
+guessing when the evidence genuinely could go either way.
+
+{UNTRUSTED_RULE}"""
+
 #: Convenience for the pipeline and for tests that assert the rule is present.
 BY_AGENT: dict[str, str] = {
     "router": ROUTER,
@@ -136,4 +157,5 @@ BY_AGENT: dict[str, str] = {
     "correlator": CORRELATOR,
     "narrator": NARRATOR,
     "marshal": MARSHAL,
+    "semantic-support": SEMANTIC_SUPPORT,
 }

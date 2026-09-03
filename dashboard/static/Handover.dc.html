@@ -3,6 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CITINEL · Shift handover</title>
+<meta name="description" content="The shift handover note: what the outgoing analyst must tell the incoming one, written from the ledger and signed by name.">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<meta name="theme-color" content="#0B1F3A">
 <script src="vendor/resources.js"></script>
 <script src="./support.js"></script>
 <!-- Render-blocking, deliberately. The same sheets are declared again in the
@@ -55,16 +63,16 @@
 <div data-screen-label="Shift handover" data-citinel-page="handover" style="display:flex;flex-direction:column;height:100vh;min-width:1280px;background:var(--ctn-color-surface-shell)">
 
   <header style="display:flex;align-items:center;gap:18px;padding:0 18px;height:52px;flex:none;border-bottom:1px solid var(--ctn-color-border-strong);background:var(--ctn-color-surface-panel);min-width:0">
-    <img src="assets/mark-white.png" alt="CITINEL · caught, cited, gated, actioned, closed" style="height:34px;width:90px;display:block;flex:none">
+    <a href="Overview.dc.html" aria-label="CITINEL — back to the overview" style="display:block;flex:none;line-height:0;text-decoration:none"><picture><source type="image/webp" srcset="assets/mark-white-254.webp"><img src="assets/mark-white-254.png" alt="CITINEL · caught, cited, gated, actioned, closed" width="254" height="96" style="height:34px;width:90px;display:block;flex:none"></picture></a>
     <nav style="display:flex;gap:2px;min-width:0;overflow-x:auto;scrollbar-width:thin;flex:1">
       <a href="Overview.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">OVERVIEW</a>
       <a href="Queue.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">QUEUE</a>
-      <a href="Replay.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">REPLAY</a>
-      <a href="Confidence.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">CONFIDENCE</a>
-      <a href="Evidence.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">EVIDENCE</a>
-      <a href="Approvals.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">APPROVALS</a>
-      <a href="Compliance.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">COMPLIANCE</a>
-      <a href="Audit.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">AUDIT</a>
+      <a href="{{ navReplay }}" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">REPLAY</a>
+      <a href="{{ navConfidence }}" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">CONFIDENCE</a>
+      <a href="{{ navEvidence }}" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">EVIDENCE</a>
+      <a href="{{ navApprovals }}" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">APPROVALS</a>
+      <a href="{{ navCompliance }}" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">COMPLIANCE</a>
+      <a href="{{ navAudit }}" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">AUDIT</a>
       <a href="Corpus.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">CORPUS</a>
       <a href="Eval.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">EVAL</a>
       <a href="Policy.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">POLICY</a>
@@ -108,7 +116,7 @@
     <div style="flex:none;display:flex;align-items:center;gap:14px;padding:11px 22px;border-left:1px solid var(--ctn-color-border-hairline);background:var(--ctn-color-surface-raised)">
       <svg width="52" height="52" viewBox="0 0 52 52" style="flex:none">
         <circle cx="26" cy="26" r="20" fill="none" stroke="var(--ctn-color-border-strong)" stroke-width="1.5"></circle>
-        <path d="{{ signArc }}" fill="none" stroke="var(--ctn-color-state-cited)" stroke-width="3.2"></path>
+        <path sc-camel-d="{{ signArc }}" fill="none" stroke="var(--ctn-color-state-cited)" stroke-width="3.2"></path>
         <g>{{ signNodes }}</g>
       </svg>
       <div style="min-width:0">
@@ -119,7 +127,7 @@
         <x-import component-from-global-scope="CITINELDesignSystem_fdfd66.Button" variant="primary" size="md" disabled="{{ signDisabled }}" on-click="{{ sign }}" hint-size="170px,38px">{{ signLabel }}</x-import>
       </sc-if>
       <sc-if value="{{ signed }}" hint-placeholder-val="{{ false }}">
-        <a href="Audit.dc.html" style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:10px 14px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;color:var(--ctn-color-text-primary);text-decoration:none;white-space:nowrap">ENTRY #{{ signSeq }}</a>
+        <a href="{{ navAudit }}" style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:10px 14px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;color:var(--ctn-color-text-primary);text-decoration:none;white-space:nowrap">ENTRY #{{ signSeq }}</a>
       </sc-if>
     </div>
   </div>
@@ -138,7 +146,7 @@
               <div style="flex:none;display:flex;flex-direction:column;align-items:center;gap:7px;width:66px">
                 <svg width="58" height="58" viewBox="0 0 58 58">
                   <circle cx="29" cy="29" r="23" fill="none" stroke="var(--ctn-color-border-strong)" stroke-width="1.5"></circle>
-                  <path d="{{ i.arc }}" fill="none" stroke="var(--ctn-color-state-cited)" stroke-width="3.4"></path>
+                  <path sc-camel-d="{{ i.arc }}" fill="none" stroke="var(--ctn-color-state-cited)" stroke-width="3.4"></path>
                   <g>{{ i.nodes }}</g>
                 </svg>
                 <span style="font-family:var(--ctn-font-display);font-size:7.5px;letter-spacing:0.1em;color:var(--ctn-color-text-muted);white-space:nowrap">{{ i.stateName }}</span>
@@ -190,7 +198,7 @@
         </div>
         <div style="display:flex;flex-direction:column;gap:7px;margin-top:9px">
           <sc-for list="{{ gate }}" as="g" hint-placeholder-count="3">
-            <a href="Approvals.dc.html?id={{ g.aid }}" style="display:flex;align-items:center;gap:11px;padding:9px 11px;background:var(--ctn-color-surface-panel);border:1px {{ g.borderStyle }} var(--ctn-color-border-hairline);border-radius:6px;text-decoration:none;min-width:0" style-hover="background:var(--ctn-color-surface-raised)">
+            <a href="{{ g.href }}" style="display:flex;align-items:center;gap:11px;padding:9px 11px;background:var(--ctn-color-surface-panel);border:1px {{ g.borderStyle }} var(--ctn-color-border-hairline);border-radius:6px;text-decoration:none;min-width:0" style-hover="background:var(--ctn-color-surface-raised)">
               <span style="flex:none;width:14px;height:14px;display:flex;align-items:center;justify-content:center">{{ g.glyph }}</span>
               <span data-token style="font-family:var(--ctn-font-mono);font-size:11px;color:var(--ctn-color-text-muted);flex:none">{{ g.inc }}</span>
               <span data-reveal style="font-family:var(--ctn-font-mono);font-size:11.5px;color:var(--ctn-color-text-primary);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ g.name }}</span>
@@ -291,6 +299,31 @@ class Component extends DCLogic {
   }
   componentWillUnmount(){ clearInterval(this.t); }
 
+  /* ── MAT-F01: drill-down context ──────────────────────────────────────────
+     Handover shows the whole shift's fleet of still-open incidents, not one
+     incident, so -- like Overview and Queue -- it has no "current incident"
+     of its own to display on load. But every outgoing link to a screen that
+     DOES scope itself to one incident (Replay, Confidence, Evidence,
+     Compliance, Audit, Approvals) must carry an id forward instead of
+     silently dropping the reader into that screen's hardcoded default: the
+     top nav bar (and the local ENTRY # link, which also points at Audit)
+     default through api.js's own currentIncidentId(), while each per-row
+     "OPEN" and gate link passes that ROW's own incident id, not the page's.
+     incLink() is a thin, API-optional wrapper over API.incidentLink()
+     (falls back to a plain query string if api.js failed to load, matching
+     this file's existing `if (!API)` defensiveness elsewhere). */
+  incLink(page, id){
+    const API = window.CITINEL_API;
+    return API ? API.incidentLink(page, id) : (id ? page + '?id=' + encodeURIComponent(id) : page);
+  }
+  navBar(){
+    return {
+      navReplay: this.incLink('Replay.dc.html'), navConfidence: this.incLink('Confidence.dc.html'),
+      navEvidence: this.incLink('Evidence.dc.html'), navApprovals: this.incLink('Approvals.dc.html'),
+      navCompliance: this.incLink('Compliance.dc.html'), navAudit: this.incLink('Audit.dc.html')
+    };
+  }
+
   fmt(x){ x=Math.max(0,x); const h=Math.floor(x/3600); return String(h).padStart(2,'0')+':'+String(Math.floor(x/60)%60).padStart(2,'0')+':'+String(x%60).padStart(2,'0'); }
   short(x){ x=Math.max(0,x); const h=Math.floor(x/3600); return h>0 ? h+'h '+String(Math.floor(x/60)%60).padStart(2,'0')+'m' : String(Math.floor(x/60)).padStart(2,'0')+'m '+String(x%60).padStart(2,'0')+'s'; }
   fmtN(n){ return Number(n || 0).toLocaleString('en-IN'); }
@@ -363,7 +396,7 @@ class Component extends DCLogic {
     const API = window.CITINEL_API; if (!API || this.state.writing[id]) return;
     this.setState(x=>({writing:{...x.writing, [id]:true}}));
     API.writeHandover(id).then(r => {
-      this.setState(x=>({writing:{...x.writing, [id]:false}, notes: {...x.notes, [id]: r.ok ? r.data : {status:'error', summary: r.error || 'the handover route refused'}}}));
+      this.setState(x=>({writing:{...x.writing, [id]:false}, notes: {...x.notes, [id]: r.ok ? {...r.data, writtenHere: true} : {status:'error', summary: r.error || 'the handover route refused'}}}));
     });
   }
   liveDerived(){
@@ -393,6 +426,10 @@ class Component extends DCLogic {
       const reached = this.stateIndex(i.state);
       const arcFrac = reached / 4;
       const note = s.notes[i.incident_id]; const writing = !!s.writing[i.incident_id];
+      // writtenHere is set only by this session's own write; a note loaded from the disk cache on mount earns no "written" line
+      const wrote = !!(note && note.status === 'ok' && note.writtenHere);
+      const wroteAt = wrote ? (String(note.written_at || '').length >= 16 ? String(note.written_at).slice(11,16) + 'Z' : 'just now') : '';
+      const written = wrote ? '; handover note written ' + wroteAt + ', saved on disk' : '';
       const noteText = note && note.status === 'ok' ? 'LYZR HANDOVER · ' + (note.summary || '') + ((note.open_items || []).length ? ' · open: ' + note.open_items.join('; ') : '')
         : note && note.status ? 'lyzr handover · ' + String(note.status).replace(/_/g,' ') + (note.summary ? ' · ' + note.summary : note.detail ? ' · ' + note.detail : '') : '';
       return {
@@ -402,11 +439,11 @@ class Component extends DCLogic {
         noteFg: writing ? 'var(--ctn-color-text-muted)' : 'var(--ctn-color-text-primary)',
         id: i.incident_id, sev: i.severity || 'medium', reached, stateName: String(i.state).toUpperCase(), arcFrac,
         title: i.incident_id + ' · ' + (i.finding_count || 0) + ' findings',
-        position: 'State derived from ledger; ' + (i.hosts || []).length + ' host' + ((i.hosts || []).length === 1 ? '' : 's') + '; opened ' + (i.opened_ts ? i.opened_ts.slice(11,16) : '—'),
+        position: 'State derived from ledger; ' + (i.hosts || []).length + ' host' + ((i.hosts || []).length === 1 ? '' : 's') + '; opened ' + (i.opened_ts ? i.opened_ts.slice(11,16) : '—') + written,
         locator: (i.hosts && i.hosts[0]) ? i.hosts[0].split('.')[0] : 'no host',
         holder: h.holder,
         next: noteText || h.note,
-        href: 'Replay.dc.html?id=' + i.incident_id,
+        href: this.incLink('Replay.dc.html', i.incident_id),
         clocks: [],
         edge: i.severity==='critical' ? 'var(--ctn-color-severity-critical)' : i.severity==='high' ? 'var(--ctn-color-severity-high)' : 'var(--ctn-color-border-strong)',
         arc: this.arcPath(29,29,23,arcFrac),
@@ -451,7 +488,7 @@ class Component extends DCLogic {
     const gate = d.inSec.filter(i => i.state === 'gated' || (i.swarm && (i.swarm.proposals || i.swarm.proposal_count) && !String(i.state).startsWith('closed'))).map(i => {
       const chain = s.trails[i.incident_id] || []; const pc = chain.filter(e => e.kind === 'policy_check'); const last = pc[pc.length-1];
       const nProp = i.swarm ? (i.swarm.proposals || i.swarm.proposal_count || 0) : 0;
-      return {aid: i.incident_id, glyph: this.glyph('gated'), inc: i.incident_id,
+      return {href: this.incLink('Approvals.dc.html', i.incident_id), glyph: this.glyph('gated'), inc: i.incident_id,
         name: (nProp ? nProp + ' proposals drafted' : 'action drafted') + ' · needs a name',
         nodes: String((i.hosts || []).length), wait: last ? fmtAge(s.now - Date.parse(last.ts)) : '—',
         waitFg: 'var(--ctn-color-text-primary)', borderStyle: i.state === 'gated' ? 'solid' : 'dashed'};
@@ -575,9 +612,9 @@ class Component extends DCLogic {
   }
   renderVals(){
     const s = this.state;
-    if (s.live === true) { const b = this.liveVals(); return Object.assign({}, b, this.roleVals()); }
+    if (s.live === true) { const b = this.liveVals(); return Object.assign({}, b, this.roleVals(), this.navBar()); }
     const b = s.live === null ? this.loadingVals() : this.baseVals();
-    return Object.assign({}, b, this.roleVals());
+    return Object.assign({}, b, this.roleVals(), this.navBar());
   }
 }
 </script>

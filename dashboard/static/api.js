@@ -132,12 +132,20 @@
                     live: true,  note: 'public context gathered via Tavily: per technique/rule, query, URLs, fetch time · 404 until gathered' },
     contextGather:{ path: function (id) { return '/api/incidents/' + id + '/context'; },
                     live: true,  note: 'POST {confirm:true} · gathers public context (one Tavily credit per uncached query)', method: 'POST' },
+    sweep:        { path: function (id) { return '/api/incidents/' + id + '/sweep'; },
+                    live: true,  note: 'Gemini wide-lens sweep: what the long context found past the swarm evidence window · 404 until swept · context, never evidence' },
+    sweepRun:     { path: function (id) { return '/api/incidents/' + id + '/sweep'; },
+                    live: true,  note: 'POST {confirm:true} · one Gemini call reading every finding, including the unexamined region', method: 'POST' },
     handover:     { path: function (id) { return '/api/incidents/' + id + '/handover'; },
                     live: true,  note: 'a Lyzr-written handover note from the ledger frames · 404 until written · not_configured without its agent id' },
     handoverWrite:{ path: function (id) { return '/api/incidents/' + id + '/handover'; },
                     live: true,  note: 'POST {confirm:true} · asks the Lyzr handover agent to write the note; cached on disk', method: 'POST' },
     corpusRules:  { path: function () { return '/api/corpus'; },
                     live: true,  note: '{release, rules_total|null, by_dir, fired[], techniques_observed, anomaly_kinds}' },
+    corpusReview: { path: function () { return '/api/corpus/review'; },
+                    live: true,  note: 'the standing Lyzr coverage advisory · 404 until generated · not_configured without its agent id' },
+    corpusReviewWrite: { path: function () { return '/api/corpus/review'; },
+                    live: true,  note: 'POST {confirm:true} · asks the Lyzr corpus advisor to review coverage; cached on disk', method: 'POST' },
     connectors:   { path: function () { return '/api/connectors'; },
                     live: true,  note: '{rails, connectors[] (presence only), mock_endpoints, policy}' },
 
@@ -156,20 +164,41 @@
     shell:      { uses: ['incidentsSummary', 'policy', 'ledgerVerify'], scripted: [] },
     overview:   { uses: ['incidentsSummary', 'policy', 'connectors'], scripted: [] },
     queue:      { uses: ['incidents', 'audit'],               scripted: ['belt-dot decoration', '?state=quiet|firstrun demo panels'] },
-    replay:     { uses: ['incident', 'audit', 'verdict', 'context'], scripted: [] },
+    replay:     { uses: ['incident', 'audit', 'verdict', 'context', 'sweep'], scripted: [] },
     confidence: { uses: ['incident', 'verdict'],              scripted: [] },
     evidence:   { uses: ['incident', 'audit'],                scripted: [] },
     approvals:  { uses: ['policy', 'verdict', 'audit', 'execute'], scripted: [] },
-    corpus:     { uses: ['corpusRules'],                      scripted: [] },
+    corpus:     { uses: ['corpusRules', 'corpusReview'],       scripted: [] },
     eval:       { uses: ['evalRuns'],                         scripted: [] },
     policy:     { uses: ['policy', 'connectors'],             scripted: [] },
-    compliance: { uses: ['draft', 'incident'],                scripted: [] },
+    compliance: { uses: ['draft', 'incident', 'context'],      scripted: [] },
     audit:      { uses: ['audit', 'ledgerVerify'],            scripted: [] },
     handover:   { uses: ['incidentsSummary', 'audit', 'handover'],        scripted: [] },
     executive:  { uses: ['incidentsSummary', 'policy', 'ledgerVerify'], scripted: [] },
     settings:   { uses: ['connectors', 'source'],              scripted: [] },
     demo:       { uses: ['incidentsSummary'],                                   scripted: ['guided walkthrough of the live screens'] }
   };
+
+  /* ── Errors a reader can act on ───────────────────────────────────────────────
+     Confirmed 3 Sep 2026: a failed read surfaced as "503 from http://…/api/actions/deny"
+     and pages rendered that string straight into the note a reader sees. The service
+     always sends a one-sentence `detail` (the write guard: "write operations are disabled
+     on this deployment (CITINEL_WRITE_TOKEN is not configured)"); the gate's 403 sends
+     {refused, decision}. Use that sentence verbatim, else a plain phrase for the status.
+     The raw status and url stay on the envelope for devtools -- they never reach the note. */
+  function humanError(status, d) {
+    var detail = d && d.detail;
+    if (detail && typeof detail === 'object' && typeof detail.refused === 'string' && detail.refused) return detail.refused;
+    if (typeof detail === 'string' && detail) return detail;
+    if (status === 401) return 'not authorised for this action';
+    if (status === 403) return 'the gate refused this action';
+    if (status === 404) return 'that record was not found';
+    if (status >= 500) return 'the service could not complete this request';
+    return 'the service rejected this request';
+  }
+  function transportError(e) {
+    return 'could not reach the service · check the connection';
+  }
 
   /* ── One call path ────────────────────────────────────────────────────────────
      Always resolves. Never throws into a render. `source` says where the data came
@@ -202,11 +231,15 @@
     }).then(function (r) {
       clearTimeout(timer);
       var demo = r.headers.get('X-Citinel-Demo') === '1';
-      if (!r.ok) return { ok: false, source: 'scripted', status: r.status, error: r.status + ' from ' + url, demo: demo };
+      if (!r.ok) {
+        return r.json().catch(function () { return null; }).then(function (d) {
+          return { ok: false, source: 'scripted', status: r.status, error: humanError(r.status, d), url: url, demo: demo };
+        });
+      }
       return r.json().then(function (d) { return { ok: true, source: 'live', data: d, url: url, demo: demo }; });
     }).catch(function (e) {
       clearTimeout(timer);
-      return { ok: false, source: 'scripted', error: String(e && e.message || e) + ' · ' + url };
+      return { ok: false, source: 'scripted', error: transportError(e), url: url };
     }).then(record);
   };
 
@@ -230,12 +263,12 @@
     }).then(function (r) {
       clearTimeout(timer);
       return r.json().catch(function () { return null; }).then(function (d) {
-        if (!r.ok) return { ok: false, source: 'live', status: r.status, data: d, error: (d && d.detail && (d.detail.refused || d.detail)) ? String(d.detail.refused || d.detail) : r.status + ' from ' + url };
+        if (!r.ok) return { ok: false, source: 'live', status: r.status, data: d, error: humanError(r.status, d), url: url };
         return { ok: true, source: 'live', status: r.status, data: d, url: url };
       });
     }).catch(function (e) {
       clearTimeout(timer);
-      return { ok: false, source: 'scripted', error: String(e && e.message || e) + ' · ' + url };
+      return { ok: false, source: 'scripted', error: transportError(e), url: url };
     }).then(function (res) {
       // a refused action (403) is still a live answer from the gate; only transport failure is 'scripted'
       API.consumed[name] = res.source === 'live' ? 'live' : 'failed';
@@ -261,28 +294,54 @@
     return API._probe;
   };
 
+  /* ── Drill-down context (MAT-F01) ─────────────────────────────────────────────
+     Confirmed live, 3 Sep 2026: no page read ?id= from the URL -- every incident-
+     scoped screen always showed API.INCIDENT_PRIMARY regardless of what a reader
+     clicked on Overview or Queue, so "drill into this incident" silently dropped
+     which incident you meant. currentIncidentId() is the one place that decides
+     which incident a page is looking at; incidentLink() is the one place that
+     builds a link to another screen carrying it forward. Every incident-scoped
+     page should read the former instead of touching API.INCIDENT_PRIMARY
+     directly, and should build its OWN outgoing nav links (both the top nav bar
+     and any per-row "open" link) through the latter -- so the id a reader
+     actually selected keeps propagating, screen to screen, instead of resetting. */
+  API.currentIncidentId = function () {
+    try {
+      var id = new URLSearchParams(location.search).get('id');
+      return id || API.INCIDENT_PRIMARY;
+    } catch (e) { return API.INCIDENT_PRIMARY; }
+  };
+  API.incidentLink = function (page, id) {
+    id = id || API.currentIncidentId();
+    return page + '?id=' + encodeURIComponent(id);
+  };
+
   /* Convenience wrappers — the shapes screens actually want. */
   var BULK = { timeoutMs: API.BULK_TIMEOUT_MS };
   API.incidents = function () { return API.get('incidents', null, null, BULK); };
-  API.incident = function (id) { return API.get('incident', id || API.INCIDENT_PRIMARY, null, BULK); };
-  API.auditFor = function (id) { return API.get('audit', id || API.INCIDENT_PRIMARY, null, BULK); };
-  API.draftFor = function (id, kind) { return API.get('draft', id || API.INCIDENT_PRIMARY, kind || 'certin', BULK); };
+  API.incident = function (id) { return API.get('incident', id || API.currentIncidentId(), null, BULK); };
+  API.auditFor = function (id) { return API.get('audit', id || API.currentIncidentId(), null, BULK); };
+  API.draftFor = function (id, kind) { return API.get('draft', id || API.currentIncidentId(), kind || 'certin', BULK); };
   API.policy = function () { return API.get('policy'); };
   API.verifyLedger = function () { return API.get('ledgerVerify', null, null, BULK); };
   API.evalReport = function () { return API.get('evalRuns'); };
   API.incidentsSummary = function () { return API.get('incidentsSummary'); };
-  API.verdictFor = function (id) { return API.get('verdict', id || API.INCIDENT_PRIMARY, null, BULK); };
-  API.swarmStatus = function (id) { return API.get('swarmStatus', id || API.INCIDENT_PRIMARY); };
-  API.runSwarm = function (id) { return API.post('swarmRun', id || API.INCIDENT_PRIMARY, { confirm: true }); };
+  API.verdictFor = function (id) { return API.get('verdict', id || API.currentIncidentId(), null, BULK); };
+  API.swarmStatus = function (id) { return API.get('swarmStatus', id || API.currentIncidentId()); };
+  API.runSwarm = function (id) { return API.post('swarmRun', id || API.currentIncidentId(), { confirm: true }); };
   API.execute = function (body) { return API.post('execute', null, body); };
   API.rollback = function (token, body) { return API.post('rollback', token, body); };
   API.deny = function (body) { return API.post('deny', null, body); };
-  API.signOff = function (id, signedBy, extra) { return API.post('signoff', id || API.INCIDENT_PRIMARY, Object.assign({ signed_by: signedBy }, extra || {})); };
+  API.signOff = function (id, signedBy, extra) { return API.post('signoff', id || API.currentIncidentId(), Object.assign({ signed_by: signedBy }, extra || {})); };
   API.corpusRules = function () { return API.get('corpusRules'); };  // not API.corpus: the badge helper below stores the corpus *source name* there
-  API.contextFor = function (id) { return API.get('context', id || API.INCIDENT_PRIMARY); };
-  API.gatherContext = function (id) { return API.post('contextGather', id || API.INCIDENT_PRIMARY, { confirm: true }); };
-  API.handoverFor = function (id) { return API.get('handover', id || API.INCIDENT_PRIMARY); };
-  API.writeHandover = function (id) { return API.post('handoverWrite', id || API.INCIDENT_PRIMARY, { confirm: true }); };
+  API.corpusReview = function () { return API.get('corpusReview'); };
+  API.writeCorpusReview = function () { return API.post('corpusReviewWrite', undefined, { confirm: true }); };
+  API.sweepFor = function (id) { return API.get('sweep', id || API.currentIncidentId()); };
+  API.runSweep = function (id) { return API.post('sweepRun', id || API.currentIncidentId(), { confirm: true }, { timeoutMs: API.WRITE_TIMEOUT_MS }); };
+  API.contextFor = function (id) { return API.get('context', id || API.currentIncidentId()); };
+  API.gatherContext = function (id) { return API.post('contextGather', id || API.currentIncidentId(), { confirm: true }); };
+  API.handoverFor = function (id) { return API.get('handover', id || API.currentIncidentId()); };
+  API.writeHandover = function (id) { return API.post('handoverWrite', id || API.currentIncidentId(), { confirm: true }); };
   API.connectors = function () { return API.get('connectors'); };
   API.source = function () { return API.get('source'); };
 

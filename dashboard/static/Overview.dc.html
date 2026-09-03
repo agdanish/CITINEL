@@ -3,6 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CITINEL · Overview</title>
+<meta name="description" content="Master statutory countdown and the live incident board for the CITINEL autonomous SOC: what was caught, cited, gated, actioned and closed, with the CERT-In six-hour clock in view.">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<meta name="theme-color" content="#0B1F3A">
 <script src="vendor/resources.js"></script>
 <script src="./support.js"></script>
 <!-- Render-blocking, deliberately. The same sheets are declared again in the
@@ -54,16 +62,16 @@
 <div data-screen-label="Overview" data-citinel-page="overview" style="display:flex;flex-direction:column;height:100vh;min-width:1280px;background:var(--ctn-color-surface-shell)">
 
   <header style="display:flex;align-items:center;gap:18px;padding:0 18px;height:52px;flex:none;border-bottom:1px solid var(--ctn-color-border-strong);background:var(--ctn-color-surface-panel);min-width:0">
-    <img src="assets/mark-white.png" alt="CITINEL · caught, cited, gated, actioned, closed" style="height:34px;width:90px;display:block;flex:none">
+    <a href="Overview.dc.html" aria-label="CITINEL — back to the overview" style="display:block;flex:none;line-height:0;text-decoration:none"><picture><source type="image/webp" srcset="assets/mark-white-254.webp"><img src="assets/mark-white-254.png" alt="CITINEL · caught, cited, gated, actioned, closed" width="254" height="96" style="height:34px;width:90px;display:block;flex:none"></picture></a>
     <nav style="display:flex;gap:2px;min-width:0;overflow-x:auto;scrollbar-width:thin;flex:1">
       <a href="Overview.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-primary);background:var(--ctn-color-surface-raised);border-radius:6px;white-space:nowrap">OVERVIEW</a>
       <a href="Queue.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">QUEUE</a>
-      <a href="Replay.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">REPLAY</a>
-      <a href="Confidence.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">CONFIDENCE</a>
-      <a href="Evidence.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">EVIDENCE</a>
-      <a href="Approvals.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">APPROVALS</a>
-      <a href="Compliance.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">COMPLIANCE</a>
-      <a href="Audit.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">AUDIT</a>
+      <a href="{{ navReplay }}" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">REPLAY</a>
+      <a href="{{ navConfidence }}" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">CONFIDENCE</a>
+      <a href="{{ navEvidence }}" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">EVIDENCE</a>
+      <a href="{{ navApprovals }}" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">APPROVALS</a>
+      <a href="{{ navCompliance }}" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">COMPLIANCE</a>
+      <a href="{{ navAudit }}" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">AUDIT</a>
       <a href="Corpus.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">CORPUS</a>
       <a href="Eval.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">EVAL</a>
       <a href="Policy.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">POLICY</a>
@@ -92,7 +100,7 @@
           <circle cx="180" cy="180" r="158" fill="none" stroke="var(--ctn-color-border-hairline)" stroke-width="1"></circle>
           <circle cx="180" cy="180" r="138" fill="none" stroke="var(--ctn-color-border-strong)" stroke-width="2"></circle>
           <g>{{ masterTicks }}</g>
-          <path data-sweep d="{{ masterArc }}" fill="none" stroke="var(--ctn-color-clock)" stroke-width="11"></path>
+          <path data-sweep sc-camel-d="{{ masterArc }}" fill="none" stroke="var(--ctn-color-clock)" stroke-width="11"></path>
         </svg>
       <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;gap:2px">
         <div style="font-family:var(--ctn-font-display);font-size:clamp(7px, 3cqw, 11px);letter-spacing:0.16em;color:var(--ctn-color-text-muted);text-align:center;width:64%">{{ masterLabel }}</div>
@@ -104,7 +112,7 @@
       <div style="flex:none;max-height:210px;overflow-y:auto;padding:0 22px 14px;display:flex;flex-direction:column">
         <sc-for list="{{ clocks }}" as="c" hint-placeholder-count="4">
           <a href="{{ c.href }}" style="display:flex;align-items:center;gap:12px;padding:9px 0;border-top:1px solid var(--ctn-color-border-hairline);text-decoration:none;min-width:0">
-            <svg width="26" height="26" viewBox="0 0 26 26" style="flex:none"><circle cx="13" cy="13" r="10" fill="none" stroke="var(--ctn-color-border-strong)" stroke-width="1.5"></circle><path d="{{ c.arc }}" fill="none" stroke="var(--ctn-color-clock)" stroke-width="3"></path></svg>
+            <svg width="26" height="26" viewBox="0 0 26 26" style="flex:none"><circle cx="13" cy="13" r="10" fill="none" stroke="var(--ctn-color-border-strong)" stroke-width="1.5"></circle><path sc-camel-d="{{ c.arc }}" fill="none" stroke="var(--ctn-color-clock)" stroke-width="3"></path></svg>
             <div style="flex:1;min-width:0">
               <div style="font-size:12.5px;color:var(--ctn-color-text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.reg }}</div>
               <div style="font-family:var(--ctn-font-mono);font-size:11px;color:var(--ctn-color-text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.inc }} · {{ c.due }}</div>
@@ -131,7 +139,7 @@
             </div>
             <svg viewBox="0 0 300 40" preserveAspectRatio="none" style="flex:1;min-width:0;height:40px;display:block">
               <line x1="0" y1="20" x2="300" y2="20" stroke="var(--ctn-color-border-hairline)" stroke-width="1"></line>
-              <polyline data-trace points="{{ a.trace }}" fill="none" stroke="{{ a.traceColor }}" stroke-width="1.4"></polyline>
+              <polyline data-trace sc-camel-points="{{ a.trace }}" fill="none" stroke="{{ a.traceColor }}" stroke-width="1.4"></polyline>
             </svg>
             <div style="width:clamp(189px, 8.44rem + 9.38vw, 270px);flex:none;min-width:0">
               <div style="font-family:var(--ctn-font-mono);font-size:11.5px;color:var(--ctn-color-text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ a.doing }}</div>
@@ -179,9 +187,9 @@
             <svg width="118" height="118" viewBox="-7 -7 118 118" style="display:block">
               <circle cx="52" cy="52" r="40" fill="var(--ctn-color-surface-raised)" stroke="var(--ctn-color-border-strong)" stroke-width="1.5"></circle>
               <g>{{ autonomyDetents }}</g>
-              <path d="{{ mandateArc }}" fill="none" stroke="{{ mandateFg }}" stroke-width="3.5"></path>
+              <path sc-camel-d="{{ mandateArc }}" fill="none" stroke="{{ mandateFg }}" stroke-width="3.5"></path>
               <circle cx="52" cy="52" r="47" fill="none" stroke="var(--ctn-color-border-hairline)" stroke-width="1"></circle>
-              <line data-needle x1="52" y1="52" x2="52" y2="18" stroke="var(--ctn-color-text-primary)" stroke-width="3" stroke-linecap="round" transform="rotate({{ autonomyAngle }} 52 52)"></line>
+              <line data-needle x1="52" y1="52" x2="52" y2="18" stroke="var(--ctn-color-text-primary)" stroke-width="3" stroke-linecap="round" sc-camel-transform="rotate({{ autonomyAngle }} 52 52)"></line>
               <circle cx="52" cy="52" r="7" fill="var(--ctn-color-surface-navy)" stroke="var(--ctn-color-text-secondary)" stroke-width="1.5"></circle>
             </svg>
             <div style="display:flex;gap:5px;align-items:baseline">
@@ -365,6 +373,27 @@ class Component extends DCLogic {
   fmtAge(s){ s = Math.max(0, s); if (s >= 86400) return Math.floor(s/86400)+'d '+String(Math.floor(s%86400/3600)).padStart(2,'0')+'h'; return [3600,60,1].map(u=>String(Math.floor(s/u)%60).padStart(2,'0')).join(':'); }
   ist(ts){ const d = new Date(ts); if (isNaN(d)) return '—'; return new Date(d.getTime()+330*60000).toISOString().slice(11,19); }
   istDate(ts){ const d = new Date(ts); if (isNaN(d)) return '—'; return new Date(d.getTime()+330*60000).toISOString().slice(0,16).replace('T',' '); }
+  /* ── MAT-F01: drill-down context ──────────────────────────────────────────
+     Overview itself shows the whole fleet, not one incident, so it has no
+     "current incident" of its own to display -- but every outgoing link to a
+     screen that DOES scope itself to one incident (Replay, Confidence,
+     Evidence, Compliance, Audit, Approvals -- confirmed by reading each file's
+     own `?id=` handling) must carry an id forward instead of silently
+     dropping the reader into that screen's hardcoded default. incLink() is a
+     thin, API-optional wrapper over api.js's own incidentLink() (falls back
+     to a plain query string if api.js failed to load, matching this file's
+     existing `if (!API)` defensiveness elsewhere). */
+  incLink(page, id){
+    const API = window.CITINEL_API;
+    return API ? API.incidentLink(page, id) : (id ? page + '?id=' + encodeURIComponent(id) : page);
+  }
+  navBar(){
+    return {
+      navReplay: this.incLink('Replay.dc.html'), navConfidence: this.incLink('Confidence.dc.html'),
+      navEvidence: this.incLink('Evidence.dc.html'), navApprovals: this.incLink('Approvals.dc.html'),
+      navCompliance: this.incLink('Compliance.dc.html'), navAudit: this.incLink('Audit.dc.html')
+    };
+  }
 
   /* ── live: the board drawn from records, policy, connectors and the chains ─── */
   liveDerived(){
@@ -489,14 +518,15 @@ class Component extends DCLogic {
       masterFg: breached ? 'var(--ctn-color-severity-critical-text)' : 'var(--ctn-color-clock)',
       masterDigits2: master ? (breached ? '+' : '') + this.fmtAge(Math.abs(remainS)) : '—',
       masterSub: master ? (breached ? 'six hours from detection ' + this.istDate(master.r.opened_ts) + ' IST · filing is late, not pending' : 'of 06:00:00 from detection ' + this.istDate(master.r.opened_ts) + ' IST') : 'no open incident carries a clock',
-      clocks: clocks.map(c => ({reg: 'CERT-In · 6h report', inc: c.r.incident_id, due: 'due ' + this.istDate(new Date(c.opened + 6*3600*1000).toISOString()) + ' IST', left: (c.rem < 0 ? '+' : '') + this.fmtAge(Math.abs(c.rem)), arc: this.arc(13,13,10, c.rem < 0 ? 1 : 1 - c.rem/(6*3600)), href: 'Compliance.dc.html?id=' + c.r.incident_id})),
+      ...this.navBar(),
+      clocks: clocks.map(c => ({reg: 'CERT-In · 6h report', inc: c.r.incident_id, due: 'due ' + this.istDate(new Date(c.opened + 6*3600*1000).toISOString()) + ' IST', left: (c.rem < 0 ? '+' : '') + this.fmtAge(Math.abs(c.rem)), arc: this.arc(13,13,10, c.rem < 0 ? 1 : 1 - c.rem/(6*3600)), href: this.incLink('Compliance.dc.html', c.r.incident_id)})),
       fleetCaption: 'trace: this role\'s ledger frames over the last 24 hours, by hour · flat trace: nothing recorded',
       fleetSummary: running + ' running · ' + degraded + ' degraded · ' + (d.agents.length - running - degraded) + ' idle · ' + runs + ' swarm run' + (runs===1?'':'s') + ' on the ledger',
       agents,
       shortcuts: [
-        {label:'ALERT QUEUE', href:'Queue.dc.html'},{label:'GLASS-BOX REPLAY', href:'Replay.dc.html?id=' + (master ? master.r.incident_id : 'INC-0417')},
-        {label:'THE GATE', href:'Approvals.dc.html'},{label:'REGULATORY CLOCKS', href:'Compliance.dc.html' + (master ? '?id=' + master.r.incident_id : '')},
-        {label:'AUDIT LEDGER', href:'Audit.dc.html'},{label:'SHIFT HANDOVER', href:'Handover.dc.html'},
+        {label:'ALERT QUEUE', href:'Queue.dc.html'},{label:'GLASS-BOX REPLAY', href: this.incLink('Replay.dc.html', master && master.r.incident_id)},
+        {label:'THE GATE', href: this.incLink('Approvals.dc.html', master && master.r.incident_id)},{label:'REGULATORY CLOCKS', href: this.incLink('Compliance.dc.html', master && master.r.incident_id)},
+        {label:'AUDIT LEDGER', href: this.incLink('Audit.dc.html', master && master.r.incident_id)},{label:'SHIFT HANDOVER', href:'Handover.dc.html'},
         {label:'BOARD COPY', href:'Executive.dc.html'},{label:'CONNECTORS', href:'Settings.dc.html'}
       ],
       lanes: [
@@ -543,6 +573,7 @@ class Component extends DCLogic {
     const muted = 'var(--ctn-color-text-muted)';
     return {
       orgNote: 'reading the board from citinel-web', utc: new Date(Date.now()).toISOString().slice(11,19), masterTitle: 'MASTER STATUTORY COUNTDOWN', masterDigits: '—', masterArc: '', masterTicks: [], masterLabel: 'READING', masterFg: muted, masterDigits2: '··', masterSub: 'records, policy, connectors and chains on their way',
+      ...this.navBar(),
       clocks: [], fleetCaption: 'reading the ledger', fleetSummary: 'reading…', agents: [], shortcuts: [], lanes: [], laneStats: [],
       dialTitle: 'AUTONOMY DIAL', autonomyIdx: '·', autonomyAngle: '0', autonomyDetents: [], detentScale: [], autonomyName: 'READING', autonomyDesc: '', mandateArc: '', mandateFg: muted, mandateLabel: '', mandateLeft: '', mandateNote: '',
       raising: false, raiseTitle: '', raiseReasons: [], cancelRaise: ()=>{}, reJustify: ()=>{}, reJustifyStyle: 'dashed', reJustifyBg: 'transparent', reJustifyLabel: '…', autonomyDown: ()=>{}, autonomyUp: ()=>{}, lowerLabel: '…', raiseLabel: '…', dialFooter: '',
@@ -593,24 +624,25 @@ class Component extends DCLogic {
       ['CONTAIN HIGH','the ceiling. critical needs a human at every detent.']
     ];
     return {
+      ...this.navBar(),
       orgNote: 'sahyadri district cooperative bank · pune dc',
       utc: new Date(s.now).toISOString().slice(11,19), eps: String(s.eps),
       masterTitle: 'MASTER STATUTORY COUNTDOWN · INC-0417',
       masterDigits: f(remainS), masterArc: this.arc(180,180,138, 1 - remainS/(6*3600)),
       masterHand: ((1 - remainS/(6*3600))*360).toFixed(2), masterTicks: ticks,
       clocks: [
-        {reg:'RBI · 2–6h advisory', inc:'INC-0417', due:'due 01:03 IST', left:f(remainS-3*3600), arc:this.arc(13,13,10, 1-(remainS-3*3600)/(6*3600)), href:'Compliance.dc.html'},
-        {reg:'NPCI · UPI fraud flag', inc:'INC-0417', due:'due 22:30 IST', left:f(42*60+(remainS%60)), arc:this.arc(13,13,10, 1-(42*60)/(6*3600)), href:'Compliance.dc.html'},
-        {reg:'RBI · 24h detailed report', inc:'INC-0846', due:'due 21:03 +1d', left:f(remainS+14*3600), arc:this.arc(13,13,10, 0.28), href:'Compliance.dc.html'},
-        {reg:'CERT-In · 6h report', inc:'INC-0417', due:'due 03:03 IST', left:f(remainS), arc:this.arc(13,13,10, 1-remainS/(6*3600)), href:'Compliance.dc.html'}
+        {reg:'RBI · 2–6h advisory', inc:'INC-0417', due:'due 01:03 IST', left:f(remainS-3*3600), arc:this.arc(13,13,10, 1-(remainS-3*3600)/(6*3600)), href:this.incLink('Compliance.dc.html', 'INC-0417')},
+        {reg:'NPCI · UPI fraud flag', inc:'INC-0417', due:'due 22:30 IST', left:f(42*60+(remainS%60)), arc:this.arc(13,13,10, 1-(42*60)/(6*3600)), href:this.incLink('Compliance.dc.html', 'INC-0417')},
+        {reg:'RBI · 24h detailed report', inc:'INC-0846', due:'due 21:03 +1d', left:f(remainS+14*3600), arc:this.arc(13,13,10, 0.28), href:this.incLink('Compliance.dc.html', 'INC-0846')},
+        {reg:'CERT-In · 6h report', inc:'INC-0417', due:'due 03:03 IST', left:f(remainS), arc:this.arc(13,13,10, 1-remainS/(6*3600)), href:this.incLink('Compliance.dc.html', 'INC-0417')}
       ],
       fleetCaption: 'trace amplitude is throughput this minute. flat trace: idle.',
       fleetSummary: running+' running · 1 degraded · 1 idle',
       agents,
       shortcuts: [
-        {label:'ALERT QUEUE', href:'Queue.dc.html'},{label:'GLASS-BOX REPLAY', href:'Replay.dc.html'},
-        {label:'THE GATE', href:'Approvals.dc.html'},{label:'REGULATORY CLOCKS', href:'Compliance.dc.html'},
-        {label:'AUDIT LEDGER', href:'Audit.dc.html'},{label:'SHIFT HANDOVER', href:'Handover.dc.html'},
+        {label:'ALERT QUEUE', href:'Queue.dc.html'},{label:'GLASS-BOX REPLAY', href: this.incLink('Replay.dc.html', 'INC-0417')},
+        {label:'THE GATE', href: this.incLink('Approvals.dc.html', 'INC-0417')},{label:'REGULATORY CLOCKS', href: this.incLink('Compliance.dc.html', 'INC-0417')},
+        {label:'AUDIT LEDGER', href: this.incLink('Audit.dc.html', 'INC-0417')},{label:'SHIFT HANDOVER', href:'Handover.dc.html'},
         {label:'BOARD COPY', href:'Executive.dc.html'},{label:'APP SHELL', href:'Shell.dc.html'}
       ],
       lanes: [

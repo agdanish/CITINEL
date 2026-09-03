@@ -3,6 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CITINEL · Approval card</title>
+<meta name="description" content="The response gate: proposed containment actions, their policy tier and blast radius, and the named-human approval that executes against simulated endpoints.">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<meta name="theme-color" content="#0B1F3A">
 <script src="vendor/resources.js"></script>
 <script src="./support.js"></script>
 <!-- Render-blocking, deliberately. The same sheets are declared again in the
@@ -56,16 +64,16 @@
 <div data-screen-label="Approval card" data-citinel-page="approvals" style="display:flex;flex-direction:column;height:100vh;min-width:1280px;background:var(--ctn-color-surface-shell)">
 
   <header style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;padding:7px 18px;min-height:52px;flex:none;border-bottom:1px solid var(--ctn-color-border-strong);background:var(--ctn-color-surface-panel);min-width:0">
-    <img src="assets/mark-white.png" alt="CITINEL · caught, cited, gated, actioned, closed" style="height:34px;width:90px;display:block;flex:none">
+    <a href="Overview.dc.html" aria-label="CITINEL — back to the overview" style="display:block;flex:none;line-height:0;text-decoration:none"><picture><source type="image/webp" srcset="assets/mark-white-254.webp"><img src="assets/mark-white-254.png" alt="CITINEL · caught, cited, gated, actioned, closed" width="254" height="96" style="height:34px;width:90px;display:block;flex:none"></picture></a>
     <nav style="display:flex;gap:2px;min-width:0;overflow-x:auto;scrollbar-width:thin;flex:1">
       <a href="Overview.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">OVERVIEW</a>
       <a href="Queue.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">QUEUE</a>
-      <a href="Replay.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">REPLAY</a>
-      <a href="Confidence.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">CONFIDENCE</a>
-      <a href="Evidence.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">EVIDENCE</a>
-      <a href="Approvals.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-primary);background:var(--ctn-color-surface-raised);border-radius:6px;white-space:nowrap">APPROVALS</a>
-      <a href="Compliance.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">COMPLIANCE</a>
-      <a href="Audit.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">AUDIT</a>
+      <a href="{{ navReplayHref }}" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">REPLAY</a>
+      <a href="{{ navConfidenceHref }}" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">CONFIDENCE</a>
+      <a href="{{ navEvidenceHref }}" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">EVIDENCE</a>
+      <a href="{{ navApprovalsHref }}" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-primary);background:var(--ctn-color-surface-raised);border-radius:6px;white-space:nowrap">APPROVALS</a>
+      <a href="{{ navComplianceHref }}" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">COMPLIANCE</a>
+      <a href="{{ navAuditHref }}" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">AUDIT</a>
       <a href="Corpus.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">CORPUS</a>
       <a href="Eval.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">EVAL</a>
       <a href="Policy.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">POLICY</a>
@@ -133,12 +141,12 @@
           </div>
           <div style="flex:1;min-height:0;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:4px 0;position:relative">
             <svg data-radial-svg viewBox="0 0 460 460" style="width:100%;max-width:min(100%, 460px);max-height:100%;height:auto;aspect-ratio:1;min-width:0;display:block;flex:0 1 auto;margin-inline:auto">
-              <circle cx="230" cy="230" r="{{ capR }}" fill="none" stroke="var(--ctn-color-border-strong)" stroke-width="2" stroke-dasharray="6 5"></circle>
-              <text x="230" y="{{ capLabelY }}" text-anchor="middle" font-family="var(--ctn-font-display)" font-size="9" letter-spacing="1.6" fill="var(--ctn-color-text-muted)">{{ capLabel }}</text>
+              <circle cx="230" cy="230" sc-camel-r="{{ capR }}" fill="none" stroke="var(--ctn-color-border-strong)" stroke-width="2" stroke-dasharray="6 5"></circle>
+              <text x="230" sc-camel-y="{{ capLabelY }}" text-anchor="middle" font-family="var(--ctn-font-display)" font-size="9" letter-spacing="1.6" fill="var(--ctn-color-text-muted)">{{ capLabel }}</text>
               <g>{{ ringShapes }}</g>
               <g>{{ nodeDots }}</g>
               <circle cx="230" cy="230" r="46" fill="var(--ctn-color-surface-panel)" stroke="var(--ctn-color-border-strong)" stroke-width="1.5"></circle>
-              <line x1="230" y1="230" x2="230" y2="{{ sweepTip }}" stroke="var(--ctn-color-text-primary)" stroke-width="1.5" transform="rotate({{ sweepAngle }} 230 230)" opacity="{{ sweepOpacity }}"></line>
+              <line x1="230" y1="230" x2="230" sc-camel-y2="{{ sweepTip }}" stroke="var(--ctn-color-text-primary)" stroke-width="1.5" sc-camel-transform="rotate({{ sweepAngle }} 230 230)" opacity="{{ sweepOpacity }}"></line>
             </svg>
       <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;gap:2px">
         <div style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.16em;color:var(--ctn-color-text-muted);text-align:center"></div>
@@ -198,6 +206,9 @@
             <div style="margin-top:7px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;min-width:0">
               <x-import component-from-global-scope="CITINELDesignSystem_fdfd66.CitationChip" locator="{{ act.decisionLocator }}" size="sm" hint-size="220px,22px"></x-import>
               <dc-import name="StandardRef" standard="{{ traceStandard }}" version="{{ traceVersion }}" locator="{{ traceRef }}" size="sm" hint-size="280px,24px"></dc-import>
+              <sc-if value="{{ act.lyzrReviewShown }}" hint-placeholder-val="{{ false }}">
+                <span title="{{ act.lyzrReviewTitle }}" style="font-family:var(--ctn-font-display);font-size:7.5px;letter-spacing:0.1em;color:var(--ctn-color-text-muted);border:1px {{ act.lyzrReviewDashed ? 'dashed' : 'solid' }} var(--ctn-color-border-strong);padding:3px 6px;border-radius:4px;flex:none;white-space:nowrap">LYZR · {{ act.lyzrReviewLabel }}</span>
+              </sc-if>
               <button onClick="{{ toggleTrace }}" style="font-family:var(--ctn-font-display);font-size:8.5px;letter-spacing:0.1em;padding:6px 10px;border:1px {{ traceStyle }} var(--ctn-color-border-strong);border-radius:6px;background:none;color:var(--ctn-color-text-primary);cursor:pointer;white-space:nowrap">{{ traceLabel }}</button>
             </div>
             <sc-if value="{{ traceOpen }}" hint-placeholder-val="{{ false }}">
@@ -260,7 +271,7 @@
         <div style="flex:none;display:flex;align-items:center;gap:12px">
           <svg width="76" height="76" viewBox="0 0 76 76" style="flex:none">
             <circle cx="38" cy="38" r="30" fill="none" stroke="var(--ctn-color-border-strong)" stroke-width="1.5"></circle>
-            <path d="{{ stateArc }}" fill="none" stroke="var(--ctn-color-state-cited)" stroke-width="{{ stateWeight }}"></path>
+            <path sc-camel-d="{{ stateArc }}" fill="none" stroke="var(--ctn-color-state-cited)" stroke-width="{{ stateWeight }}"></path>
             <g>{{ stateNodes }}</g>
           </svg>
           <div style="min-width:0">
@@ -274,7 +285,7 @@
             <button onClick="{{ toggleKey }}" style="display:flex;align-items:center;gap:11px;background:none;border:none;cursor:pointer;padding:0;flex:none">
               <svg width="54" height="56" viewBox="0 0 54 56">
                 <circle cx="27" cy="27" r="22" fill="var(--ctn-color-surface-raised)" stroke="var(--ctn-color-border-strong)" stroke-width="1.5"></circle>
-                <g transform="rotate({{ keyAngle }} 27 27)" style="transition:transform 0.4s cubic-bezier(0.3,1.5,0.5,1)">
+                <g sc-camel-transform="rotate({{ keyAngle }} 27 27)" style="transition:transform 0.4s cubic-bezier(0.3,1.5,0.5,1)">
                   <rect x="24.5" y="8" width="5" height="19" rx="2.5" fill="{{ keyColor }}"></rect>
                   <circle cx="27" cy="27" r="7" fill="var(--ctn-color-surface-navy)" stroke="{{ keyColor }}" stroke-width="2"></circle>
                 </g>
@@ -519,7 +530,14 @@ autonomous_allowed {
         this._q = null;
         const queue = this.buildQueue(rows, verdicts, chains, pol.data);
         let liveSel = queue.length ? queue[0].key : null;
-        if (this.incId) { const first = queue.find(q => q.inc === this.incId); if (first) liveSel = first.key; }
+        // MAT-F01: honour the incident actually named in the URL, and failing
+        // that, the same default (API.currentIncidentId()) every other screen
+        // opens to — never silently fall to whatever happens to be first in
+        // the summary. Only when neither has a proposal do we fall back to
+        // queue[0], so the card still shows something instead of going blank.
+        const wantId = this.incId || API.currentIncidentId();
+        const wanted = queue.find(q => q.inc === wantId);
+        if (wanted) liveSel = wanted.key;
         this.setState({live:true, rows, verdicts, chains, policy: pol.data, connectors: con.ok ? con.data : null, liveSel});
       });
     });
@@ -634,7 +652,13 @@ autonomous_allowed {
       const d = r.data; res.decision = d.decision; res.receipt = d.receipt; res.swytch = d.swytchcode || []; res.state = d.state;
       const st = d.receipt.status;
       res.phase = st === 'executed' ? 'firing' : st === 'awaiting_approval' ? 'held' : 'shadow';
-      this.setState(x => ({busy:false, note:'', fired:0, results: Object.assign({}, x.results, {[key]: res})}));
+      // a successful pass through the gate says so in the reader's own slot; silence read as "nothing happened"
+      const okNote = st === 'executed'
+        ? 'executed against the ' + (d.simulated ? 'simulated ' : '') + 'endpoint · receipt' + (d.receipt.rollback_token ? ' and rollback token' : '') + ' on the ledger'
+        : st === 'awaiting_approval'
+          ? 'held at the gate · awaiting a named approver · check frame on the ledger'
+          : 'shadow tier · proposal logged on the ledger · nothing executed';
+      this.setState(x => ({busy:false, note: okNote, fired:0, results: Object.assign({}, x.results, {[key]: res})}));
       if (st === 'executed') {
         const total = Math.max(1, p.assets_affected), steps = 14, step = Math.max(1, Math.ceil(total/steps));
         clearInterval(this.f); clearTimeout(this.fDone);
@@ -649,7 +673,7 @@ autonomous_allowed {
     const reason = window.prompt('Reason for the refusal (recorded on the ledger):', ''); if (!reason) return;
     this.setState({busy:true, note:'recording the refusal…'});
     API.deny({incident_id: item.inc, action_class: item.proposal.action_class, target: item.proposal.target, by, reason}).then(r => {
-      this.setState(x => ({busy:false, note: r.ok ? '' : 'deny failed: ' + (r.error||'unknown'), results: Object.assign({}, x.results, {[item.key]: {phase: r.ok ? 'denied' : (x.results[item.key]||{}).phase, at: Date.now(), by, reason}})}));
+      this.setState(x => ({busy:false, note: r.ok ? 'denial recorded on the ledger under ' + by : 'deny failed: ' + (r.error||'unknown'), results: Object.assign({}, x.results, {[item.key]: {phase: r.ok ? 'denied' : (x.results[item.key]||{}).phase, at: Date.now(), by, reason}})}));
       this.reload();
     });
   }
@@ -659,7 +683,7 @@ autonomous_allowed {
     const actor = window.prompt('Roll back with token ' + token + ' · your name or address (recorded on the ledger):', ''); if (!actor) return;
     this.setState({busy:true, note:'rolling back…'});
     API.rollback(token, {incident_id: item.inc, actor}).then(r => {
-      this.setState(x => ({busy:false, note: r.ok ? '' : 'rollback refused: ' + (r.error||'unknown'), results: Object.assign({}, x.results, {[item.key]: Object.assign({}, x.results[item.key]||{}, {phase: r.ok ? 'rolled' : (x.results[item.key]||{}).phase, rollback: r.ok ? r.data.receipt : null})})}));
+      this.setState(x => ({busy:false, note: r.ok ? 'rolled back · reversal receipt on the ledger' : 'rollback refused: ' + (r.error||'unknown'), results: Object.assign({}, x.results, {[item.key]: Object.assign({}, x.results[item.key]||{}, {phase: r.ok ? 'rolled' : (x.results[item.key]||{}).phase, rollback: r.ok ? r.data.receipt : null})})}));
       this.reload();
     });
   }
@@ -775,7 +799,7 @@ autonomous_allowed {
         const ph = this.livePhase(q), on = q.key === item.key, c = q.clause;
         const waited = Math.floor((s.now - q.draftedAt)/1000);
         return {
-          inc: q.inc, name: q.proposal.action_class + ' → ' + q.proposal.target, pick: ()=>this.setState({liveSel:q.key, armed:false, trace:false}),
+          inc: q.inc, name: q.proposal.action_class + ' → ' + q.proposal.target, pick: ()=>this.setState({liveSel:q.key, armed:false, trace:false, note:''}),
           classTag: c ? c.tier.toUpperCase() + (c.approval === 'always' ? ' · HUMAN' : c.reversible ? ' · REVERSIBLE' : '') : 'NO CLAUSE',
           borderStyle: c && c.reversible ? 'dashed' : 'solid',
           glyph: this.qGlyph(ph==='done' ? 'actioned' : ph==='denied' ? 'denied' : ph==='rolled' ? 'closed' : 'gated'),
@@ -796,6 +820,11 @@ autonomous_allowed {
         rego: clauseText,
         decisionLocator: decision ? 'ledger · policy_check · ' + item.inc : 'no gate decision on the ledger yet',
         reversal: clause ? (clause.reversible ? 'reversible: an executed action carries a rollback token, honoured for the life of the service process; the rollback is its own ledger frame' : 'irreversible: no rollback token is possible; the asset cap and the tier are the safeguards') : 'undefined class: nothing to reverse because nothing can execute',
+        lyzrReviewShown: !!(res.lyzr_response_review && res.lyzr_response_review.status),
+        lyzrReviewLabel: (() => { const lr = res.lyzr_response_review; if (!lr) return '';
+          return lr.status === 'ok' ? String(lr.assessment || 'unparsed').replace(/_/g, '-').toUpperCase() : String(lr.status).replace(/_/g, ' ').toUpperCase(); })(),
+        lyzrReviewDashed: !!(res.lyzr_response_review && ['over_scoped', 'under_scoped'].indexOf(res.lyzr_response_review.assessment) >= 0),
+        lyzrReviewTitle: (res.lyzr_response_review && res.lyzr_response_review.rationale) || 'independent proportionality opinion, asked after the gate above already decided · never gates',
         rings
       },
       classTag, classBorderStyle: clause && clause.reversible ? 'dashed' : 'solid',
@@ -1053,7 +1082,10 @@ autonomous_allowed {
       tokenExpiry: this.fmt(tokenLeft),
       tokenNote: 'issued at execution because the policy clause marked this action reversible. one use; expiry is enforced by the ledger, not the UI.',
       rollback: ()=>this.setState(x=>({rolled:{...x.rolled, [act.id]:true}})),
-      replayHref: 'Replay.dc.html?at=' + act.at, ledgerHref: 'Audit.dc.html', traceStandard: 'OPA', traceVersion: 'rego v1'
+      // MAT-F01: this card's own action can belong to a different incident than
+      // whatever id is in the URL (the authored queue mixes INC-0417/0845/0846) —
+      // the "open elsewhere" links must follow THIS row's incident, not the page's.
+      replayHref: 'Replay.dc.html?id=' + act.inc + '&at=' + act.at, ledgerHref: 'Audit.dc.html?id=' + act.inc, traceStandard: 'OPA', traceVersion: 'rego v1'
     };
   }
 
@@ -1069,12 +1101,27 @@ autonomous_allowed {
       cisoBg: ciso ? 'var(--ctn-color-surface-navy)' : 'transparent',
       cisoFg: ciso ? 'var(--ctn-color-text-on-navy)' : 'var(--ctn-color-text-muted)' };
   }
+  /* MAT-F01: the top nav bar's own outgoing links must carry the incident this
+     page is currently looking at forward, not reset the next screen to the
+     default incident. Built through API.incidentLink() so it reads the same
+     ?id= this page itself was opened with (or falls back to plain page names
+     if api.js somehow didn't load, matching this file's existing !API guards). */
+  navVals(){
+    const API = window.CITINEL_API;
+    const link = page => API ? API.incidentLink(page) : page;
+    return {
+      navReplayHref: link('Replay.dc.html'), navConfidenceHref: link('Confidence.dc.html'),
+      navEvidenceHref: link('Evidence.dc.html'), navApprovalsHref: link('Approvals.dc.html'),
+      navComplianceHref: link('Compliance.dc.html'), navAuditHref: link('Audit.dc.html')
+    };
+  }
   renderVals(){
     const s = this.state;
-    if (s.live === null) return Object.assign({}, this.loadingVals(), this.roleVals());
-    if (s.live === true) { const b = this.liveVals(); const ciso = this.state.role === 'ciso'; return Object.assign({}, b, this.roleVals(), ciso ? {nodeDots: [], approveLabel: b.approveDisabled ? b.approveLabel : (b.approveLabel === 'APPROVE AND FIRE' ? 'APPROVE AS SIGN-OFF AUTHORITY' : b.approveLabel)} : {}); }
+    const nav = this.navVals();
+    if (s.live === null) return Object.assign({}, this.loadingVals(), this.roleVals(), nav);
+    if (s.live === true) { const b = this.liveVals(); const ciso = this.state.role === 'ciso'; return Object.assign({}, b, this.roleVals(), nav, ciso ? {nodeDots: [], approveLabel: b.approveDisabled ? b.approveLabel : (b.approveLabel === 'APPROVE AND FIRE' ? 'APPROVE AS SIGN-OFF AUTHORITY' : b.approveLabel)} : {}); }
     const b = this.baseVals();
-    return Object.assign({}, b, this.roleVals(), this.traceVals(), this.intentVals(), this.depthVals(b), this.stateVals(b));
+    return Object.assign({}, b, this.roleVals(), nav, this.traceVals(), this.intentVals(), this.depthVals(b), this.stateVals(b));
   }
 
   /* ── authored fallback helpers (unchanged narrative) ─────────────────────── */

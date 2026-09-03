@@ -945,13 +945,19 @@ def swarm_run(
                   f"through the swarm, live...[/dim]")
     result = pipeline.run(inc)
     from citinel.agents.store import annotate_result, save_result
-    from citinel.connectors.lyzr_agents import triage_second_opinion
+    from citinel.connectors.lyzr_agents import triage_second_opinion, verdict_audit
     saved = save_result(result, incidents_dir)
     opinion = triage_second_opinion(inc, result.as_dict(), ledger)
     annotate_result(incident_id, incidents_dir, "lyzr_triage", opinion)
     if opinion.get("status") == "ok":
         console.print(f"[dim]lyzr triage second opinion: lane={opinion.get('lane')} "
                       f"confidence={opinion.get('confidence')} agrees={opinion.get('agrees_with_router')}[/dim]")
+    verdict_dict = result.as_dict().get("verdict") or {}
+    audit = verdict_audit(incident_id, verdict_dict.get("claims") or [], ledger)
+    annotate_result(incident_id, incidents_dir, "lyzr_verdict_audit", audit)
+    if audit.get("status") == "ok":
+        console.print(f"[dim]lyzr verdict audit: {audit.get('agree_count')} agree, "
+                      f"{audit.get('disagree_count')} disagree of {audit.get('claims_reviewed')} claims[/dim]")
     console.print(f"[dim]result saved to {saved} -- the console serves it at "
                   f"/api/incidents/{incident_id}/verdict[/dim]")
 

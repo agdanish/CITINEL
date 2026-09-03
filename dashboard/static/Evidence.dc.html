@@ -3,6 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CITINEL · Evidence viewer</title>
+<meta name="description" content="Chain-of-custody view of the raw evidence behind a verdict: locators, hashes, quarantined third-party text and what was never read as an instruction.">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<meta name="theme-color" content="#0B1F3A">
 <script src="vendor/resources.js"></script>
 <script src="./support.js"></script>
 <!-- Render-blocking, deliberately. The same sheets are declared again in the
@@ -55,16 +63,16 @@
 <div data-screen-label="Evidence viewer" data-citinel-page="evidence" style="display:flex;flex-direction:column;height:100vh;min-width:1280px;background:var(--ctn-color-surface-shell)">
 
   <header style="display:flex;align-items:center;gap:18px;padding:0 18px;height:52px;flex:none;border-bottom:1px solid var(--ctn-color-border-strong);background:var(--ctn-color-surface-panel);min-width:0">
-    <img src="assets/mark-white.png" alt="CITINEL · caught, cited, gated, actioned, closed" style="height:34px;width:90px;display:block;flex:none">
+    <a href="Overview.dc.html" aria-label="CITINEL — back to the overview" style="display:block;flex:none;line-height:0;text-decoration:none"><picture><source type="image/webp" srcset="assets/mark-white-254.webp"><img src="assets/mark-white-254.png" alt="CITINEL · caught, cited, gated, actioned, closed" width="254" height="96" style="height:34px;width:90px;display:block;flex:none"></picture></a>
     <nav style="display:flex;gap:2px;min-width:0;overflow-x:auto;scrollbar-width:thin;flex:1">
       <a href="Overview.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">OVERVIEW</a>
       <a href="Queue.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">QUEUE</a>
-      <a href="Replay.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">REPLAY</a>
-      <a href="Confidence.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">CONFIDENCE</a>
-      <a href="Evidence.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-primary);background:var(--ctn-color-surface-raised);border-radius:6px;white-space:nowrap">EVIDENCE</a>
-      <a href="Approvals.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">APPROVALS</a>
-      <a href="Compliance.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">COMPLIANCE</a>
-      <a href="Audit.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">AUDIT</a>
+      <a href="{{ navReplayHref }}" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">REPLAY</a>
+      <a href="{{ navConfidenceHref }}" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">CONFIDENCE</a>
+      <a href="{{ navEvidenceHref }}" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-primary);background:var(--ctn-color-surface-raised);border-radius:6px;white-space:nowrap">EVIDENCE</a>
+      <a href="{{ navApprovalsHref }}" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">APPROVALS</a>
+      <a href="{{ navComplianceHref }}" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">COMPLIANCE</a>
+      <a href="{{ navAuditHref }}" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">AUDIT</a>
       <a href="Corpus.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">CORPUS</a>
       <a href="Eval.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">EVAL</a>
       <a href="Policy.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">POLICY</a>
@@ -205,8 +213,8 @@
         <div style="display:flex;align-items:center;gap:16px;margin-top:12px;min-width:0">
           <svg width="104" height="104" viewBox="0 0 104 104" style="flex:none">
             <circle cx="52" cy="52" r="40" fill="none" stroke="var(--ctn-color-border-strong)" stroke-width="1.5"></circle>
-            <path d="{{ verifyArc }}" fill="none" stroke="{{ verifyArcColor }}" stroke-width="5"></path>
-            <line x1="52" y1="52" x2="52" y2="14" stroke="var(--ctn-color-text-primary)" stroke-width="2" transform="rotate({{ verifyHand }} 52 52)" style="transition:transform 0.12s linear"></line>
+            <path sc-camel-d="{{ verifyArc }}" fill="none" stroke="{{ verifyArcColor }}" stroke-width="5"></path>
+            <line x1="52" y1="52" x2="52" y2="14" stroke="var(--ctn-color-text-primary)" stroke-width="2" sc-camel-transform="rotate({{ verifyHand }} 52 52)" style="transition:transform 0.12s linear"></line>
             <circle cx="52" cy="52" r="5" fill="var(--ctn-color-text-primary)"></circle>
             {{ verifyBytesLabel }}
           </svg>
@@ -514,7 +522,7 @@ class Component extends DCLogic {
       verifyCta: 'RECOMPUTE DIGEST',
       runVerify: ()=>this.digestFor(idx),
       exportNote: 'no export is built. the record is served whole at /api/incidents/' + this.incId + '; this exhibit is findings[' + idx + '].',
-      ledgerHref: 'Audit.dc.html?id=' + this.incId + (le ? '&q=' + le.seq : '')
+      ledgerHref: this.navHref('Audit.dc.html') + (le ? '&q=' + le.seq : '')
     };
   }
   liveDepthVals(b){
@@ -547,7 +555,7 @@ class Component extends DCLogic {
       custodyLabelTitle: 'CUSTODY LABEL', labelRows: [], custody: [],
       stripTitle: 'EXHIBITS ATTACHED TO ' + this.incId, mixNote: 'reading…', exhibits: [],
       verifyArc: '', verifyArcColor: mutedFg, verifyHand: '0', verifyBytes: '', verifyState: 'WAITING FOR THE RECORD', verifyFg: mutedFg, verifyNote: '', verifyCta: 'RECOMPUTE DIGEST', runVerify: ()=>{},
-      exportNote: '', ledgerHref: 'Audit.dc.html?id=' + this.incId, admissibility: [], admissibilityNote: ''
+      exportNote: '', ledgerHref: this.navHref('Audit.dc.html'), admissibility: [], admissibilityNote: ''
     };
   }
 
@@ -591,7 +599,7 @@ class Component extends DCLogic {
     ];
     return {
       openedFrom: 'opened from a citation chip · investigation replay',
-      returnHref: 'Replay.dc.html?at='+ev.at,
+      returnHref: this.navHref('Replay.dc.html')+'&at='+ev.at,
       returnLabel: 'REPLAY AT '+(external ? ev.extFetched.slice(11,19) : ev.ts.slice(11,19)),
       incId: 'INC-0417',
       isInternal: !external, isExternal: external,
@@ -654,7 +662,7 @@ class Component extends DCLogic {
       exportNote: external
         ? 'export carries the pinned snapshot, the request line, and the fetch timestamp. The regulator sees exactly the bytes the agent saw, never a live re-fetch.'
         : 'export reproduces this exhibit with its hash chain and the two neighbouring ledger entries. no field is reformatted for the regulator.',
-      ledgerHref: 'Audit.dc.html'
+      ledgerHref: this.navHref('Audit.dc.html')
     };
   }
   ocsfVals(){
@@ -695,6 +703,21 @@ class Component extends DCLogic {
   }
 
   /* ── shared ──────────────────────────────────────────────────────────────── */
+  /* ── MAT-F01: drill-down must carry this incident's id forward, never reset ── */
+  navHref(page){
+    try { return window.CITINEL_API.incidentLink(page, this.incId); }
+    catch(e) { return page + '?id=' + encodeURIComponent(this.incId); }
+  }
+  navVals(){
+    return {
+      navReplayHref: this.navHref('Replay.dc.html'),
+      navConfidenceHref: this.navHref('Confidence.dc.html'),
+      navEvidenceHref: this.navHref('Evidence.dc.html'),
+      navApprovalsHref: this.navHref('Approvals.dc.html'),
+      navComplianceHref: this.navHref('Compliance.dc.html'),
+      navAuditHref: this.navHref('Audit.dc.html')
+    };
+  }
   roleInit(){ try{ return (window.CitinelRole && window.CitinelRole.get()) || 'analyst'; }catch(e){ return 'analyst'; } }
   roleMount(){ if(window.CitinelRole) this.unsubRole = window.CitinelRole.subscribe(r=>{ if(r !== this.state.role) this.setState({role:r}); }); }
   roleVals(){
@@ -710,10 +733,11 @@ class Component extends DCLogic {
   svgLabels(b){ return {verifyBytesLabel: this.svgText(52, 76, b.verifyBytes, {mono:true, tab:true})}; }
   renderVals(){
     const s = this.state;
-    if (s.live === true) { const b = this.liveVals(); return Object.assign({}, b, this.roleVals(), this.liveDepthVals(b), this.svgLabels(b)); }
-    if (s.live === null) { const b = this.loadingVals(); return Object.assign({}, b, this.roleVals(), this.svgLabels(b)); }
+    const nav = this.navVals();
+    if (s.live === true) { const b = this.liveVals(); return Object.assign({}, b, this.roleVals(), this.liveDepthVals(b), this.svgLabels(b), nav); }
+    if (s.live === null) { const b = this.loadingVals(); return Object.assign({}, b, this.roleVals(), this.svgLabels(b), nav); }
     const b = this.baseVals();
-    return Object.assign({}, b, this.roleVals(), this.ocsfVals(), this.depthVals(b), this.svgLabels(b));
+    return Object.assign({}, b, this.roleVals(), this.ocsfVals(), this.depthVals(b), this.svgLabels(b), nav);
   }
   svgText(x,y,str,opts){
     const o = opts || {};

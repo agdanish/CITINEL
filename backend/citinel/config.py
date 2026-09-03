@@ -142,6 +142,24 @@ class Settings(BaseSettings):
     # (non-identity-linked) key does not need it; sent as a header only when set.
     anthropic_workspace_id: str | None = Field(default=None)
     tavily_api_key: str | None = Field(default=None)
+
+    # --- Gemini (Google AI Studio) ------------------------------------------
+    # One wide-lens sweep per incident: the swarm examines the first
+    # MAX_EVIDENCE_FINDINGS findings, Gemini's long context reads them ALL, so
+    # the part no model looked at stops being invisible. Unset = the seam
+    # reports not_configured and nothing is ever invented in its place.
+    #: Where the audit ledger is written and read. None = the resolved
+    #: incidents directory's ledger.jsonl, which is what every local run, test
+    #: and the CLI use. Render's web service points this at a persistent disk:
+    #: the container filesystem is ephemeral, so without it every sign-off and
+    #: gate decision written during a demo is lost on the next deploy.
+    ledger_path: Path | None = Field(default=None)
+
+    gemini_api_key: str | None = Field(default=None)
+    #: Free tier is Flash-only since May 2026 (Pro moved behind billing).
+    #: flash-lite carries the highest free rate limits, which is what a
+    #: single 2,000+ finding call wants.
+    gemini_model: str = Field(default="gemini-3.1-flash-lite")
     virustotal_api_key: str | None = Field(default=None)
     abuseipdb_api_key: str | None = Field(default=None)
 
@@ -171,6 +189,12 @@ class Settings(BaseSettings):
     lyzr_triage_agent_id: str | None = Field(default=None)
     lyzr_review_agent_id: str | None = Field(default=None)
     lyzr_handover_agent_id: str | None = Field(default=None)
+    # Second wave (agents/lyzr_agents.py): an independent verdict/citation
+    # auditor, a response-action risk reviewer, and a corpus coverage
+    # advisor. Same not_configured-until-set rule as the three above.
+    lyzr_verdict_agent_id: str | None = Field(default=None)
+    lyzr_response_agent_id: str | None = Field(default=None)
+    lyzr_corpus_agent_id: str | None = Field(default=None)
 
     @property
     def has_swarm_credentials(self) -> bool:
