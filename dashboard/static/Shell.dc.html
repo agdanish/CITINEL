@@ -345,9 +345,28 @@ class Component extends DCLogic {
       analystFg: !ciso ? 'var(--ctn-color-text-on-navy)' : 'var(--ctn-color-text-muted)',
       cisoBg: ciso ? 'var(--ctn-color-surface-navy)' : 'transparent',
       cisoFg: ciso ? 'var(--ctn-color-text-on-navy)' : 'var(--ctn-color-text-muted)',
-      clockLabel: 'CERT-IN · INC-0417', clockDigits: f(remainS),
-      clockArc: this.arc(17,17,14, 1 - remainS/(6*3600)),
-      clockHand: ((1 - remainS/(6*3600))*360).toFixed(1),
+      // The clock names the incident it is actually measuring. It used to read
+      // INC-0417 always while the digits ran an authored countdown, so with any
+      // other incident set the label lied. Live, it measures the nearest-deadline
+      // open incident (or, if all are closed, the nearest by opened_ts) and names
+      // that one; a breach shows days-and-hours, since the HH:MM:SS formatter wraps
+      // past six hours. Authored countdown only when the service is not read.
+      ...(() => {
+        const pool = (incs || []).map(i => { const o = Date.parse(i.opened_ts);
+            return {id:i.incident_id, closed:/^closed/.test(String(i.state)), rem: isFinite(o) ? Math.round((o + 6*3600*1000 - s.now)/1000) : null}; })
+          .filter(x => x.rem !== null);
+        const openPool = pool.filter(x => !x.closed);
+        const pick = (openPool.length ? openPool : pool).sort((a,b) => a.rem - b.rem)[0];
+        const on = s.live === true && pick;
+        const id = on ? pick.id : 'INC-0417', rem = on ? pick.rem : remainS, brk = on ? rem < 0 : false;
+        const fB = x => { const a = Math.abs(x); if (a < 6*3600) return f(a);
+          const h = Math.floor(a/3600); return h >= 48 ? Math.floor(h/24)+'d '+String(h%24).padStart(2,'0')+'h' : String(h)+'h '+String(Math.floor(a/60)%60).padStart(2,'0')+'m'; };
+        const frac = brk ? 1 : Math.max(0, Math.min(1, 1 - rem/(6*3600)));
+        return {
+          clockLabel: 'CERT-IN · ' + id, clockDigits: (brk ? '+' : '') + fB(rem),
+          clockArc: this.arc(17,17,14, frac), clockHand: (frac*360).toFixed(1),
+        };
+      })(),
       navGroups: groups,
       depthTag: ciso ? 'CISO DEPTH' : 'ANALYST DEPTH',
       wellEyebrow: ciso ? 'POSITION AT A GLANCE' : 'WHAT NEEDS A HUMAN RIGHT NOW',

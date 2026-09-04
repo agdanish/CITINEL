@@ -95,7 +95,13 @@ def dispatch_signed(incident, signed_by: str, sender=None) -> N8nDispatch:
     try:
         if sender is None:
             import httpx
-            with httpx.Client(timeout=15) as c:
+            # 8s, not 15: the sign-off frame is already on the ledger before this
+            # call, so n8n must never be able to hold the sign-off response open long
+            # enough for the browser to abort it and report "could not reach the
+            # service" over a sign-off that in fact succeeded. A healthy n8n answers
+            # in well under a second; a wrong webhook 404s at once; only a hung
+            # instance reaches this ceiling, and 8s is long enough to tell them apart.
+            with httpx.Client(timeout=8) as c:
                 r = c.post(url, json=body)
                 status = r.status_code
                 # A body that is not JSON must not cost us the status code: the

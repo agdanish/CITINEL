@@ -717,7 +717,16 @@ level: medium`,
     if(m === 'firstrun') return {
       benchEmpty:true, pending:[], pendingTabs:[], pendingCount:'00', corpus:[], noCorpus:true, corpusTotal:0, corpusEmptyNote:'Nothing in the collection yet.',
       corpusNote:'0 accessioned on this install',
-      corpusTally:[{k:'sigma rules',v:'3,302'},{k:'playbooks',v:'44'},{k:'from our own incidents',v:'0'},{k:'att&ck techniques',v:'29 techniques observed'}],
+      // The three corpus figures come from /api/corpus when this page has read it,
+      // so they move with the deployment (0 sigma rules on a host that ships none,
+      // the real fired-technique count) instead of the source-file constants. The
+      // authored numbers stay as the fallback for a host the endpoint did not answer.
+      corpusTally:[
+        {k:'sigma rules', v: (s.corpusData && s.corpusData.rules_total) ? this.fmtN(s.corpusData.rules_total) : '3,302'},
+        {k:'playbooks', v:'44'},
+        {k:'from our own incidents', v:'0'},
+        {k:'att&ck techniques', v: (s.corpusData && s.corpusData.techniques_observed ? this.fmtN(s.corpusData.techniques_observed.length) : '29') + ' techniques observed'}
+      ],
       emptyTitle:'NOTHING COLLECTED YET · THE FLYWHEEL HAS NOT TURNED',
       emptyBody:'The bench is empty because no incident has closed on this install. The 3,302 upstream Sigma rules and 44 shipped playbooks are in the collection, but none came from here. The "from our own incidents" count stays at zero until an incident produces something.',
       emptyCaveat:'That count is the honest measure of whether this install is learning. Treat it as the number to watch over the first quarter, not the 3,302.'
