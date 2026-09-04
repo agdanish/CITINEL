@@ -50,3 +50,4 @@ backend/uv.lock
 .swytchcode/**/methods.json
 .swytchcode/**/wrekenfile.yaml
 .swytchcode/tooling.json.lock
+.swytchcode/**/*.lock
