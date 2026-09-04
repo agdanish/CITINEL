@@ -45,4 +45,11 @@ EXPOSE 8000
 # Idempotent -- once the file exists, later restarts keep everything appended
 # since. Fails open: if the copy cannot happen the service still starts, and
 # the ledger is simply created on first append.
-CMD ["sh", "-c", "if [ -n \"$CITINEL_LEDGER_PATH\" ] && [ ! -f \"$CITINEL_LEDGER_PATH\" ]; then mkdir -p \"$(dirname \"$CITINEL_LEDGER_PATH\")\" && cp /app/data/seed/ledger.jsonl \"$CITINEL_LEDGER_PATH\" 2>/dev/null || true; fi; uvicorn citinel.web.app:app --host 0.0.0.0 --port ${PORT:-8000}"]
+# First boot on a fresh disk only. Two things have to survive a redeploy that
+# the container filesystem cannot keep: the audit ledger, and everything a run
+# PRODUCES (swarm results, gathered context, Gemini sweeps, handover notes).
+# Both are seeded from what ships in the image so the console opens with the
+# corpus's own history rather than an empty chain and no verdicts, then every
+# later restart keeps whatever has been appended since. Fails open: if a copy
+# cannot happen the service still starts.
+CMD ["sh", "-c", "if [ -n \"$CITINEL_LEDGER_PATH\" ] && [ ! -f \"$CITINEL_LEDGER_PATH\" ]; then mkdir -p \"$(dirname \"$CITINEL_LEDGER_PATH\")\" && cp /app/data/seed/ledger.jsonl \"$CITINEL_LEDGER_PATH\" 2>/dev/null || true; fi; if [ -n \"$CITINEL_ARTIFACTS_DIR\" ] && [ ! -d \"$CITINEL_ARTIFACTS_DIR/swarm\" ]; then mkdir -p \"$CITINEL_ARTIFACTS_DIR\" && cp -R /app/data/seed/swarm /app/data/seed/context \"$CITINEL_ARTIFACTS_DIR/\" 2>/dev/null || true; fi; uvicorn citinel.web.app:app --host 0.0.0.0 --port ${PORT:-8000}"]

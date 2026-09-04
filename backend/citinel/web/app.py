@@ -131,6 +131,18 @@ def _ledger_path() -> Path:
     return settings.ledger_path or (INCIDENTS_DIR / "ledger.jsonl")
 
 
+def _artifacts_dir() -> Path:
+    """Where runtime artifacts live: swarm results, context, sweeps, handover
+    notes, the corpus advisory.
+
+    Separate from the corpus. incidents.jsonl ships baked into the image and
+    is read-only; everything a run PRODUCES has to survive a redeploy, and on
+    Render the container filesystem does not. Unset means the incidents
+    directory, which is exactly today's behaviour everywhere else.
+    """
+    return settings.artifacts_dir or INCIDENTS_DIR
+
+
 def _ledger() -> AuditLedger:
     return AuditLedger(_ledger_path(), sink=LyzrLedgerMirror())
 
@@ -283,8 +295,8 @@ def data_source() -> dict:
         "incidents_file_present": incidents_file.exists(),
         "ledger_file_present": ledger_file.exists(),
         "incident_count": len(load_incidents(incidents_file)),
-        "swarm_results": sorted(summaries(INCIDENTS_DIR).keys()),
-        "context_gathered": sorted(p.stem for p in (INCIDENTS_DIR / "context").glob("*.json")) if (INCIDENTS_DIR / "context").is_dir() else [],
+        "swarm_results": sorted(summaries(_artifacts_dir()).keys()),
+        "context_gathered": sorted(p.stem for p in (_artifacts_dir() / "context").glob("*.json")) if (_artifacts_dir() / "context").is_dir() else [],
         "swarm_credentials": settings.has_swarm_credentials,
         "ui_swarm_enabled": settings.ui_swarm_enabled,
         "demo_capture": {
@@ -303,7 +315,7 @@ def list_incidents(summary: bool = False) -> list[dict]:
     """Every incident, with its state derived from the ledger and the swarm's
     summary attached. `summary=true` drops the findings (INC-0417 alone carries
     2,487 with their raw log lines, ~4 MB) for screens that only need the row."""
-    chains, swarm = _chains(), summaries(INCIDENTS_DIR)
+    chains, swarm = _chains(), summaries(_artifacts_dir())
     out = []
     for inc in _incidents():
         d = _overlay(inc.as_dict(), chains.get(inc.incident_id, []), swarm.get(inc.incident_id))
@@ -330,7 +342,7 @@ def get_incident(
     model. See policy/roles.py for the full reasoning.
     """
     inc = _incident(incident_id)
-    chains, swarm = _chains(), summaries(INCIDENTS_DIR)
+    chains, swarm = _chains(), summaries(_artifacts_dir())
     d = _overlay(inc.as_dict(), chains.get(incident_id, []), swarm.get(incident_id))
     role = Role.parse(x_citinel_role)
     return project_incident(d, role, expand=expand).as_dict()
@@ -352,11 +364,11 @@ def get_verdict(incident_id: str) -> dict:
     has been saved -- the deterministic findings stand alone until then, and
     the console must say so rather than draw a verdict that does not exist."""
     _incident(incident_id)
-    d = load_result(incident_id, INCIDENTS_DIR)
+    d = load_result(incident_id, _artifacts_dir())
     if d is None:
         raise HTTPException(404, f"no persisted swarm result for {incident_id}; "
                                  f"POST /api/incidents/{incident_id}/swarm to run it")
-    d["runs"] = load_runs(incident_id, INCIDENTS_DIR)
+    d["runs"] = load_runs(incident_id, _artifacts_dir())
     return d
 
 
@@ -505,7 +517,7 @@ def get_corpus() -> dict:
 
 def _corpus_advisory_path() -> Path:
     """Deployment-wide, not per-incident -- there is one corpus, not one per case."""
-    return INCIDENTS_DIR / "corpus_advisory.json"
+    return _artifacts_dir() / "corpus_advisory.json"
 
 
 @app.get("/api/corpus/review")
@@ -720,16 +732,16 @@ def _swarm_worker(incident_id: str, inc) -> None:
             raise RuntimeError("no Anthropic credentials on this deployment; "
                                "the deterministic findings stand alone")
         result = pipeline.run(inc)
-        save_result(result, INCIDENTS_DIR)
+        save_result(result, _artifacts_dir())
         # an independent second opinion on the lane, from a separate Lyzr agent,
         # recorded beside the Router's decision (not_configured when no id is set)
         opinion = triage_second_opinion(inc, result.as_dict(), _ledger())
-        annotate_result(incident_id, INCIDENTS_DIR, "lyzr_triage", opinion)
+        annotate_result(incident_id, _artifacts_dir(), "lyzr_triage", opinion)
         # a second, independent opinion on citation support, beside the
         # pipeline's own semantic-support estimate (not_configured when unset)
         verdict_dict = result.as_dict().get("verdict") or {}
         audit = verdict_audit(incident_id, verdict_dict.get("claims") or [], _ledger())
-        annotate_result(incident_id, INCIDENTS_DIR, "lyzr_verdict_audit", audit)
+        annotate_result(incident_id, _artifacts_dir(), "lyzr_verdict_audit", audit)
         run.update(mode=result.mode.value, banner=result.banner(),
                    summary=summary_of(result.as_dict()))
     except Exception as e:  # recorded, never raised into a thread
@@ -743,7 +755,7 @@ def _swarm_status(incident_id: str) -> dict[str, Any]:
     base = {"incident_id": incident_id, "running": False, "started_at": None,
             "finished_at": None, "mode": None, "banner": None, "error": None, "summary": None}
     base.update(_SWARM_RUNS.get(incident_id, {}))
-    base["has_result"] = load_result(incident_id, INCIDENTS_DIR) is not None
+    base["has_result"] = load_result(incident_id, _artifacts_dir()) is not None
     return base
 
 
@@ -791,7 +803,7 @@ def get_context(incident_id: str) -> dict:
     """Public context gathered for this record's verdict: per technique and
     per rule, the query, the URLs, the fetch time. 404 until gathered."""
     _incident(incident_id)
-    d = load_context(incident_id, INCIDENTS_DIR)
+    d = load_context(incident_id, _artifacts_dir())
     if d is None:
         raise HTTPException(404, f"no public context gathered for {incident_id}; "
                                  f"POST /api/incidents/{incident_id}/context to gather it")
@@ -809,9 +821,9 @@ def gather_public_context(incident_id: str, body: dict | None = None) -> dict:
         raise HTTPException(503, "no Tavily key configured on this deployment")
     if not (body or {}).get("confirm"):
         raise HTTPException(400, 'each query is a Tavily credit; send {"confirm": true} to gather')
-    verdict = load_result(incident_id, INCIDENTS_DIR)
+    verdict = load_result(incident_id, _artifacts_dir())
     return gather_context(inc, verdict, settings.data_dir / "cache" / "enrichment",
-                          INCIDENTS_DIR, connector=_tavily())
+                          _artifacts_dir(), connector=_tavily())
 
 
 @app.get("/api/incidents/{incident_id}/sweep")
@@ -820,7 +832,7 @@ def get_sweep(incident_id: str) -> dict:
     found in the findings the investigation's evidence window never reached.
     404 until swept. Context, never evidence."""
     _incident(incident_id)
-    d = load_sweep(INCIDENTS_DIR, incident_id)
+    d = load_sweep(_artifacts_dir(), incident_id)
     if d is None:
         raise HTTPException(404, f"no wide-lens sweep has been run for {incident_id} yet")
     return d
@@ -838,14 +850,14 @@ def run_wide_sweep(incident_id: str, body: dict | None = None) -> dict:
         raise HTTPException(503, "no Gemini key configured on this deployment")
     if not (body or {}).get("confirm"):
         raise HTTPException(400, 'a sweep is one Gemini call; send {"confirm": true} to run it')
-    result = load_result(incident_id, INCIDENTS_DIR) or {}
+    result = load_result(incident_id, _artifacts_dir()) or {}
     examined = int(result.get("findings_examined") or MAX_EVIDENCE_FINDINGS)
     return run_sweep(inc, examined, settings.data_dir / "cache" / "enrichment",
-                     INCIDENTS_DIR, ledger=_ledger())
+                     _artifacts_dir(), ledger=_ledger())
 
 
 def _handover_path(incident_id: str) -> Path:
-    return INCIDENTS_DIR / "handover" / f"{incident_id}.json"
+    return _artifacts_dir() / "handover" / f"{incident_id}.json"
 
 
 @app.get("/api/incidents/{incident_id}/handover")
@@ -869,7 +881,7 @@ def write_handover(incident_id: str, body: dict | None = None) -> dict:
     if not (body or {}).get("confirm"):
         raise HTTPException(400, 'each note is a Lyzr call; send {"confirm": true} to write one')
     chains = _chains()
-    d = _overlay(inc.as_dict(), chains.get(incident_id, []), summaries(INCIDENTS_DIR).get(incident_id))
+    d = _overlay(inc.as_dict(), chains.get(incident_id, []), summaries(_artifacts_dir()).get(incident_id))
     note = handover_summary(d, chains.get(incident_id, []), d.get("swarm"))
     note.update({"incident_id": incident_id, "state": d["state"], "written_at": _now(),
                  "frames_used": min(15, len([e for e in chains.get(incident_id, []) if e.kind not in ("detection_added", "escalation_added")]))})

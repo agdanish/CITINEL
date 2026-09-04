@@ -153,6 +153,16 @@ class Settings(BaseSettings):
     #: and the CLI use. Render's web service points this at a persistent disk:
     #: the container filesystem is ephemeral, so without it every sign-off and
     #: gate decision written during a demo is lost on the next deploy.
+    #: Where runtime artifacts are written and read: swarm results, gathered
+    #: context, Gemini sweeps, handover notes, the corpus advisory. None = the
+    #: resolved incidents directory, which is what every local run, test and
+    #: CLI invocation uses. Render points this at the persistent disk, because
+    #: the container filesystem is ephemeral: a sweep or a swarm run performed
+    #: during a demo was lost on the next deploy. The corpus itself
+    #: (incidents.jsonl) is NOT an artifact and never moves -- it ships baked
+    #: into the image.
+    artifacts_dir: Path | None = Field(default=None)
+
     ledger_path: Path | None = Field(default=None)
 
     gemini_api_key: str | None = Field(default=None)

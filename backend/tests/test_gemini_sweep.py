@@ -169,3 +169,31 @@ def test_a_sweep_records_a_frame_the_ledger_actually_accepts(sandbox, monkeypatc
     assert frames[0].kind == "tool_call"
     assert frames[0].payload["check"] == "wide_lens_sweep"
     assert "never evidence" in frames[0].payload["reason"]
+
+
+def test_artifacts_dir_moves_what_a_run_produces_but_never_the_corpus(tmp_path, monkeypatch):
+    """The container filesystem is ephemeral, so anything a run PRODUCES has to
+    be redirectable to a disk. The corpus itself ships in the image and must
+    not follow it -- pointing reads of incidents.jsonl at an empty disk would
+    leave the service with no data at all."""
+    from citinel.web import app as app_mod
+
+    disk = tmp_path / "artifacts"
+    monkeypatch.setattr(settings, "artifacts_dir", disk)
+
+    assert app_mod._artifacts_dir() == disk
+    # the corpus stays where the image put it
+    assert app_mod.INCIDENTS_DIR != disk
+    assert (app_mod.INCIDENTS_DIR / "incidents.jsonl").exists()
+
+    # and a sweep written now lands on the disk, not beside the corpus
+    from citinel.agents.sweep import sweep_path
+    p = sweep_path(app_mod._artifacts_dir(), "INC-T1")
+    assert disk in p.parents
+    assert app_mod.INCIDENTS_DIR not in p.parents
+
+
+def test_unset_artifacts_dir_keeps_everything_beside_the_corpus(monkeypatch):
+    from citinel.web import app as app_mod
+    monkeypatch.setattr(settings, "artifacts_dir", None)
+    assert app_mod._artifacts_dir() == app_mod.INCIDENTS_DIR

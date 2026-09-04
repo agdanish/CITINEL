@@ -120,6 +120,12 @@ services:
       # worker) means the default beside the corpus -- see config.py.
       - key: CITINEL_LEDGER_PATH
         value: /var/citinel/ledger.jsonl
+      # Everything a run produces -- swarm results, gathered context, Gemini
+      # sweeps, handover notes -- onto the same disk. Without this a sweep run
+      # during a demo vanished on the next deploy while the ledger frame that
+      # recorded it survived, which is a worse state than losing both.
+      - key: CITINEL_ARTIFACTS_DIR
+        value: /var/citinel/artifacts
       # Every write route fails closed without this: 503 until it is set, 401
       # on a wrong value. It was set by hand in the dashboard, which a
       # blueprint re-sync would not preserve -- declared here so it survives.
