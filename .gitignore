@@ -43,11 +43,14 @@ data/cache/enrichment/
 !data/seed/
 backend/uv.lock
 
-# Swytchcode: commit the lightweight config so `swy bootstrap` reconstructs
-# everything on clone (tooling.json, policies.json, manifest.json). Ignore the
-# large regenerable integration bundles, and the lock.
-.swytchcode/integrations/*/
-.swytchcode/**/methods.json
-.swytchcode/**/wrekenfile.yaml
+# Swytchcode: the integration bundles (3.5 MB of vendor API definitions, no
+# credentials -- scanned) are COMMITTED. They used to be ignored on the premise
+# that `swy bootstrap` regenerates them on clone, but bootstrap requires a
+# logged-in session and the Render container has none, so both ecosystem legs
+# failed there with "bundle missing" before policy or credentials were ever
+# consulted. Committing them makes the image deterministic and offline, which
+# is what the kernel itself promises. Locks stay ignored.
 .swytchcode/tooling.json.lock
 .swytchcode/**/*.lock
+
+.swytchcode/workspace.json
