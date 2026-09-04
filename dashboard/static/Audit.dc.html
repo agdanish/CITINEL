@@ -225,6 +225,22 @@
     </aside>
 
     <section style="flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;overflow:hidden">
+      <!-- CISO-only accountability summary. It sits ABOVE the reel table, not between the
+           column header and the first frame: as a sibling inside role="table" it pushed
+           frame 88402 ~116px below the FRAME header (and broke the table's row semantics,
+           a non-row child between the header row and the rowgroup). Above the table the
+           column headers sit directly on top of their rows and the reel reads clean. -->
+      <sc-if value="{{ ciso }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:none;display:flex;gap:10px;flex-wrap:wrap;padding:12px 22px 13px;border-bottom:1px solid var(--ctn-color-border-hairline);min-width:0">
+          <sc-for list="{{ exceptions }}" as="e" hint-placeholder-count="4">
+            <div style="border:1px solid var(--ctn-color-border-strong);border-radius:6px;padding:9px 13px;min-width:0">
+              <div style="font-family:var(--ctn-font-display);font-size:17px;color:var(--ctn-color-text-primary);font-variant-numeric:tabular-nums slashed-zero">{{ e.v }}</div>
+              <div style="font-family:var(--ctn-font-display);font-size:7.5px;letter-spacing:0.1em;color:var(--ctn-color-text-muted);margin-top:3px;white-space:nowrap">{{ e.k }}</div>
+            </div>
+          </sc-for>
+          <div style="flex:1;min-width:230px;font-size:12px;color:var(--ctn-color-text-secondary);line-height:1.5;text-wrap:pretty">{{ exceptionNote }}</div>
+        </div>
+      </sc-if>
       <div role="table" aria-rowcount="{{ ariaRowCount }}" aria-label="Ledger reel · structured record frames" style="flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;overflow:hidden">
         <!-- MAT-F04: one throttled role=status region for the whole reel -- sort/filter/count
              changes are announced in words here instead of only as a redrawn row count. -->
@@ -233,17 +249,6 @@
           <span role="columnheader">FRAME</span><span role="columnheader">TIME IST</span><span role="columnheader">KIND</span><span role="columnheader">ACTOR</span><span role="columnheader">STRUCTURED RECORD · PREV → THIS</span>
         </div>
 
-        <sc-if value="{{ ciso }}" hint-placeholder-val="{{ false }}">
-          <div style="flex:none;display:flex;gap:10px;flex-wrap:wrap;padding:12px 22px 13px;border-bottom:1px solid var(--ctn-color-border-hairline);min-width:0">
-            <sc-for list="{{ exceptions }}" as="e" hint-placeholder-count="4">
-              <div style="border:1px solid var(--ctn-color-border-strong);border-radius:6px;padding:9px 13px;min-width:0">
-                <div style="font-family:var(--ctn-font-display);font-size:17px;color:var(--ctn-color-text-primary);font-variant-numeric:tabular-nums slashed-zero">{{ e.v }}</div>
-                <div style="font-family:var(--ctn-font-display);font-size:7.5px;letter-spacing:0.1em;color:var(--ctn-color-text-muted);margin-top:3px;white-space:nowrap">{{ e.k }}</div>
-              </div>
-            </sc-for>
-            <div style="flex:1;min-width:230px;font-size:12px;color:var(--ctn-color-text-secondary);line-height:1.5;text-wrap:pretty">{{ exceptionNote }}</div>
-          </div>
-        </sc-if>
         <sc-if value="{{ noRows }}" hint-placeholder-val="{{ false }}">
           <div style="flex:none;padding:22px;font-size:12.5px;color:var(--ctn-color-text-muted);line-height:1.5">No frame on this reel matches the query. {{ noRowsNote }} Clear the query to see it.</div>
         </sc-if>

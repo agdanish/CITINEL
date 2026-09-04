@@ -153,7 +153,12 @@
                   <dc-import name="ExternalCitationChip" source="{{ r.extSource }}" url="{{ r.extUrl }}" fetched-at="{{ r.extFetched }}" size="sm" hint-size="290px,24px"></dc-import>
                 </sc-if>
                 <sc-if value="{{ r.hasSemanticSupport }}" hint-placeholder-val="{{ false }}">
-                  <span data-token style="font-family:var(--ctn-font-display);font-size:8px;letter-spacing:0.1em;color:var(--ctn-color-text-muted);margin-left:8px">{{ r.semanticSupportLabel }}</span>
+                  <!-- Mono, not the display face: Michroma is a thin geometric font whose
+                       hairline strokes drop out at 8px in a muted colour, so this caveat read
+                       as half its letters missing. The mono face (the same one the citation
+                       chip beside it uses) keeps every glyph at this size, and 9px with a hair
+                       of line-height lets the two-line label breathe instead of colliding. -->
+                  <span data-token style="font-family:var(--ctn-font-mono);font-size:9px;letter-spacing:0.02em;line-height:1.45;color:var(--ctn-color-text-muted);margin-left:8px">{{ r.semanticSupportLabel }}</span>
                 </sc-if>
               </div>
             </div>
@@ -189,7 +194,12 @@
                     <dc-import name="ExternalCitationChip" source="{{ r.extSource }}" url="{{ r.extUrl }}" fetched-at="{{ r.extFetched }}" size="sm" hint-size="290px,24px"></dc-import>
                   </sc-if>
                   <sc-if value="{{ r.hasSemanticSupport }}" hint-placeholder-val="{{ false }}">
-                    <span data-token style="font-family:var(--ctn-font-display);font-size:8px;letter-spacing:0.1em;color:var(--ctn-color-text-muted);margin-left:8px">{{ r.semanticSupportLabel }}</span>
+                    <!-- Mono, not the display face: Michroma is a thin geometric font whose
+                       hairline strokes drop out at 8px in a muted colour, so this caveat read
+                       as half its letters missing. The mono face (the same one the citation
+                       chip beside it uses) keeps every glyph at this size, and 9px with a hair
+                       of line-height lets the two-line label breathe instead of colliding. -->
+                  <span data-token style="font-family:var(--ctn-font-mono);font-size:9px;letter-spacing:0.02em;line-height:1.45;color:var(--ctn-color-text-muted);margin-left:8px">{{ r.semanticSupportLabel }}</span>
                   </sc-if>
                 </div>
               </div>
