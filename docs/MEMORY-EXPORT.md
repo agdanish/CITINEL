@@ -969,15 +969,23 @@ the copy that survives a new machine.
 
 ## Optional: renew the Slack connection (about 20 minutes, morning only)
 
-**Do this in the MORNING, not the night before.** The connection lapses in under
-a day: it was made on 4 Sep, posted a real message, and by 22:45 the same evening
-BOTH stores on the Mac reported "No connected accounts". Renewing it at night is
-likely wasted by stage time. If the morning is tight, skip it. Nothing depends on
-it, and the ledger reports the gap honestly, which is the product's own argument.
+**Do this within FOUR HOURS of going on stage, and no earlier.** Measured 4 Sep,
+not guessed: the Slack credential itself never expires (`credential_cache.expires_at`
+is NULL). What expires is the LOGIN SESSION in `auth.json`, which carries an
+`access_token` with a 4-hour life (18:29 -> 22:29 observed). Running ordinary `swy`
+commands does NOT refresh it, so the copy uploaded to Render is frozen and dies four
+hours after the login that made it. That is exactly what happened on 4 Sep: the
+uploaded session expired 18:16 and the 22:45 test failed with "missing credentials
+for Slack" while the Slack credential sat there, valid.
+
+If the morning is tight, skip it. Nothing depends on it, and the ledger reports the
+gap honestly, which is the product's own argument.
 
 What is already known, so no time is spent rediscovering it:
 - The **ticketing leg works on Render**, proven 4 Sep by a real GitHub issue body
   on ledger frame 5795. Only the Slack leg is missing.
+- Do NOT re-upload the old files: their `auth.json` session is expired. A fresh
+  `swy login` is what mints a new one.
 - The **three files reached the container correctly**. `/api/connectors` reports
   the store: credentials.db 20480B, credkey 64B, auth.json 4551B in
   `/root/.swytchcode`. Delivery was never the problem, so do not re-upload the

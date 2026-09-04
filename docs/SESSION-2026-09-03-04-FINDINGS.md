@@ -273,9 +273,20 @@ Two consequences worth carrying forward:
 1. **Re-uploading the existing files cannot help.** Only a fresh `swy login` plus
    `swy auth connect Slack` can, and the Keychain prompt must be cancelled so the
    key is written as a file the Linux container can read.
-2. **The connection lasts under a day**, so renewing it the night before a demo is
-   likely wasted by stage time. It is a morning task or not one at all. The steps
-   are in `RUNBOOK-NEW-LAPTOP.md` section C and in Claude's demo-morning memory.
+2. **The Slack credential never expires; the login session does, after four hours.**
+   This was first written up here as "the connection lapses in under a day", which
+   was wrong, and Danish was right to challenge it. The store proves otherwise:
+   `credential_cache.expires_at` is NULL for the Slack row, while `auth.json` carries
+   an `access_token` whose `expires_at` moved 18:29 -> 22:29 in one observed window,
+   and ordinary `swy` commands do not refresh it. The copy uploaded to Render is
+   therefore frozen and dies four hours after the login that made it: the uploaded
+   session expired at 18:16 and the 22:45 test failed while the Slack credential
+   itself sat there valid. Two stores also failed for two DIFFERENT reasons, which
+   is what disguised this: `/tmp/swyhome` had a credkey and a dead session,
+   `~/.swytchcode` had a live session and no credkey, because macOS put that key in
+   the Keychain. Both answered "No connected accounts", which reads like expiry and
+   is not. Renew within four hours of going on stage. Steps are in
+   `RUNBOOK-NEW-LAPTOP.md` section C and in Claude's demo-morning memory.
 
 The honest framing for the stage, and it is a strong one: the receipt does not
 claim a message was sent. It records `not_configured` and names the provider's own
