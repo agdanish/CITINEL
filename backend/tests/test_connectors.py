@@ -111,3 +111,18 @@ def test_squad_fans_one_ip_to_two_providers(cache, monkeypatch):
     providers = {r.provider for r in results}
     assert providers == {"virustotal", "abuseipdb"}
     assert all(r.status == "ok" for r in results)
+
+
+def test_virustotal_calls_the_documented_host_and_the_allow_list_agrees(cache, monkeypatch):
+    """api.virustotal.com is NXDOMAIN at VirusTotal's own nameservers; the v3
+    base is www.virustotal.com. The connector and the egress allow-list must
+    name the SAME host, or every lookup fails quietly the way this one did."""
+    from citinel.config import settings
+    from citinel.agents.quarantine import check_egress
+    monkeypatch.setattr(settings, "virustotal_api_key", "k")
+    calls = []
+    body = {"data": {"attributes": {"last_analysis_stats": {"malicious": 66, "harmless": 9}}}}
+    VirusTotalConnector(cache, _fake_sender(200, body, calls)).check_hash("275a021b")
+    url = calls[0]["url"]
+    assert url.startswith("https://www.virustotal.com/api/v3/files/")
+    assert check_egress(url).allowed

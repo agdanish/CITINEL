@@ -69,9 +69,10 @@ def test_egress_is_deny_by_default():
 
 
 def test_egress_allows_only_exact_hosts_over_https():
-    assert check_egress("https://api.virustotal.com/api/v3/files/a").allowed
+    assert check_egress("https://www.virustotal.com/api/v3/files/a").allowed
     # a subdomain of an allowed host is NOT allowed (exact match only)
-    assert not check_egress("https://evil.api.virustotal.com/x").allowed
+    assert not check_egress("https://evil.www.virustotal.com/x").allowed
+    assert not check_egress("https://api.virustotal.com/api/v3/files/a").allowed   # retired host stays off the list
     # right host, wrong scheme
     assert not check_egress("http://api.tavily.com/search").allowed
 

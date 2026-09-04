@@ -297,7 +297,14 @@ class VirusTotalConnector(Connector):
         if not settings.virustotal_api_key:
             return EnrichmentResult(self.provider, indicator, itype, "not_configured",
                                     verdict="VirusTotal key not set; enrichment skipped")
-        url = f"https://api.virustotal.com/api/v3/{path}"
+        # www., not api.: VirusTotal's documented v3 base is
+        # https://www.virustotal.com/api/v3/ and api.virustotal.com no longer
+        # exists in DNS at all -- NXDOMAIN from the authoritative servers, not
+        # from a filtering resolver. Every lookup had been failing with "nodename
+        # nor servname provided" and, because the enricher frame recorded only
+        # who was asked, nothing on the ledger said so. Zero cache entries for
+        # this provider, ever, was the tell.
+        url = f"https://www.virustotal.com/api/v3/{path}"
         try:
             status, body = self._guarded_request(
                 "GET", url, headers={"x-apikey": settings.virustotal_api_key})

@@ -172,7 +172,7 @@ def fence(tainted: TaintedText) -> str:
 #: log persuades any layer to "fetch".
 EGRESS_ALLOW: frozenset[str] = frozenset({
     "api.anthropic.com",
-    "api.virustotal.com",
+    "www.virustotal.com",     # the documented v3 host; api.virustotal.com is NXDOMAIN
     "api.abuseipdb.com",
     "api.tavily.com",
     "generativelanguage.googleapis.com",
