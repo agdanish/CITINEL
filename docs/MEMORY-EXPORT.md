@@ -967,7 +967,7 @@ the copy that survives a new machine.
 8. **After the event:** Settings CLEAR, or rotate `CITINEL_WRITE_TOKEN` in Render
    which disarms every laptop at once, then rotate the keys in findings section 9.
 
-## Optional: renew the Slack connection (about 20 minutes, morning only)
+## Optional: renew the Slack connection (about 20 minutes, within 4h of stage)
 
 **Do this within FOUR HOURS of going on stage, and no earlier.** Measured 4 Sep,
 not guessed: the Slack credential itself never expires (`credential_cache.expires_at`
@@ -988,8 +988,13 @@ What is already known, so no time is spent rediscovering it:
   `swy login` is what mints a new one.
 - The **three files reached the container correctly**. `/api/connectors` reports
   the store: credentials.db 20480B, credkey 64B, auth.json 4551B in
-  `/root/.swytchcode`. Delivery was never the problem, so do not re-upload the
-  old files; they are a faithful copy of a store with no account in it.
+  `/root/.swytchcode`. Delivery was never the problem. The account is in there
+  too; only its session is dead.
+- **`swy auth status` saying "No connected accounts" does NOT mean the account is
+  gone.** Two stores gave that same message for two different reasons, which is
+  what disguised this as expiry: `/tmp/swyhome` has a `credkey` and a dead session,
+  `~/.swytchcode` has a live session and no `credkey` because macOS keeps that key
+  in the Keychain. Read `credential_cache` with sqlite3 before believing the CLI.
 - Node 20 only. nvm's default is v24, where `swy` does not exist.
 
 Steps, one line at a time in Terminal:
