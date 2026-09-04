@@ -65,3 +65,14 @@ Evaluated on the MIC/AICTE SIH rubric: novelty · technical complexity · clarit
 ---
 
 *CITINEL drafts regulator reports; humans review and file them. Detection targets and false-positive rates are measured on labeled datasets and reported as ranges — never claimed.*
+
+## Session records (continuity across Claude Code accounts)
+
+| File | What it is |
+|---|---|
+| `SESSION-2026-09-03-04-FINDINGS.md` | every bug, fix, decision, proof and pending item from 3 to 4 Sep 2026, with commit hashes; read this first |
+| `SESSION-2026-09-03-04-CHAT-LOG.md` | the complete chat of that session, every user and Claude turn, credentials redacted |
+| `MEMORY-EXPORT.md` | Claude Code's persistent memory for this project, with restore steps |
+
+The next-session entry point is `../NEXT-SESSION-PROMPT.md`; the team procedure for a new laptop is `../RUNBOOK-NEW-LAPTOP.md`.
+

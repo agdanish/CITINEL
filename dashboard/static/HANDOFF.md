@@ -3,7 +3,7 @@
 Static HTML/CSS/JS. No build step. Serve this directory from FastAPI (`StaticFiles`) or any
 plain file server. Nothing here is React-authored, TypeScript, or bundled; do not migrate it.
 
-Entry point: **`Entry.dc.html`** (splash/auth) → **`Overview.dc.html`** (landing console).
+Entry point: **`Overview.dc.html`** (landing console). `Entry.dc.html` was removed on 4 Sep 2026; `/` redirects to Overview. Every screen carries the left rail from `nav.js` (icon-only, hover labels, persistent expand) and reads its write permission from the device-arming layer in `api.js` (see `RUNBOOK-NEW-LAPTOP.md`).
 
 ---
 
@@ -71,7 +71,7 @@ statutory-clock modelling beyond CERT-In) are cut from the pages or labelled not
 
 | Page | uses (live) | uses (pending) | still scripted |
 | --- | --- | --- | --- |
-| `Entry.dc.html` | `incidentsSummary` **· wired 2 Sep 2026** | — | first-run vs returning session (localStorage convenience) |
+| ~~`Entry.dc.html`~~ (removed 4 Sep 2026) | `incidentsSummary` **· wired 2 Sep 2026** | — | first-run vs returning session (localStorage convenience) |
 | `Shell.dc.html` | `incidentsSummary`, `policy`, `ledgerVerify` **· wired 2 Sep 2026** | — | — |
 | `Overview.dc.html` | `incidentsSummary`, `policy`, `connectors` (+ audit chains, ledgerVerify) **· wired 2 Sep 2026** | — | — (the dial is read-only: the policy file is the source of truth) |
 | `Queue.dc.html` | `incidents`, `audit` **· wired 2 Sep 2026** | — | belt-dot decoration; `?state=quiet\|firstrun` demo panels |

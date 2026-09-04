@@ -37,7 +37,7 @@ valid document; they are not routes and must not be linked or indexed.
 
 ## Ship — routes
 
-    Entry.dc.html           Shell.dc.html          Overview.dc.html
+    Shell.dc.html          Overview.dc.html       (Entry.dc.html removed 4 Sep 2026)
     Queue.dc.html           Replay.dc.html         Confidence.dc.html
     Evidence.dc.html        Approvals.dc.html      Corpus.dc.html
     Eval.dc.html            Policy.dc.html         Compliance.dc.html
