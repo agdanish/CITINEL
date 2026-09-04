@@ -1378,7 +1378,7 @@ class Component extends DCLogic {
       closeLabel: 'REOPEN FOR RE-INVESTIGATION', closeBg: 'var(--ctn-color-surface-navy)', closeFg: 'var(--ctn-color-text-on-navy)',
       closeIncident: ()=>{
         const API = window.CITINEL_API; if (!API) return;
-        const by = window.prompt('Reopen ' + id + ' · your name or address (recorded on the ledger):', ''); if (!by) return;
+        const by = window.prompt('Reopen ' + id + ' · your name or address (recorded on the ledger):', ((window.CITINEL_API && window.CITINEL_API.OPERATOR) || '')); if (!by) return;
         const reason = window.prompt('Reason for reopening (recorded on the ledger):', 're-investigation'); if (!reason) return;
         API.post('reopen', id, {by: by, reason: reason}).then(r => { if (r.ok) this.load(id); else window.alert('reopen refused: ' + (r.error || 'unknown')); });
       } };

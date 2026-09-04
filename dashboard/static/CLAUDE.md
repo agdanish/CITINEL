@@ -21,7 +21,7 @@ All colors, type, spacing, tokens come from the imported CITINEL Design System �
 
 Screens: `Shell`, `Overview`, `Queue`, `Replay`, `Confidence`, `Evidence`, `Approvals`, `Corpus`, `Eval`, `Policy`, `Compliance`, `Audit`, `Handover`, `Executive`, `Demo`, `Settings` (all `*.dc.html`).
 Shared components: `ExternalCitationChip.dc.html`, `ExternalProvenance.dc.html`, `StandardRef.dc.html`, `RuleRef.dc.html`, `StateNotice.dc.html`.
-Shared logic: `nav.js` (the left rail on every screen; collapsible, state in localStorage; built from a static list so no runtime hole is involved), `role.js` (analyst/CISO depth), `ledger.js`, `reveal.js`, `motion.js`, `api.js` (backend seam — see `HANDOFF.md`). Shared CSS: `a11y.css`, `motion.css`, `transitions.css` (page-to-page navigation only — a deliberate, Danish-approved exception to motion.css's own "no decorative animation" rule; see that file's header comment).
+Shared logic: `nav.js` (the left rail on every screen; collapsible, state in localStorage; built from a static list so no runtime hole is involved), `role.js` (analyst/CISO depth), `ledger.js`, `reveal.js`, `motion.js`, `api.js` (backend seam — see `HANDOFF.md`; also the device-arming layer: operator token + name in localStorage under `citinel.operator` for 12 h, every write attributed via `by`/`signed_by`, 401/503 mapped to one plain sentence each). Shared CSS: `a11y.css`, `motion.css`, `transitions.css` (page-to-page navigation only — a deliberate, Danish-approved exception to motion.css's own "no decorative animation" rule; see that file's header comment).
 No `_audit/`, `uploads/` or `screenshots/` folders exist — deleted, not archived.
 
 ### Standing artefact rules

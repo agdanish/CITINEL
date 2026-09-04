@@ -669,7 +669,7 @@ autonomous_allowed {
   }
   denyLive(item){
     const API = window.CITINEL_API;
-    const by = window.prompt('Deny ' + item.proposal.action_class + ' → ' + item.proposal.target + ' · your name or address (recorded on the ledger):', ''); if (!by) return;
+    const by = window.prompt('Deny ' + item.proposal.action_class + ' → ' + item.proposal.target + ' · your name or address (recorded on the ledger):', ((window.CITINEL_API && window.CITINEL_API.OPERATOR) || '')); if (!by) return;
     const reason = window.prompt('Reason for the refusal (recorded on the ledger):', ''); if (!reason) return;
     this.setState({busy:true, note:'recording the refusal…'});
     API.deny({incident_id: item.inc, action_class: item.proposal.action_class, target: item.proposal.target, by, reason}).then(r => {
@@ -680,7 +680,7 @@ autonomous_allowed {
   rollbackLive(item){
     const API = window.CITINEL_API, res = this.state.results[item.key];
     const token = (res && res.receipt && res.receipt.rollback_token) || item.token; if (!token) return;
-    const actor = window.prompt('Roll back with token ' + token + ' · your name or address (recorded on the ledger):', ''); if (!actor) return;
+    const actor = window.prompt('Roll back with token ' + token + ' · your name or address (recorded on the ledger):', ((window.CITINEL_API && window.CITINEL_API.OPERATOR) || '')); if (!actor) return;
     this.setState({busy:true, note:'rolling back…'});
     API.rollback(token, {incident_id: item.inc, actor}).then(r => {
       this.setState(x => ({busy:false, note: r.ok ? 'rolled back · reversal receipt on the ledger' : 'rollback refused: ' + (r.error||'unknown'), results: Object.assign({}, x.results, {[item.key]: Object.assign({}, x.results[item.key]||{}, {phase: r.ok ? 'rolled' : (x.results[item.key]||{}).phase, rollback: r.ok ? r.data.receipt : null})})}));
@@ -865,7 +865,7 @@ autonomous_allowed {
       approve: ()=>{
         if(!this.state.armed || this.state.busy) return;
         let approver = null;
-        if (needsName) { approver = window.prompt('Approve ' + p.action_class + ' → ' + p.target + ' · your name or address (recorded on the ledger as the approver):', ''); if (!approver) return; }
+        if (needsName) { approver = window.prompt('Approve ' + p.action_class + ' → ' + p.target + ' · your name or address (recorded on the ledger as the approver):', ((window.CITINEL_API && window.CITINEL_API.OPERATOR) || '')); if (!approver) return; }
         this.fire(item, approver);
       },
       deny: ()=>this.denyLive(item),

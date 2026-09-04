@@ -54,21 +54,65 @@
     WRITE_TOKEN: null          // operator token sent as X-Citinel-Write-Token on every write; unset -> writes 503
   };
 
-  // sessionStorage, not localStorage: the token should not outlive the tab it was
-  // typed into on a machine other people may share (a demo laptop at a booth).
-  // Never throws if storage is unavailable (a private window, a locked-down embed).
-  (function () {
-    try { API.WRITE_TOKEN = sessionStorage.getItem('citinel.writeToken') || null; }
-    catch (e) { API.WRITE_TOKEN = null; }
-  })();
+  /* Arming a device.
 
-  API.setWriteToken = function (token) {
-    API.WRITE_TOKEN = token || null;
-    try {
-      if (token) sessionStorage.setItem('citinel.writeToken', token);
-      else sessionStorage.removeItem('citinel.writeToken');
-    } catch (e) {}
+     The operator token and the operator's NAME are remembered together on this
+     device, for ARM_TTL_MS, then forgotten by themselves. This replaced a per-tab
+     sessionStorage design: on a demo laptop the token vanished the moment a tab
+     closed, a second tab was never armed, and nothing on any screen said so --
+     the first sign was a 401 on a click. Per-device with a lifetime is what a
+     privileged-action credential is expected to look like: required, expiring,
+     attributable to a named person, and revocable centrally in one move by
+     rotating CITINEL_WRITE_TOKEN on the server. CLEAR forgets it at once.
+
+     The server gate is untouched: reads never need this, writes fail closed
+     without it, and the token travels only as a header to this API. Never
+     throws if storage is unavailable (a private window, a locked-down embed). */
+  var ARM_KEY = 'citinel.operator';
+  var ARM_TTL_MS = 12 * 60 * 60 * 1000;
+  API.OPERATOR = null;           // the name every write is attributed to
+  API.ARMED_AT = null;
+  API.ARM_TTL_MS = ARM_TTL_MS;
+
+  function loadArm() {
+    var rec = null;
+    try { rec = JSON.parse(localStorage.getItem(ARM_KEY) || 'null'); } catch (e) { rec = null; }
+    if (!rec) {
+      // one-time migration from the per-tab design, so a token pasted today is not lost
+      try { var legacy = sessionStorage.getItem('citinel.writeToken'); if (legacy) rec = { token: legacy, name: '', at: Date.now() }; } catch (e) {}
+    }
+    if (!rec || !rec.token || !rec.at || (Date.now() - rec.at) > ARM_TTL_MS) {
+      API.WRITE_TOKEN = null; API.OPERATOR = null; API.ARMED_AT = null;
+      if (rec) { try { localStorage.removeItem(ARM_KEY); } catch (e) {} }   // expired: forget it
+      return;
+    }
+    API.WRITE_TOKEN = rec.token; API.OPERATOR = rec.name || null; API.ARMED_AT = rec.at;
+  }
+  loadArm();
+
+  function announceArm() {
+    try { window.dispatchEvent(new CustomEvent('citinel:arm', { detail: API.armState() })); } catch (e) {}
+  }
+
+  API.setWriteToken = function (token, name) {
+    if (!token) return API.clearWriteToken();
+    var rec = { token: token, name: String(name || '').trim().slice(0, 80), at: Date.now() };
+    API.WRITE_TOKEN = rec.token; API.OPERATOR = rec.name || null; API.ARMED_AT = rec.at;
+    try { localStorage.setItem(ARM_KEY, JSON.stringify(rec)); sessionStorage.removeItem('citinel.writeToken'); } catch (e) {}
+    announceArm();
   };
+  API.clearWriteToken = function () {
+    API.WRITE_TOKEN = null; API.OPERATOR = null; API.ARMED_AT = null;
+    try { localStorage.removeItem(ARM_KEY); sessionStorage.removeItem('citinel.writeToken'); } catch (e) {}
+    announceArm();
+  };
+  /* {armed, name, expiresAt} -- what the rail's indicator and Settings both read. */
+  API.armState = function () {
+    loadArm();   // re-check the lifetime on every read, so expiry is honoured mid-session
+    return { armed: !!API.WRITE_TOKEN, name: API.OPERATOR, expiresAt: API.ARMED_AT ? API.ARMED_AT + ARM_TTL_MS : null };
+  };
+  // another tab arming or clearing this device is reflected here too
+  try { window.addEventListener('storage', function (e) { if (e.key === ARM_KEY) { loadArm(); announceArm(); } }); } catch (e) {}
 
   // Sticky across navigation, not just this page: a presenter flips it on once (Settings, or
   // ?demo=1 on any URL) and every screen they click through afterward stays in capture mode.
@@ -198,8 +242,14 @@
      on this deployment (CITINEL_WRITE_TOKEN is not configured)"); the gate's 403 sends
      {refused, decision}. Use that sentence verbatim, else a plain phrase for the status.
      The raw status and url stay on the envelope for devtools -- they never reach the note. */
+  API.NOT_ARMED = 'This device is not armed. Open Settings and paste the operator token.';
+  API.WRITES_OFF = 'Writes are switched off on this deployment: no operator token is configured on the server.';
   function humanError(status, d) {
     var detail = d && d.detail;
+    // The two token failures get one plain sentence each, everywhere, before the
+    // server's own wording is considered: on stage, "401" explains nothing.
+    if (status === 401) return API.NOT_ARMED;
+    if (status === 503 && typeof detail === 'string' && /WRITE_TOKEN/i.test(detail)) return API.WRITES_OFF;
     if (detail && typeof detail === 'object' && typeof detail.refused === 'string' && detail.refused) return detail.refused;
     if (typeof detail === 'string' && detail) return detail;
     if (status === 401) return 'not authorised for this action';
@@ -208,6 +258,7 @@
     if (status >= 500) return 'the service could not complete this request';
     return 'the service rejected this request';
   }
+  API.humanError = humanError;   // exposed so the two token sentences can be asserted from a test page
   function transportError(e) {
     return 'could not reach the service · check the connection';
   }
@@ -267,10 +318,17 @@
     var timer = setTimeout(function () { if (ctl) ctl.abort(); }, opts.timeoutMs || API.WRITE_TIMEOUT_MS);
     var writeHeaders = { accept: 'application/json', 'content-type': 'application/json' };
     if (API.WRITE_TOKEN) writeHeaders['X-Citinel-Write-Token'] = API.WRITE_TOKEN;
+    // Every write names the operator this device is armed as, unless the screen
+    // already named someone. The ledger then never carries an anonymous action.
+    var payload = (body && typeof body === 'object' && !Array.isArray(body)) ? Object.assign({}, body) : (body || {});
+    if (API.OPERATOR && typeof payload === 'object') {
+      if (!payload.by) payload.by = API.OPERATOR;
+      if (name === 'signoff' && !payload.signed_by) payload.signed_by = API.OPERATOR;
+    }
     return fetch(url, {
       method: 'POST',
       headers: writeHeaders,
-      body: JSON.stringify(body || {}),
+      body: JSON.stringify(payload),
       signal: ctl ? ctl.signal : undefined
     }).then(function (r) {
       clearTimeout(timer);

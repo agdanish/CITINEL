@@ -69,6 +69,11 @@
       '#citinel-rail a i{flex:none;width:16px;text-align:center;font-style:normal;font-size:10px}',
       '#citinel-rail[data-state=closed] a span{display:none}',
       '#citinel-rail[data-state=closed] a{padding:0 12px}',
+      '#citinel-rail a.arm{margin-top:auto;border-left:0;border-top:1px solid var(--ctn-color-border-strong);height:40px;flex:none}',
+      '#citinel-rail a.arm i{width:16px;font-size:12px;line-height:1}',
+      '#citinel-rail a.arm[data-armed=true]{color:var(--ctn-color-text-primary)}',
+      '#citinel-rail a.arm[data-armed=true] i{color:var(--ctn-color-ok)}',
+      '#citinel-rail a.arm[data-armed=false] i{color:var(--ctn-color-text-muted)}',
       '@media print{#citinel-rail{display:none}}'
     ].join('\n');
     document.head.appendChild(s);
@@ -131,6 +136,33 @@
       nav.appendChild(a);
     });
     rail.appendChild(nav);
+
+    // The arming indicator. One glance before any click: a filled dot and the
+    // operator's name mean this device can write; a hollow dot means read-only.
+    // It links to Settings, where the device is armed, and repaints whenever
+    // api.js announces a change (this tab, another tab, or expiry).
+    var arm = document.createElement('a');
+    arm.className = 'arm'; arm.href = 'Settings.dc.html';
+    var dot = document.createElement('i'); var lab = document.createElement('span');
+    arm.appendChild(dot); arm.appendChild(lab); rail.appendChild(arm);
+    function paintArm() {
+      var API = window.CITINEL_API;
+      var st = (API && API.armState) ? API.armState() : { armed: false };
+      arm.setAttribute('data-armed', st.armed ? 'true' : 'false');
+      dot.textContent = st.armed ? '\u25CF' : '\u25CB';                       // ● / ○
+      lab.textContent = st.armed ? ('ARMED \u00B7 ' + (st.name || 'UNNAMED').toUpperCase()) : 'READ-ONLY';
+      var when = '';
+      if (st.armed && st.expiresAt) {
+        try { when = ' \u00B7 expires ' + new Intl.DateTimeFormat('en-IN', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Kolkata' }).format(new Date(st.expiresAt)) + ' IST'; } catch (e) {}
+      }
+      arm.title = st.armed ? ('This device can write as ' + (st.name || 'an unnamed operator') + when + '. Click to change or CLEAR.')
+                           : 'This device is read-only. Click to arm it in Settings.';
+    }
+    paintArm();
+    window.addEventListener('citinel:arm', paintArm);
+    window.addEventListener('storage', function (e) { if (e.key === 'citinel.operator') paintArm(); });
+    setInterval(paintArm, 60000);                                                // expiry is honoured within a minute
+
     root.parentNode.insertBefore(rail, root);
 
     // Another tab collapsing the rail collapses this one too; same pattern as role.js.
