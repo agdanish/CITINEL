@@ -1134,9 +1134,29 @@ class Component extends DCLogic {
       const g = [];
       if(n.kind==='gated') g.push(R.createElement('circle',{key:'g',cx,cy,r:8,fill:'var(--ctn-color-surface-panel)',stroke,strokeWidth:2.2,strokeDasharray:'3.5 3.5'}));
       else if(n.kind==='actioned') g.push(R.createElement('rect',{key:'d',x:cx-6,y:cy-6,width:12,height:12,transform:`rotate(45 ${cx} ${cy})`,fill,stroke,strokeWidth:2.6}));
-      else if(n.kind==='closed') g.push(R.createElement('circle',{key:'c',cx,cy,r:8,fill,stroke,strokeWidth:2.8}));
+      // Drawn last and concentric with the caught node, so an opaque panel fill on an
+      // unclosed record covered a lit CAUGHT dot completely and the dial said the
+      // record had not been caught. Open until it is closed.
+      else if(n.kind==='closed') g.push(R.createElement('circle',{key:'c',cx,cy,r:8,fill: n.on?fill:'none',stroke,strokeWidth:2.8}));
       else g.push(R.createElement('circle',{key:'n',cx,cy,r:7,fill,stroke,strokeWidth: n.kind==='cited'?2.2:1.8}));
-      g.push(R.createElement('text',{key:'t',x:cx,y:cy+(n.f>0.25&&n.f<0.75?26:-14),textAnchor:'middle',fontFamily:'var(--ctn-font-display)',fontSize:7.5,letterSpacing:1,fill: n.on?'var(--ctn-color-text-primary)':'var(--ctn-color-text-disabled)'}, n.kind.toUpperCase()));
+      // Where each name sits. Two things were wrong here and both were only visible
+      // on the deployed dial. f=0 and f=1 are the SAME point on the ring -- a closed
+      // record returns to where it was caught -- so CAUGHT and CLOSED were painted on
+      // top of each other and the top of the dial read as neither. CLOSED now hangs
+      // inside the ring and CAUGHT stays outside it. And the side names were centred
+      // on their own node: ACTIONED centred on x=24 ran past the left edge of the
+      // 220-unit drawing, and SVG clipped its A away, leaving "CTIONED" on screen.
+      // The side names are anchored to the drawing's edge instead, so no width of
+      // text can leave it.
+      // GATED sits below its node at the foot of the drawing, and +26 put its box 4
+      // units past the 220 the viewBox paints, so the bottom of the word was cut off.
+      // -22 on the side names, not -14: the dial's own timecode is 31 units tall and
+      // starts at x=42, so a side name on the node's own line was painted across the
+      // digits. -22 lifts them clear of both the timecode and the state word above it.
+      const ly = cy + (n.f === 0.5 ? 20 : n.f === 1 ? 20 : (n.f === 0.25 || n.f === 0.75) ? -22 : -14);
+      const lx = n.f === 0.25 ? 218 : n.f === 0.75 ? 2 : cx;
+      const anchor = n.f === 0.25 ? 'end' : n.f === 0.75 ? 'start' : 'middle';
+      g.push(R.createElement('text',{key:'t',x:lx,y:ly,textAnchor:anchor,fontFamily:'var(--ctn-font-display)',fontSize:7.5,letterSpacing:1,fill: n.on?'var(--ctn-color-text-primary)':'var(--ctn-color-text-disabled)'}, n.kind.toUpperCase()));
       return R.createElement('g',{key:i}, g);
     });
     const lanes = d.lanes.map((l,li)=>{
