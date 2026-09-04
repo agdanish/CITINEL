@@ -35,6 +35,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from citinel.agents.context import gather_context, load_context
 from citinel.agents.pipeline import MAX_EVIDENCE_FINDINGS
 from citinel.agents.brief import load_brief, poll_brief, start_brief
+from citinel.agents.visual import load_visuals, read_image
 from citinel.agents.sweep import load_sweep, run_sweep
 from citinel.agents.store import annotate_result, load_result, load_runs, summaries, summary_of
 from citinel.connectors.lyzr_agents import (
@@ -958,6 +959,41 @@ def n8n_error_report(body: dict | None = None) -> dict:
     _incident(incident_id)
     _ledger().append(incident_id, "n8n", "tool_call", frame)
     return {"status": "recorded", "incident_id": incident_id, "frame": frame}
+
+
+@app.get("/api/incidents/{incident_id}/visual")
+def get_visuals(incident_id: str) -> dict:
+    """Images an analyst pasted onto this record, and what the record itself
+    said about the indicators each one named. 404 until one is read."""
+    _incident(incident_id)
+    d = load_visuals(_artifacts_dir(), incident_id)
+    if d is None:
+        raise HTTPException(404, f"no image has been read for {incident_id} yet")
+    return d
+
+
+@app.post("/api/incidents/{incident_id}/visual")
+def read_visual(incident_id: str, body: dict | None = None) -> dict:
+    """Read an analyst-supplied screenshot and corroborate it against the record.
+
+    The only place a model in CITINEL looks at something that is not text. A
+    SOC runs on logs, but an analyst is handed pictures all day. The reading
+    is an observation and can never support a claim; the corroboration that
+    follows it -- every named indicator checked against this incident's own
+    findings, in code, with no model involved -- is a fact with citable
+    finding indices.
+    """
+    inc = _incident(incident_id)
+    if not settings.gemini_api_key:
+        raise HTTPException(503, "no Gemini key configured on this deployment")
+    b = body or {}
+    image = str(b.get("image_base64") or "")
+    mime = str(b.get("mime_type") or "")
+    if not image or not mime:
+        raise HTTPException(400, "image_base64 and mime_type are both required")
+    return read_image(inc, image, mime, str(b.get("note", "")),
+                      settings.data_dir / "cache" / "enrichment",
+                      _artifacts_dir(), ledger=_ledger())
 
 
 def _handover_path(incident_id: str) -> Path:
