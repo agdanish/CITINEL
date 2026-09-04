@@ -312,6 +312,10 @@
             <div style="display:flex;gap:7px;margin-top:11px;flex-wrap:wrap">
               <a href="{{ draftHref }}" style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:9px 12px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;color:var(--ctn-color-text-primary);text-decoration:none;white-space:nowrap">{{ openFileLabel }}</a>
               <a href="{{ ribbonHref }}" style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:9px 12px;background:var(--ctn-color-surface-navy);color:var(--ctn-color-text-on-navy);border-radius:6px;text-decoration:none;white-space:nowrap">SEE IT ON THE RIBBON</a>
+              <!-- The paper version. A regulator's copy is read on paper or as a PDF, and
+                   the console is a dark screen, so the printable document is its own page
+                   rather than a print stylesheet bolted onto this one. -->
+              <a href="{{ reportHref }}" style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:9px 12px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;color:var(--ctn-color-text-primary);text-decoration:none;white-space:nowrap">PRINT · SAVE AS PDF</a>
             </div>
           </div>
         </sc-if>
@@ -653,6 +657,7 @@ class Component extends DCLogic {
       ],
       whoFiles: 'the bank\'s compliance officer · CITINEL holds no portal credential and names nobody · window ' + (breached ? 'closed ' + this.fmtAge(Math.abs(remain)) + ' ago' : this.fmtAge(remain) + ' remaining'),
       draftHref: '/api/incidents/' + this.incId + '/draft?kind=certin', openFileLabel: 'OPEN THE RENDERED DRAFT',
+      reportHref: 'Report.dc.html?id=' + encodeURIComponent(this.incId) + '&kind=certin',
       ribbonHref: this.navHref('Audit.dc.html') + (sealedSeq != null ? '&q=' + sealedSeq : ''),
       signTitle: breached ? 'SIGN-OFF · LATE, AND RECORDED AS LATE' : 'SIGN-OFF · THE HUMAN STEP',
       signGuidance: s.sealError ? s.sealError : humanOpen > 0
@@ -852,6 +857,7 @@ class Component extends DCLogic {
       ],
       whoFiles: 'S. Kulkarni · Compliance Officer, Sahyadri DCB · notified on the share at ' + s.sealedAt + '. Deadline 03:03 IST, ' + this.fmt(certin) + ' remaining.',
       draftHref: '#', openFileLabel: 'OPEN THE FILE', ribbonHref: this.navHref('Audit.dc.html'),
+      reportHref: 'Report.dc.html?id=' + encodeURIComponent(this.incId) + '&kind=certin',
       signGuidance: openCount > 0
         ? 'Answer the '+openCount+' field'+(openCount>1?'s':'')+' marked HUMAN REQUIRED above. The system will not fill them for you, and it will not let you seal around them.'
         : nameOk ? (s.attested ? 'Drive the press. This writes your name onto the form and locks the draft.' : 'Give the accuracy attestation to free the press.')

@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CITINEL · Printable report</title>
+<meta name="description" content="The printable, signable CERT-In or DPDP report drafted from the incident record, with every machine-filled field naming the source it came from.">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<meta name="theme-color" content="#0B1F3A">
+<link rel="stylesheet" href="_ds/citinel-design-system-fdfd662c-b7a8-446c-963a-2f11a1f91d2a/tokens/fonts.css">
+<link rel="stylesheet" href="vendor/fonts.css">
+<!--
+  A PRINT DOCUMENT, not a console screen.
+
+  Everything else in dashboard/static is a dark, full-bleed, DC-runtime page that
+  mounts the left rail. None of that belongs on paper, so this page deliberately
+  loads neither nav.js nor a11y.css and paints itself light: ink on white, because
+  a regulator-facing filing is read on paper or as a PDF, and a dark screen dump is
+  neither. It uses the console's own fonts so the printed artefact and the screen
+  are recognisably the same product.
+
+  There is no server-side PDF renderer and there should not be one. Adding
+  WeasyPrint or wkhtmltopdf to the image means system libraries (cairo, pango,
+  Qt) that the Render build does not carry, for an output the browser already
+  produces natively and better: Cmd+P, Save as PDF, with the operating system's
+  own PDF engine, correct font embedding and selectable text. The page is styled
+  for A4 so that output is a finished document rather than a screenshot.
+
+  Honesty rules this page inherits and must never break:
+    - it is a DRAFT until a named human has signed it on the ledger, and it says
+      so in a stamp that survives printing
+    - every machine-filled field carries the record it came from
+    - attacker-controlled text is reproduced verbatim, fenced and labelled, never
+      quietly edited, which is the same rule the console's field 08 follows
+    - CITINEL does not file. The footer says so on every page.
+-->
+<style>
+  :root{
+    --ink:#101720; --ink-soft:#48566a; --ink-faint:#7b8798;
+    --navy:#0B1F3A; --rule:#c9d2de; --rule-soft:#e4e9f0;
+    --stamp:#a3341f; --ok:#1f6b3f; --wash:#f4f7fb;
+    --mono:var(--ctn-font-mono,'IBM Plex Mono',ui-monospace,Menlo,monospace);
+    --disp:var(--ctn-font-display,'Michroma','Orbitron',sans-serif);
+    --body:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:#5b6472;color:var(--ink);font-family:var(--body);
+    font-size:10.5pt;line-height:1.5;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+
+  /* The sheet. On screen it floats on grey so the page edge is visible and the
+     reader can see what will actually print; on paper it becomes the paper. */
+  .sheet{width:210mm;min-height:297mm;margin:14mm auto;background:#fff;padding:16mm 17mm 20mm;
+    box-shadow:0 2px 28px rgba(0,0,0,0.35)}
+
+  .bar{position:sticky;top:0;z-index:9;display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+    background:var(--navy);color:#fff;padding:10px 16px;font-family:var(--disp);font-size:8.5pt;letter-spacing:0.12em}
+  .bar button,.bar a{font-family:var(--disp);font-size:8.5pt;letter-spacing:0.1em;padding:8px 13px;border-radius:6px;
+    border:1px solid rgba(255,255,255,0.45);background:none;color:#fff;cursor:pointer;text-decoration:none}
+  .bar button.primary{background:#fff;color:var(--navy);border-color:#fff;font-weight:600}
+  .bar .grow{flex:1;min-width:0}
+
+  header.mast{display:flex;align-items:flex-start;gap:9mm;border-bottom:2px solid var(--navy);padding-bottom:5mm}
+  header.mast img{height:17mm;width:auto;flex:none}
+  .mast h1{font-family:var(--disp);font-size:12.5pt;letter-spacing:0.04em;margin:0 0 2mm;color:var(--navy);line-height:1.35}
+  .mast .sub{font-size:9pt;color:var(--ink-soft);margin:0}
+  .mast .right{margin-left:auto;text-align:right;flex:none}
+  .idline{font-family:var(--mono);font-size:12pt;color:var(--navy);font-weight:600}
+
+  .stamp{display:inline-block;border:2px solid var(--stamp);color:var(--stamp);font-family:var(--disp);
+    font-size:9pt;letter-spacing:0.14em;padding:3mm 5mm;transform:rotate(-1.2deg);margin-top:3mm}
+  .stamp.signed{border-color:var(--ok);color:var(--ok);transform:none}
+
+  .meta{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4mm;margin:5mm 0 0;
+    border:1px solid var(--rule);background:var(--wash);padding:4mm}
+  .meta div{min-width:0}
+  .meta dt{font-family:var(--disp);font-size:6.5pt;letter-spacing:0.12em;color:var(--ink-faint);margin:0 0 1mm}
+  .meta dd{margin:0;font-family:var(--mono);font-size:9pt;color:var(--ink);word-break:break-word}
+
+  h2.sec{font-family:var(--disp);font-size:8pt;letter-spacing:0.14em;color:var(--navy);
+    margin:8mm 0 3mm;padding-bottom:1.5mm;border-bottom:1px solid var(--rule)}
+
+  table.form{width:100%;border-collapse:collapse}
+  table.form th{text-align:left;font-family:var(--disp);font-size:6.5pt;letter-spacing:0.1em;
+    color:var(--ink-faint);border-bottom:1px solid var(--rule);padding:0 0 2mm}
+  table.form td{vertical-align:top;padding:3mm 4mm 3mm 0;border-bottom:1px solid var(--rule-soft)}
+  td.num{width:9mm;font-family:var(--mono);font-size:9pt;color:var(--ink-faint);padding-right:2mm}
+  td.lab{width:52mm}
+  .lab b{display:block;font-size:9.5pt;font-weight:600;color:var(--ink)}
+  .lab span{display:block;font-size:8pt;color:var(--ink-faint);margin-top:0.8mm}
+  td.val{font-family:var(--mono);font-size:9pt;white-space:pre-wrap;word-break:break-word}
+  td.mk{width:24mm;text-align:right}
+  .tag{display:inline-block;font-family:var(--disp);font-size:6pt;letter-spacing:0.1em;
+    border:1px solid var(--rule);border-radius:3px;padding:1mm 2mm;color:var(--ink-soft);white-space:nowrap}
+  .tag.human{border-color:var(--stamp);color:var(--stamp)}
+  .tag.partial{border-style:dashed}
+  .note{font-size:8pt;color:var(--ink-soft);margin-top:1.5mm}
+
+  .fence{border:1px solid var(--stamp);background:#fdf6f4;padding:3mm 4mm;margin:2mm 0 0;
+    font-family:var(--mono);font-size:8.5pt;white-space:pre-wrap;word-break:break-word}
+  .fence .cap{display:block;font-family:var(--disp);font-size:6pt;letter-spacing:0.12em;color:var(--stamp);margin-bottom:1.5mm}
+
+  .signblock{border:1px solid var(--rule);padding:5mm;margin-top:4mm;background:var(--wash)}
+  .signblock .rows{display:grid;grid-template-columns:38mm 1fr;gap:2mm 5mm;font-size:9pt}
+  .signblock .k{font-family:var(--disp);font-size:6.5pt;letter-spacing:0.12em;color:var(--ink-faint);padding-top:0.8mm}
+  .signblock .v{font-family:var(--mono);word-break:break-all}
+  .ruleline{margin-top:6mm;border-top:1px solid var(--ink);width:70mm;padding-top:1.5mm;
+    font-size:8pt;color:var(--ink-faint)}
+
+  footer.foot{margin-top:8mm;padding-top:3mm;border-top:1px solid var(--rule);
+    font-size:8pt;color:var(--ink-faint);display:flex;gap:6mm;flex-wrap:wrap}
+  footer.foot b{color:var(--ink-soft);font-weight:600}
+  .err{border:1px solid var(--stamp);color:var(--stamp);padding:5mm;font-family:var(--mono);font-size:9pt}
+
+  @media print{
+    @page{size:A4;margin:14mm 15mm 16mm}
+    html,body{background:#fff}
+    .bar{display:none !important}
+    .sheet{width:auto;min-height:0;margin:0;padding:0;box-shadow:none}
+    /* A row split across a page break makes a field's value look like it belongs
+       to the next field's label, which on a regulator's form is a real error. */
+    tr,.signblock,.fence,.meta{break-inside:avoid;page-break-inside:avoid}
+    table.form thead{display:table-header-group}
+    h2.sec{break-after:avoid;page-break-after:avoid}
+    footer.foot{break-inside:avoid}
+  }
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <span id="barstate">READING THE RECORD…</span>
+  <span class="grow"></span>
+  <button class="primary" onclick="window.print()">PRINT · SAVE AS PDF</button>
+  <a id="backlink" href="Compliance.dc.html">BACK TO THE DESK</a>
+</div>
+
+<div class="sheet" id="sheet"><p class="err" id="boot">Reading the record…</p></div>
+
+<script>
+(function () {
+  var qs = new URLSearchParams(location.search);
+  var ID = qs.get('id') || qs.get('incident') || 'INC-0417';
+  var KIND = (qs.get('kind') || 'certin').toLowerCase();
+  document.getElementById('backlink').href = 'Compliance.dc.html?id=' + encodeURIComponent(ID);
+
+  function esc(v) {
+    return String(v == null ? '' : v).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+  function ist(s) {
+    if (!s) return '--';
+    try {
+      return new Intl.DateTimeFormat('en-IN', { dateStyle: 'medium', timeStyle: 'short',
+        timeZone: 'Asia/Kolkata' }).format(new Date(s)) + ' IST';
+    } catch (e) { return String(s).slice(0, 19).replace('T', ' ') + 'Z'; }
+  }
+  function get(path) {
+    return fetch(path, { headers: { 'Accept': 'application/json' } })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .catch(function () { return null; });
+  }
+
+  Promise.all([
+    get('/api/incidents/' + encodeURIComponent(ID) + '/draft?kind=' + encodeURIComponent(KIND)),
+    get('/api/incidents/' + encodeURIComponent(ID) + '/audit')
+  ]).then(function (res) {
+    var payload = res[0], chain = res[1] || [];
+    if (!payload || !payload.draft) {
+      document.getElementById('sheet').innerHTML =
+        '<p class="err">No ' + esc(KIND.toUpperCase()) + ' draft could be read for ' + esc(ID) +
+        '. The record may not exist on this deployment, or the drafter did not answer. ' +
+        'Nothing is invented here: an unreadable draft prints as this notice, never as a blank form.</p>';
+      document.getElementById('barstate').textContent = 'NO DRAFT';
+      return;
+    }
+    render(payload, chain);
+  });
+
+  // The signature that counts is the last human_signoff on the chain that a later
+  // reopen has not undone. Same rule as the Compliance desk, so the paper and the
+  // screen can never disagree about whether this record is signed.
+  function lastSignoff(chain) {
+    var found = null;
+    (chain || []).forEach(function (e) {
+      if (e.kind === 'human_signoff' && !(e.payload || {}).approved) found = e;
+      if (e.kind === 'state_transition' && (e.payload || {}).reopened) found = null;
+    });
+    return found;
+  }
+
+  function render(payload, chain) {
+    var d = payload.draft || {}, guard = payload.guard || {};
+    var fields = d.fields || [];
+    var signoff = lastSignoff(chain);
+    var signed = !!signoff;
+    var cov = d.coverage || {};
+    var auto = fields.filter(function (f) { return f.fill === 'auto'; }).length;
+    var partial = fields.filter(function (f) { return f.fill === 'partial'; }).length;
+    var human = fields.filter(function (f) { return f.fill === 'human'; }).length;
+
+    var rows = fields.map(function (f, i) {
+      var fill = String(f.fill || '');
+      var cls = fill === 'human' ? 'tag human' : fill === 'partial' ? 'tag partial' : 'tag';
+      var marker = f.marker || ('[' + fill.toUpperCase() + ']');
+      return '<tr>' +
+        '<td class="num">' + String(i + 1).padStart(2, '0') + '</td>' +
+        '<td class="lab"><b>' + esc(f.label) + '</b><span>' + esc(f.source || '') + '</span></td>' +
+        '<td class="val">' + esc(f.value) +
+          (f.note ? '<div class="note">' + esc(f.note) + '</div>' : '') + '</td>' +
+        '<td class="mk"><span class="' + cls + '">' + esc(marker) + '</span></td>' +
+      '</tr>';
+    }).join('');
+
+    // Attacker-controlled text is reproduced exactly as the record holds it. A
+    // report that quietly cleaned it up would be a false record, so it is fenced
+    // and labelled instead, which is what the console does on screen.
+    var quarantine = (d.quarantine_notices || []).map(function (q) {
+      var text = typeof q === 'string' ? q : (q.text || q.value || JSON.stringify(q));
+      return '<div class="fence"><span class="cap">UNVERIFIED · ATTACKER-SUPPLIED TEXT · REPRODUCED VERBATIM</span>' +
+        esc(text) + '</div>';
+    }).join('');
+
+    var gfind = (guard.findings || []).map(function (g) {
+      var label = typeof g === 'string' ? g :
+        [g.pii_type, g.confidence ? '(' + g.confidence + ')' : '', g.masked || g.value || '', g.where || '']
+          .filter(Boolean).join(' · ');
+      return '<tr><td class="num">·</td><td class="val" colspan="3">' + esc(label) + '</td></tr>';
+    }).join('');
+
+    var answers = signed ? ((signoff.payload || {}).answers || {}) : {};
+    var akeys = Object.keys(answers);
+
+    var signHtml = signed
+      ? '<div class="signblock">' +
+          '<div class="rows">' +
+            '<div class="k">SIGNED BY</div><div class="v">' + esc(signoff.actor) + '</div>' +
+            '<div class="k">SIGNED AT</div><div class="v">' + esc(ist(signoff.ts)) + '</div>' +
+            '<div class="k">LEDGER FRAME</div><div class="v">#' + esc(signoff.seq) + '</div>' +
+            '<div class="k">ENTRY HASH</div><div class="v">' + esc(signoff.entry_hash) + '</div>' +
+            (akeys.length ? '<div class="k">HUMAN ANSWERS</div><div class="v">' +
+              akeys.map(function (k) { return esc(k) + ' = ' + esc(answers[k]); }).join('<br>') + '</div>' : '') +
+          '</div>' +
+          '<div class="ruleline">Signature of authorised signatory · the ledger frame above is the record of it</div>' +
+        '</div>'
+      : '<div class="signblock">' +
+          '<div class="rows">' +
+            '<div class="k">STATUS</div><div class="v">UNSIGNED. No human_signoff frame stands on this record.</div>' +
+            '<div class="k">WHAT THIS IS</div><div class="v">A machine-assembled draft for human review. It is not a filing.</div>' +
+          '</div>' +
+          '<div class="ruleline">Signature of authorised signatory</div>' +
+        '</div>';
+
+    document.getElementById('barstate').textContent =
+      (signed ? 'SIGNED · FRAME #' + signoff.seq : 'UNSIGNED DRAFT') + ' · ' + ID;
+
+    document.getElementById('sheet').innerHTML =
+      '<header class="mast">' +
+        '<img src="assets/lockup-navy.png" alt="CITINEL">' +
+        '<div>' +
+          // The drafter's title ends "-- DRAFT, FOR HUMAN REVIEW AND SIGN-OFF". The stamp
+          // below says exactly that, in red, at a size a reader cannot skim past, so
+          // repeating it in the heading only cost three lines of wrap.
+          '<h1>' + esc(String(d.title || 'Incident Report').split(' -- ')[0]) + '</h1>' +
+          '<p class="sub">Assembled by CITINEL from the incident record. Every machine-filled field names the source it came from.</p>' +
+          '<div class="' + (signed ? 'stamp signed' : 'stamp') + '">' +
+            (signed ? 'SIGNED ON THE LEDGER · NOT FILED' : 'DRAFT · FOR HUMAN REVIEW AND SIGN-OFF') +
+          '</div>' +
+        '</div>' +
+        '<div class="right"><div class="idline">' + esc(d.incident_id || ID) + '</div>' +
+          '<div class="sub">' + esc(String(d.kind || KIND).toUpperCase()) + '</div></div>' +
+      '</header>' +
+
+      '<div class="meta">' +
+        '<div><dt>DRAFTED</dt><dd>' + esc(ist(d.generated_at)) + '</dd></div>' +
+        '<div><dt>STATUTORY DEADLINE</dt><dd>' + esc(d.clock_deadline ? ist(d.clock_deadline) : 'not set') + '</dd></div>' +
+        '<div><dt>MACHINE COVERAGE</dt><dd>' + esc(auto) + ' auto + ' + esc(partial) + ' suggested of ' +
+          esc(fields.length) +
+          (cov.coverage_low != null ? ' · ' + esc(cov.coverage_low) + ' to ' + esc(cov.coverage_high) + '%' : '') +
+          '</dd></div>' +
+        // The drafter reports human:0 for its own fields, and the desk still says one
+        // field needs a human. Both are true: the personal-data determination is a legal
+        // call that is not a form field at all, it rides on the sign-off frame. Printing
+        // "needs a human: 0" beside a desk that says 1 would look like a contradiction,
+        // so this tile counts what a human must actually do to this paper.
+        '<div><dt>HUMAN DECISIONS</dt><dd>' + esc(partial + human) + ' to confirm · 1 legal call' +
+          '</dd></div>' +
+      '</div>' +
+
+      '<h2 class="sec">THE FORM · ' + esc(fields.length) + ' FIELDS</h2>' +
+      '<table class="form"><thead><tr><th></th><th>FIELD AND ITS SOURCE</th><th>VALUE</th><th style="text-align:right">FILL</th></tr></thead>' +
+      '<tbody>' + rows + '</tbody></table>' +
+
+      (quarantine ? '<h2 class="sec">QUARANTINED CONTENT CARRIED INTO THIS FORM</h2>' +
+        '<p class="note">This text reached the draft because the form reproduces the record as it stands. It is rendered here with its provenance attached and no field of this report rests on it.</p>' +
+        quarantine : '') +
+
+      (gfind ? '<h2 class="sec">PERSONAL IDENTIFIERS FLAGGED FOR A REDACTION DECISION</h2>' +
+        '<p class="note">' + esc(guard.note || 'Flagged by CITINEL’s deterministic guard for the signer to decide before filing. Masked here; the guard does not decide redaction.') + '</p>' +
+        '<table class="form"><tbody>' + gfind + '</tbody></table>' : '') +
+
+      '<h2 class="sec">SIGN-OFF</h2>' + signHtml +
+
+      '<footer class="foot">' +
+        '<span><b>CITINEL drafts, a human signs, the bank files.</b> There is no configuration of this product in which the third step is ours.</span>' +
+        '<span>Printed ' + esc(ist(new Date().toISOString())) + '</span>' +
+      '</footer>';
+  }
+})();
+</script>
+</body>
+</html>
