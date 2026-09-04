@@ -56,7 +56,12 @@
   .bar{position:sticky;top:0;z-index:9;display:flex;align-items:center;gap:12px;flex-wrap:wrap;
     background:var(--navy);color:#fff;padding:10px 16px;font-family:var(--disp);font-size:8.5pt;letter-spacing:0.12em}
   .bar button,.bar a{font-family:var(--disp);font-size:8.5pt;letter-spacing:0.1em;padding:8px 13px;border-radius:6px;
-    border:1px solid rgba(255,255,255,0.45);background:none;color:#fff;cursor:pointer;text-decoration:none}
+    border:1px solid rgba(255,255,255,0.45);background:none;color:#fff;cursor:pointer;text-decoration:none;
+    white-space:nowrap;flex:none}
+  /* The status text is the only thing here that may shrink; the two controls are
+     sized by their labels and must stay on one line. Without this the bar ran 82px
+     past its own edge on a narrow window. */
+  #barstate{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .bar button.primary{background:#fff;color:var(--navy);border-color:#fff;font-weight:600}
   .bar .grow{flex:1;min-width:0}
 
@@ -106,6 +111,21 @@
   .signblock .v{font-family:var(--mono);word-break:break-all}
   .ruleline{margin-top:6mm;border-top:1px solid var(--ink);width:70mm;padding-top:1.5mm;
     font-size:8pt;color:var(--ink-faint)}
+  /* A filing is signed by a person in a role at an organisation, in a place, on a
+     date. The ledger proves WHO and WHEN cryptographically; the regulator's copy
+     still needs the human-readable block beside it. */
+  .siglines{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8mm 10mm;margin-top:8mm}
+  .siglines div{border-top:1px solid var(--ink);padding-top:1.5mm;font-size:7.5pt;color:var(--ink-faint);
+    font-family:var(--disp);letter-spacing:0.1em}
+  .statute{border:1px solid var(--rule);padding:4mm 5mm;margin-top:3mm;background:var(--wash)}
+  .statute p{margin:0 0 2.5mm;font-size:9pt;color:var(--ink)}
+  .statute p:last-child{margin-bottom:0}
+  .statute b{font-weight:600}
+  .statute .cite{font-family:var(--mono);font-size:7.5pt;color:var(--ink-faint)}
+  .routes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4mm;margin:3mm 0 0}
+  .routes div{border:1px solid var(--rule);padding:3mm}
+  .routes dt{font-family:var(--disp);font-size:6.5pt;letter-spacing:0.12em;color:var(--ink-faint);margin:0 0 1mm}
+  .routes dd{margin:0;font-family:var(--mono);font-size:9pt;word-break:break-word}
 
   footer.foot{margin-top:8mm;padding-top:3mm;border-top:1px solid var(--rule);
     font-size:8pt;color:var(--ink-faint);display:flex;gap:6mm;flex-wrap:wrap}
@@ -233,12 +253,48 @@
     return found;
   }
 
+  // Every statement in this block is quoted from docs/A6-compliance.md, which sourced
+  // it from the primary instrument, and each carries the finding id it came from. A
+  // regulator-facing page is the last place to paraphrase law from memory, so nothing
+  // here is written from the model's own knowledge.
+  var STATUTE = {
+    certin: {
+      basis: 'Directions No. 20(3)/2022-CERT-In dated 28 April 2022, issued under Section 70B(6) of the Information Technology Act, 2000, in force since 27 June 2022.',
+      basisCite: 'COMP-F01',
+      clock: 'Direction (ii): reportable incidents must be reported within <b>6 hours of noticing</b> them or being brought to notice. The trigger is awareness, not the completion of an investigation.',
+      clockCite: 'COMP-F03',
+      category: 'The incident type above is one of the 20 categories enumerated in <b>Annexure I</b> of the Directions.',
+      categoryCite: 'COMP-F04',
+      partial: 'CERT-In\u2019s FAQs confirm that information available at the time of reporting is sufficient, and may be supplemented later within a reasonable period. A six-hour report is expected to be incomplete.',
+      partialCite: 'COMP-F08',
+      formal: 'The CERT-In Incident Reporting Form states that filling and signing it is <b>not mandatory</b>; the relevant information may be provided in free-form communication.',
+      formalCite: 'COMP-F05',
+      routes: [['EMAIL', 'incident@cert-in.org.in'], ['PHONE', '1800-11-4949'], ['FAX', '1800-11-6969']],
+      routesCite: 'COMP-F05'
+    },
+    dpdp: {
+      basis: 'Rule 7 of the Digital Personal Data Protection Rules, 2025 (notified 13 November 2025), operationalising Section 8(6) of the DPDP Act, 2023.',
+      basisCite: 'COMP-F17a',
+      clock: 'Stage 1: on becoming aware, notify the Data Protection Board of India <b>without delay</b>, and notify every affected Data Principal. Stage 2: a detailed report <b>within 72 hours</b>, extendable on written request. The clock starts at awareness and runs continuously, including weekends and holidays.',
+      clockCite: 'COMP-F09',
+      category: 'Every affected Data Principal must be notified regardless of severity. Unlike GDPR Article 34, the DPDP regime provides <b>no materiality threshold</b> for individual notice.',
+      categoryCite: 'COMP-F09',
+      partial: 'The Stage 2 report must cover the facts and causes, mitigation taken and proposed, findings on the person responsible, steps to prevent recurrence, and a summary of the notifications sent to Data Principals.',
+      partialCite: 'COMP-F19',
+      formal: 'This obligation does <b>not</b> replace the CERT-In six-hour obligation. One personal-data breach can trigger CERT-In, the Data Protection Board, the Data Principals and a sector regulator, and notifying one does not satisfy another.',
+      formalCite: 'COMP-F12',
+      routes: [['SUBMIT TO', 'Data Protection Board of India'], ['ALSO NOTIFY', 'every affected Data Principal'], ['CERT-IN', 'separate 6-hour obligation stands']],
+      routesCite: 'COMP-F12'
+    }
+  };
+
   function render(payload, chain) {
     var d = payload.draft || {}, guard = payload.guard || {};
     var fields = d.fields || [];
     var signoff = lastSignoff(chain);
     var signed = !!signoff;
     var cov = d.coverage || {};
+    var st = STATUTE[String(d.kind || KIND).toLowerCase()] || STATUTE.certin;
     var auto = fields.filter(function (f) { return f.fill === 'auto'; }).length;
     var partial = fields.filter(function (f) { return f.fill === 'partial'; }).length;
     var human = fields.filter(function (f) { return f.fill === 'human'; }).length;
@@ -285,15 +341,23 @@
             (akeys.length ? '<div class="k">HUMAN ANSWERS</div><div class="v">' +
               akeys.map(function (k) { return esc(k) + ' = ' + esc(answers[k]); }).join('<br>') + '</div>' : '') +
           '</div>' +
-          '<div class="ruleline">Signature of authorised signatory · the ledger frame above is the record of it</div>' +
-        '</div>'
+          '<div class="siglines">' +
+            '<div>SIGNATURE OF AUTHORISED SIGNATORY</div><div>NAME IN BLOCK LETTERS</div>' +
+            '<div>DESIGNATION</div><div>ORGANISATION</div>' +
+            '<div>PLACE</div><div>DATE</div>' +
+          '</div>'
+        + '</div>'
       : '<div class="signblock">' +
           '<div class="rows">' +
             '<div class="k">STATUS</div><div class="v">UNSIGNED. No human_signoff frame stands on this record.</div>' +
             '<div class="k">WHAT THIS IS</div><div class="v">A machine-assembled draft for human review. It is not a filing.</div>' +
           '</div>' +
-          '<div class="ruleline">Signature of authorised signatory</div>' +
-        '</div>';
+          '<div class="siglines">' +
+            '<div>SIGNATURE OF AUTHORISED SIGNATORY</div><div>NAME IN BLOCK LETTERS</div>' +
+            '<div>DESIGNATION</div><div>ORGANISATION</div>' +
+            '<div>PLACE</div><div>DATE</div>' +
+          '</div>'
+        + '</div>';
 
     document.getElementById('barstate').textContent =
       (signed ? 'SIGNED · FRAME #' + signoff.seq : 'UNSIGNED DRAFT') + ' · ' + ID;
@@ -342,6 +406,27 @@
       (gfind ? '<h2 class="sec">PERSONAL IDENTIFIERS FLAGGED FOR A REDACTION DECISION</h2>' +
         '<p class="note">' + esc(guard.note || 'Flagged by CITINEL’s deterministic guard for the signer to decide before filing. Masked here; the guard does not decide redaction.') + '</p>' +
         '<table class="form"><tbody>' + gfind + '</tbody></table>' : '') +
+
+      '<h2 class="sec">STATUTORY BASIS AND CLOCK</h2>' +
+      '<div class="statute">' +
+        '<p>' + st.basis + ' <span class="cite">[' + st.basisCite + ']</span></p>' +
+        '<p>' + st.clock + ' <span class="cite">[' + st.clockCite + ']</span></p>' +
+        '<p>' + st.category + ' <span class="cite">[' + st.categoryCite + ']</span></p>' +
+        '<p>' + st.partial + ' <span class="cite">[' + st.partialCite + ']</span></p>' +
+        '<p>' + st.formal + ' <span class="cite">[' + st.formalCite + ']</span></p>' +
+      '</div>' +
+
+      '<h2 class="sec">HOW THIS IS SUBMITTED</h2>' +
+      '<p class="note">CITINEL drafts and a named human submits. There is no machine filing route: ' +
+        'no API accepts this document, and no configuration of this product would use one.</p>' +
+      '<div class="routes">' +
+        st.routes.map(function (r) {
+          return '<div><dt>' + esc(r[0]) + '</dt><dd>' + esc(r[1]) + '</dd></div>';
+        }).join('') +
+      '</div>' +
+      '<p class="note">Channels as published in the instrument <span class="cite">[' + esc(st.routesCite) + ']</span>. ' +
+        'Verify them against the regulator\u2019s current published guidance before sending: this page reproduces ' +
+        'the project\u2019s researched record, and it is not legal advice.</p>' +
 
       '<h2 class="sec">SIGN-OFF</h2>' + signHtml +
 
