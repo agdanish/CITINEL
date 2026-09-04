@@ -112,10 +112,17 @@ def build_args(api: str, action: str, params: dict[str, Any]) -> tuple[str, dict
         return TICKETING_METHOD, args
 
     if api == "comms":
+        # Slack rejects an empty text with `no_text`, so a caller that forgot
+        # `message` used to produce a provider refusal instead of a post.
+        # Compose the same attribution line the ticket carries rather than
+        # send nothing; the incident id is the one thing every message needs.
+        text = str(params.get("message") or "").strip()[:2000] or (
+            f"CITINEL: {params.get('action', action)} for incident "
+            f"{params.get('incident_id', '?')} -- see the ticket for detail")
         args = {
             "body": {
                 "channel": os.environ.get("CITINEL_SWY_SLACK_CHANNEL", ""),
-                "text": str(params.get("message", ""))[:2000],
+                "text": text,
             }
         }
         raw = os.environ.get("CITINEL_SWY_SLACK_TOKEN")

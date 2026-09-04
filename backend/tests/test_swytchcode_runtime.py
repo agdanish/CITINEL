@@ -250,3 +250,14 @@ def test_a_provider_refusal_reaches_the_ledger_with_its_reason(keyed):
     assert comms.status == "error"
     assert "not_in_channel" in comms.detail
     assert "HTTP 502" not in comms.detail
+
+
+def test_a_comms_call_without_a_message_still_names_the_incident(monkeypatch):
+    """Slack answers `no_text` to an empty body. Found by sending one for real
+    with the wrong parameter name; the builder now composes the attribution
+    line instead of shipping an empty string."""
+    monkeypatch.setenv("CITINEL_SWY_SLACK_CHANNEL", "C0TEST")
+    _, args = build_args("comms", "notify_response_team", {"incident_id": "INC-0417", "action": "isolate_host"})
+    assert args["body"]["text"] and "INC-0417" in args["body"]["text"]
+    _, args2 = build_args("comms", "notify_response_team", {"incident_id": "INC-1", "message": "  "})
+    assert "INC-1" in args2["body"]["text"]          # whitespace-only counts as absent
