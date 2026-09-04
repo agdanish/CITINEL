@@ -187,7 +187,12 @@ Established by running the real binary on 4 Sep 2026, not by reading docs:
   cd ~/CITINEL/.swytchcode && swy auth connect Slack   # browser OAuth to Slack
   ```
 
-  The existing `xoxb-` bot token is not used by this path. The connected
+  The existing `xoxb-` bot token is not used by this path. **Proven 4 Sep
+  2026:** after login, connect and `/invite @Swytchcode`, one real message
+  posted to `C0BUY5T2R7U` through CITINEL's own transport (`ok: true`,
+  `ts 1788519986.233539`). The first attempt answered `not_in_channel`,
+  which the transport now records as a failed action with that reason
+  rather than "executed". The connected
   account is stored as an encrypted blob in `~/.swytchcode/credentials.db`
   keyed by workspace and synced from Swytchcode's cloud. Whether the Render
   container can obtain it (most plausibly via `SWYTCHCODE_TOKEN` and a linked
