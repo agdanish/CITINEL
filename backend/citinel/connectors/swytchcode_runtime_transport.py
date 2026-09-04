@@ -38,7 +38,9 @@ than from their docs:
 
 from __future__ import annotations
 
+import json
 import os
+from pathlib import Path
 from typing import Any
 
 #: Canonical ids, overridable per deployment because Swytchcode's own sources
@@ -49,6 +51,31 @@ COMMS_METHOD = os.environ.get("CITINEL_SWY_COMMS_METHOD", "slack.chat.postmessag
 
 class TransportUnavailable(RuntimeError):
     """The runtime is not installed or the project was never scaffolded."""
+
+
+def _auth_param(canonical_id: str) -> str:
+    """Which parameter this tool wants its credential in.
+
+    Read from .swytchcode/tooling.json, which the CLI writes and which is the
+    only authority: Slack's postMessage declares `token`, while Swytchcode's
+    own GitHub example passes `Authorization`. Assuming one shape for both
+    sends the credential in a field the tool does not read, and the call fails
+    for a reason that looks like anything except the real one.
+    """
+    try:
+        root = Path(__file__).resolve()
+        for parent in root.parents:
+            cfg = parent / ".swytchcode" / "tooling.json"
+            if cfg.exists():
+                tools = json.loads(cfg.read_text()).get("tools", {})
+                for entry in tools.get(canonical_id, {}).get("inputs", []):
+                    for name in entry:
+                        if name.lower() in ("token", "authorization"):
+                            return name
+                break
+    except Exception:
+        pass
+    return "Authorization"
 
 
 def _bearer(var: str) -> str | None:
@@ -78,9 +105,10 @@ def build_args(api: str, action: str, params: dict[str, Any]) -> tuple[str, dict
             "owner": owner, "repo": repo,
             "body": {"title": title, "body": body, "labels": ["citinel", "incident"]},
         }
-        auth = _bearer("CITINEL_SWY_GITHUB_TOKEN")
-        if auth:
-            args["Authorization"] = auth
+        raw = os.environ.get("CITINEL_SWY_GITHUB_TOKEN")
+        if raw:
+            key = _auth_param(TICKETING_METHOD)
+            args[key] = f"Bearer {raw}" if key.lower() == "authorization" else raw
         return TICKETING_METHOD, args
 
     if api == "comms":
@@ -90,9 +118,10 @@ def build_args(api: str, action: str, params: dict[str, Any]) -> tuple[str, dict
                 "text": str(params.get("message", ""))[:2000],
             }
         }
-        auth = _bearer("CITINEL_SWY_SLACK_TOKEN")
-        if auth:
-            args["Authorization"] = auth
+        raw = os.environ.get("CITINEL_SWY_SLACK_TOKEN")
+        if raw:
+            key = _auth_param(COMMS_METHOD)
+            args[key] = f"Bearer {raw}" if key.lower() == "authorization" else raw
         return COMMS_METHOD, args
 
     raise ValueError(f"unknown ecosystem api {api!r}")

@@ -118,3 +118,21 @@ def test_no_key_means_nothing_is_attempted_or_claimed(monkeypatch):
     receipts = ex.execute_for_decision(_decision(), "WRK-2214", "INC-0417")
     assert calls == []
     assert all(r.status == "not_configured" for r in receipts)
+
+
+def test_the_credential_goes_in_the_parameter_each_tool_actually_declares(monkeypatch):
+    """Slack's postMessage declares `token`; Swytchcode's own GitHub example
+    passes `Authorization`. Assuming one shape for both puts the credential in
+    a field the tool never reads, and the call then fails for a reason that
+    looks like anything except the real one."""
+    from citinel.connectors.swytchcode_runtime_transport import _auth_param, build_args
+
+    # read from the repo's real .swytchcode/tooling.json, which the CLI wrote
+    assert _auth_param("slack.chat.postmessage.create") == "token"
+    # a tool not registered yet falls back to the documented default
+    assert _auth_param("something.not.registered") == "Authorization"
+
+    monkeypatch.setenv("CITINEL_SWY_SLACK_TOKEN", "xoxb-1")
+    _, args = build_args("comms", "notify_response_team", {"message": "x"})
+    assert args["token"] == "xoxb-1"          # not wrapped in Bearer
+    assert "Authorization" not in args
