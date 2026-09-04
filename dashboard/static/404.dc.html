@@ -16,7 +16,7 @@
      paint unstyled. Everything resolves against the console root. -->
 <base href="/">
 <title>CITINEL · Not found</title>
-<meta name="description" content="The requested address is not part of the CITINEL console. Registered screens: Overview, Queue, Audit, Entry.">
+<meta name="description" content="The requested address is not part of the CITINEL console. Registered screens: Overview, Queue, Audit.">
 <script src="vendor/resources.js"></script>
 <script src="./support.js"></script>
 <!-- Render-blocking, deliberately. The same sheets are declared again in the
@@ -65,6 +65,7 @@
 <script src="role.js"></script>
 <style>html,body{height:100%;overflow-x:auto}</style>
 <script src="api.js"></script>
+<script src="nav.js"></script>
 </helmet>
 <!-- Static artboard: no logic block (no text/x-dc script). There is nothing to
      fetch and nothing to decide -- the address was wrong, and this page says
@@ -77,7 +78,6 @@
       <a href="Overview.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">OVERVIEW</a>
       <a href="Queue.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">QUEUE</a>
       <a href="Audit.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">AUDIT</a>
-      <a href="Entry.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">ENTRY</a>
     </nav>
     <span style="flex:none;font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;color:var(--ctn-color-severity-critical-text);white-space:nowrap">HTTP 404</span>
   </header>
@@ -102,10 +102,6 @@
           <a href="Audit.dc.html" style="display:flex;align-items:baseline;gap:12px;padding:10px 12px;border:1px solid var(--ctn-color-border-hairline);border-radius:var(--ctn-radius-card);background:var(--ctn-color-surface-raised);color:var(--ctn-color-text-primary);min-width:0">
             <span style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;flex:none">AUDIT</span>
             <span style="font-size:var(--ctn-text-small);color:var(--ctn-color-text-muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">the ledger, verified</span>
-          </a>
-          <a href="Entry.dc.html" style="display:flex;align-items:baseline;gap:12px;padding:10px 12px;border:1px solid var(--ctn-color-border-hairline);border-radius:var(--ctn-radius-card);background:var(--ctn-color-surface-raised);color:var(--ctn-color-text-primary);min-width:0">
-            <span style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;flex:none">ENTRY</span>
-            <span style="font-size:var(--ctn-text-small);color:var(--ctn-color-text-muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">sign in</span>
           </a>
         </div>
       </div>

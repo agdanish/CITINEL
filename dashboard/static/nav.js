@@ -1,166 +1,144 @@
-/* CITINEL — the persistent rail. One navigation on every screen.
- *
- * Shell had a grouped left rail; the other fifteen screens each carried their
- * own inline horizontal strip. Same product, two different ways to move around
- * it, and nothing to tell an operator which screens belong together.
- *
- * This renders Shell's rail — the same four sections, the same order — on
- * every page that loads it, from one place. It is injected rather than pasted
- * into fifteen bespoke compositions on purpose: those layouts are built around
- * a full-width strip, and rewriting each one the day before a demo is how a
- * screen breaks in a way nobody notices until someone else is looking.
- *
- * It starts COLLAPSED. A page that has never seen it renders exactly as it did
- * before, and opening the rail is the operator's choice, remembered per
- * browser the way role.js remembers analyst/CISO depth. The existing top strip
- * is left alone; this sits beside it rather than replacing it.
- *
- * Vanilla ES5-safe, no build step, no dependencies — FastAPI serves this file
- * straight from disk.
- */
+// CITINEL — left navigation rail. Shared across every screen; the top nav stays.
+//
+// Built from a static list rather than cloned from the page's own <nav>, on
+// purpose: Demo and Shell have no header nav, the DC runtime announces no
+// "rendered" event to wait for, and six links are incident-scoped and must be
+// rebuilt through api.js's incidentLink() so the incident a reader selected
+// keeps propagating screen to screen (the same rule the top nav follows).
+// Mounted as a sibling of the page root, outside the runtime's template, so
+// no hole, sc-for or dc-import is involved and nothing here can render blank.
 (function () {
-  'use strict';
-
-  // The DC runtime re-injects each page's <helmet> scripts after mount, so
-  // this file executes twice per load. One rail per page; the second call is
-  // a no-op rather than a duplicate rail stacked on the first.
-  if (window.CITINEL_NAV) return;
-  window.CITINEL_NAV = true;
-
-  var KEY = 'citinel.railOpen';
-  var SECTIONS = [
-    { name: 'FLOOR', items: [
-      ['Overview', 'Overview.dc.html'],
-      ['Alert queue', 'Queue.dc.html'],
-      ['Incident detail', 'Replay.dc.html'],
-      ['Approvals', 'Approvals.dc.html']
-    ]},
-    { name: 'EVIDENCE', items: [
-      ['Evidence viewer', 'Evidence.dc.html'],
-      ['Confidence panel', 'Confidence.dc.html'],
-      ['Audit log', 'Audit.dc.html'],
-      ['Regulatory clocks', 'Compliance.dc.html']
-    ]},
-    { name: 'DETECTION', items: [
-      ['Sigma corpus', 'Corpus.dc.html'],
-      ['Policy & guardrails', 'Policy.dc.html'],
-      ['Detection eval', 'Eval.dc.html'],
-      ['Demo mode', 'Demo.dc.html']
-    ]},
-    { name: 'WATCH', items: [
-      ['Shift handover', 'Handover.dc.html'],
-      ['Connectors', 'Settings.dc.html'],
-      ['Executive', 'Executive.dc.html'],
-      ['Operations floor', 'Shell.dc.html']
-    ]}
+  var KEY = 'citinel.rail';                    // 'open' | 'closed'
+  var W_OPEN = 168, W_CLOSED = 44;
+  var PAGES = [
+    ['Overview.dc.html',   'OVERVIEW',   false],
+    ['Queue.dc.html',      'QUEUE',      false],
+    ['Replay.dc.html',     'REPLAY',     true],
+    ['Confidence.dc.html', 'CONFIDENCE', true],
+    ['Evidence.dc.html',   'EVIDENCE',   true],
+    ['Approvals.dc.html',  'APPROVALS',  true],
+    ['Compliance.dc.html', 'COMPLIANCE', true],
+    ['Audit.dc.html',      'AUDIT',      true],
+    ['Corpus.dc.html',     'CORPUS',     false],
+    ['Eval.dc.html',       'EVAL',       false],
+    ['Policy.dc.html',     'POLICY',     false],
+    ['Handover.dc.html',   'HANDOVER',   false],
+    ['Executive.dc.html',  'EXEC',       false],
+    ['Settings.dc.html',   'CONNECTORS', false],
+    ['Demo.dc.html',       'DEMO',       false],
+    ['Shell.dc.html',      'SHELL',      false]
   ];
 
-  function isOpen() {
-    try { return localStorage.getItem(KEY) === '1'; } catch (e) { return false; }
+  function stored() {
+    try { return localStorage.getItem(KEY) === 'closed' ? 'closed' : 'open'; }
+    catch (e) { return 'open'; }
   }
-  function remember(open) {
-    try { localStorage.setItem(KEY, open ? '1' : '0'); } catch (e) {}
+  function store(v) { try { localStorage.setItem(KEY, v); } catch (e) {} }
+
+  function here() {
+    var p = location.pathname.split('/').pop() || 'Overview.dc.html';
+    return p.toLowerCase();
+  }
+  function href(page, scoped) {
+    var API = window.CITINEL_API;
+    return (scoped && API && API.incidentLink) ? API.incidentLink(page) : page;
   }
 
-  var here = (location.pathname.split('/').pop() || 'Overview.dc.html');
+  function css() {
+    var s = document.createElement('style');
+    s.setAttribute('data-citinel-rail', '');
+    s.textContent = [
+      'body{display:flex;margin:0}',
+      'body>#dc-root,body>[data-citinel-page],body>[data-screen-label]{flex:1 1 auto;min-width:0}',
+      '#citinel-rail{flex:none;box-sizing:border-box;display:flex;flex-direction:column;',
+      '  border-right:1px solid var(--ctn-color-border-strong);background:var(--ctn-color-surface-panel);',
+      '  height:100vh;position:sticky;top:0;overflow:hidden;transition:width 160ms ease}',
+      '#citinel-rail[data-state=open]{width:' + W_OPEN + 'px}',
+      '#citinel-rail[data-state=closed]{width:' + W_CLOSED + 'px}',
+      '#citinel-rail button{all:unset;cursor:pointer;display:flex;align-items:center;justify-content:center;',
+      '  height:52px;flex:none;border-bottom:1px solid var(--ctn-color-border-strong);',
+      '  font-family:var(--ctn-font-display);font-size:13px;color:var(--ctn-color-text-primary)}',
+      '#citinel-rail button:focus-visible{outline:2px solid var(--ctn-color-text-primary);outline-offset:-2px}',
+      '#citinel-rail nav{display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden;flex:1;padding:6px 0;scrollbar-width:thin}',
+      '#citinel-rail a{display:flex;align-items:center;gap:10px;height:34px;padding:0 14px;box-sizing:border-box;',
+      '  text-decoration:none;white-space:nowrap;font-family:var(--ctn-font-display);font-size:9.5px;',
+      '  letter-spacing:0.12em;color:var(--ctn-color-text-muted);border-left:2px solid transparent}',
+      '#citinel-rail a:hover{color:var(--ctn-color-text-primary)}',
+      '#citinel-rail a[aria-current=page]{color:var(--ctn-color-text-primary);background:var(--ctn-color-surface-well);',
+      '  border-left-color:var(--ctn-color-text-primary)}',
+      '#citinel-rail a i{flex:none;width:16px;text-align:center;font-style:normal;font-size:10px}',
+      '#citinel-rail[data-state=closed] a span{display:none}',
+      '#citinel-rail[data-state=closed] a{padding:0 12px}',
+      '@media print{#citinel-rail{display:none}}'
+    ].join('\n');
+    document.head.appendChild(s);
+  }
+
+  // The DC runtime renders every page inside body > #dc-root > div > [data-citinel-page].
+  // The rail mounts BESIDE #dc-root, as body's own child, so it lives outside the
+  // runtime's territory: a re-render inside #dc-root can never wipe it, and it
+  // never has to know how deep the page root sits. Confirmed live 4 Sep 2026 --
+  // a body>[data-citinel-page] selector matched nothing and the rail never appeared.
+  function mountPoint() {
+    return document.getElementById('dc-root')
+        || document.querySelector('body>[data-citinel-page]')
+        || document.querySelector('body>[data-screen-label]');
+  }
 
   function build() {
-    var rail = document.createElement('nav');
-    rail.id = 'citinel-rail';
-    rail.setAttribute('aria-label', 'CITINEL sections');
-
-    var open = isOpen();
-    rail.style.cssText = [
-      'position:fixed', 'left:0', 'top:0', 'bottom:0', 'z-index:900',
-      'width:' + (open ? '212px' : '38px'),
-      'background:var(--ctn-color-surface-shell, #0b0f14)',
-      'border-right:1px solid var(--ctn-color-border-strong, #2a3441)',
-      'display:flex', 'flex-direction:column',
-      'transition:width 140ms ease', 'overflow:hidden',
-      'font-family:var(--ctn-font-display, ui-monospace, monospace)'
-    ].join(';');
-
-    var toggle = document.createElement('button');
-    toggle.type = 'button';
-    toggle.id = 'citinel-rail-toggle';
-    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-    toggle.title = 'Show or hide the section rail';
-    toggle.style.cssText = [
-      'flex:none', 'height:38px', 'width:100%', 'cursor:pointer',
-      'background:none', 'border:none',
-      'border-bottom:1px solid var(--ctn-color-border-hairline, #1b2330)',
-      'color:var(--ctn-color-text-muted, #7c8ba1)',
-      'font-family:inherit', 'font-size:11px', 'letter-spacing:0.14em',
-      'display:flex', 'align-items:center', 'gap:10px',
-      'padding:0 12px', 'text-align:left'
-    ].join(';');
-    toggle.innerHTML = '<span aria-hidden="true">' + (open ? '‹‹' : '››') + '</span>' +
-                       '<span class="citinel-rail-label">SECTIONS</span>';
-
-    var body = document.createElement('div');
-    body.style.cssText = 'flex:1;min-height:0;overflow-y:auto;padding:6px 0';
-
-    SECTIONS.forEach(function (sec) {
-      var h = document.createElement('div');
-      h.className = 'citinel-rail-label';
-      h.textContent = sec.name;
-      h.style.cssText = [
-        'font-size:9px', 'letter-spacing:0.16em',
-        'color:var(--ctn-color-text-disabled, #55627a)',
-        'padding:11px 12px 5px'
-      ].join(';');
-      body.appendChild(h);
-
-      sec.items.forEach(function (it) {
-        var a = document.createElement('a');
-        var current = it[1] === here;
-        a.href = it[1];
-        a.title = it[0];
-        if (current) a.setAttribute('aria-current', 'page');
-        a.style.cssText = [
-          'display:flex', 'align-items:center', 'gap:10px',
-          'padding:6px 12px', 'text-decoration:none', 'font-size:11px',
-          'white-space:nowrap',
-          'color:' + (current ? 'var(--ctn-color-text-primary, #e8eef7)'
-                              : 'var(--ctn-color-text-secondary, #9fb0c7)'),
-          'border-left:2px solid ' + (current ? 'var(--ctn-color-state-cited, #d98a2b)' : 'transparent')
-        ].join(';');
-        // A dot so the collapsed rail still shows which screen you are on.
-        a.innerHTML = '<span aria-hidden="true" style="flex:none;width:5px;height:5px;border-radius:50%;background:' +
-          (current ? 'var(--ctn-color-state-cited, #d98a2b)' : 'var(--ctn-color-text-disabled, #55627a)') +
-          '"></span><span class="citinel-rail-label">' + it[0] + '</span>';
-        body.appendChild(a);
+    if (document.getElementById('citinel-rail')) return;
+    var root = mountPoint();
+    if (!root) {
+      // The runtime may not have created #dc-root yet; mount the moment it does.
+      var mo = new MutationObserver(function () {
+        if (mountPoint()) { mo.disconnect(); build(); }
       });
-    });
-
-    rail.appendChild(toggle);
-    rail.appendChild(body);
-
-    function paint(o) {
-      rail.style.width = o ? '212px' : '38px';
-      toggle.setAttribute('aria-expanded', o ? 'true' : 'false');
-      toggle.firstChild.textContent = o ? '‹‹' : '››';
-      var labels = rail.querySelectorAll('.citinel-rail-label');
-      for (var i = 0; i < labels.length; i++) {
-        labels[i].style.display = o ? '' : 'none';
-      }
-      // The page keeps its own layout; it is only pushed clear of the rail.
-      document.body.style.paddingLeft = (o ? 212 : 38) + 'px';
+      mo.observe(document.documentElement, { childList: true, subtree: true });
+      return;
     }
+    css();
+    var rail = document.createElement('aside');
+    rail.id = 'citinel-rail';
+    rail.setAttribute('aria-label', 'CITINEL screens');
+    rail.setAttribute('data-state', stored());
 
-    toggle.addEventListener('click', function () {
-      var next = !isOpen();
-      remember(next);
-      paint(next);
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    function paint() {
+      var open = rail.getAttribute('data-state') === 'open';
+      btn.textContent = open ? '‹' : '›';          // ‹  ›
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      btn.setAttribute('aria-label', open ? 'Collapse navigation' : 'Expand navigation');
+      btn.title = open ? 'Collapse (rail stays collapsed on every screen)' : 'Expand navigation';
+    }
+    btn.addEventListener('click', function () {
+      var next = rail.getAttribute('data-state') === 'open' ? 'closed' : 'open';
+      rail.setAttribute('data-state', next); store(next); paint();
     });
+    paint();
+    rail.appendChild(btn);
 
-    document.body.appendChild(rail);
-    paint(open);
+    var nav = document.createElement('nav');
+    var cur = here();
+    PAGES.forEach(function (p) {
+      var a = document.createElement('a');
+      a.href = href(p[0], p[2]);
+      var i = document.createElement('i'); i.textContent = p[1].charAt(0);
+      var s = document.createElement('span'); s.textContent = p[1];
+      a.appendChild(i); a.appendChild(s);
+      a.title = p[1];
+      if (p[0].toLowerCase() === cur) a.setAttribute('aria-current', 'page');
+      nav.appendChild(a);
+    });
+    rail.appendChild(nav);
+    root.parentNode.insertBefore(rail, root);
+
+    // Another tab collapsing the rail collapses this one too; same pattern as role.js.
+    window.addEventListener('storage', function (e) {
+      if (e.key === KEY) { rail.setAttribute('data-state', stored()); paint(); }
+    });
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', build);
-  } else {
-    build();
-  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', build);
+  else build();
 })();

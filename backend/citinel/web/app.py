@@ -1305,17 +1305,18 @@ async def _http_error(request: Request, exc: StarletteHTTPException):
 # --- the glass-box UI ---------------------------------------------------------
 # Mounted last, deliberately: StaticFiles at "/" is a catch-all, so every
 # /api/* and /healthz route above must already be registered or the mount
-# would shadow them. html=True serves Entry.dc.html-style pages directly and
+# would shadow them. html=True serves the *.dc.html pages directly and
 # is what makes the deployed Render service actually show the console rather
 # than only answering JSON.
 if STATIC_DIR.is_dir():
     # "/" must be an explicit route, registered BEFORE the mount below.
     # StaticFiles(html=True) serves index.html at a directory root, and this
-    # console has no index.html -- its entry point is Entry.dc.html. Without
+    # console has no index.html -- its entry point is Overview.dc.html (the Entry
+    # screen was removed 4 Sep 2026). Without
     # this redirect the root URL 404s, which is precisely the URL the deck's
     # QR code points at: a judge scanning it would get a blank error page.
     @app.get("/", include_in_schema=False)
     def _root() -> RedirectResponse:
-        return RedirectResponse(url="/Entry.dc.html")
+        return RedirectResponse(url="/Overview.dc.html")
 
     app.mount("/", StaticFiles(directory=STATIC_DIR, html=True), name="ui")

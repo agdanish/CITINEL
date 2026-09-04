@@ -59,6 +59,7 @@
 <script src="role.js"></script>
 <style>html,body{height:100%;overflow-y:hidden;overflow-x:auto}</style>
 <script src="api.js"></script>
+<script src="nav.js"></script>
 </helmet>
 <div data-screen-label="Measurement" data-citinel-page="eval" style="display:flex;flex-direction:column;height:100vh;min-width:1280px;background:var(--ctn-color-surface-shell)">
 
@@ -81,7 +82,6 @@
       <a href="Settings.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">CONNECTORS</a>
       <a href="Demo.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">DEMO</a>
       <a href="Shell.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">SHELL</a>
-      <a href="Entry.dc.html" style="font-family:var(--ctn-font-display);font-size:9.5px;letter-spacing:0.12em;padding:6px 10px;color:var(--ctn-color-text-muted);white-space:nowrap">ENTRY</a>
 </nav>
     <div style="flex:none;display:flex;align-items:center;gap:1px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;padding:2px">
       <button onClick="{{ setAnalyst }}" style="font-family:var(--ctn-font-display);font-size:8.5px;letter-spacing:0.1em;padding:6px 11px;border:none;border-radius:4px;cursor:pointer;background:{{ analystBg }};color:{{ analystFg }}">ANALYST</button>

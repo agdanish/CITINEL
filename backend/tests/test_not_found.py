@@ -34,7 +34,7 @@ def test_unknown_console_path_gets_the_branded_page():
     assert r.headers.get("cache-control") == "no-cache"
     assert "CITINEL" in r.text
     assert "Overview.dc.html" in r.text
-    for screen in ("Queue.dc.html", "Audit.dc.html", "Entry.dc.html"):
+    for screen in ("Queue.dc.html", "Audit.dc.html", "Overview.dc.html"):
         assert screen in r.text, f"404 page should link to {screen}"
 
 

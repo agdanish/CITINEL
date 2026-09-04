@@ -223,7 +223,7 @@ def test_paths_come_from_settings_not_from_file_location(monkeypatch, tmp_path):
 def test_root_redirects_to_the_console_entry_point():
     """The deck's QR code points at "/". StaticFiles(html=True) serves
     index.html at a root and this console has none -- its entry point is
-    Entry.dc.html -- so without an explicit redirect the QR code lands a
+    Overview.dc.html -- so without an explicit redirect the QR code lands a
     judge on a 404."""
     from fastapi.testclient import TestClient
     import citinel.web.app as app_mod
@@ -233,7 +233,7 @@ def test_root_redirects_to_the_console_entry_point():
         pytest.skip("console not present in this checkout")
     r = TestClient(app_mod.app).get("/", follow_redirects=False)
     assert r.status_code in (307, 308)
-    assert r.headers["location"].endswith("Entry.dc.html")
+    assert r.headers["location"].endswith("Overview.dc.html")
 
 
 def test_console_files_are_always_revalidated_but_api_is_left_alone():
