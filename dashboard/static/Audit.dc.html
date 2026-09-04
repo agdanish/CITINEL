@@ -307,7 +307,7 @@ class Component extends DCLogic {
       E(88426,'23:14:40','HUMAN','a.deshmukh · L2','action=SEAL_DRAFT artifact=certin_6hr_INC-0417_draft3 fields_machine=12 fields_human=4 signature_hash=sha256:e11c04…7a92', {link:'sign', label:'HUMAN SIGN', state:'sign'}),
       E(88427,'23:14:41','EXPORT','Scribe','artifact=certin_6hr_INC-0417_draft3_sealed.pdf written_to=\\\\sahyadri-fs01\\compliance\\certin\\2026-08\\ transmitted=false portal_credential=none filed_by=pending_bank')
     ];
-    this.incId = 'INC-0417';
+    this.incId = (window.CITINEL_API && window.CITINEL_API.INCIDENT_PRIMARY) || 'INC-0419';
     let q0 = '';
     try { const P = new URLSearchParams(window.location.search); const id = P.get('id'); if (id && /^INC-\d+$/.test(id)) this.incId = id; const qq = P.get('q'); if (qq) q0 = String(qq).slice(0, 80); } catch(e) {}
     this.state = {role:this.roleInit(), q:q0, kinds:{}, actors:{}, focus:null, verifying:false, vpos:0, verified:false,

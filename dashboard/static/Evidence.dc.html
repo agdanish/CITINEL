@@ -326,7 +326,7 @@ class Component extends DCLogic {
        claim:'Policy drafted two containment actions and required a named human before either could execute.'}
     ];
     let start = 'e3';
-    this.incId = 'INC-0417'; this.startIndex = null;
+    this.incId = (window.CITINEL_API && window.CITINEL_API.INCIDENT_PRIMARY) || 'INC-0419'; this.startIndex = null;
     try{
       const P = new URLSearchParams(window.location.search);
       const q = P.get('exhibit');

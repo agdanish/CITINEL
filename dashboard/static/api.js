@@ -17,8 +17,11 @@
  *  1. Same-origin (FastAPI serves this directory): leave BASE as ''.
  *     Cross-origin: set BASE to the service root, e.g. 'http://localhost:8000'.
  *  2. INCIDENT_PRIMARY / INCIDENT_SECONDARY are the only incident ids the UI names.
- *     PRIMARY is INC-0417 — the Cerber chain, 2,487 findings, the id on the deck.
- *     SECONDARY is INC-0416 — the second real corpus id, 337 findings.
+ *     PRIMARY is INC-0419 — the live-window Cerber chain, 2,487 findings, the record the
+ *     Render switch (CITINEL_DEMO_LIVE_INCIDENT) counts down on stage. probe() re-reads it
+ *     from /api/source's demo_live_incident, so the console default always matches that
+ *     switch: change the env var and the console follows, no rebuild. INC-0417 is the same
+ *     chain on a historical clock. SECONDARY is INC-0416 — the second real corpus id, 337.
  *  3. Endpoints marked `live: false` have no route yet. API.get short-circuits them with
  *     source:'scripted' and makes no network call. Once the route exists, flip the flag AND
  *     make the page read it -- the badge will not move until the page does.
@@ -40,7 +43,7 @@
 
   var API = {
     BASE: '',
-    INCIDENT_PRIMARY: 'INC-0417',
+    INCIDENT_PRIMARY: 'INC-0419',
     INCIDENT_SECONDARY: 'INC-0416',
     TIMEOUT_MS: 6000,          // probes and small reads
     BULK_TIMEOUT_MS: 20000,    // incident bodies, audit chains, drafts, ledger verify
@@ -368,6 +371,9 @@
       if (!r.ok) return false;
       return API.get('source', null, null, { probe: true }).then(function (s) {
         API.corpus = s.ok && s.data ? s.data.source : null;
+        // The console default follows the Render switch: whichever record it
+        // named as the live-window incident is the one an id-less screen opens.
+        if (s.ok && s.data && s.data.demo_live_incident) API.INCIDENT_PRIMARY = s.data.demo_live_incident;
         return true;
       });
     });

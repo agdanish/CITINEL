@@ -443,7 +443,7 @@ class Component extends DCLogic {
        key:'person', options:['A. DESHMUKH · SOC L2','S. KULKARNI · COMPLIANCE OFFICER','OTHER · TYPE BELOW'],
        consequence:'Pre-filled from your session. Confirm it: this name goes to the regulator as the point of contact.'}
     ];
-    this.incId = 'INC-0417';
+    this.incId = (window.CITINEL_API && window.CITINEL_API.INCIDENT_PRIMARY) || 'INC-0419';
     try { const id = new URLSearchParams(window.location.search).get('id'); if (id && /^INC-\d+$/.test(id)) this.incId = id; } catch(e) {}
     this.state = {
       role: this.roleInit(), answers:{}, desc:'At 20:57:06 IST on 23 August 2026 nine payout beneficiaries were registered from a single UPI session in 71 seconds. Three failed su attempts on a core banking host followed. At 21:03:02 the bulk payout template was modified with maker-checker bypassed and fourteen beneficiaries appended, staging INR 18,40,000 for release. No payout cleared. Containment was drafted by policy and executed at 21:52 on the approval of a named operator.',

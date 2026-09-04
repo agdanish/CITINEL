@@ -315,7 +315,7 @@ class Component extends DCLogic {
        reasonTag:'SCOPE DOES NOT COVER',
        reason:'A live maintenance window would have argued the whole thing was routine. Its scope is branch network only and explicitly excludes CBS and payout systems, so it cannot excuse the template change.'}
     ];
-    this.incId = 'INC-0417';
+    this.incId = (window.CITINEL_API && window.CITINEL_API.INCIDENT_PRIMARY) || 'INC-0419';
     try { const id = new URLSearchParams(window.location.search).get('id'); if (id && /^INC-\d+$/.test(id)) this.incId = id; } catch(e) {}
     this.state = {role:this.roleInit(), restored:{},
       // live: null = reading · true = the real verdict on the pans · false = authored fallback

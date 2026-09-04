@@ -49,6 +49,11 @@ def sandbox(tmp_path, monkeypatch):
                   {"title": "Suspicious Logon", "level": "high",
                    "event_ts": "2016-08-10T20:54:24+00:00", "host": "h1.example", "techniques": ["T1078"]})
     monkeypatch.setattr(app_mod, "INCIDENTS_DIR", tmp_path)
+    # Isolate the seed too: the routes fall back to SEED_DIR for a swarm artifact
+    # the live/artifacts dir lacks (so a demo incident added to the image after the
+    # Render disk was seeded still serves), and without this a sandbox would leak
+    # the real committed corpus into its own tiny one.
+    monkeypatch.setattr(app_mod, "SEED_DIR", tmp_path)
     monkeypatch.setattr(app_mod, "ENDPOINTS", MockEndpoints())
     monkeypatch.setattr(app_mod, "_SWARM_RUNS", {})
     # "every external connector pinned off" was not true of all of them: the

@@ -147,6 +147,26 @@ def _artifacts_dir() -> Path:
     return settings.artifacts_dir or INCIDENTS_DIR
 
 
+# Swarm artifacts the disk holds, over the ones baked in the image. The Render
+# disk is seeded once, on the container's first boot; a demo incident whose
+# verdict was added to data/seed AFTER that boot (INC-0419) therefore lives only
+# in the image, and without this fallback its investigation would never appear on
+# a redeployed service. The disk wins per incident, so a real run performed on the
+# deployment still overrides the shipped one.
+def _summaries() -> dict[str, Any]:
+    merged = summaries(SEED_DIR)
+    merged.update(summaries(_artifacts_dir()))
+    return merged
+
+
+def _load_result(incident_id: str) -> dict[str, Any] | None:
+    return load_result(incident_id, _artifacts_dir()) or load_result(incident_id, SEED_DIR)
+
+
+def _load_runs(incident_id: str) -> list[dict[str, Any]]:
+    return load_runs(incident_id, _artifacts_dir()) or load_runs(incident_id, SEED_DIR)
+
+
 def _ledger() -> AuditLedger:
     return AuditLedger(_ledger_path(), sink=LyzrLedgerMirror())
 
@@ -316,10 +336,14 @@ def data_source() -> dict:
         "incidents_file_present": incidents_file.exists(),
         "ledger_file_present": ledger_file.exists(),
         "incident_count": len(load_incidents(incidents_file)),
-        "swarm_results": sorted(summaries(_artifacts_dir()).keys()),
+        "swarm_results": sorted(_summaries().keys()),
         "context_gathered": sorted(p.stem for p in (_artifacts_dir() / "context").glob("*.json")) if (_artifacts_dir() / "context").is_dir() else [],
         "swarm_credentials": settings.has_swarm_credentials,
         "ui_swarm_enabled": settings.ui_swarm_enabled,
+        # The incident whose window is measured from this service's boot, if any.
+        # The console reads it to default its links to the same record the Render
+        # switch made live, so "the demo incident" means one thing across both.
+        "demo_live_incident": (settings.demo_live_incident or "").strip() or None,
         "demo_capture": {
             "available": DEMO_MANIFEST is not None,
             "captured_at": DEMO_MANIFEST.get("captured_at") if DEMO_MANIFEST else None,
@@ -336,7 +360,7 @@ def list_incidents(summary: bool = False) -> list[dict]:
     """Every incident, with its state derived from the ledger and the swarm's
     summary attached. `summary=true` drops the findings (INC-0417 alone carries
     2,487 with their raw log lines, ~4 MB) for screens that only need the row."""
-    chains, swarm = _chains(), summaries(_artifacts_dir())
+    chains, swarm = _chains(), _summaries()
     out = []
     for inc in _incidents():
         d = _overlay(inc.as_dict(), chains.get(inc.incident_id, []), swarm.get(inc.incident_id))
@@ -363,7 +387,7 @@ def get_incident(
     model. See policy/roles.py for the full reasoning.
     """
     inc = _incident(incident_id)
-    chains, swarm = _chains(), summaries(_artifacts_dir())
+    chains, swarm = _chains(), _summaries()
     d = _overlay(inc.as_dict(), chains.get(incident_id, []), swarm.get(incident_id))
     role = Role.parse(x_citinel_role)
     return project_incident(d, role, expand=expand).as_dict()
@@ -385,11 +409,11 @@ def get_verdict(incident_id: str) -> dict:
     has been saved -- the deterministic findings stand alone until then, and
     the console must say so rather than draw a verdict that does not exist."""
     _incident(incident_id)
-    d = load_result(incident_id, _artifacts_dir())
+    d = _load_result(incident_id)
     if d is None:
         raise HTTPException(404, f"no persisted swarm result for {incident_id}; "
                                  f"POST /api/incidents/{incident_id}/swarm to run it")
-    d["runs"] = load_runs(incident_id, _artifacts_dir())
+    d["runs"] = _load_runs(incident_id)
     return d
 
 
@@ -833,7 +857,7 @@ def _swarm_status(incident_id: str) -> dict[str, Any]:
     base = {"incident_id": incident_id, "running": False, "started_at": None,
             "finished_at": None, "mode": None, "banner": None, "error": None, "summary": None}
     base.update(_SWARM_RUNS.get(incident_id, {}))
-    base["has_result"] = load_result(incident_id, _artifacts_dir()) is not None
+    base["has_result"] = _load_result(incident_id) is not None
     return base
 
 
@@ -899,7 +923,7 @@ def gather_public_context(incident_id: str, body: dict | None = None) -> dict:
         raise HTTPException(503, "no Tavily key configured on this deployment")
     if not (body or {}).get("confirm"):
         raise HTTPException(400, 'each query is a Tavily credit; send {"confirm": true} to gather')
-    verdict = load_result(incident_id, _artifacts_dir())
+    verdict = _load_result(incident_id)
     return gather_context(inc, verdict, settings.data_dir / "cache" / "enrichment",
                           _artifacts_dir(), connector=_tavily())
 
@@ -928,7 +952,7 @@ def run_wide_sweep(incident_id: str, body: dict | None = None) -> dict:
         raise HTTPException(503, "no Gemini key configured on this deployment")
     if not (body or {}).get("confirm"):
         raise HTTPException(400, 'a sweep is one Gemini call; send {"confirm": true} to run it')
-    result = load_result(incident_id, _artifacts_dir()) or {}
+    result = _load_result(incident_id) or {}
     examined = int(result.get("findings_examined") or MAX_EVIDENCE_FINDINGS)
     return run_sweep(inc, examined, settings.data_dir / "cache" / "enrichment",
                      _artifacts_dir(), ledger=_ledger())
@@ -957,7 +981,7 @@ def request_brief(incident_id: str, body: dict | None = None) -> dict:
         raise HTTPException(503, "no Tavily key configured on this deployment")
     if not (body or {}).get("confirm"):
         raise HTTPException(400, 'a brief is a multi-search Tavily run; send {"confirm": true} to start it')
-    verdict = load_result(incident_id, _artifacts_dir())
+    verdict = _load_result(incident_id)
     return start_brief(inc, verdict, settings.data_dir / "cache" / "enrichment",
                        _artifacts_dir())
 
@@ -1123,7 +1147,7 @@ def write_handover(incident_id: str, body: dict | None = None) -> dict:
     if not (body or {}).get("confirm"):
         raise HTTPException(400, 'each note is a Lyzr call; send {"confirm": true} to write one')
     chains = _chains()
-    d = _overlay(inc.as_dict(), chains.get(incident_id, []), summaries(_artifacts_dir()).get(incident_id))
+    d = _overlay(inc.as_dict(), chains.get(incident_id, []), _summaries().get(incident_id))
     note = handover_summary(d, chains.get(incident_id, []), d.get("swarm"))
     note.update({"incident_id": incident_id, "state": d["state"], "written_at": _now(),
                  "frames_used": min(15, len([e for e in chains.get(incident_id, []) if e.kind not in ("detection_added", "escalation_added")]))})
