@@ -704,7 +704,7 @@ def get_connectors() -> dict:
               "webhook · starts a playbook and reads back which channels succeeded"),
             c("n8n-api", "reads playbook executions back as citable evidence, and answers one paused on a Wait node",
               bool(s.n8n_api_url and s.n8n_api_key), "CITINEL_N8N_API_URL + CITINEL_N8N_API_KEY"),
-            c("swytchcode", "ticketing + comms after an executed action", bool(s.swytchcode_api_key), "key set; no runtime transport wired in this build -- receipts say so"),
+            c("swytchcode", "ticketing + comms after an executed action", bool(s.swytchcode_api_key), "key set; the Python runtime is wired -- receipts say whether the CLI is scaffolded, a policy blocked the call, or it executed"),
         ],
         "mock_endpoints": {
             "isolated_hosts": sorted(ENDPOINTS.isolated_hosts),
