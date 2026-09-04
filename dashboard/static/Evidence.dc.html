@@ -361,17 +361,30 @@ class Component extends DCLogic {
     const inc = this.state.incident; if (!inc) return;
     const f = (inc.findings || [])[idx]; if (!f) return;
     clearInterval(this.v);
+    // The platen sweep is the visible proof that a recompute happened, so it must
+    // ALWAYS run. The old code let crypto.subtle.digest resolve straight to done():
+    // the browser hashes 2 KB in well under a millisecond, so done() cleared the
+    // interval and jumped vpos to 100 before a single frame of the sweep rendered,
+    // and the needle sat idle at the top exactly where the first compute left it.
+    // Now the sweep drives the state and the hash only settles it: the needle runs
+    // 0 -> full every time, and holds at full until the digest is actually in.
     this.setState({digesting:true, digest:null, verifying:true, vpos:0, verified:false});
-    const done = hex => { clearInterval(this.v); this.setState({digesting:false, digest:hex, verifying:false, vpos:100, verified:!!hex}); };
-    this.v = setInterval(()=>this.setState(x=> x.vpos >= 100 ? {} : {vpos: x.vpos + 10}), 40);
+    let hex = null, ready = false;
+    this.v = setInterval(() => this.setState(x => {
+      if (x.vpos < 100) return {vpos: Math.min(100, x.vpos + 8)};   // ~350ms sweep floor
+      if (!ready) return {};                                        // swept; hold for the hash
+      clearInterval(this.v);
+      return {digesting:false, digest:hex, verifying:false, verified:!!hex};
+    }), 28);
+    const settle = h => { hex = h; ready = true; };
     try {
       const bytes = new TextEncoder().encode(String(f.evidence_raw || ''));
       if (window.crypto && crypto.subtle) {
         crypto.subtle.digest('SHA-256', bytes)
-          .then(buf => done([...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('')))
-          .catch(()=>done(null));
-      } else done(null);
-    } catch(e) { done(null); }
+          .then(buf => settle([...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('')))
+          .catch(()=>settle(null));
+      } else settle(null);
+    } catch(e) { settle(null); }
   }
   arc(frac){
     if(frac<=0) return '';

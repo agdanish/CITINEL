@@ -174,10 +174,23 @@
           <div style="position:absolute;bottom:-1px;left:{{ headLeft }};transform:translateX(-50%);width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:8px solid var(--ctn-color-text-primary);pointer-events:none"></div>
         </div>
       </div>
-      <div style="height:16px;flex:none;position:relative;margin-left:150px">
-        <sc-for list="{{ ruler }}" as="r" hint-placeholder-count="7">
-          <span style="position:absolute;left:{{ r.left }};top:2px;font-family:var(--ctn-font-mono);font-size:10px;color:var(--ctn-color-text-muted);transform:{{ r.tx }}">{{ r.label }}</span>
-        </sc-for>
+      <!-- The time axis must sit under the TRACK, not under the lane-label column.
+           A bare margin-left:150px started the axis 12px to the left of the track's
+           content (the column carries 10px of right padding and a 1px border, and the
+           track a 1px left border), so every label drifted left of the tick it named
+           and the last one, pinned at left:100% with no white-space:nowrap, had zero
+           room to its right and a11y.css broke it into a vertical stack of digits.
+           This row now mirrors the filmstrip's own flex structure -- a 150px column
+           box, then a flex:1 inset by the track's 1px borders -- so 0%..100% lands
+           exactly on the track's 0%..100% at any width, and nowrap keeps each label
+           on one line. -->
+      <div style="display:flex;flex:none;min-width:0">
+        <div style="width:150px;flex:none;box-sizing:content-box;padding-right:10px;border-right:1px solid transparent"></div>
+        <div style="height:16px;flex:1;position:relative;min-width:0;border-left:1px solid transparent;border-right:1px solid transparent">
+          <sc-for list="{{ ruler }}" as="r" hint-placeholder-count="7">
+            <span style="position:absolute;left:{{ r.left }};top:2px;font-family:var(--ctn-font-mono);font-size:10px;color:var(--ctn-color-text-muted);white-space:nowrap;transform:{{ r.tx }}">{{ r.label }}</span>
+          </sc-for>
+        </div>
       </div>
     </div>
   </section>
