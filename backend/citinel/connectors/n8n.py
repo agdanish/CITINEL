@@ -38,10 +38,16 @@ class N8nDispatch:
     channels: list[str]
     detail: str
     failed_channels: list[str] = field(default_factory=list)
+    #: n8n's own id for the run this dispatch started, when the playbook
+    #: returns one. It is what makes an automated action citable afterwards:
+    #: with it the run can be read back through the REST API, replayed, and
+    #: shown on the Audit screen instead of living only inside n8n.
+    execution_id: str = ""
 
     def as_dict(self) -> dict[str, Any]:
         return {"status": self.status, "channels": self.channels,
-                "failed_channels": self.failed_channels, "detail": self.detail}
+                "failed_channels": self.failed_channels, "detail": self.detail,
+                "execution_id": self.execution_id}
 
 
 def _payload(incident, signed_by: str) -> dict[str, Any]:
@@ -103,8 +109,13 @@ def dispatch_signed(incident, signed_by: str, sender=None) -> N8nDispatch:
 
     channels = list(resp.get("channels", []))
     failed = list(resp.get("failed_channels", []))
+    # A playbook that returns its own execution id turns a notification into a
+    # record: `Respond to Webhook` can include {{ $execution.id }}, and once it
+    # does the run is readable, replayable and citable through the n8n API.
+    execution_id = str(resp.get("execution_id") or resp.get("executionId") or "")
     status_word = "partially_dispatched" if failed else "dispatched"
     detail = f"signed {incident.incident_id} escalated via n8n to {', '.join(channels) or 'no channels'}"
     if failed:
         detail += f"; FAILED: {', '.join(failed)}"
-    return N8nDispatch(status_word, channels, detail, failed_channels=failed)
+    return N8nDispatch(status_word, channels, detail, failed_channels=failed,
+                       execution_id=execution_id)

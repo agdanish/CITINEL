@@ -180,6 +180,13 @@ class Settings(BaseSettings):
 
     # --- sponsor integrations (Step 12; names only, values from env) -------
     n8n_webhook_url: str | None = Field(default=None)
+    #: n8n's public REST API, which is a different plane from the webhook: the
+    #: API manages and READS workflows and executions but cannot trigger one
+    #: (n8n documents no run endpoint), while the webhook triggers but cannot
+    #: be queried. CITINEL uses both -- the webhook to start a playbook, the
+    #: API to read back what it did and cite it.
+    n8n_api_url: str | None = Field(default=None)
+    n8n_api_key: str | None = Field(default=None)
     swytchcode_api_key: str | None = Field(default=None)
     lyzr_api_key: str | None = Field(default=None)
     # Lyzr Agent API endpoint. The exact host must be taken from the operator's

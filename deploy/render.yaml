@@ -63,6 +63,13 @@ envVarGroups:
         sync: false
       - key: CITINEL_N8N_WEBHOOK_URL
         sync: false
+      # n8n's REST API is a different plane from the webhook: it reads back
+      # what a playbook did (executions become citable evidence) but cannot
+      # trigger one. Both are used, in opposite directions.
+      - key: CITINEL_N8N_API_URL
+        sync: false
+      - key: CITINEL_N8N_API_KEY
+        sync: false
       - key: CITINEL_SWYTCHCODE_API_KEY
         sync: false
       # Swytchcode's two ecosystem APIs. Credentials travel per call as

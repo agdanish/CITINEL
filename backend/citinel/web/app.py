@@ -47,6 +47,7 @@ from citinel.config import settings
 from citinel.web.demo_capture import find_fixture, load_fixtures
 from citinel.connectors.lyzr import LyzrGuard, LyzrLedgerMirror
 from citinel.connectors.n8n import dispatch_signed
+from citinel.connectors.n8n_api import list_executions, resume as n8n_resume
 from citinel.connectors.swytchcode import SwytchcodeExecutor
 from citinel.incidents.builder import load_incidents
 from citinel.incidents.state import derive_state
@@ -699,7 +700,10 @@ def get_connectors() -> dict:
             c("lyzr-verdict", "independent second opinion on citation support, beside the Narrator's own estimate", bool(lyzr_ok and s.lyzr_verdict_agent_id), "CITINEL_LYZR_VERDICT_AGENT_ID"),
             c("lyzr-response", "independent proportionality review of a proposed action, beside the OPA gate", bool(lyzr_ok and s.lyzr_response_agent_id), "CITINEL_LYZR_RESPONSE_AGENT_ID"),
             c("lyzr-corpus", "independent coverage advisory on the Sigma corpus", bool(lyzr_ok and s.lyzr_corpus_agent_id), "CITINEL_LYZR_CORPUS_AGENT_ID"),
-            c("n8n", "post-sign-off automation (notify, export, ticket)", bool(s.n8n_webhook_url), "webhook"),
+            c("n8n", "post-sign-off automation (notify, export, ticket)", bool(s.n8n_webhook_url),
+              "webhook · starts a playbook and reads back which channels succeeded"),
+            c("n8n-api", "reads playbook executions back as citable evidence, and answers one paused on a Wait node",
+              bool(s.n8n_api_url and s.n8n_api_key), "CITINEL_N8N_API_URL + CITINEL_N8N_API_KEY"),
             c("swytchcode", "ticketing + comms after an executed action", bool(s.swytchcode_api_key), "key set; no runtime transport wired in this build -- receipts say so"),
         ],
         "mock_endpoints": {
@@ -883,6 +887,77 @@ def request_brief(incident_id: str, body: dict | None = None) -> dict:
     verdict = load_result(incident_id, _artifacts_dir())
     return start_brief(inc, verdict, settings.data_dir / "cache" / "enrichment",
                        _artifacts_dir())
+
+
+@app.get("/api/n8n/executions")
+def n8n_executions(limit: int = 20, status: str | None = None) -> dict:
+    """What the automation layer actually did, read back from n8n itself.
+
+    An automated action that can only be inspected inside another tool is not
+    auditable. These runs carry an id, a state and a timestamp, so the console
+    can show them beside the ledger frames rather than asking a reviewer to go
+    and look somewhere else.
+    """
+    return list_executions(limit=limit, status=status)
+
+
+@app.post("/api/incidents/{incident_id}/n8n/resume")
+def n8n_resume_wait(incident_id: str, body: dict | None = None) -> dict:
+    """Answer an n8n playbook that parked itself on a Wait node.
+
+    The inversion this exists for: rather than CITINEL asking a human and then
+    telling n8n, the playbook pauses and hands over its own resume URL. The
+    analyst decides on CITINEL's Approvals screen without leaving the console,
+    and the workflow branches on the answer. Recorded as a ledger frame,
+    because a human decision that changes what a machine does next is exactly
+    what the ledger is for.
+    """
+    _incident(incident_id)
+    b = body or {}
+    url, decision, approver = b.get("resume_url", ""), b.get("decision", ""), b.get("approver", "")
+    if not url or decision not in ("approve", "reject") or not approver:
+        raise HTTPException(400, 'resume_url, approver, and decision ("approve" or "reject") are all required')
+    out = n8n_resume(url, decision, str(approver), str(b.get("note", "")))
+    _ledger().append(incident_id, f"human:{approver}", "decision", {
+        "check": "n8n_wait_resumed", "decision": decision,
+        "status": out["status"], "note": str(b.get("note", ""))[:300],
+        "reason": "a playbook paused on a Wait node and a named human answered it "
+                  "from the console; n8n held the workflow state, CITINEL held the human",
+    })
+    return out
+
+
+@app.post("/api/n8n/error")
+def n8n_error_report(body: dict | None = None) -> dict:
+    """n8n's Error Trigger reports a failed playbook here.
+
+    A SOC that cannot see its own automation failing is missing the same class
+    of blind spot it exists to find elsewhere. n8n's Error Trigger posts the
+    execution id, the node that failed and the message; this records that as a
+    ledger frame against the incident the playbook was working on, so a broken
+    automation shows up on the audit trail instead of only in n8n's own logs.
+    """
+    b = body or {}
+    execution = b.get("execution") or {}
+    workflow = b.get("workflow") or {}
+    incident_id = str(b.get("incident_id") or "").strip()
+    frame = {
+        "check": "n8n_playbook_failed",
+        "workflow": str(workflow.get("name") or workflow.get("id") or "unknown")[:120],
+        "execution_id": str(execution.get("id") or ""),
+        "execution_url": str(execution.get("url") or "")[:400],
+        "last_node": str(execution.get("lastNodeExecuted") or "")[:120],
+        "message": str((execution.get("error") or {}).get("message") or "")[:400],
+        "reason": "the automation layer reported its own failure; recorded so a "
+                  "broken playbook is visible on the audit trail, not only in n8n",
+    }
+    if not incident_id:
+        return {"status": "recorded_without_incident", "detail":
+                "no incident_id in the error payload; nothing was written to a chain",
+                "frame": frame}
+    _incident(incident_id)
+    _ledger().append(incident_id, "n8n", "tool_call", frame)
+    return {"status": "recorded", "incident_id": incident_id, "frame": frame}
 
 
 def _handover_path(incident_id: str) -> Path:
