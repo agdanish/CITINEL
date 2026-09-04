@@ -44,7 +44,21 @@ S = {
  'quote':st('quote', fontName='Times-Italic', textColor=GREY, leftIndent=9),
 }
 
+# Times-Roman is a base-14 PDF font limited to WinAnsi. Three characters used in
+# the source are outside it and printed as a black box in the first render, one of
+# them the rupee sign in a currency figure, which is the kind of silent corruption
+# a reader notices before the author does. Tested by rendering each and looking:
+# the section sign, the rightwards arrow and the middle dot are all fine and are
+# deliberately NOT substituted here.
+UNRENDERABLE = {
+    '\u20B9': 'Rs ',    # INDIAN RUPEE SIGN, printed as a box
+    '\u25C0': '<',      # BLACK LEFT-POINTING TRIANGLE, the back control
+    '\u25B8': '>',      # BLACK RIGHT-POINTING SMALL TRIANGLE, the advance control
+}
+
 def inline(t):
+    for ch, sub in UNRENDERABLE.items():
+        t = t.replace(ch, sub)
     t = (t.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;'))
     # !!...!! marks one of the forty catalogued items. They are the reason this
     # document exists, so they carry the only strong colour in the body text.

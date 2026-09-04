@@ -27,6 +27,12 @@ used throughout this document and in the matrix at the end.
 item is named at the screen that evidences it, and only restated where a second
 screen provides independent corroboration.
 
+**Typography note.** Two console controls carry a solid triangle, rendered here
+as `<` and `>`: the back control reads **< RETURN TO REPLAY** on this page and
+**◀ RETURN TO REPLAY** on the screen, and the advance control reads **NEXT CUE >**
+here and **NEXT CUE ▸** on the screen. Times has no glyph for either. Currency is
+written `Rs` for the same reason.
+
 **Presentation classes.** `P1` core demonstration path. `P2` secondary, shown if
 the slot allows. `P3` responsive, shown only under questioning.
 
