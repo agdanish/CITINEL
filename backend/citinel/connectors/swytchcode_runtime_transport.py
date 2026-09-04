@@ -127,6 +127,25 @@ def build_args(api: str, action: str, params: dict[str, Any]) -> tuple[str, dict
     raise ValueError(f"unknown ecosystem api {api!r}")
 
 
+def _error_json(stream: str) -> dict[str, Any]:
+    """The one JSON object the CLI prints for an error, or {}.
+
+    The CLI's stderr mixes a telemetry notice and a request log line with the
+    error itself; only the JSON line is the error. Scanned last-to-first
+    because the error is the final thing written.
+    """
+    for line in reversed(stream.splitlines()):
+        line = line.strip()
+        if line.startswith("{") and line.endswith("}"):
+            try:
+                obj = json.loads(line)
+                if isinstance(obj, dict) and ("error" in obj or "category" in obj):
+                    return obj
+            except json.JSONDecodeError:
+                continue
+    return {}
+
+
 def runtime_sender(api: str, action: str, params: dict[str, Any]) -> tuple[int, Any]:
     """(status, body) in the shape SwytchcodeExecutor already expects.
 
@@ -156,31 +175,56 @@ def runtime_sender(api: str, action: str, params: dict[str, Any]) -> tuple[int, 
         message = getattr(e, "message", None) or str(e)
         if not isinstance(message, str):
             message = str(message)
-        first = (message.splitlines() or [""])[0][:300]
-        low = f"{message} {details.get('category', '')}".lower()
 
-        # Order matters, and so does precision. The CLI writes its progress and
-        # notices onto the same stream as the error, so a naive substring match
-        # is wrong: an unauthenticated call's text contains the word "policy"
-        # incidentally and would be misread as a policy block -- which would
-        # put "a policy stopped this" on the audit ledger when in truth nobody
-        # was logged in. Confirmed empirically against the real binary.
+        # The CLI writes THREE things onto the stream this message came from:
+        # a telemetry notice ("Run `swytchcode login` or set SWYTCHCODE_TOKEN
+        # to enable usage tracking"), a request log line, and ONE JSON object
+        # carrying the actual error with a `category`. The classifier below
+        # used to substring-match the whole stream, so the telemetry notice --
+        # printed on every call, logged in or not -- satisfied "swytchcode
+        # login" and every failure of every kind became TransportUnavailable,
+        # written to the ledger as not_configured. A broken policy definition
+        # and a missing Slack credential were both reported as "the runtime is
+        # not scaffolded", which sent an operator to re-scaffold a runtime that
+        # was fine. Confirmed empirically against the real binary, 4 Sep 2026.
         #
-        # Configuration state first: not authenticated, or the tool was never
-        # added to tooling.json. Both are deployment facts, not failed actions.
-        if any(t in low for t in ("swytchcode login", "swytchcode_token",
-                                  "not authenticated", "authentication required",
-                                  "not found in tooling", "tool not found")):
+        # So: find the JSON line, classify on its `category`, and only fall
+        # back to substring matching on the error TEXT of that line, never on
+        # the surrounding chatter.
+        err = _error_json(message)
+        category = str(err.get("category") or details.get("category") or "").lower()
+        text = str(err.get("error") or "").strip() or (message.splitlines() or [""])[0]
+        first = text.splitlines()[0][:300] if text else "swytchcode call failed"
+        suggested = str(err.get("suggested_action") or details.get("suggested_action") or "")
+        low = f"{text} {category}".lower()
+
+        # Deployment facts, not failed actions: nobody is authenticated for this
+        # provider, or the tool was never added to tooling.json. The message
+        # now names the real condition ("missing credentials for Slack") rather
+        # than the telemetry notice.
+        # `not_found` is the kernel's category for a tool that is not in
+        # tooling.json OR an integration bundle that was never fetched. The
+        # second is what a container gets when the bundles are gitignored and
+        # the image only copies the tracked files -- found by simulating
+        # exactly that directory: "integration GitHub.github@1.1.4 bundle
+        # missing ... Run: swytchcode bootstrap".
+        if category in ("auth", "not_found") or any(t in low for t in (
+                "not authenticated", "authentication required", "missing credentials",
+                "not found in tooling", "tool not found", "bundle missing")):
             raise TransportUnavailable(first) from e
 
-        # A policy block is the guardrail working. Matched on the documented
-        # action type, not the bare word "policy".
-        if "policy_blocked" in low or "blocked by policy" in low:
+        # A policy block is the guardrail working. The CLI reports it under the
+        # documented action type.
+        if category in ("policy_denied", "policy_blocked") or "policy_blocked" in low or "blocked by policy" in low:
             return 403, {"policy_blocked": True, "message": first,
-                         "suggested_action": details.get("suggested_action", "")}
+                         "suggested_action": suggested}
 
-        return 502, {"policy_blocked": False, "message": message,
-                     "suggested_action": details.get("suggested_action", "")}
+        # Everything else -- a policy that could not be EVALUATED, input that
+        # failed validation, a provider error -- is a failed action and must
+        # be recorded as one, with its real reason.
+        return 502, {"policy_blocked": False, "message": first,
+                     "category": category or "unknown",
+                     "suggested_action": suggested}
     except FileNotFoundError as e:
         raise TransportUnavailable(f"the swytchcode binary is not on PATH: {e}") from e
 

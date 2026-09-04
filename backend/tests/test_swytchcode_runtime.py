@@ -87,28 +87,71 @@ def test_a_policy_block_is_recorded_as_the_guardrail_working(keyed):
     assert "policy stopped" in r.detail and "core banking" in r.detail
 
 
-def test_a_missing_login_is_configuration_not_a_failed_action(keyed, monkeypatch):
-    """The bug this locks: the CLI prints progress on the same stream as the
-    error, and an unauthenticated call's text contains the word "policy"
-    incidentally. A loose match reported "a policy stopped this" on the audit
-    ledger when in truth nobody was logged in."""
-    from citinel.connectors import swytchcode_runtime_transport as t
+def _cli_error(category: str, error: str, **extra):
+    """A SwytchcodeError shaped exactly like the real binary raises it: the
+    telemetry notice and a request log line on the same stream, then ONE JSON
+    object carrying the classified error. Captured from swytchcode 2.20.15."""
+    import json as _json
+    payload = {"error": error, "category": category,
+               "suggested_action": extra.get("suggested_action", ""),
+               "docs_url": "https://docs.swytchcode.com/"}
 
     class FakeErr(Exception):
         message = ("Telemetry is disabled. Run `swytchcode login` or set "
                    "SWYTCHCODE_TOKEN to enable usage tracking.\n"
-                   "fetching policy bundles...")
-        details = {}
+                   "2026/09/04 15:43:42 [swytchcode exec] request tool=x {}\n"
+                   + _json.dumps(payload))
+        details = None
+    return FakeErr
 
+
+def _raise_with(monkeypatch, err_cls):
     import swytchcode_runtime
-    monkeypatch.setattr(swytchcode_runtime, "SwytchcodeError", FakeErr, raising=False)
+    monkeypatch.setattr(swytchcode_runtime, "SwytchcodeError", err_cls, raising=False)
+    monkeypatch.setattr(swytchcode_runtime, "exec",
+                        lambda *a, **k: (_ for _ in ()).throw(err_cls()), raising=False)
 
-    def boom(*a, **k):
-        raise FakeErr()
-    monkeypatch.setattr(swytchcode_runtime, "exec", boom, raising=False)
 
-    with pytest.raises(t.TransportUnavailable):
+def test_missing_provider_credentials_is_configuration_not_a_failed_action(keyed, monkeypatch):
+    """The real not-authenticated shape is a JSON error with category "auth".
+    It is a deployment fact and must surface as TransportUnavailable carrying
+    the REAL condition, not the telemetry notice that precedes it."""
+    from citinel.connectors import swytchcode_runtime_transport as t
+    _raise_with(monkeypatch, _cli_error(
+        "auth", "missing credentials for Slack - run `swytchcode auth connect Slack`"))
+    with pytest.raises(t.TransportUnavailable) as ei:
         t.runtime_sender("comms", "notify_response_team", {"message": "x"})
+    assert "missing credentials for Slack" in str(ei.value)
+    assert "Telemetry" not in str(ei.value)
+
+
+def test_the_telemetry_notice_alone_does_not_mean_not_configured(keyed, monkeypatch):
+    """The bug this locks. The CLI prints "Run `swytchcode login`" on EVERY
+    call, logged in or not, as a telemetry notice. The classifier used to
+    substring-match the whole stream, so every failure of every kind became
+    not_configured on the ledger: a broken policy definition and a missing
+    Slack credential were both recorded as "the runtime is not scaffolded",
+    which sent an operator to re-scaffold a runtime that was fine. Confirmed
+    against the real binary, 4 Sep 2026."""
+    from citinel.connectors import swytchcode_runtime_transport as t
+    _raise_with(monkeypatch, _cli_error(
+        "policy_error",
+        'policy "citinel-no-core-banking-in-ticket": ambiguous field resolution: '
+        '"body" has conflicting values in top-level and body'))
+    code, body = t.runtime_sender("ticketing", "create_incident_ticket", {"incident_id": "I"})
+    assert code == 502 and body["policy_blocked"] is False
+    assert body["category"] == "policy_error"
+    assert "ambiguous field resolution" in body["message"]
+
+
+def test_a_policy_block_is_reported_under_the_cli_s_real_category(keyed, monkeypatch):
+    """The binary reports a guard firing as category "policy_denied"."""
+    from citinel.connectors import swytchcode_runtime_transport as t
+    _raise_with(monkeypatch, _cli_error(
+        "policy_denied", "CITINEL policy: a ticket naming core banking infrastructure is blocked"))
+    code, body = t.runtime_sender("ticketing", "create_incident_ticket", {"incident_id": "I"})
+    assert code == 403 and body["policy_blocked"] is True
+    assert "core banking" in body["message"]
 
 
 def test_no_key_means_nothing_is_attempted_or_claimed(monkeypatch):
@@ -136,3 +179,16 @@ def test_the_credential_goes_in_the_parameter_each_tool_actually_declares(monkey
     _, args = build_args("comms", "notify_response_team", {"message": "x"})
     assert args["token"] == "xoxb-1"          # not wrapped in Bearer
     assert "Authorization" not in args
+
+
+def test_a_missing_integration_bundle_is_a_deployment_fact(keyed, monkeypatch):
+    """What the Render image produced: the bundles are gitignored and the
+    Dockerfile copied only the tracked files, so the kernel could not find the
+    integration at all. That is not a failed action and not a policy block."""
+    from citinel.connectors import swytchcode_runtime_transport as t
+    _raise_with(monkeypatch, _cli_error(
+        "not_found", "integration GitHub.github@1.1.4 bundle missing.\nExpected: "
+        "/app/.swytchcode/integrations/GitHub/github/1.1.4/wrekenfile.yaml\nRun: swytchcode bootstrap"))
+    with pytest.raises(t.TransportUnavailable) as ei:
+        t.runtime_sender("ticketing", "create_incident_ticket", {"incident_id": "I"})
+    assert "bundle missing" in str(ei.value)

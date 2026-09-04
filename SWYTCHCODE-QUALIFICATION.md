@@ -159,13 +159,53 @@ inside a test named `test_the_arg_mapping_targets_real_canonical_ids`, so CI
 certified the mismatch as correct. Both are fixed, with the three code and
 config sites.
 
-## What remains
+## What remains, precisely
 
-Credentials only. Then in Render's `citinel-shared` group: `CITINEL_SWY_GITHUB_TOKEN` (a PAT with
-repo scope), `CITINEL_SWY_SLACK_TOKEN`, `CITINEL_SWY_SLACK_CHANNEL`.
+Established by running the real binary on 4 Sep 2026, not by reading docs:
 
-**Until then the seam reports `not_configured` and executes nothing** — which
-is the honest state, and deliberately so: a configured key with no reachable
-runtime used to produce `error` receipts on the permanent audit ledger that
-read like transient failures, making a configured deployment strictly worse
-than an unconfigured one. That was fixed.
+- **`swy login` is not required to execute.** The kernel's own help says it is
+  "pure, deterministic, non-interactive, and offline-capable" and "never calls
+  the registry". Login is for registry features and telemetry. The receipt that
+  used to say otherwise was a misclassification, fixed below.
+- **The GitHub leg works with no manual step.** CITINEL passes the PAT per call
+  as the top-level `Authorization` argument, which is the shape the Python
+  runtime documents. A dry run with CITINEL's exact arguments passes input
+  validation, all three policies and credential resolution, and returns the
+  request plan for `POST /repos/{owner}/{repo}/issues`.
+- **The Slack leg needs a connected account.** The kernel ignores a per-call
+  token for this provider and answers `missing credentials for Slack` for every
+  placement, including both the runtime documents. The one manual step is:
+
+  ```bash
+  cd ~/CITINEL/.swytchcode && swy auth connect Slack
+  ```
+
+  and paste the `xoxb-` bot token at the prompt. That writes an encrypted blob
+  to `~/.swytchcode/credentials.db`, keyed by workspace. Whether that cache can
+  be carried into the Render container is **unproven**; the Render deployment
+  may need a Swytchcode cloud workspace and `SWYTCHCODE_TOKEN` to sync it, and
+  that has not been tested. Until it is, the Slack leg is demonstrable on a
+  developer machine and not on the deployment.
+
+## Two bugs the run found in CITINEL itself
+
+**The classifier hid the real errors.** The CLI prints a telemetry notice on
+every call, logged in or not, containing the words "Run `swytchcode login`".
+The transport substring-matched the whole stderr stream, so that notice
+satisfied its "not authenticated" check and every failure of every kind was
+recorded on the ledger as `not_configured`. A broken policy definition and a
+missing Slack credential were both written down as "the runtime is not
+scaffolded", sending an operator to re-scaffold a runtime that was fine. The
+transport now parses the single JSON error object the CLI emits and classifies
+on its `category` field: `auth` is a deployment fact, `policy_denied` is the
+guardrail working, and everything else is a failed action recorded with its
+real reason.
+
+**A policy that could not be evaluated.** The GitHub tool's request container is
+itself named `body`, and GitHub's issue payload has its own `body` inside it.
+The policy conditioned on `field: body`, and the kernel refused: "ambiguous
+field resolution". Policy v1 does not support dotted paths (the validator says
+so). The guard now conditions on `title`, which CITINEL always builds from the
+target, so a ticket naming `cbs-prod` or `core-banking` is still blocked before
+it leaves the process. Confirmed: a clean ticket passes, both forbidden titles
+are `policy_denied` with CITINEL's own message.

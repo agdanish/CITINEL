@@ -226,3 +226,21 @@ def test_a_truncated_local_chain_still_alarms(monkeypatch):
 def test_agreement_is_unchanged(monkeypatch):
     r = _mirror(monkeypatch, {"head": "localhead", "count": 5825}).compare(BIG)
     assert r.status == "agreed" and r.tamper_suspected is False
+
+
+# -- 9. a witness that agrees must not be recorded as disagreeing ------------
+
+def test_lyzr_triage_agreement_survives_an_enum_lane(monkeypatch):
+    """Found on a live `citinel swarm run`: Router escalate, Lyzr escalate,
+    ledger said agrees_with_router=False. The CLI passes model_dump() with the
+    Lane enum intact, and str(Lane.ESCALATE) is "Lane.ESCALATE"."""
+    from citinel.agents.contracts import Lane
+    from citinel.connectors import lyzr_agents as la
+    monkeypatch.setattr(settings, "lyzr_api_key", "k")
+    monkeypatch.setattr(settings, "lyzr_guard_url", "https://agent-prod.studio.lyzr.ai/v3/inference/chat/")
+    monkeypatch.setattr(settings, "lyzr_triage_agent_id", "id")
+    inc = NS(incident_id="INC-T", findings=[], hosts=[], techniques=[], severity="high")
+    agent = la.triage_agent(sender=lambda url, headers, body: (200, {"response": json.dumps(
+        {"lane": "escalate", "confidence": 0.9, "rationale": "r"})}))
+    rec = la.triage_second_opinion(inc, {"triage": {"lane": Lane.ESCALATE, "confidence": 0.9}}, None, agent=agent)
+    assert rec["lane"] == "escalate" and rec["agrees_with_router"] is True

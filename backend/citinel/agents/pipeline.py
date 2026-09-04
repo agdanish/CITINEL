@@ -457,9 +457,22 @@ class SwarmPipeline:
                 self._record(case, c)
                 result.calls.append(c)
             if enrich_run.lookups:
+                # `providers` names who was asked; `outcomes` records what each
+                # one answered. The frame used to carry only the names, so the
+                # ledger said "asked virustotal" and never whether VirusTotal
+                # answered, returned no data, or could not be reached at all --
+                # three different facts a reader of the audit trail needs and
+                # the one place they were dropped. Found while trying to prove
+                # from production's own record that a provider had ever
+                # answered, and finding the record could not say.
                 self._ledger(case, "enricher", "tool_call", {
                     "lookups": [{"tool": l["tool"], "input": l["input"],
-                               "providers": [r.get("provider") for r in l["results"]]}
+                               "providers": [r.get("provider") for r in l["results"]],
+                               "outcomes": [{"provider": r.get("provider"),
+                                             "status": r.get("status"),
+                                             "score": r.get("score"),
+                                             "verdict": str(r.get("verdict") or "")[:160]}
+                                            for r in l["results"]]}
                               for l in enrich_run.lookups],
                     "stopped_reason": enrich_run.stopped_reason,
                 })

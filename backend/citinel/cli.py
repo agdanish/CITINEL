@@ -932,6 +932,10 @@ def swarm_run(
     # sink= matches the other three CLI write sites (451/529/624). Without it a
     # swarm run advances the local chain while the Lyzr witness never hears,
     # and the next verify reports a false "diverged" against an honest ledger.
+    # The import is local like the other three sites'. It was missing here, so
+    # `citinel swarm run` -- the documented way to run the swarm from a shell --
+    # raised NameError on this line for every invocation, and no test reached it.
+    from citinel.connectors.lyzr import LyzrLedgerMirror
     ledger = AuditLedger(incidents_dir / "ledger.jsonl", sink=LyzrLedgerMirror())
     try:
         pipeline = build_pipeline(ledger)
@@ -959,8 +963,11 @@ def swarm_run(
     audit = verdict_audit(incident_id, verdict_dict.get("claims") or [], ledger)
     annotate_result(incident_id, incidents_dir, "lyzr_verdict_audit", audit)
     if audit.get("status") == "ok":
+        # The record carries a `claims` list, not a `claims_reviewed` count; the
+        # old key printed "of None claims" on every successful run.
         console.print(f"[dim]lyzr verdict audit: {audit.get('agree_count')} agree, "
-                      f"{audit.get('disagree_count')} disagree of {audit.get('claims_reviewed')} claims[/dim]")
+                      f"{audit.get('disagree_count')} disagree of "
+                      f"{len(audit.get('claims') or [])} claims[/dim]")
     console.print(f"[dim]result saved to {saved} -- the console serves it at "
                   f"/api/incidents/{incident_id}/verdict[/dim]")
 

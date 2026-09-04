@@ -98,6 +98,13 @@ def triage_second_opinion(incident, result_dict: dict[str, Any], ledger, agent: 
     and record the answer beside the Router's decision. Returns the record."""
     agent = agent or triage_agent()
     triage = result_dict.get("triage") or {}
+    # The CLI hands this a model_dump() where `lane` is still the Lane enum,
+    # and str() on a str-mixin enum is "Lane.ESCALATE", never "escalate" -- so
+    # a witness that AGREED with the Router was written to the ledger as a
+    # disagreement on every CLI run. The web path passes a JSON-loaded dict
+    # and happened to be fine. Normalise to the value, whichever arrives.
+    router_lane = triage.get("lane")
+    router_lane = str(getattr(router_lane, "value", router_lane) or "").strip().lower()
     titles: dict[str, int] = {}
     for f in incident.findings[:40]:
         titles[f.title] = titles.get(f.title, 0) + 1
@@ -106,7 +113,7 @@ def triage_second_opinion(incident, result_dict: dict[str, Any], ledger, agent: 
         "incident_id": incident.incident_id, "finding_count": len(incident.findings),
         "hosts": incident.hosts[:8], "techniques": incident.techniques[:16], "severity": incident.severity,
         "top_findings": [{"title": t, "count": n} for t, n in top],
-        "router": {"lane": triage.get("lane"), "confidence": triage.get("confidence"), "rationale": triage.get("rationale")},
+        "router": {"lane": router_lane, "confidence": triage.get("confidence"), "rationale": triage.get("rationale")},
     })
     record: dict[str, Any] = {"decision": "triage_second_opinion", "status": answer["status"],
                               "agent_id": answer["agent_id"], "asked_at": answer["asked_at"]}
@@ -117,7 +124,7 @@ def triage_second_opinion(incident, result_dict: dict[str, Any], ledger, agent: 
             "lane": lane if lane in ("escalate", "auto_close") else "unparsed",
             "confidence": _num(r.get("confidence")),
             "rationale": str(r.get("rationale") or "")[:400],
-            "agrees_with_router": (lane == str(triage.get("lane") or "")) if lane in ("escalate", "auto_close") else None,
+            "agrees_with_router": (lane == router_lane) if lane in ("escalate", "auto_close") else None,
         })
     else:
         record["detail"] = answer.get("detail", "")
