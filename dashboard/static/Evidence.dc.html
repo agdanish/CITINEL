@@ -165,7 +165,7 @@
       <div style="flex:none;margin-top:14px;display:flex;gap:6px;flex-wrap:wrap;min-width:0">
         <dc-import name="StandardRef" standard="OCSF" version="1.9.0" locator="{{ ocsfLocator }}" size="sm" hint-size="310px,24px"></dc-import>
         <sc-if value="{{ hasRule }}" hint-placeholder-val="{{ true }}">
-          <dc-import name="RuleRef" source="SIGMA" name="{{ ruleName }}" id="{{ ruleId }}" size="sm" hint-size="340px,24px"></dc-import>
+          <dc-import name="RuleRef" source="SIGMA" rule-name="{{ ruleName }}" id="{{ ruleId }}" size="sm" hint-size="340px,24px"></dc-import>
         </sc-if>
         <dc-import name="StandardRef" standard="MITRE ATT&amp;CK" version="v16.1" locator="{{ ev.technique }}" size="sm" hint-size="290px,24px"></dc-import>
       </div>

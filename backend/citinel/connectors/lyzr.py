@@ -150,7 +150,13 @@ class LyzrGuard:
 
         reply = _parse_agent_reply(body)
         if status // 100 == 2 and reply:
-            extra = reply.get("pii", []) or []
+            # The agent can answer {"pii": ["email"]} instead of a list of
+            # objects -- a prompt-following failure, which this module's own
+            # contract says must degrade rather than raise. Every sibling seam
+            # in lyzr_agents.py filters the same way.
+            raw_pii = reply.get("pii", []) or []
+            extra = ([i for i in raw_pii if isinstance(i, dict)]
+                     if isinstance(raw_pii, list) else [])
             for item in extra:
                 result.findings.append(PIIFinding(
                     pii_type=f"lyzr:{item.get('type', 'flagged')}",

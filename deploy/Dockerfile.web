@@ -9,7 +9,7 @@ ENV PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1
 # `|| true` to survive, which cached nothing and swallowed real failures. One
 # honest install, and a genuine build failure now fails the build.
 COPY backend /app/backend
-RUN pip install --upgrade pip && pip install "/app/backend[swarm,api]"
+RUN pip install --upgrade pip && pip install "/app/backend[swarm,api,detect]"
 
 COPY policies /app/policies
 

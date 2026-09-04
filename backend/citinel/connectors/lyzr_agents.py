@@ -144,7 +144,7 @@ def review_draft(draft, agent: LyzrAgent | None = None) -> dict[str, Any]:
     if answer["status"] == "ok":
         r = answer["reply"] or {}
         keys = {f.key for f in draft.fields}
-        for item in (r.get("thin") or [])[:24]:
+        for item in _as_list(r.get("thin"))[:24]:
             if isinstance(item, dict) and item.get("key") in keys:
                 out["thin"].append({"key": item["key"], "why": str(item.get("why") or "")[:300]})
         out["summary"] = str(r.get("summary") or "")[:600]
@@ -176,7 +176,7 @@ def handover_summary(incident_dict: dict[str, Any], chain: list, verdict_summary
     if answer["status"] == "ok":
         r = answer["reply"] or {}
         out["summary"] = str(r.get("summary") or "")[:1200]
-        out["open_items"] = [str(x)[:200] for x in (r.get("open_items") or [])[:8]]
+        out["open_items"] = [str(x)[:200] for x in _as_list(r.get("open_items"))[:8]]
     else:
         out["detail"] = answer.get("detail", "")
     return out
@@ -217,7 +217,7 @@ def verdict_audit(incident_id: str, claims: list[dict[str, Any]], ledger, agent:
                            "asked_at": answer["asked_at"], "claims": [], "agree_count": 0, "disagree_count": 0}
     if answer["status"] == "ok":
         r = answer["reply"] or {}
-        for item in (r.get("claims") or [])[:20]:
+        for item in _as_list(r.get("claims"))[:20]:
             if not isinstance(item, dict):
                 continue
             idx, support = item.get("index"), str(item.get("support") or "").strip().lower()
@@ -306,10 +306,19 @@ def corpus_advisory(stats: dict[str, Any], agent: LyzrAgent | None = None) -> di
         r = answer["reply"] or {}
         out["summary"] = str(r.get("summary") or "")[:800]
         out["gaps"] = [{"area": str(g.get("area") or "")[:120], "why": str(g.get("why") or "")[:300]}
-                       for g in (r.get("gaps") or [])[:12] if isinstance(g, dict)]
+                       for g in _as_list(r.get("gaps"))[:12] if isinstance(g, dict)]
     else:
         out["detail"] = answer.get("detail", "")
     return out
+
+
+
+def _as_list(v: Any) -> list:
+    """A model told to return a list can return a scalar or an object instead.
+    Slicing that raises TypeError before any per-item isinstance check runs --
+    on a live route, with the model spend already paid. Everything that slices
+    a reply goes through here first."""
+    return v if isinstance(v, list) else []
 
 
 def _num(v: Any) -> float | None:

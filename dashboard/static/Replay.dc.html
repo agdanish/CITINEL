@@ -958,7 +958,7 @@ class Component extends DCLogic {
       headLeft: s.pos+'%',
       trackRef: this.trackRef,
       onScrubDown: e=>{ this.dragging = true; this.seekFromEvent(e); },
-      narratorSub: liveMode ? (vdl ? (vdl.degraded ? vdl.banner : 'click a claim to park the shuttle on its frame · ' + (vdl.dropped_claims||[]).length + ' claim' + ((vdl.dropped_claims||[]).length===1?'':'s') + ' dropped by the citation gate · confidence ' + Number(vdl.verdict.confidence).toFixed(2) + ' (CITINEL\'s assessment, not a probability)') : 'no verdict on this record yet') : 'click a claim to park the shuttle on its frame',
+      narratorSub: liveMode ? (vdl ? ((vdl.degraded || !vdl.verdict) ? (vdl.banner || 'no verdict is saved for this record') : 'click a claim to park the shuttle on its frame · ' + (vdl.dropped_claims||[]).length + ' claim' + ((vdl.dropped_claims||[]).length===1?'':'s') + ' dropped by the citation gate · confidence ' + Number(vdl.verdict.confidence).toFixed(2) + ' (CITINEL\'s assessment, not a probability)') : 'no verdict on this record yet') : 'click a claim to park the shuttle on its frame',
       claims: d.claims.map((c, i)=>{
         const key = liveMode ? c.pct + i/1000 : c.pct;
         const reached = c.pct <= s.pos, open = reached && (liveMode ? (s.openClaim == null ? i === 0 : s.openClaim === key) : openId === c.pct);

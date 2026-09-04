@@ -205,7 +205,10 @@ class Component extends DCLogic {
       description: c.description || '',
       tier: String(c.tier || 'shadow').toUpperCase(),
       approvalLabel: (c.approval === 'always') ? 'Approval: always required' : 'Approval: never required',
-      maxAssetsLabel: (c.max_assets_auto > 0) ? 'Max assets auto: ' + c.max_assets_auto : 'No auto-limit',
+      // 0 is a cap of ZERO, not the absence of a cap: gate.py escalates when
+      // assets_affected > max_assets_auto, so 0 means any asset needs a human.
+      // 'No auto-limit' said the exact opposite on a screen a CISO reads.
+      maxAssetsLabel: (c.max_assets_auto > 0) ? 'Max assets auto: ' + c.max_assets_auto : 'Automatic cap: 0 · any asset escalates',
       reversibleLabel: c.reversible ? 'Reversible: yes' : 'Reversible: no'
     }));
 

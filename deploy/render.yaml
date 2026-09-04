@@ -120,6 +120,11 @@ services:
       # worker) means the default beside the corpus -- see config.py.
       - key: CITINEL_LEDGER_PATH
         value: /var/citinel/ledger.jsonl
+      # Every write route fails closed without this: 503 until it is set, 401
+      # on a wrong value. It was set by hand in the dashboard, which a
+      # blueprint re-sync would not preserve -- declared here so it survives.
+      - key: CITINEL_WRITE_TOKEN
+        sync: false
       # every shared secret and rail comes from one place
       - fromGroup: citinel-shared
       - key: CITINEL_ROLE

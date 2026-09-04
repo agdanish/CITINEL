@@ -154,7 +154,7 @@
                 </div>
 
                 <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;min-width:0">
-                  <dc-import name="RuleRef" source="{{ p.refSource }}" name="{{ p.refName }}" id="{{ p.uuid }}" size="sm" hint-size="330px,24px"></dc-import>
+                  <dc-import name="RuleRef" source="{{ p.refSource }}" rule-name="{{ p.refName }}" id="{{ p.uuid }}" size="sm" hint-size="330px,24px"></dc-import>
                   <dc-import name="StandardRef" standard="{{ p.stdName }}" version="{{ p.stdVer }}" locator="{{ p.stdLoc }}" size="sm" hint-size="300px,24px"></dc-import>
                 </div>
                 <div style="margin-top:8px">
@@ -211,7 +211,7 @@
           </sc-for>
           <div style="display:flex;align-items:center;gap:9px;margin-top:8px;min-width:0">
             <button onClick="{{ genAdvisory }}" style="font-family:var(--ctn-font-display);font-size:8px;letter-spacing:0.1em;padding:6px 10px;border:1px solid var(--ctn-color-border-strong);border-radius:5px;background:none;color:var(--ctn-color-text-primary);cursor:pointer;flex:none">{{ advisoryBtnLabel }}</button>
-            <span data-token style="font-family:var(--ctn-font-mono);font-size:9.5px;color:var(--ctn-color-text-muted);flex:1;min-width:0">{{ advisoryStatus || advisoryWrittenNote }}</span>
+            <span data-token style="font-family:var(--ctn-font-mono);font-size:9.5px;color:var(--ctn-color-text-muted);flex:1;min-width:0">{{ advisoryLine }}</span>
           </div>
         </div>
 
@@ -515,6 +515,9 @@ level: medium`,
         : String(a.status).replace(/_/g, ' '),
       advisoryGaps: (a && a.status === 'ok' ? (a.gaps || []) : []),
       advisoryWrittenNote: a ? 'last reviewed ' + String(a.written_at || '').slice(0, 16).replace('T', ' ') + 'Z' : '',
+      // one hole, one value: the {{ a || b }} form the markup used before is not
+      // something the DC resolver implements, so it rendered as literal text
+      advisoryLine: s.advisoryStatus || (a ? 'last reviewed ' + String(a.written_at || '').slice(0, 16).replace('T', ' ') + 'Z' : ''),
       genAdvisory: () => this.genAdvisory(),
       advisoryBtnLabel: s.generatingAdvisory ? 'ASKING…' : (a ? 'REVIEW AGAIN' : 'REVIEW CORPUS COVERAGE'),
       advisoryStatus: s.advisoryStatus || '',

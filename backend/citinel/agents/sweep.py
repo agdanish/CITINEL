@@ -71,7 +71,7 @@ def run_sweep(incident, examined: int, cache_dir: Path, incidents_dir: Path,
         risk = str(raw.get("blind_spot_risk") or "").strip().lower()
         payload["blind_spot_risk"] = risk if risk in _RISKS else "unparsed"
         payload["blind_spot_reason"] = str(raw.get("blind_spot_reason") or "")[:300]
-        for c in (raw.get("clusters") or [])[:12]:
+        for c in _as_list(raw.get("clusters"))[:12]:
             if not isinstance(c, dict):
                 continue
             where = str(c.get("where") or "").strip().lower()
@@ -82,7 +82,7 @@ def run_sweep(incident, examined: int, cache_dir: Path, incidents_dir: Path,
                 "where": where if where in _WHERE else "unparsed",
                 "why": str(c.get("why") or "")[:240],
             })
-        for o in (raw.get("only_outside_window") or [])[:12]:
+        for o in _as_list(raw.get("only_outside_window"))[:12]:
             if not isinstance(o, dict):
                 continue
             payload["only_outside_window"].append({
@@ -109,6 +109,12 @@ def run_sweep(incident, examined: int, cache_dir: Path, incidents_dir: Path,
                       "never evidence, and it changes no verdict",
         })
     return payload
+
+
+def _as_list(v: Any) -> list:
+    """See lyzr_agents._as_list: a model that returns a scalar where a list was
+    asked for must degrade, not raise on the slice."""
+    return v if isinstance(v, list) else []
 
 
 def _int(v: Any) -> int:
