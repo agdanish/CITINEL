@@ -100,10 +100,15 @@ class SwytchcodeExecutor:
                 f"{body.get('message', 'blocked by policy')}")
 
         ok = isinstance(status, int) and status // 100 == 2
+        # A failed action carries its reason onto the ledger. "HTTP 502" alone
+        # told a reader nothing; the transport already names the cause (a
+        # provider refusal such as Slack's not_in_channel, a validation error,
+        # a policy that could not be evaluated), and dropping it here is the
+        # same false-blank the enricher frame used to write.
+        why = (body.get("message") if isinstance(body, dict) else None) or f"HTTP {status}"
         return SwytchcodeReceipt(
             api, action, "executed" if ok else "error", True,
-            f"[SIMULATED via Swytchcode {api}] {action}: "
-            f"{body if ok else 'HTTP ' + str(status)}")
+            f"[SIMULATED via Swytchcode {api}] {action}: {body if ok else why}")
 
     def execute_for_decision(self, decision: Decision, target: str,
                              incident_id: str) -> list[SwytchcodeReceipt]:

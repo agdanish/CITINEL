@@ -192,3 +192,61 @@ def test_a_missing_integration_bundle_is_a_deployment_fact(keyed, monkeypatch):
     with pytest.raises(t.TransportUnavailable) as ei:
         t.runtime_sender("ticketing", "create_incident_ticket", {"incident_id": "I"})
     assert "bundle missing" in str(ei.value)
+
+
+# -- the kernel succeeding is not the provider succeeding ----------------------
+
+def _kernel_returns(monkeypatch, value):
+    """swytchcode_runtime.exec returning a value, shaped as the real kernel wraps
+    a provider body: {"data": <provider json>}. Captured from 2.20.15."""
+    import swytchcode_runtime
+    monkeypatch.setattr(swytchcode_runtime, "exec", lambda *a, **k: value, raising=False)
+    monkeypatch.setenv("CITINEL_SWY_SLACK_CHANNEL", "C0TEST")
+    monkeypatch.setenv("CITINEL_SWY_SLACK_TOKEN", "xoxb-test")
+    monkeypatch.setenv("CITINEL_SWY_GITHUB_TOKEN", "ghp-test")
+
+
+def test_a_slack_refusal_inside_an_http_200_is_a_failed_action(monkeypatch):
+    """Found by sending a real message. Slack's Web API answers HTTP 200 to
+    everything and signals failure only as {"ok": false, "error": ...} in the
+    body. The kernel wrapped that in {"data": ...}, the transport's error check
+    ran on the wrapper, and the unwrapped refusal went out as 200 -- so the
+    ledger would have said "comms executed" for a message Slack never posted."""
+    from citinel.connectors.swytchcode_runtime_transport import runtime_sender
+    _kernel_returns(monkeypatch, {"data": {"ok": False, "error": "not_in_channel",
+                                           "warning": "missing_charset"}})
+    status, body = runtime_sender("comms", "notify_channel", {"incident_id": "INC-1", "title": "t", "summary": "s"})
+    assert status == 502
+    assert body["policy_blocked"] is False
+    assert "not_in_channel" in body["message"] and body["provider_error"] == "not_in_channel"
+    assert "invite" in body["suggested_action"]
+
+
+def test_a_slack_success_is_still_a_success(monkeypatch):
+    from citinel.connectors.swytchcode_runtime_transport import runtime_sender
+    _kernel_returns(monkeypatch, {"data": {"ok": True, "ts": "1757000000.000100", "channel": "C0TEST"}})
+    status, body = runtime_sender("comms", "notify_channel", {"incident_id": "INC-1", "title": "t", "summary": "s"})
+    assert status == 200 and body["ok"] is True and body["ts"]
+
+
+def test_a_github_success_without_an_ok_field_is_untouched(monkeypatch):
+    """GitHub uses real HTTP status codes and has no `ok`; a created issue must
+    not be mistaken for a refusal just because the body lacks the field."""
+    from citinel.connectors.swytchcode_runtime_transport import runtime_sender
+    _kernel_returns(monkeypatch, {"data": {"id": 1, "number": 7, "html_url": "https://github.com/o/r/issues/7"}})
+    status, body = runtime_sender("ticketing", "create_incident_ticket", {"incident_id": "INC-1", "title": "t", "summary": "s"})
+    assert status == 200 and body["number"] == 7
+
+
+def test_a_provider_refusal_reaches_the_ledger_with_its_reason(keyed):
+    """The receipt is what lands on the permanent ledger. "error: HTTP 502"
+    told a reader nothing; the reason the transport already knew must travel."""
+    ex = SwytchcodeExecutor(sender=lambda a, ac, p: (502, {
+        "policy_blocked": False, "message": "provider refused: not_in_channel",
+        "category": "provider_error", "provider_error": "not_in_channel",
+        "suggested_action": "invite the Swytchcode app to the channel"}))
+    receipts = ex.execute_for_decision(_decision(), "we8105desk", "INC-0417")
+    comms = [r for r in receipts if r.ecosystem_api == "comms"][0]
+    assert comms.status == "error"
+    assert "not_in_channel" in comms.detail
+    assert "HTTP 502" not in comms.detail

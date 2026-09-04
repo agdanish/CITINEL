@@ -234,5 +234,20 @@ def runtime_sender(api: str, action: str, params: dict[str, Any]) -> tuple[int, 
         if result.get("error"):
             return 502, {"message": str(result["error"])[:400]}
         payload = result.get("data", result.get("result", result))
+        # The kernel succeeding is not the provider succeeding. Slack's Web API
+        # answers HTTP 200 to everything and signals failure only as
+        # {"ok": false, "error": "..."} in the body -- so a refused message
+        # came back through here as 200 and the executor wrote "comms
+        # executed" onto the ledger for a message Slack never posted. Found by
+        # sending one for real: `not_in_channel`, recorded as a success. The
+        # check is on the UNWRAPPED body, because the wrapper above is the
+        # kernel's and never carries the provider's verdict.
+        if isinstance(payload, dict) and (payload.get("ok") is False or
+                                          (payload.get("error") and not payload.get("ok"))):
+            reason = str(payload.get("error") or "provider refused")[:200]
+            return 502, {"policy_blocked": False, "message": f"provider refused: {reason}",
+                         "category": "provider_error", "provider_error": reason,
+                         "suggested_action": ("not_in_channel" in reason and
+                                              "invite the Swytchcode app to the channel") or ""}
         return 200, payload
     return 200, result
