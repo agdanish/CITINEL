@@ -97,13 +97,35 @@ def dispatch_signed(incident, signed_by: str, sender=None) -> N8nDispatch:
             import httpx
             with httpx.Client(timeout=15) as c:
                 r = c.post(url, json=body)
-                status, resp = r.status_code, (r.json() if r.content else {})
+                status = r.status_code
+                # A body that is not JSON must not cost us the status code: the
+                # old form let a json() failure fall into the outer handler and
+                # report "dispatch failed", hiding the fact that n8n had
+                # answered at all, and with what.
+                try:
+                    resp = r.json() if r.content else {}
+                except Exception:
+                    resp = r.text[:300]
         else:
             status, resp = sender(url, body)
     except Exception as e:
         return N8nDispatch("error", [], f"n8n dispatch failed: {e}")
     if status // 100 != 2:
-        return N8nDispatch("error", [], f"n8n HTTP {status}")
+        # A bare "HTTP 404" cost an evening. n8n answers 404 both for a workflow
+        # that is not published and for a path that misses by one invisible
+        # character, and the two are indistinguishable without the provider's own
+        # sentence -- the same defect that once reduced a refused Slack message to
+        # "HTTP 502". n8n echoes the method and path it could not find, so a
+        # trailing space in CITINEL_N8N_WEBHOOK_URL becomes readable here. The
+        # host is deliberately left out: this string is read back on a console
+        # that anyone with the link can open.
+        reason = ""
+        if isinstance(resp, dict):
+            reason = str(resp.get("message") or resp.get("error") or "")
+        elif resp:
+            reason = str(resp)
+        reason = " ".join(reason.split())[:300]
+        return N8nDispatch("error", [], f"n8n HTTP {status}" + (f": {reason}" if reason else ""))
 
     if not isinstance(resp, dict) or "channels" not in resp:
         # A response that doesn't say which channels actually succeeded is
