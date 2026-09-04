@@ -172,19 +172,26 @@ Established by running the real binary on 4 Sep 2026, not by reading docs:
   runtime documents. A dry run with CITINEL's exact arguments passes input
   validation, all three policies and credential resolution, and returns the
   request plan for `POST /repos/{owner}/{repo}/issues`.
-- **The Slack leg needs a connected account.** The kernel ignores a per-call
-  token for this provider and answers `missing credentials for Slack` for every
-  placement, including both the runtime documents. The one manual step is:
+- **The Slack leg needs a connected account, and that needs login.** The
+  kernel ignores a per-call token for this provider and answers `missing
+  credentials for Slack` for every placement, including both the runtime
+  documents. Both providers are declared `oauth2` in the manifest, and
+  connecting an OAuth provider runs through Swytchcode's own OAuth app and
+  workspace, so `swy auth connect Slack` refuses until `swy login` has run.
+  Login is therefore not needed to *execute* but is needed to *connect* Slack.
+  The two manual steps, in order, on a machine with a browser:
 
   ```bash
-  cd ~/CITINEL/.swytchcode && swy auth connect Slack
+  nvm use 20                 # swytchcode is installed under Node 20 only
+  swy login                  # device-flow OAuth, one time
+  cd ~/CITINEL/.swytchcode && swy auth connect Slack   # browser OAuth to Slack
   ```
 
-  and paste the `xoxb-` bot token at the prompt. That writes an encrypted blob
-  to `~/.swytchcode/credentials.db`, keyed by workspace. Whether that cache can
-  be carried into the Render container is **unproven**; the Render deployment
-  may need a Swytchcode cloud workspace and `SWYTCHCODE_TOKEN` to sync it, and
-  that has not been tested. Until it is, the Slack leg is demonstrable on a
+  The existing `xoxb-` bot token is not used by this path. The connected
+  account is stored as an encrypted blob in `~/.swytchcode/credentials.db`
+  keyed by workspace and synced from Swytchcode's cloud. Whether the Render
+  container can obtain it (most plausibly via `SWYTCHCODE_TOKEN` and a linked
+  workspace) is **unproven**. Until it is, the Slack leg is demonstrable on a
   developer machine and not on the deployment.
 
 ## Two bugs the run found in CITINEL itself
