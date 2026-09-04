@@ -74,5 +74,5 @@ Evaluated on the MIC/AICTE SIH rubric: novelty · technical complexity · clarit
 | `SESSION-2026-09-03-04-CHAT-LOG.md` | the complete chat of that session, every user and Claude turn, credentials redacted |
 | `MEMORY-EXPORT.md` | Claude Code's persistent memory for this project, with restore steps |
 
-The next-session entry point is `../NEXT-SESSION-PROMPT.md`; the team procedure for a new laptop is `../RUNBOOK-NEW-LAPTOP.md`.
+`../scripts/preflight.py` is the read-only GO/NO-GO check for the live console. The next-session entry point is `../NEXT-SESSION-PROMPT.md`; the team procedure for a new laptop is `../RUNBOOK-NEW-LAPTOP.md`.
 

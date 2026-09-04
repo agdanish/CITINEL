@@ -128,3 +128,54 @@ No em dashes. Baby steps for anything manual. Do not over-complicate. Be brutall
 ## 12. Claims that must never be made
 
 The false-positive rate is unmeasured. Sign-offs are drafts ("we draft, we never file"). Response actions hit simulated endpoints. No prize is guaranteed. The deck's QR code resolves to Danish's portfolio, not a prototype. Nothing a model says is evidence; only deterministic corroboration with citable indices is.
+
+## 13. Pitch-facing facts established on 4 Sep (only in the chat until now)
+
+**Differentiators a judge can check by opening a URL**, ten, distinct from the 33 externally sourced UVPs in `CITINEL-SDD.md` §13 and §17 (most of which are positioning, not code):
+
+| # | Differentiator | Where to check |
+|---|---|---|
+| 1 | Citation-verified verdicts: a claim whose quote is absent from the cited finding is dropped, not flagged | `agents/pipeline.py` citation verification; `GET /api/incidents/INC-0417/verdict` |
+| 2 | Observation vs fact enforced in the payload: Gemini's sweep and vision carry `not_evidence` in the data; corroboration is deterministic with citable indices | `agents/sweep.py`, `agents/visual.py` |
+| 3 | Hash-chained ledger with an independent witness that can see wholesale replacement `verify_chain` cannot | `audit/ledger.py`, `connectors/lyzr.py` compare() |
+| 4 | Inter-agent laundering closed: the Correlator's summary is fenced before the Narrator sees it | `agents/pipeline.py` correlator_summary_evidence |
+| 5 | Deterministic egress allow-list, exact host, https only | `agents/quarantine.py` |
+| 6 | Blind-spot disclosure then closure: 40 of 2,487 findings examined, said out loud, then swept | Replay screen, `GET .../sweep` |
+| 7 | Privacy boundary in code: the Startuped connector refuses any field that could carry incident content | `connectors/startuped.py` |
+| 8 | Policy gate with rollback tokens and blast-radius caps; OPA trace expandable | Approvals screen, `POST /api/actions/execute` |
+| 9 | Fail-closed writes with distinguishable failures: 503 unset vs 401 wrong | `web/app.py` `_guard_writes` |
+| 10 | No measurement without its denominator | every screen |
+
+Honest framing that goes with it: four of the eighteen bugs found on 4 Sep were violations of rows 1 to 4, which shows the rules are load-bearing and that they need testing, not trust.
+
+**Egress precision for the stage**: six external destinations sit behind the static allow-list (Anthropic, VirusTotal, AbuseIPDB, Tavily, Gemini, Startuped); Lyzr's host is added at runtime from its configured URL; n8n is pinned to the configured instance host; Swytchcode, GitHub and Slack are reached through a policy-gated CLI subprocess. Say "six behind an exact-host allow-list, the operator-configured ones pinned to their host, three mediated by a policy-gated CLI", not "everything behind an allow-list".
+
+**Environment surface**: 40 variables total; 28 external across 9 third-party services (Lyzr 9, Swytchcode 8, n8n 3, Anthropic 2, Gemini 2, Tavily 1, Startuped 1, VirusTotal 1, AbuseIPDB 1); 27 of the 50 blueprint keys are `sync: false` (hand-set in Render); seven blueprint keys are absent from the local `.env` by design (`CITINEL_WRITE_TOKEN`, `CITINEL_LEDGER_PATH`, `CITINEL_ARTIFACTS_DIR`, `CITINEL_ROLE`, `CITINEL_WEB_URL`, `CITINEL_AUTO_SWARM`, `CITINEL_AUTO_SWARM_MAX_PER_CYCLE`); `CITINEL_DATABASE_URL` is declared, empty and inert.
+
+## 14. Identifiers and contracts for the night something breaks
+
+- **n8n**: instance `hritikmb.app.n8n.cloud`, workflow "CITINEL Beat 5b" id `71UYwPBAgRPjr5ZG`, production webhook path `citinel-signoff` (the `/webhook-test/` URL only works while "Listen for test event" is armed). The Respond to Webhook node must return JSON `{"channels": ["ciso","ticket"], "execution_id": "{{ $execution.id }}"}`; `dispatch_signed` refuses to claim success without `channels`. In this n8n build **Publish** is the activation control, not a Save/Active toggle. `CITINEL_N8N_API_URL` must be the origin only.
+- **Slack**: workspace xzashr (team `T0BUGPTTBC7`), channel `C0BUY5T2R7U`, posts arrive from the Swytchcode app, bot id `B0BV2ELUAL9`. `not_in_channel` means the app was removed from the channel: `/invite @Swytchcode`. `no_text` means the caller omitted `message`.
+- **Swytchcode**: CLI 2.20.15 installed only under Node 20 (`nvm use 20`; nvm's default is lts/* = v24 where `swy` does not exist). Canonical ids `github.issue.create`, `slack.chat.postmessage.create`. `swy auth status` shows connected providers. `--explain` skips credential resolution; never use it to prove credentials.
+- **Render**: services `citinel-web` (Docker, disk `citinel-ledger` at `/var/citinel`, `CITINEL_WRITE_TOKEN` set on the service itself), `citinel-pipeline` (worker), `citinel-ledger-watch` (cron `0 */6 * * *`), `citinel-n8n`; database `citinel-postgres` exists and nothing reads it. Env group `citinel-shared` (31 vars). Secret Files on citinel-web: `swy-credentials.db.b64`, `swy-credkey.b64`, `swy-auth.json.b64`.
+- **Lyzr**: seven agent ids in env (`CITINEL_LYZR_AGENT_ID` plus `_TRIAGE_`, `_REVIEW_`, `_HANDOVER_`, `_VERDICT_`, `_RESPONSE_`, `_CORPUS_`), all answering live on 4 Sep. The witness reports `unavailable` when the Studio call times out; that is honest, not an alarm.
+- **Anthropic**: `claude-haiku-4-5-20251001` (triage) and `claude-sonnet-5` (reasoning), both verified against `/v1/models` at boot; identity-linked keys need `anthropic-workspace-id`, which `agents/build.py` sends.
+- **Rail icons**: Direction A was built without Danish choosing; B (the ring) and C (terminal codes) remain on the canvas https://claude.ai/code/artifact/7f2a2f4d-e1d6-4c47-aaca-61d93a9b7d90 and are a one-list swap in `nav.js`.
+
+## 15. Testing writes locally without touching real data
+
+`.claude/launch.json`'s `citinel-dashboard` entry runs the real data directory on port 8000 with no write token, so every write there answers 503 and nothing is written. To exercise writes for real, run the app with a scratch ledger and artifacts and a token you choose:
+
+```bash
+S=/tmp/citinel-scratch; mkdir -p $S/artifacts; cp data/seed/ledger.jsonl $S/; cp -R data/seed/swarm data/seed/context $S/artifacts/
+CITINEL_WRITE_TOKEN=local-verify-token CITINEL_LEDGER_PATH=$S/ledger.jsonl CITINEL_ARTIFACTS_DIR=$S/artifacts \
+  backend/.venv/bin/uvicorn citinel.web.app:app --host 127.0.0.1 --port 8099
+```
+
+Then POST with `X-Citinel-Write-Token: local-verify-token`. Every write route was proven this way on 4 Sep. A swarm run costs real Anthropic credits even locally; `citinel swarm run INC-0417 --incidents-dir <scratch>` was about 114K input and 31K output tokens.
+
+## 16. The read-only pre-flight
+
+`python3 scripts/preflight.py` (GETs only, no token, no spend) checks every read route, the ledger, the witness, all connectors, n8n executions, the incident's artifacts, every console page, that the deployed api.js and nav.js are the current builds, and that every console endpoint has a backend route. It prints GO or the exact problems. **Run it on the demo morning before arming the laptop.**
+
+At 22:20 IST on 4 Sep it reported NO-GO on one item, `INC-0417 sweep artifact present: 404`, with the ledger still at 5,778 entries and n8n at the two executions from testing. That means Part 3 of the runbook had not been run at that time.

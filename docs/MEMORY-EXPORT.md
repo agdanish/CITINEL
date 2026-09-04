@@ -689,7 +689,7 @@ of each one is written, tested (408 passing) and committed. Established by
 RUNNING each seam on 4 Sep 2026, not by reading; the earlier version of this
 memory was wrong in three places and those corrections are the point.
 
-**1. Render: `CITINEL_N8N_WEBHOOK_URL` (highest priority, one field).** The
+**1. Render `CITINEL_N8N_WEBHOOK_URL`: DONE by Danish, 4 Sep evening (Part 1).** Not yet proven by a production sign-off. Original note: The
 local `.env` held a stale UUID path from a deleted workflow; production almost
 certainly does too (it is `sync: false`, hand-set). Correct value:
 `https://hritikmb.app.n8n.cloud/webhook/citinel-signoff`. Proven locally end to
@@ -716,7 +716,9 @@ and commit the bundles (deterministic, offline, no secret at build; the bundle
 contains no credentials, only API definitions), or (b) `SWYTCHCODE_TOKEN` as a
 build secret plus `RUN swytchcode bootstrap` in the Dockerfile.
 
-**4. Console write token.** Paste Render's `CITINEL_WRITE_TOKEN` (set on the
+**Swytchcode secret files: DONE by Danish, 4 Sep evening (Part 2)** — three base64 Secret Files on citinel-web; the image decodes them at boot. Proof = an approved action on the live Approvals screen with a `comms executed` receipt (Part 3 step 22), NOT reported before the account change.
+
+**4. Console write token (Part 3): status UNKNOWN at handoff.** Ask Danish for the receipt line. Paste Render's `CITINEL_WRITE_TOKEN` (set on the
 citinel-web service, `sync: false`) into the console's Settings page, then
 click sweep / context / swarm / handover / corpus once each so the production
 artifacts exist.

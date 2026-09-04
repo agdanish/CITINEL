@@ -32,6 +32,7 @@ laptop or browser. Do part A again. Ten seconds.
 
 ## C. Demo day
 
+0. Someone with the repo runs `python3 scripts/preflight.py` in a terminal. It must print GO. If it prints NO-GO, it names the problem; send that line to Claude.
 1. Arm the demo laptop (part A) in the morning. Once.
 2. Check the green dot before going on stage.
 3. Do **not** click **RUN THE SWARM** unless the demo script calls for a live run. It spends real credits and replaces the incident's existing verdict with a fresh one.
