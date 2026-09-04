@@ -125,4 +125,14 @@ EXPOSE 8000
 # corpus's own history rather than an empty chain and no verdicts, then every
 # later restart keeps whatever has been appended since. Fails open: if a copy
 # cannot happen the service still starts.
-CMD ["sh", "-c", "if [ -n \"$CITINEL_LEDGER_PATH\" ] && [ ! -f \"$CITINEL_LEDGER_PATH\" ]; then mkdir -p \"$(dirname \"$CITINEL_LEDGER_PATH\")\" && cp /app/data/seed/ledger.jsonl \"$CITINEL_LEDGER_PATH\" 2>/dev/null || true; fi; if [ -n \"$CITINEL_ARTIFACTS_DIR\" ] && [ ! -d \"$CITINEL_ARTIFACTS_DIR/swarm\" ]; then mkdir -p \"$CITINEL_ARTIFACTS_DIR\" && cp -R /app/data/seed/swarm /app/data/seed/context \"$CITINEL_ARTIFACTS_DIR/\" 2>/dev/null || true; fi; uvicorn citinel.web.app:app --host 0.0.0.0 --port ${PORT:-8000}"]
+#
+# Swytchcode's Slack leg needs a connected account, and the kernel keeps that
+# in ~/.swytchcode/credentials.db encrypted under a key that on macOS lives in
+# the Keychain and on Linux in a `credkey` file, looked up through the account
+# identity in auth.json. Proven 4 Sep 2026 by real sends from a clean HOME:
+# those three files together resolve Slack; any two do not; a live session,
+# SWYTCHCODE_TOKEN and the per-call token are neither needed nor sufficient.
+# Render delivers them as Secret Files at /etc/secrets/<name>; they are copied
+# into the runtime's HOME here, mode 600, and their absence is not an error --
+# the receipt on the ledger then says "not configured", which is the truth.
+CMD ["sh", "-c", "for f in credentials.db credkey auth.json; do if [ -f \"/etc/secrets/swy-$f\" ]; then mkdir -p \"$HOME/.swytchcode\" && cp \"/etc/secrets/swy-$f\" \"$HOME/.swytchcode/$f\" && chmod 600 \"$HOME/.swytchcode/$f\"; fi; done 2>/dev/null; if [ -n \"$CITINEL_LEDGER_PATH\" ] && [ ! -f \"$CITINEL_LEDGER_PATH\" ]; then mkdir -p \"$(dirname \"$CITINEL_LEDGER_PATH\")\" && cp /app/data/seed/ledger.jsonl \"$CITINEL_LEDGER_PATH\" 2>/dev/null || true; fi; if [ -n \"$CITINEL_ARTIFACTS_DIR\" ] && [ ! -d \"$CITINEL_ARTIFACTS_DIR/swarm\" ]; then mkdir -p \"$CITINEL_ARTIFACTS_DIR\" && cp -R /app/data/seed/swarm /app/data/seed/context \"$CITINEL_ARTIFACTS_DIR/\" 2>/dev/null || true; fi; uvicorn citinel.web.app:app --host 0.0.0.0 --port ${PORT:-8000}"]

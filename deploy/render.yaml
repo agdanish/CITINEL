@@ -155,6 +155,14 @@ services:
     dockerfilePath: ./deploy/Dockerfile.web
     plan: starter
     healthCheckPath: /healthz
+    # Secret Files (Render dashboard -> this service -> Environment -> Secret
+    # Files; a blueprint cannot declare them): swy-credentials.db, swy-credkey,
+    # swy-auth.json -- the file-keyed Swytchcode store that makes the Slack leg
+    # work in a container with no Keychain. Produced once on a developer Mac
+    # with HOME pointed at an empty directory (so the CLI writes a credkey file
+    # instead of using the Keychain), then `swy login` + `swy auth connect
+    # Slack`. Dockerfile.web copies them into ~/.swytchcode at boot. GitHub
+    # needs none of this: its per-call Authorization header is sufficient.
     # The container filesystem is ephemeral: without this disk every sign-off,
     # gate decision and swarm result written during a demo is gone on the next
     # deploy, and the service silently falls back to the committed seed

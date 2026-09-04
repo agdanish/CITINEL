@@ -193,6 +193,17 @@ Established by running the real binary on 4 Sep 2026, not by reading docs:
   `ts 1788519986.233539`). The first attempt answered `not_in_channel`,
   which the transport now records as a failed action with that reason
   rather than "executed". The connected
+  **Render path, proven 4 Sep by real sends from a clean HOME:** the kernel
+  keeps the account in `credentials.db`, encrypted under a key that lives in
+  the macOS Keychain on a Mac and in a `credkey` file on Linux, and looked
+  up through the identity in `auth.json`. Exactly those three files resolve
+  Slack; any two do not; a live session, `SWYTCHCODE_TOKEN` and the per-call
+  token are neither needed nor sufficient, and `--explain` cannot tell you
+  any of this because it skips credential resolution. Produce the store
+  once with `HOME` pointed at an empty directory, upload the three files as
+  Render Secret Files named `swy-credentials.db`, `swy-credkey`,
+  `swy-auth.json`; `Dockerfile.web` copies them into `~/.swytchcode` at boot.
+  The connected
   account is stored as an encrypted blob in `~/.swytchcode/credentials.db`
   keyed by workspace and synced from Swytchcode's cloud. Whether the Render
   container can obtain it (most plausibly via `SWYTCHCODE_TOKEN` and a linked
