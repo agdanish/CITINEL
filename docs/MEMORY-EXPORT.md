@@ -21,7 +21,10 @@ including the frontmatter. `MEMORY.md` is the index Claude loads every session.
 ## File: `MEMORY.md`
 
 ````markdown
+- [DEMO MORNING 5 Sep](project_citinel_demo_morning_5sep.md): run this first on demo day: preflight GO, arm the laptop, green dot, warm the Compliance draft, Auto-Deploy off, INC-0417 must read CAUGHT
 - [Account migration 4 Sep](project_citinel_account_migration_4sep.md) — continuity package lives in the repo: NEXT-SESSION-PROMPT.md, HANDOFF-MEMORY.md §21-§22, docs/SESSION-2026-09-03-04-*.md, docs/MEMORY-EXPORT.md
+- [State 4 Sep evening](project_citinel_state_4sep_evening.md) — origin in sync at 3abfb30, preflight GO, Part 3 in progress; "unpushed commits" claim is stale
+- [Console gotchas](project_citinel_console_gotchas.md) — DC template holes inside SVG text do not paint; a11y.css header-span override; sc-if truthiness; x-import Buttons need on-click; eval seed fallback
 - [New-laptop runbook](project_citinel_new_laptop_runbook.md) — every new laptop must be ARMED in Settings (name + token, 12 h) before any write works; full steps in repo RUNBOOK-NEW-LAPTOP.md; never re-run the swarm on demo day
 - [Pending manual steps](project_citinel_pending_manual_steps.md) — 4 Sep: `swy login` + 2 Swytchcode tokens, and TAVILY/ANTHROPIC keys in Render's citinel-shared; all surrounding code is already live
 - [Build status](project_citinel_build_status.md) — **15/15 steps built** (Step 14 shipped 2 Sep), 252 tests; check `citinel status`, not assumptions
@@ -916,4 +919,142 @@ live env vars from the repo.
 See [[project-citinel-build-status]] for overall build state and
 [[feedback-deploy-on-push-partner-credits]] for the standing deploy
 direction.
+````
+
+---
+
+## File: `project_citinel_demo_morning_5sep.md`
+
+````markdown
+---
+name: project-citinel-demo-morning-5sep
+description: The demo-morning procedure for the Decode SIH 2026 grand finale on 5 Sep 2026, in order, with the reason each step exists. Run this before anything else on demo day, whatever else is being asked.
+metadata:
+  type: project
+---
+
+**Decode SIH 2026 grand finale, 5 September 2026.** If this session opens on
+5 Sep and this has not been done yet, say so and walk Danish through it before
+any other work. Also in the repo at `RUNBOOK-NEW-LAPTOP.md` section C, which is
+the copy that survives a new machine.
+
+1. **`python3 scripts/preflight.py` from the repo root. It must print GO.**
+   Read-only GETs, no token, no spend, safe on stage. If it prints NO-GO it names
+   the failing check. One caveat learned on 4 Sep: run it only when no deploy is
+   in flight, or the first checks hit the service mid-restart and it reports a
+   false NO-GO on `/healthz` and `/api/source`. Re-run before believing it.
+   Second reason to run it: it reads the CERT-In draft, which leaves that route
+   warm at about 16s instead of 49s cold. See step 4.
+2. **Arm the demo laptop.** Runbook part A: Render dashboard, citinel-web,
+   Environment, copy `CITINEL_WRITE_TOKEN`, then Settings on the console, type a
+   name, paste the token, SAVE. Lasts 12 hours. Danish only; never handle the
+   value.
+3. **Check the green dot** at the foot of the left rail. It reads ARMED over the
+   operator's name. Hover shows the expiry. READ-ONLY means step 2 did not take.
+4. **Open Compliance for INC-0417 once, before the audience.** Cold, the CERT-In
+   draft takes about 49s; the console aborts at 90s now (`8f83651`), but if it
+   ever does fail the screen falls back to an AUTHORED DEMO that looks real: a
+   counting six-hour clock and an ACTIONED arc on a record that is really CAUGHT
+   with its window ten days closed, and a seal that writes nothing. The tells are
+   the words "authored demo" in the left column and a missing LIVE chip. Step 1
+   plus this load makes it warm.
+5. **Confirm Auto-Deploy is OFF** on the four Render services. Six deploys went
+   out on the evening of 4 Sep; none should land during the demo.
+6. **Do not click RUN THE SWARM** unless the script calls for it. Real Anthropic
+   credits, and it replaces the existing verdict on INC-0417.
+7. **INC-0417 must read STATE CAUGHT.** A sign-off closes it. If anyone signs it
+   during a rehearsal, reopen it on Replay before going on stage.
+8. **After the event:** Settings CLEAR, or rotate `CITINEL_WRITE_TOKEN` in Render
+   which disarms every laptop at once, then rotate the keys in findings section 9.
+
+**Why:** every one of these exists because something went wrong on 4 Sep. The
+false NO-GO, the authored-demo fallback and the closed incident were all found
+the hard way that evening; see [[project-citinel-state-4sep-evening]] and
+`docs/SESSION-2026-09-03-04-FINDINGS.md` section 17.
+
+**How to apply:** do not improvise an alternative. Steps 1 to 3 are the minimum
+before anyone touches the console on stage. Never guarantee the prize; see
+[[feedback-judged-prize-honesty]].
+````
+
+---
+
+## File: `project_citinel_console_gotchas.md`
+
+````markdown
+---
+name: project-citinel-console-gotchas
+description: Non-obvious traps in the CITINEL console (DC runtime pages + a11y.css) found while fixing 13 UI defects on 4 Sep 2026; each cost real time and none is visible from the page source alone.
+metadata: 
+  node_type: memory
+  type: project
+  originSessionId: 7deca4fe-0ac5-4a21-b2fa-39ce0746c8bf
+  modified: 2026-09-04T14:54:35.931Z
+---
+
+Learned by fixing, not reading, on 4 Sep 2026 (commit after 802bc04):
+
+- A `{{ hole }}` inside an SVG `<text>` in a `.dc.html` template renders as
+  `<span class="sc-interp">` inside the text element, which SVG does not paint
+  (bbox 0, nothing visible). Build SVG text in the script with
+  `React.createElement('text', ...)` like `ringNodes` / `ringCentre` in Replay.
+- `a11y.css` forces every `[data-screen-label] > header > span` to
+  `flex:0 1 auto !important`. A screen whose residual claimant is a span, not
+  a `<nav>` (Demo), loses its `flex:1` and the header wraps to three rows.
+  The exception rule for `span[style*="flex:1"]` now exists; do not re-add
+  the pattern elsewhere without it.
+- React re-spaces inline styles in the rendered DOM (`grid-template-columns:
+  26px 214px` becomes `... : 26px 214px ...`), so `[style*=...]` selectors
+  written against the template text do not match at runtime; probe with
+  `getComputedStyle` instead.
+- `sc-if value="{{ live }}"` is truthy after a successful load; a loading
+  block must gate on `live === null` (Eval had the bug).
+- The design-system `x-import` Button takes `on-click="{{ fn }}"`; a Button
+  with no `on-click` is decorative and silently does nothing (Audit export).
+- Downloads are written by the browser via Blob + `<a download>`; there is no
+  export route on the backend and none is needed.
+- The eval harness lives outside the package (`evals/harness/run.py`) and
+  reads `data/cache/*.jsonl`, which Render does not carry; `/api/eval` serves
+  `data/seed/eval-report.json` labelled `seed cache (...)` when the harness
+  measures nothing. Regenerate the seed with
+  `backend/.venv/bin/python evals/harness/run.py --out data/seed/eval-report.json`.
+
+**How to apply:** check these before diagnosing a "control does nothing" or
+"text does not render" report on the console; see also
+[[project-citinel-dashboard-wiring]].
+````
+
+---
+
+## File: `project_citinel_state_4sep_evening.md`
+
+````markdown
+---
+name: project-citinel-state-4sep-evening
+description: Verified ground truth at 19:05 IST on 4 Sep 2026 (new account's first session): origin in sync at 3abfb30, nothing unpushed, preflight GO, 414 tests, Part 3 in progress on production. Supersedes the "two unpushed commits" claim in the handoff docs.
+metadata:
+  type: project
+---
+
+Verified by running, not reading, at 19:00 to 19:05 IST on 4 Sep 2026:
+
+- `build/stage-1` local and origin both at `3abfb30`; ahead/behind 0/0. The
+  handoff docs' "two unpushed commits (9152bd5, 5f687ba)" is STALE: they were
+  pushed with the handoff commits and the icon-only rail is live on Render.
+  So Auto-Deploy was ON at that time (still to switch off before the demo).
+- `python3 scripts/preflight.py` printed GO (37 checks). 414 tests pass via
+  `backend/.venv` (Python 3.11.15).
+- Production: 16/16 connectors; ledger intact; sweep artifact written at
+  18:54 IST 4 Sep (Part 3 started); context still 1 Sep, verdict still 1 Sep,
+  handover 404, corpus advisory 404, n8n executions still 2. Ledger grew
+  5778 -> 5781 between 18:5x and 19:05 IST: someone was clicking through
+  production at that time. Never push while that is happening.
+- `docs/SESSION-2026-09-03-04-CHAT-LOG.md` ends at 15:08 IST 4 Sep (session
+  limit). The evening Parts 1/2/3 and the 18:39/18:48 commits came from a
+  later session whose chat is NOT in the log. The findings doc's "22:20 IST"
+  preflight time is wrong (commit was 18:48 IST; the clock at that point was
+  about 18:20).
+
+**How to apply:** re-run the probes before trusting this; see
+[[project-citinel-pending-manual-steps]] for what only Danish can do.
 ````

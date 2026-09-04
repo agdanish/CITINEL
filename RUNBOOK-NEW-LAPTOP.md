@@ -32,9 +32,13 @@ laptop or browser. Do part A again. Ten seconds.
 
 ## C. Demo day
 
-0. Someone with the repo runs `python3 scripts/preflight.py` in a terminal. It must print GO. If it prints NO-GO, it names the problem; send that line to Claude.
+Do these in order, in the morning, before anyone is watching.
+
+0. Someone with the repo runs `python3 scripts/preflight.py` in a terminal. It must print GO. If it prints NO-GO, it names the problem; send that line to Claude. Do not run it while a deploy is in flight: the first checks hit the service mid-restart and it reports a false NO-GO on `/healthz` and `/api/source`. Re-run before believing it.
 1. Arm the demo laptop (part A) in the morning. Once.
 2. Check the green dot before going on stage.
+2a. Open Compliance for INC-0417 once, before the audience. Cold, its CERT-In draft takes about 49 seconds. Step 0 and this load leave it warm at about 16. If that draft ever fails to return, the screen falls back to an authored demo that looks convincing: a counting six-hour clock and an ACTIONED arc on a record that is really CAUGHT with its window ten days closed, and a seal that writes nothing to the ledger. The tells are the words "authored demo" in the left column and a missing LIVE chip.
+2b. Confirm Auto-Deploy is OFF on the four Render services, and that INC-0417 reads STATE CAUGHT. A sign-off closes it; reopen it on Replay if a rehearsal signed it.
 3. Do **not** click **RUN THE SWARM** unless the demo script calls for a live run. It spends real credits and replaces the incident's existing verdict with a fresh one.
 4. After the event: open Settings and press **CLEAR**, or better, rotate `CITINEL_WRITE_TOKEN` in Render, which makes every laptop forget at once.
 
