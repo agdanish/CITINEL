@@ -951,9 +951,15 @@ def n8n_error_report(body: dict | None = None) -> dict:
     ledger frame against the incident the playbook was working on, so a broken
     automation shows up on the audit trail instead of only in n8n's own logs.
     """
-    b = body or {}
-    execution = b.get("execution") or {}
-    workflow = b.get("workflow") or {}
+    # `or {}` looks like a guard and is not: a scalar is truthy, so a string
+    # under "execution" was assigned straight through and .get() on it raised
+    # AttributeError -- a 500 from the one route whose entire job is to record
+    # that the automation layer failed. n8n's Error Trigger payload is not
+    # CITINEL's to guarantee, and the worst moment to reject a malformed report
+    # is the moment something is already broken.
+    b = body if isinstance(body, dict) else {}
+    execution = b.get("execution") if isinstance(b.get("execution"), dict) else {}
+    workflow = b.get("workflow") if isinstance(b.get("workflow"), dict) else {}
     incident_id = str(b.get("incident_id") or "").strip()
     frame = {
         "check": "n8n_playbook_failed",
@@ -961,7 +967,8 @@ def n8n_error_report(body: dict | None = None) -> dict:
         "execution_id": str(execution.get("id") or ""),
         "execution_url": str(execution.get("url") or "")[:400],
         "last_node": str(execution.get("lastNodeExecuted") or "")[:120],
-        "message": str((execution.get("error") or {}).get("message") or "")[:400],
+        "message": str((execution.get("error") if isinstance(execution.get("error"), dict)
+                        else {}).get("message") or "")[:400],
         "reason": "the automation layer reported its own failure; recorded so a "
                   "broken playbook is visible on the audit trail, not only in n8n",
     }

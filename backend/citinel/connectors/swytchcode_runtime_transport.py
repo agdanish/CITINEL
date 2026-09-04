@@ -45,7 +45,7 @@ from typing import Any
 
 #: Canonical ids, overridable per deployment because Swytchcode's own sources
 #: disagree about them. `swy list tooling --json` is the authority.
-TICKETING_METHOD = os.environ.get("CITINEL_SWY_TICKET_METHOD", "github.repo.issues.create")
+TICKETING_METHOD = os.environ.get("CITINEL_SWY_TICKET_METHOD", "github.issue.create")
 COMMS_METHOD = os.environ.get("CITINEL_SWY_COMMS_METHOD", "slack.chat.postmessage.create")
 
 

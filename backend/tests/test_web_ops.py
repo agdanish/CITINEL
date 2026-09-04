@@ -112,7 +112,11 @@ def test_swarm_route_requires_confirm_and_credentials(sandbox, monkeypatch):
     assert client.post("/api/incidents/INC-T1/swarm", json={"confirm": True}, headers=WRITE_HEADERS).status_code == 503
     monkeypatch.setattr(settings, "anthropic_api_key", "test-key")
     assert client.post("/api/incidents/INC-T1/swarm", json={}, headers=WRITE_HEADERS).status_code == 400
-    assert client.post("/api/incidents/INC-T1/swarm", json={"confirm": True, "x": 1}, headers=WRITE_HEADERS).status_code in (202, 409) or True
+    # `or True` used to be pinned on the end of this assertion, which made it
+    # incapable of failing: a 500 here would have passed. Extra JSON fields are
+    # accepted (202) or the run is already in flight (409); nothing else is ok.
+    assert client.post("/api/incidents/INC-T1/swarm", json={"confirm": True, "x": 1},
+                       headers=WRITE_HEADERS).status_code in (202, 409)
 
 
 def test_swarm_route_runs_in_background_and_persists(sandbox, monkeypatch):

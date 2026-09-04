@@ -45,7 +45,7 @@ def test_the_arg_mapping_targets_real_canonical_ids_and_carries_the_incident(mon
     cid, args = build_args("ticketing", "create_incident_ticket",
                            {"incident_id": "INC-0417", "action": "isolate_host",
                             "target": "WRK-2214", "clause": "c-12"})
-    assert cid == "github.repo.issues.create"
+    assert cid == "github.issue.create"
     assert args["owner"] == "acme" and args["repo"] == "soc"
     assert "INC-0417" in args["body"]["body"]
     # the attribution the policy requires

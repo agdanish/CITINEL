@@ -132,18 +132,36 @@ must not describe it as one.
 | tests | `backend/tests/test_swytchcode_runtime.py` (8) |
 | live | `GET /api/connectors` → `swytchcode` |
 
+## The canonical-id bug this file used to contain
+
+Both methods are scaffolded: `swy list tooling --json` reports
+`github.issue.create` and `slack.chat.postmessage.create`, and those exact ids
+are what the transport sends.
+
+They were not, until 4 Sep. The module default, `render.yaml` and this file all
+named `github.repo.issues.create` -- an id appearing in neither the scaffolded
+registry nor GitHub's own 1,204-id definition. It named nothing at all.
+
+The interesting part is the failure mode rather than the typo. The transport
+classifies "tool not found" as `TransportUnavailable`, which the executor
+records as a **`not_configured`** receipt. So the ticketing leg would not have
+failed loudly. It would have written *"the Swytchcode runtime is not
+scaffolded"* onto a tamper-evident audit ledger, on a deployment where the
+runtime was scaffolded perfectly, sending an operator to re-run a scaffold that
+was already correct. A false statement on the audit trail is the one failure
+this product exists not to commit, and it would have arrived through an
+integration rather than through the investigation.
+
+Two things let it survive a full audit. The correct id was sitting in the local
+`.env`, which is gitignored, so it reproduced only on Render and never on a
+developer's machine. And `test_swytchcode_runtime.py` asserted the wrong id
+inside a test named `test_the_arg_mapping_targets_real_canonical_ids`, so CI
+certified the mismatch as correct. Both are fixed, with the three code and
+config sites.
+
 ## What remains
 
-```bash
-swy add method github.repo.issues.create     # closes requirement 3
-swy list tooling --json                      # confirm the real canonical ids
-```
-
-Canonical ids differ between Swytchcode's docs and their own examples, so that
-second command is the authority. If the id differs from the default, set
-`CITINEL_SWY_TICKET_METHOD`.
-
-Then in Render's `citinel-shared` group: `CITINEL_SWY_GITHUB_TOKEN` (a PAT with
+Credentials only. Then in Render's `citinel-shared` group: `CITINEL_SWY_GITHUB_TOKEN` (a PAT with
 repo scope), `CITINEL_SWY_SLACK_TOKEN`, `CITINEL_SWY_SLACK_CHANNEL`.
 
 **Until then the seam reports `not_configured` and executes nothing** — which

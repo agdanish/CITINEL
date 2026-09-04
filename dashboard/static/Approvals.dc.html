@@ -207,7 +207,7 @@
               <x-import component-from-global-scope="CITINELDesignSystem_fdfd66.CitationChip" locator="{{ act.decisionLocator }}" size="sm" hint-size="220px,22px"></x-import>
               <dc-import name="StandardRef" standard="{{ traceStandard }}" version="{{ traceVersion }}" locator="{{ traceRef }}" size="sm" hint-size="280px,24px"></dc-import>
               <sc-if value="{{ act.lyzrReviewShown }}" hint-placeholder-val="{{ false }}">
-                <span title="{{ act.lyzrReviewTitle }}" style="font-family:var(--ctn-font-display);font-size:7.5px;letter-spacing:0.1em;color:var(--ctn-color-text-muted);border:1px {{ act.lyzrReviewDashed ? 'dashed' : 'solid' }} var(--ctn-color-border-strong);padding:3px 6px;border-radius:4px;flex:none;white-space:nowrap">LYZR · {{ act.lyzrReviewLabel }}</span>
+                <span title="{{ act.lyzrReviewTitle }}" style="font-family:var(--ctn-font-display);font-size:7.5px;letter-spacing:0.1em;color:var(--ctn-color-text-muted);border:1px {{ act.lyzrReviewStyle }} var(--ctn-color-border-strong);padding:3px 6px;border-radius:4px;flex:none;white-space:nowrap">LYZR · {{ act.lyzrReviewLabel }}</span>
               </sc-if>
               <button onClick="{{ toggleTrace }}" style="font-family:var(--ctn-font-display);font-size:8.5px;letter-spacing:0.1em;padding:6px 10px;border:1px {{ traceStyle }} var(--ctn-color-border-strong);border-radius:6px;background:none;color:var(--ctn-color-text-primary);cursor:pointer;white-space:nowrap">{{ traceLabel }}</button>
             </div>
@@ -824,6 +824,11 @@ autonomous_allowed {
         lyzrReviewLabel: (() => { const lr = res.lyzr_response_review; if (!lr) return '';
           return lr.status === 'ok' ? String(lr.assessment || 'unparsed').replace(/_/g, '-').toUpperCase() : String(lr.status).replace(/_/g, ' ').toUpperCase(); })(),
         lyzrReviewDashed: !!(res.lyzr_response_review && ['over_scoped', 'under_scoped'].indexOf(res.lyzr_response_review.assessment) >= 0),
+        // Precomputed, not a ternary in the hole: the runtime does not evaluate
+        // expressions, so `{{ a ? 'x' : 'y' }}` resolved to undefined and the
+        // border shorthand silently collapsed to none/0px. Same shape as
+        // traceStyle on the very next element.
+        lyzrReviewStyle: (res.lyzr_response_review && ['over_scoped', 'under_scoped'].indexOf(res.lyzr_response_review.assessment) >= 0) ? 'dashed' : 'solid',
         lyzrReviewTitle: (res.lyzr_response_review && res.lyzr_response_review.rationale) || 'independent proportionality opinion, asked after the gate above already decided · never gates',
         rings
       },

@@ -101,10 +101,18 @@ envVarGroups:
         sync: false
       - key: CITINEL_SWY_SLACK_CHANNEL
         sync: false
-      # Swytchcode's docs and their own examples disagree about canonical ids.
-      # `swy list tooling --json` is the authority; override here if they differ.
+      # Both ids are verbatim from the scaffolded registry (.swytchcode/
+      # tooling.json), not from the docs. This line used to read
+      # github.repo.issues.create, on the theory that Swytchcode's docs and
+      # examples disagree -- but that id exists in neither the registry nor
+      # GitHub's own 1,204-id definition, so it named nothing at all. The
+      # transport classifies "tool not found" as TransportUnavailable, so the
+      # ticketing leg would not merely have failed: it would have written
+      # not_configured to the audit ledger on a deployment where the runtime
+      # was scaffolded correctly, sending an operator to re-run a scaffold that
+      # was already right. `swy list tooling --json` is the authority.
       - key: CITINEL_SWY_TICKET_METHOD
-        value: github.repo.issues.create
+        value: github.issue.create
       - key: CITINEL_SWY_COMMS_METHOD
         value: slack.chat.postmessage.create
       # --- gemini: the wide-lens sweep over findings nobody read -----------

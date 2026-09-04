@@ -115,7 +115,17 @@ def _lyzr_allow() -> frozenset[str]:
     """Egress allow-list extended with the operator-configured Lyzr host."""
     if settings.lyzr_guard_url:
         from urllib.parse import urlparse
-        host = urlparse(settings.lyzr_guard_url).hostname
+        try:
+            host = urlparse(settings.lyzr_guard_url).hostname
+        except ValueError:
+            # urlparse RAISES on a malformed authority -- "https://[abc" is a
+            # ValueError, not an empty result. Every caller of this reaches it
+            # through a path that promises to degrade, so a typo in
+            # CITINEL_LYZR_GUARD_URL used to 500 /api/ledger/verify and the
+            # sign-off route rather than report an unusable witness. Returning
+            # the unextended list is the honest answer: the guard URL is not on
+            # it, so check_egress refuses and the caller degrades with a reason.
+            return EGRESS_ALLOW
         if host:
             return EGRESS_ALLOW | {host}
     return EGRESS_ALLOW
@@ -388,7 +398,19 @@ class LyzrLedgerMirror(LedgerSink):
                        "(check the Studio agent's instructions)")
 
         remote_head = str(reply.get("head", ""))
-        remote_count = int(reply.get("count", 0) or 0)
+        # Coerced defensively, exactly as `head` is on the line above. `count`
+        # is raw model output, and an agent whose memory recalled nothing
+        # answers "unknown" or "12.5" far more readily than 0 -- int() raises on
+        # both, and on a list or dict it raises TypeError instead. That
+        # exception escaped compare(), whose whole contract is to degrade, and
+        # ran all the way out of GET /api/ledger/verify, which has no handler.
+        # A third-party model's malformed field would then take down the
+        # DETERMINISTIC chain-integrity result computed one line earlier and
+        # answer 500 -- the audit surface failing because a witness stuttered.
+        try:
+            remote_count = int(reply.get("count", 0) or 0)
+        except (TypeError, ValueError):
+            remote_count = 0
         if remote_head and remote_head == local_head:
             return MirrorComparison(
                 "agreed", local_head, remote_head, local_count, remote_count,

@@ -74,12 +74,21 @@ def dispatch_signed(incident, signed_by: str, sender=None) -> N8nDispatch:
     if not url:
         return N8nDispatch("not_configured", [],
                            "CITINEL_N8N_WEBHOOK_URL unset; post-signoff automation skipped")
-    parsed = urlparse(url)
-    if not parsed.hostname:
+    try:
+        parsed = urlparse(url)
+        hostname, scheme = parsed.hostname, parsed.scheme
+    except ValueError:
+        # urlparse raises rather than returning empty on a malformed authority,
+        # so this guard only looked total. A mistyped CITINEL_N8N_WEBHOOK_URL
+        # made every sign-off 500 instead of completing with the automation
+        # skipped -- n8n is meant to improve the workflow, never to be able to
+        # block a human from signing off on an incident.
         return N8nDispatch("error", [], f"unparseable n8n webhook URL: {url!r}")
-    if parsed.scheme != "https":
+    if not hostname:
+        return N8nDispatch("error", [], f"unparseable n8n webhook URL: {url!r}")
+    if scheme != "https":
         return N8nDispatch("error", [],
-                           f"refusing non-https n8n webhook URL (scheme {parsed.scheme!r}); "
+                           f"refusing non-https n8n webhook URL (scheme {scheme!r}); "
                            "the signed incident payload must not travel in clear text")
 
     body = _payload(incident, signed_by)

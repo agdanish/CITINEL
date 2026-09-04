@@ -56,17 +56,34 @@ class TavilyConnector(Connector):
         if status != 200:
             return EnrichmentResult(self.provider, query, "query", "error",
                                     verdict=f"Tavily HTTP {status}")
+        # Everything below is defensive because `body` is whatever the API
+        # returned: the transport types it Any and hands back r.json()
+        # unmodified, so a valid-JSON non-object (a list, a bare string) arrives
+        # here intact. The isinstance guard on `results` was the only one, which
+        # made it dead code in precisely the case it was written for -- reading
+        # body.get("answer") two lines down raised AttributeError before
+        # `results` was ever looked at. The items are guarded too: Tavily's own
+        # /map endpoint returns bare URL strings, so a scalar row is a shape
+        # this API genuinely produces, and .get() on a str raises the same way.
+        # An AttributeError here does not stay here. enricher._execute catches
+        # only (KeyError, TypeError) despite promising never to raise, so it
+        # escapes into the incident path: POST /api/incidents/{id}/context
+        # answers 500 and abandons every remaining query in the plan, and a
+        # console swarm run is discarded wholesale by the worker's blanket
+        # handler after the model spend has already been incurred.
         results = body.get("results", []) if isinstance(body, dict) else []
-        top = results[0] if results else {}
+        rows = [r for r in results if isinstance(r, dict)] if isinstance(results, list) else []
+        top = rows[0] if rows else {}
+        answer = (body.get("answer") if isinstance(body, dict) else "") or ""
         result = EnrichmentResult(
             provider=self.provider, indicator=query, indicator_type="query",
             status="ok",
-            verdict=(body.get("answer") or top.get("title", ""))[:300],
-            source_url=top.get("url", "https://tavily.com"),
+            verdict=(answer or str(top.get("title") or ""))[:300],
+            source_url=str(top.get("url") or "https://tavily.com"),
             fetched_at=self._now(),
             detail={"results": [{"title": r.get("title"), "url": r.get("url"),
-                                 "score": r.get("score")} for r in results[:max_results]],
-                    "answer": body.get("answer") or ""},
+                                 "score": r.get("score")} for r in rows[:max_results]],
+                    "answer": answer},
         )
         self.cache.put(result)
         return result
@@ -155,16 +172,25 @@ class TavilyConnector(Connector):
         if status != 200:
             return EnrichmentResult(self.provider, url, "url", "error",
                                     verdict=f"Tavily extract HTTP {status}")
-        results = body.get("results", []) if isinstance(body, dict) else []
-        if not results:
-            failed = (body.get("failed_results") or [{}])[0] if isinstance(body, dict) else {}
+        # Rows are filtered to dicts for the same reason search() filters them:
+        # a subscript into failed_results assumed a list (a dict there raises
+        # KeyError: 0, a string silently yields one character), and results[0]
+        # assumed a mapping. Both are shapes this API produces -- /map answers
+        # with bare URL strings -- and both raised out of a method whose only
+        # documented outcomes are ok and error.
+        raw_rows = body.get("results", []) if isinstance(body, dict) else []
+        rows = [r for r in raw_rows if isinstance(r, dict)] if isinstance(raw_rows, list) else []
+        if not rows:
+            fails = body.get("failed_results") if isinstance(body, dict) else None
+            first = next((f for f in fails if isinstance(f, dict)), {}) \
+                if isinstance(fails, list) else {}
             return EnrichmentResult(self.provider, url, "url", "error",
-                                    verdict=f"Tavily could not extract this URL: {failed.get('error', 'unknown')}")
-        raw = str(results[0].get("raw_content") or "")
+                                    verdict=f"Tavily could not extract this URL: {first.get('error', 'unknown')}")
+        raw = str(rows[0].get("raw_content") or "")
         result = EnrichmentResult(
             provider=self.provider, indicator=cache_key, indicator_type="url",
             status="ok", verdict=raw[:max_chars],
-            source_url=results[0].get("url", url), fetched_at=self._now(),
+            source_url=str(rows[0].get("url") or url), fetched_at=self._now(),
             detail={"truncated": len(raw) > max_chars, "full_length": len(raw)},
         )
         self.cache.put(result)
