@@ -70,6 +70,11 @@ envVarGroups:
         sync: false
       - key: CITINEL_N8N_API_KEY
         sync: false
+      # Startuped.ai: aggregate product-usage signals only. The connector
+      # refuses, rather than strips, any field that could carry incident
+      # content -- GET /api/startuped/signals publishes exactly what is sent.
+      - key: CITINEL_STARTUPED_API_KEY
+        sync: false
       - key: CITINEL_SWYTCHCODE_API_KEY
         sync: false
       # Swytchcode's two ecosystem APIs. Credentials travel per call as

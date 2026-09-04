@@ -187,6 +187,13 @@ class Settings(BaseSettings):
     #: API to read back what it did and cite it.
     n8n_api_url: str | None = Field(default=None)
     n8n_api_key: str | None = Field(default=None)
+
+    #: Startuped.ai (GTM platform). Signals are named intent records with a
+    #: time series, not per-event telemetry -- so CITINEL keeps a handful of
+    #: product-health signals and appends counts. Nothing about an incident
+    #: ever travels here: see connectors/startuped.py for why that line is
+    #: absolute. Keys are `sk_...` and default to a 30-day lifetime.
+    startuped_api_key: str | None = Field(default=None)
     swytchcode_api_key: str | None = Field(default=None)
     lyzr_api_key: str | None = Field(default=None)
     # Lyzr Agent API endpoint. The exact host must be taken from the operator's

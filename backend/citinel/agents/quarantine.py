@@ -176,6 +176,7 @@ EGRESS_ALLOW: frozenset[str] = frozenset({
     "api.abuseipdb.com",
     "api.tavily.com",
     "generativelanguage.googleapis.com",
+    "www.startuped.ai",
 })
 
 

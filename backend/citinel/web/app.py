@@ -48,6 +48,7 @@ from citinel.config import settings
 from citinel.web.demo_capture import find_fixture, load_fixtures
 from citinel.connectors.lyzr import LyzrGuard, LyzrLedgerMirror
 from citinel.connectors.n8n import dispatch_signed
+from citinel.connectors.startuped import SIGNALS, emit_quietly
 from citinel.connectors.n8n_api import list_executions, resume as n8n_resume
 from citinel.connectors.swytchcode import SwytchcodeExecutor
 from citinel.incidents.builder import load_incidents
@@ -388,6 +389,7 @@ def get_draft(incident_id: str, kind: str = "certin") -> dict:
     # a second Lyzr agent reads the drafted fields and says which a human should
     # not sign as they stand; not_configured until its id is set
     review = review_draft(draft)
+    emit_quietly("citinel-reports-drafted", 1, f"{kind} artifact drafted for sign-off")
     return {"draft": draft.as_dict(), "rendered": render_text(draft),
             "guard": guard.as_dict(), "review": review}
 
@@ -705,6 +707,9 @@ def get_connectors() -> dict:
               "webhook · starts a playbook and reads back which channels succeeded"),
             c("n8n-api", "reads playbook executions back as citable evidence, and answers one paused on a Wait node",
               bool(s.n8n_api_url and s.n8n_api_key), "CITINEL_N8N_API_URL + CITINEL_N8N_API_KEY"),
+            c("startuped", "aggregate product-usage signals to the GTM platform",
+              bool(s.startuped_api_key),
+              "counts only -- no incident content ever; see GET /api/startuped/signals"),
             c("swytchcode", "ticketing + comms after an executed action", bool(s.swytchcode_api_key), "key set; the Python runtime is wired -- receipts say whether the CLI is scaffolded, a policy blocked the call, or it executed"),
         ],
         "mock_endpoints": {
@@ -748,6 +753,11 @@ def _swarm_worker(incident_id: str, inc) -> None:
         verdict_dict = result.as_dict().get("verdict") or {}
         audit = verdict_audit(incident_id, verdict_dict.get("claims") or [], _ledger())
         annotate_result(incident_id, _artifacts_dir(), "lyzr_verdict_audit", audit)
+        # Product-usage signals only: a count that the loop ran, and a count
+        # that a verdict survived citation. Nothing about the incident.
+        emit_quietly("citinel-incidents-investigated", 1, "swarm run completed")
+        if (result.as_dict().get("verdict") or {}).get("claims"):
+            emit_quietly("citinel-verdicts-cited", 1, "verdict produced with cited claims")
         run.update(mode=result.mode.value, banner=result.banner(),
                    summary=summary_of(result.as_dict()))
     except Exception as e:  # recorded, never raised into a thread
@@ -996,6 +1006,29 @@ def read_visual(incident_id: str, body: dict | None = None) -> dict:
                       _artifacts_dir(), ledger=_ledger())
 
 
+@app.get("/api/startuped/signals")
+def startuped_signals() -> dict:
+    """Exactly what CITINEL reports to its go-to-market platform, and nothing else.
+
+    Published as a route rather than buried in a connector on purpose. An
+    integration that sends data somewhere should be able to show a reader what
+    it sends -- and in this case the answer is five aggregate counters and no
+    incident content of any kind, which is a claim worth being able to check.
+    """
+    return {
+        "provider": "startuped",
+        "configured": bool(settings.startuped_api_key),
+        "signals": [{"signal_key": k, **v} for k, v in SIGNALS.items()],
+        "what_is_never_sent": (
+            "No incident id, host, IP, finding, evidence, target or account name "
+            "ever leaves through this connector. Startuped is a go-to-market "
+            "platform; CITINEL processes bank security telemetry. Only aggregate "
+            "counts of product usage are reported, and the connector refuses -- "
+            "rather than strips -- any payload field that could carry content."
+        ),
+    }
+
+
 def _handover_path(incident_id: str) -> Path:
     return _artifacts_dir() / "handover" / f"{incident_id}.json"
 
@@ -1111,6 +1144,7 @@ def execute_action(body: dict) -> dict:
     except ExecutionRefused as e:
         raise HTTPException(403, {"refused": str(e), "decision": decision.as_dict()})
 
+    emit_quietly("citinel-actions-gated", 1, f"gate verdict {decision.verdict.value}")
     swytch: list[dict[str, Any]] = []
     if receipt.status == "executed":
         for r in SwytchcodeExecutor().execute_for_decision(decision, target, incident_id):
@@ -1189,6 +1223,9 @@ def sign_off(incident_id: str, body: dict) -> dict:
         payload["attested"] = bool(body.get("attested"))
     ledger = _ledger()
     ledger.append(incident_id, signed_by, "human_signoff", payload)
+    # The end of the workflow: the moment the product delivered its value.
+    # A count, not a name -- who signed is ledger business, not marketing.
+    emit_quietly("citinel-signoffs", 1, "incident signed off by a named human")
     result = dispatch_signed(inc, signed_by)
     ledger.append(incident_id, "n8n", "tool_call", result.as_dict())
     chain = ledger.entries_for(incident_id)
