@@ -564,6 +564,27 @@ html, body { max-width: 100%; }
   overflow: hidden;
   text-overflow: ellipsis;
 }
+/* One exception, and it is the reason the rule above names `nav` at all: a header
+   whose residual claimant is a SPAN, not a nav. Demo has no nav -- its flexible
+   child is the subject line, which the page declares `flex:1;min-width:0` so it
+   takes only what is left over and ellipsizes. The blanket rule above overrode
+   that to `0 1 auto`, so the span kept its full 1300px content width, the row
+   genuinely overflowed, wrap fired as designed, and a 52px header painted as
+   three stacked rows 119px tall: the demo-mode pill and the subject on their own
+   lines, RETURN TO LIVE OPERATION and the provenance badge below them, over the
+   act title. Measured on Demo.dc.html at 1440px, 4 Sep 2026.
+
+   flex-basis:0 rather than auto, deliberately, and the opposite of the choice
+   made for nav above: the nav had to put its content width into the row so the
+   row would overflow and the clock cluster could wrap away. Here nothing should
+   wrap -- the four fixed items total 1035px inside a page that is min-width:1280
+   -- so keeping the span's content width out of the base sum is what guarantees
+   the pill beside it ("DEMO MODE · SCRIPTED PERFORMANCE, NOT LIVE DATA") is
+   never the thing that shrinks. An honesty label may not ellipsize. */
+[data-screen-label] > header > span[style*="flex:1"],
+[data-screen-label] > header > span[style*="flex: 1"]{
+  flex: 1 1 0% !important;
+}
 [data-screen-label] > header > div{ min-width: max-content !important; }
 [data-screen-label] > header a{ white-space: nowrap; }
 

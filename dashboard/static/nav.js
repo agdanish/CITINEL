@@ -90,6 +90,21 @@
       '#citinel-rail a i svg{display:block}',
       '#citinel-rail[data-state=closed] a span{display:none}',
       '#citinel-rail[data-state=closed] a{padding:0 12px}',
+      // the brand row: the mark sits in the rail's own top row, on the screen header's
+      // line, and the row is the expand control. Open shows the lockup with the chevron
+      // at the right edge; closed shows the falcon alone, centred in 44px, because a
+      // 90px lockup and a chevron do not both fit and the mark is the half worth keeping.
+      '#citinel-rail button.brand{justify-content:space-between;gap:8px;padding:0 12px;box-sizing:border-box;width:100%}',
+      '#citinel-rail button.brand picture{display:block;flex:none;line-height:0}',
+      '#citinel-rail button.brand img{display:block}',
+      '#citinel-rail .brand-lockup img{width:90px;height:34px}',
+      '#citinel-rail .brand-falcon img{width:24px;height:24px}',
+      '#citinel-rail button.brand .chev{flex:none;font-size:15px;line-height:1;color:var(--ctn-color-text-muted)}',
+      '#citinel-rail button.brand:hover .chev,#citinel-rail button.brand:focus-visible .chev{color:var(--ctn-color-text-primary)}',
+      '#citinel-rail[data-state=open] .brand-falcon{display:none}',
+      '#citinel-rail[data-state=closed] .brand-lockup{display:none}',
+      '#citinel-rail[data-state=closed] button.brand{justify-content:center;padding:0}',
+      '#citinel-rail[data-state=closed] button.brand .chev{display:none}',
       // the footer: state word on one line, the operator's name on the next. Michroma is
       // wide; 'ARMED · DANISH' on one line needs ~200px in a 168px rail and was clipped
       // mid-glyph, so the two parts stack and a long name gets an ellipsis, never a cut.
@@ -168,17 +183,83 @@
     window.addEventListener('scroll', hideTip, true);
     window.addEventListener('keydown', function (e) { if (e.key === 'Escape') hideTip(); });
 
-    // -- expand / collapse --------------------------------------------------
+    // -- the brand, and expand / collapse -----------------------------------
+    // The top row carried a lone chevron in 168px of empty panel, and the mark
+    // appeared only in the screen's own header, so the rail read as an unlabelled
+    // strip of glyphs. It now opens with the mark, on the same line as the header's.
+    function mark(cls, webp, png) {
+      var pic = document.createElement('picture');
+      pic.className = cls;
+      var src = document.createElement('source');
+      src.type = 'image/webp'; src.srcset = webp;
+      var img = document.createElement('img');
+      img.src = png; img.alt = ''; img.decoding = 'async';   // decorative: the button is labelled
+      pic.appendChild(src); pic.appendChild(img);
+      return pic;
+    }
     var btn = document.createElement('button');
     btn.type = 'button';
+    btn.className = 'brand';
+    btn.appendChild(mark('brand-lockup', 'assets/mark-white-254.webp', 'assets/mark-white-254.png'));
+    btn.appendChild(mark('brand-falcon', 'assets/falcon-white-96.webp', 'assets/falcon-white-96.png'));
+    var chev = document.createElement('span');
+    chev.className = 'chev'; chev.setAttribute('aria-hidden', 'true');
+    btn.appendChild(chev);
     function paint() {
       var open = rail.getAttribute('data-state') === 'open';
-      btn.textContent = open ? '‹' : '›';                  // ‹  ›
+      chev.textContent = open ? '‹' : '›';                  // ‹  ›
       btn.setAttribute('aria-expanded', open ? 'true' : 'false');
       btn.setAttribute('aria-label', open ? 'Collapse navigation' : 'Expand navigation');
       btn.title = open ? 'Collapse to icons (remembered on this device)' : 'Expand to show labels (remembered on this device)';
       if (open) hideTip();
     }
+
+    // Two alignments, and they are not the same one. The rail's divider belongs on the
+    // screen header's own rule, so the two columns share a line: every header here is
+    // min-height:52px and wraps TALLER when its row runs out of width (a11y.css), so the
+    // height is measured, never assumed. But a header that wrapped to 119px would then
+    // centre the rail's mark against the middle of a two-row block, sitting it well below
+    // the header's own logo. So the mark is centred on that logo's line instead, and the
+    // rest of the block is padding. Executive has no header and keeps the 52px default.
+    var ro = null;
+    function alignBrand() {
+      var page = document.querySelector('[data-citinel-page]');
+      var hdr = page && page.querySelector(':scope > header');
+      if (!hdr) { btn.style.height = '52px'; btn.style.paddingBottom = ''; return false; }
+      var hr = hdr.getBoundingClientRect();
+      var h = Math.round(hr.height);
+      if (h < 44) { btn.style.height = '52px'; btn.style.paddingBottom = ''; return true; }
+      btn.style.height = h + 'px';
+      var logo = hdr.querySelector('a picture, a img, a svg');
+      var lr = logo && logo.getBoundingClientRect();
+      // the band the header's own logo is centred in, measured from the header's top edge
+      var band = lr && lr.height ? Math.round((lr.top - hr.top) * 2 + lr.height) : 52;
+      // floor is the rail mark's own height, not the row height: on a header that
+      // wrapped, the logo is top-aligned in a 34px line, and a 44px floor pushed the
+      // rail's mark 5px below it -- visible, and the whole point of this measurement.
+      btn.style.paddingBottom = Math.max(0, h - Math.max(24, band)) + 'px';
+      return true;
+    }
+    function watchHeader() {
+      var page = document.querySelector('[data-citinel-page]');
+      var hdr = page && page.querySelector(':scope > header');
+      if (!hdr) return false;
+      if (window.ResizeObserver) {
+        if (ro) ro.disconnect();
+        ro = new ResizeObserver(alignBrand);
+        ro.observe(hdr);
+      }
+      alignBrand();
+      return true;
+    }
+    // the DC runtime mounts the screen after this script runs, so keep looking briefly
+    if (!watchHeader()) {
+      var tries = 0;
+      var iv = setInterval(function () {
+        if (watchHeader() || ++tries > 40) clearInterval(iv);
+      }, 150);
+    }
+    window.addEventListener('resize', alignBrand);
     btn.addEventListener('click', function () {
       var next = rail.getAttribute('data-state') === 'open' ? 'closed' : 'open';
       rail.setAttribute('data-state', next); store(next); paint();
