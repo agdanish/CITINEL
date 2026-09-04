@@ -156,8 +156,9 @@ services:
     plan: starter
     healthCheckPath: /healthz
     # Secret Files (Render dashboard -> this service -> Environment -> Secret
-    # Files; a blueprint cannot declare them): swy-credentials.db, swy-credkey,
-    # swy-auth.json -- the file-keyed Swytchcode store that makes the Slack leg
+    # Files; a blueprint cannot declare them): swy-credentials.db.b64,
+    # swy-credkey.b64, swy-auth.json.b64 -- each pasted as base64 text, because
+    # a Secret File is text and credentials.db is binary -- the file-keyed Swytchcode store that makes the Slack leg
     # work in a container with no Keychain. Produced once on a developer Mac
     # with HOME pointed at an empty directory (so the CLI writes a credkey file
     # instead of using the Keychain), then `swy login` + `swy auth connect
