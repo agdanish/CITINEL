@@ -45,6 +45,16 @@
     TIMEOUT_MS: 6000,          // probes and small reads
     BULK_TIMEOUT_MS: 20000,    // incident bodies, audit chains, drafts, ledger verify
     WRITE_TIMEOUT_MS: 45000,   // writes append ledger frames and may wait on connectors; never retried
+    // The compliance drafter runs both guards and the Lyzr per-field second opinion.
+    // Measured against production on 4 Sep: 48.9s on a cold read, then 18.8s and 16.1s
+    // warm. At the old 45s ceiling the cold read aborted, and because Compliance goes
+    // live only if the draft returns, the screen fell back to its AUTHORED DEMO: a
+    // counting CERT-In clock and an ACTIONED arc on a record that is really CAUGHT with
+    // its window ten days closed. Being slow and true beats being quick and fictional,
+    // which is the whole argument of this product, so the ceiling now clears the
+    // measured cold read with room. The demo-morning pre-flight reads this route and
+    // leaves it warm.
+    DRAFT_TIMEOUT_MS: 90000,
     reachable: null,           // null = not probed, true/false after probe()
     service: null,             // /healthz's service name once probed
     corpus: null,              // /api/source's answer: 'live' pipeline output or the committed 'seed'
@@ -394,7 +404,7 @@
   // The draft route runs two blocking Lyzr calls (screen 20s + field review 25s)
   // before it answers. BULK's 20s abort fired first, so a slow Lyzr left the
   // compliance desk with no draft at all -- while both calls were still billed.
-  API.draftFor = function (id, kind) { return API.get('draft', id || API.currentIncidentId(), kind || 'certin', { timeoutMs: API.WRITE_TIMEOUT_MS }); };
+  API.draftFor = function (id, kind) { return API.get('draft', id || API.currentIncidentId(), kind || 'certin', { timeoutMs: API.DRAFT_TIMEOUT_MS }); };
   API.policy = function () { return API.get('policy'); };
   API.verifyLedger = function () { return API.get('ledgerVerify', null, null, BULK); };
   API.evalReport = function () { return API.get('evalRuns'); };
