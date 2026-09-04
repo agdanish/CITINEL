@@ -320,8 +320,14 @@
         </sc-if>
 
         <sc-if value="{{ isDone }}" hint-placeholder-val="{{ false }}">
-          <div style="flex:1;display:flex;align-items:center;gap:16px;min-width:0">
-            <div style="flex:1;min-width:0">
+          <!-- The receipt shares this bar with four fixed-width buttons. As `flex:1;
+               min-width:0` against `flex:none` siblings it had no floor at all, so on
+               a 761px bar the buttons took every pixel, the receipt's box computed to
+               width 0, and its text spilled out at its 78px min-content: one word per
+               line, 29 lines deep. It needs a floor and permission to take its own
+               line, which is what a reader wants from a receipt anyway. -->
+          <div style="flex:1;display:flex;align-items:center;gap:16px;min-width:0;flex-wrap:wrap">
+            <div style="flex:1 1 340px;min-width:0">
               <div style="font-size:13.5px;color:var(--ctn-color-text-primary)">{{ doneHeadline }}</div>
               <div style="font-size:11.5px;color:var(--ctn-color-text-muted);margin-top:2px">{{ doneNote }}</div>
               <div style="display:flex;align-items:center;gap:8px;margin-top:6px;min-width:0">
