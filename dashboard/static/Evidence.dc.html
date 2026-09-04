@@ -117,7 +117,7 @@
           <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px">
             <sc-for list="{{ admissibility }}" as="a" hint-placeholder-count="4">
               <div style="display:flex;align-items:baseline;gap:10px;min-width:0">
-                <span style="width:13px;height:13px;border-radius:3px;border:1.5px solid {{ a.border }};background:{{ a.bg }};flex:none;margin-top:2px"></span>
+                <span style="width:14px;height:14px;border-radius:3px;border:1.5px solid {{ a.border }};background:{{ a.bg }};color:{{ a.markColor }};flex:none;margin-top:1px;display:flex;align-items:center;justify-content:center;font-family:var(--ctn-font-display);font-size:10px;line-height:1">{{ a.mark }}</span>
                 <span style="font-size:12.5px;color:var(--ctn-color-text-primary);flex:1;min-width:0;line-height:1.45">{{ a.label }}</span>
               </div>
             </sc-for>
@@ -543,7 +543,13 @@ class Component extends DCLogic {
     const s = this.state, fs = s.incident.findings || [], idx = Math.max(0, Math.min(s.liveSel || 0, fs.length-1)), f = fs[idx];
     const le = this.ledgerEntryFor(f), note = this.swarmNote();
     const examinedN = note ? Number(note.findings_examined) : null, examined = examinedN == null ? null : idx < examinedN;
-    const ok = (v,label)=>({label, border: v ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-border-strong)', bg: v ? 'var(--ctn-color-text-primary)' : 'transparent'});
+    // A ticked criterion carries a checkmark on a filled box; an unmet one is a
+    // hollow box with a clearly visible outline. Two filled-vs-outlined squares in
+    // near-identical greys did not read as checked vs unchecked on the dark panel.
+    const ok = (v,label)=>({label,
+      border: v ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-text-muted)',
+      bg: v ? 'var(--ctn-color-text-primary)' : 'transparent',
+      mark: v ? '✓' : '', markColor: v ? 'var(--ctn-color-surface-shell)' : 'transparent'});
     return {
       kindNote: 'a finding resting on the operator\'s own record. the strongest class of exhibit here; no verdict claim is attached to it yet',
       admissibility: [
@@ -696,7 +702,13 @@ class Component extends DCLogic {
     if(this.state.role !== 'ciso') return {};
     const ev = this.exhibits.find(e=>e.id===this.state.sel) || this.exhibits[0];
     const ext = ev.kind === 'external';
-    const ok = (v,label)=>({label, border: v ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-border-strong)', bg: v ? 'var(--ctn-color-text-primary)' : 'transparent'});
+    // A ticked criterion carries a checkmark on a filled box; an unmet one is a
+    // hollow box with a clearly visible outline. Two filled-vs-outlined squares in
+    // near-identical greys did not read as checked vs unchecked on the dark panel.
+    const ok = (v,label)=>({label,
+      border: v ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-text-muted)',
+      bg: v ? 'var(--ctn-color-text-primary)' : 'transparent',
+      mark: v ? '✓' : '', markColor: v ? 'var(--ctn-color-surface-shell)' : 'transparent'});
     return {
       kindNote: ext
         ? 'a claim resting on something CITINEL fetched. weaker than the bank\'s own record, and shown as such'
