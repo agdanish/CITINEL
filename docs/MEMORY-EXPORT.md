@@ -958,13 +958,20 @@ the copy that survives a new machine.
    with its window ten days closed, and a seal that writes nothing. The tells are
    the words "authored demo" in the left column and a missing LIVE chip. Step 1
    plus this load makes it warm.
-5. **Confirm Auto-Deploy is OFF** on the four Render services. Six deploys went
+5. **Manual Deploy citinel-web ONCE, in the morning, within 6 hours of stage.**
+   This is what keeps the hero dial counting down instead of reading BREACHED.
+   `CITINEL_DEMO_LIVE_INCIDENT=INC-0419` is already set on Render (verified live
+   4 Sep 22:26 IST, window open with 5h57m left), and that record's 6-hour CERT-In
+   window starts at CONTAINER BOOT. No redeploy means an expired clock: the one set
+   on the night of 4 Sep ran out about 04:23 IST. A Manual Deploy is the correct
+   way to do this even with Auto-Deploy off. See [[project-citinel-demo-live-incident]].
+6. **Confirm Auto-Deploy is OFF** on the four Render services. Six deploys went
    out on the evening of 4 Sep; none should land during the demo.
-6. **Do not click RUN THE SWARM** unless the script calls for it. Real Anthropic
+7. **Do not click RUN THE SWARM** unless the script calls for it. Real Anthropic
    credits, and it replaces the existing verdict on INC-0417.
-7. **INC-0417 must read STATE CAUGHT.** A sign-off closes it. If anyone signs it
+8. **INC-0417 must read STATE CAUGHT.** A sign-off closes it. If anyone signs it
    during a rehearsal, reopen it on Replay before going on stage.
-8. **After the event:** Settings CLEAR, or rotate `CITINEL_WRITE_TOKEN` in Render
+9. **After the event:** Settings CLEAR, or rotate `CITINEL_WRITE_TOKEN` in Render
    which disarms every laptop at once, then rotate the keys in findings section 9.
 
 ## Optional: renew the Slack connection (about 20 minutes, within 4h of stage)
@@ -1106,4 +1113,50 @@ Verified by running, not reading, at 19:00 to 19:05 IST on 4 Sep 2026:
 
 **How to apply:** re-run the probes before trusting this; see
 [[project-citinel-pending-manual-steps]] for what only Danish can do.
+````
+
+---
+
+## File: `project_citinel_demo_live_incident.md`
+
+````markdown
+---
+name: project-citinel-demo-live-incident
+description: INC-0419 is a live-clock demo incident added 4 Sep 2026 so the CERT-In dial counts down instead of showing a 10-day breach. Its window is measured from container boot when CITINEL_DEMO_LIVE_INCIDENT names it; off by default. Deployed at commit 972929c.
+metadata:
+  type: project
+---
+
+Added 4 Sep 2026 (commit 972929c, pushed) to fix the pitch risk that every demo
+dial read BREACHED (the BOTS incidents are dated 25 Aug, so their 6h CERT-In
+window closed 10 days ago).
+
+- **INC-0419** is in `data/seed/incidents.jsonl`: the same we8105desk/we9041srv
+  ransomware + credential-access chain as INC-0417 (2,487 findings, high), a
+  fresh id. Its CERT-In draft is fully deterministic (no swarm needed): 8/10
+  fields auto, 2 auto-suggested, 0 human-only (80-100% coverage).
+- **The switch:** env `CITINEL_DEMO_LIVE_INCIDENT`. When it names an incident,
+  that one record's `opened_ts` is served as the container's boot time
+  (`app._BOOT_TS`), so its 6h window starts at boot and a redeploy gives a fresh
+  clock. Unset (default) = every record keeps its real historical window. It is
+  a real reopen, not a display trick (CITINEL's clock is defined detect-time to
+  now, drafter.py).
+- **Dial selection:** Overview master dial and Shell clock now prefer a
+  still-running window over a long-closed one, so the live incident is the hero
+  dial. The Overview breach notice was decoupled from the dial: it names the
+  most-recently-closed breached record (INC-0417), not the live one.
+
+**Demo-day procedure (only Danish can do the Render parts):**
+1. Render > citinel-web > Environment: add `CITINEL_DEMO_LIVE_INCIDENT=INC-0419`.
+2. On demo MORNING, Manual Deploy citinel-web once. The clock is live for 6h from
+   that deploy, so redeploy within 6h of going on stage.
+3. Verified live 4 Sep evening: dial "INC-0419 · CERT-IN · REMAINING" counting
+   down in gold; Compliance "IN FORCE · CERT-IN 6 HOUR", sign-off "THE HUMAN
+   STEP"; preflight GO. Right after the push INC-0419 was already live for ~5.5h
+   purely from its recent seed timestamp (expires ~03:09 IST); the env+redeploy
+   is what keeps it fresh at demo time.
+
+**How to apply:** if the demo dial shows breached on demo morning, the morning
+redeploy (step 2) was not done or was >6h before the demo. See
+[[project-citinel-new-laptop-runbook]] and [[project-citinel-console-gotchas]].
 ````
