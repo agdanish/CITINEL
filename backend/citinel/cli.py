@@ -929,7 +929,10 @@ def swarm_run(
         console.print(f"[red]no incident {incident_id}[/red]")
         raise typer.Exit(1)
 
-    ledger = AuditLedger(incidents_dir / "ledger.jsonl")
+    # sink= matches the other three CLI write sites (451/529/624). Without it a
+    # swarm run advances the local chain while the Lyzr witness never hears,
+    # and the next verify reports a false "diverged" against an honest ledger.
+    ledger = AuditLedger(incidents_dir / "ledger.jsonl", sink=LyzrLedgerMirror())
     try:
         pipeline = build_pipeline(ledger)
     except (ModelNotConfigured, ModelNotVerified) as e:

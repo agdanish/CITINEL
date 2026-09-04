@@ -388,7 +388,11 @@ class Component extends DCLogic {
     };
     const all = claims.map(mk);
     // the citation gate's own record of what it cut on this chain
-    const gateFrames = chain.filter(e => e.actor === 'sentinel' && e.kind === 'decision' && (e.payload||{}).check === 'citation_verification');
+    // stage matters: the correlator and the marshal write citation_verification
+    // frames too, so taking the LAST one stamped narrator-dropped claims with a
+    // different stage's seq and timestamp -- clicking through landed on a frame
+    // about proposals, not claims.
+    const gateFrames = chain.filter(e => e.actor === 'sentinel' && e.kind === 'decision' && (e.payload||{}).check === 'citation_verification' && (e.payload||{}).stage === 'narrator');
     const lastGate = gateFrames[gateFrames.length-1] || null;
     const narratorF = chain.filter(e => e.actor === 'narrator').pop() || null;
     const dropped = (vd && vd.dropped_claims) || [];

@@ -172,17 +172,6 @@
                   <div style="font-size:12px;color:var(--ctn-color-text-primary);line-height:1.4;text-wrap:pretty"><span style="font-family:var(--ctn-font-display);font-size:8px;letter-spacing:0.1em;color:var(--ctn-color-text-muted);margin-right:7px">EXPOSURE</span>{{ i.exposure }}</div>
                 </sc-if>
               </div>
-              <div style="flex:none;width:150px;display:flex;flex-direction:column;justify-content:center;gap:7px">
-                <sc-for list="{{ i.clocks }}" as="c" hint-placeholder-count="2">
-                  <div style="min-width:0">
-                    <div style="display:flex;align-items:baseline;gap:8px;min-width:0">
-                      <span style="font-family:var(--ctn-font-display);font-size:15px;color:{{ c.fg }};font-variant-numeric:tabular-nums slashed-zero;flex:none">{{ c.left }}</span>
-                      <span style="font-size:10px;color:var(--ctn-color-text-muted);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.reg }}</span>
-                    </div>
-                    <div style="height:3px;background:var(--ctn-color-surface-well);border-radius:2px;margin-top:3px;overflow:hidden"><div style="height:100%;width:{{ c.pct }};background:var(--ctn-color-clock)"></div></div>
-                  </div>
-                </sc-for>
-              </div>
             </div>
         </sc-for>
       </div>
@@ -229,7 +218,6 @@
                 </div>
                 <span data-reveal style="font-family:var(--ctn-font-mono);font-size:10.5px;color:var(--ctn-color-text-muted);flex:none;white-space:nowrap">{{ w.due }}</span>
               </div>
-              <div style="font-size:11.5px;color:var(--ctn-color-text-muted);margin-top:4px;line-height:1.4;text-wrap:pretty">{{ w.action }}</div>
             </div>
           </sc-for>
         </div>
@@ -441,6 +429,12 @@ class Component extends DCLogic {
         title: i.incident_id + ' · ' + (i.finding_count || 0) + ' findings',
         position: 'State derived from ledger; ' + (i.hosts || []).length + ' host' + ((i.hosts || []).length === 1 ? '' : 's') + '; opened ' + (i.opened_ts ? i.opened_ts.slice(11,16) : '—') + written,
         locator: (i.hosts && i.hosts[0]) ? i.hosts[0].split('.')[0] : 'no host',
+        // CISO depth showed a bare EXPOSURE label with nothing after it -- strictly
+        // less than analyst depth on the one line meant to carry executive framing.
+        exposure: String(i.severity || 'medium').toUpperCase() + ' severity across '
+          + (i.hosts || []).length + ' host' + ((i.hosts || []).length === 1 ? '' : 's')
+          + ' · ' + (i.finding_count || 0) + ' findings · currently '
+          + String(i.state || 'caught').replace('_', ' '),
         holder: h.holder,
         next: noteText || h.note,
         href: this.incLink('Replay.dc.html', i.incident_id),

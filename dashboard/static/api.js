@@ -321,7 +321,10 @@
   API.incidents = function () { return API.get('incidents', null, null, BULK); };
   API.incident = function (id) { return API.get('incident', id || API.currentIncidentId(), null, BULK); };
   API.auditFor = function (id) { return API.get('audit', id || API.currentIncidentId(), null, BULK); };
-  API.draftFor = function (id, kind) { return API.get('draft', id || API.currentIncidentId(), kind || 'certin', BULK); };
+  // The draft route runs two blocking Lyzr calls (screen 20s + field review 25s)
+  // before it answers. BULK's 20s abort fired first, so a slow Lyzr left the
+  // compliance desk with no draft at all -- while both calls were still billed.
+  API.draftFor = function (id, kind) { return API.get('draft', id || API.currentIncidentId(), kind || 'certin', { timeoutMs: API.WRITE_TIMEOUT_MS }); };
   API.policy = function () { return API.get('policy'); };
   API.verifyLedger = function () { return API.get('ledgerVerify', null, null, BULK); };
   API.evalReport = function () { return API.get('evalRuns'); };

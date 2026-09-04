@@ -202,7 +202,14 @@ class NullObserver(AgentObserver):
 
 
 class LyzrObserver(AgentObserver):
-    """Forwards agent lifecycle events to a Lyzr observability dashboard."""
+    """Forwards agent lifecycle events to Lyzr when a transport is injected.
+
+    In production no transport is injected (`_sender` is None), so nothing
+    leaves the process: this is an observability seam that is wired but not
+    yet carrying traffic, and `forwarded` counts only what a real sender
+    actually sent. It previously incremented on every event regardless, which
+    made a no-op look like a working feed.
+    """
 
     def __init__(self, sender=None) -> None:
         self._sender = sender
@@ -214,10 +221,11 @@ class LyzrObserver(AgentObserver):
         if not check_egress(settings.lyzr_guard_url, _lyzr_allow()).allowed:
             return
         try:
-            if self._sender is not None:
-                self._sender(settings.lyzr_guard_url,
-                             {"x-api-key": settings.lyzr_api_key},
-                             {"type": "agent_event", **event.__dict__})
+            if self._sender is None:
+                return          # no transport: nothing sent, nothing counted
+            self._sender(settings.lyzr_guard_url,
+                         {"x-api-key": settings.lyzr_api_key},
+                         {"type": "agent_event", **event.__dict__})
             self.forwarded += 1
         except Exception:
             return    # observability must never break the pipeline

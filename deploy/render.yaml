@@ -302,7 +302,17 @@ services:
   # future free-tier deployment wants it.)
 
 databases:
-  # --- managed postgres: incidents, audit ledger, verdicts ------------------
+  # --- managed postgres ------------------------------------------------------
+  # Honest note, because this file's own header says it carries only resources
+  # the codebase uses and that is the rule citinel-redis was removed under.
+  # NOTHING reads this as a database: config.py has no database_url field and
+  # no code opens a connection. It stays for one narrow, real reason --
+  # CITINEL_DATABASE_URL is injected from it and app.py's _BLUEPRINT_ENV checks
+  # only that the variable is PRESENT, which is how a deployment proves the
+  # platform's environment actually reaches the process. Persistence itself is
+  # file-backed (JSONL under CITINEL_DATA_DIR, with the ledger on the disk
+  # attached to citinel-web). Either wire real persistence to it or drop it;
+  # leaving it undocumented was the thing worth fixing tonight.
   - name: citinel-postgres
     plan: free
     databaseName: citinel

@@ -543,7 +543,13 @@ class Component extends DCLogic {
     const p = e.payload || {};
     switch (e.kind) {
       case 'incident_opened': return {link:'open', label:'OPENED', state:'caught'};
-      case 'decision': return p.lane ? {link:'route', label:'ROUTE ' + String(p.lane).toUpperCase()} : null;
+      // Only the Router's own frame is the routing decision. lyzr-triage writes an
+      // advisory second opinion with the same shape; rendering both as ROUTE put two
+      // identical milestones on the reel and, when they disagreed, showed a routing
+      // decision that never happened.
+      case 'decision': return p.lane ? (e.actor === 'triage-router'
+        ? {link:'route', label:'ROUTE ' + String(p.lane).toUpperCase()}
+        : {link:'route', label:'2ND OPINION ' + String(p.lane).toUpperCase()}) : null;
       case 'state_transition': return {link:'state', label:String(p.to || 'STATE').toUpperCase(), state:p.to};
       case 'policy_check': return {link:'policy', label:'POLICY EVAL'};
       case 'action_executed': return {link:'act', label:'ACTIONED', state:'actioned'};

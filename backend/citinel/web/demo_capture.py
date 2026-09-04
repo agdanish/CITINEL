@@ -51,7 +51,11 @@ ROUTES: tuple[tuple[str, str], ...] = (
     ("incident", "/api/incidents/{id}"),
     ("audit", "/api/incidents/{id}/audit"),
     ("verdict", "/api/incidents/{id}/verdict"),
-    ("draft", "/api/incidents/{id}/draft"),
+    # The console always sends ?kind=; a key without it never matched, so the
+    # one screen the capture exists to protect fell through to the live route
+    # -- and to a network call -- on exactly the failure it was recorded for.
+    ("draft", "/api/incidents/{id}/draft?kind=certin"),
+    ("draft_dpdp", "/api/incidents/{id}/draft?kind=dpdp"),
     ("context", "/api/incidents/{id}/context"),
     ("handover", "/api/incidents/{id}/handover"),
 )

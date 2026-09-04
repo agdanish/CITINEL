@@ -64,11 +64,17 @@ class SwytchcodeExecutor:
                                      "Swytchcode key not set; execution skipped")
         try:
             if self._sender is None:
-                # Real path would use the Swytchcode runtime SDK, targeting the
-                # sandbox for the demo. Not reachable without a key, and the
-                # graceful-degrade branch above covers the no-key case.
-                raise RuntimeError("Swytchcode runtime SDK not initialised "
-                                   "(run `swy init` / `swy login` per onboarding)")
+                # No runtime transport is wired in this build. Returning an
+                # "error" receipt here made a configured key strictly worse
+                # than an unconfigured one: without a key every receipt was a
+                # clean not_configured, with one every receipt became an error
+                # on the audit ledger that read like a transient failure.
+                # not_configured is the honest status -- the runtime, not the
+                # key, is what is missing.
+                return SwytchcodeReceipt(
+                    api, action, "not_configured", True,
+                    "Swytchcode key is set but no runtime transport is wired in "
+                    "this build; nothing was executed and nothing is claimed")
             status, body = self._sender(api, action, params)
         except Exception as e:
             return SwytchcodeReceipt(api, action, "error", True, str(e))

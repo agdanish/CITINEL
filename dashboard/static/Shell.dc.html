@@ -133,9 +133,6 @@
                 <x-import component-from-global-scope="CITINELDesignSystem_fdfd66.SeverityBadge" level="{{ r.sev }}" size="sm" hint-size="80px,20px"></x-import>
                 <span data-token style="font-family:var(--ctn-font-mono);font-size:12.5px;color:var(--ctn-color-text-primary);flex:none">{{ r.id }}</span>
                 <span style="font-size:13px;color:var(--ctn-color-text-secondary);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.what }}</span>
-                <sc-if value="{{ r.showCite }}" hint-placeholder-val="{{ true }}">
-                  <x-import component-from-global-scope="CITINELDesignSystem_fdfd66.CitationChip" locator="{{ r.locator }}" size="sm" hint-size="180px,22px"></x-import>
-                </sc-if>
                 <span style="font-family:var(--ctn-font-display);font-size:12px;color:var(--ctn-color-text-primary);font-variant-numeric:tabular-nums slashed-zero;flex:none">{{ r.clock }}</span>
               </div>
             </sc-for>
@@ -323,19 +320,19 @@ class Component extends DCLogic {
     // wellRows: if live, show real incidents from summary; otherwise fall back to authored
     let rows;
     if (s.live === true && incs.length > 0) {
-      rows = ciso ? incs.slice(0,3).map(i => ({sev:i.severity, id:i.incident_id, what:'[' + i.state + '] · ' + (i.finding_count || '?') + ' findings', showCite:false, clock:'—'}))
-                 : incs.slice(0,5).map(i => ({sev:i.severity, id:i.incident_id, what:'[' + i.state + '] · ' + (i.finding_count || '?') + ' findings', showCite:false, clock:'—'}));
+      rows = ciso ? incs.slice(0,3).map(i => ({sev:i.severity, id:i.incident_id, what:'[' + i.state + '] · ' + (i.finding_count || '?') + ' findings', clock:'—'}))
+                 : incs.slice(0,5).map(i => ({sev:i.severity, id:i.incident_id, what:'[' + i.state + '] · ' + (i.finding_count || '?') + ' findings', clock:'—'}));
     } else {
       rows = ciso ? [
-        {sev:'critical', id:'INC-0417', what:'UPI mule cashout attempt · ₹18.4L held, filing due 03:03 IST', showCite:false, clock:f(remainS)},
-        {sev:'high', id:'INC-0846', what:'movement toward core banking · contained to one jump host', showCite:false, clock:f(remainS+14*3600)},
-        {sev:'low', id:'Q2 FY27', what:'31 of 31 statutory windows met, zero breaches', showCite:false, clock:'31/31'}
+        {sev:'critical', id:'INC-0417', what:'UPI mule cashout attempt · ₹18.4L held, filing due 03:03 IST', clock:f(remainS)},
+        {sev:'high', id:'INC-0846', what:'movement toward core banking · contained to one jump host', clock:f(remainS+14*3600)},
+        {sev:'low', id:'Q2 FY27', what:'31 of 31 statutory windows met, zero breaches', clock:'31/31'}
       ] : [
-        {sev:'critical', id:'INC-0417', what:'14 beneficiary accounts staged, maker-checker bypassed', showCite:false, clock:f(remainS)},
-        {sev:'high', id:'INC-0846', what:'rdp lateral br-jump-02 → CBS segment, isolation drafted', showCite:false, clock:'25:23'},
-        {sev:'high', id:'ALR-99141', what:'lsass memory read after failed su burst', showCite:false, clock:'05:47'},
-        {sev:'medium', id:'ALR-99138', what:'oauth consent grant to unverified app', showCite:false, clock:'15:12'},
-        {sev:'medium', id:'ALR-99133', what:'encoded powershell on teller workstation', showCite:false, clock:'20:04'}
+        {sev:'critical', id:'INC-0417', what:'14 beneficiary accounts staged, maker-checker bypassed', clock:f(remainS)},
+        {sev:'high', id:'INC-0846', what:'rdp lateral br-jump-02 → CBS segment, isolation drafted', clock:'25:23'},
+        {sev:'high', id:'ALR-99141', what:'lsass memory read after failed su burst', clock:'05:47'},
+        {sev:'medium', id:'ALR-99138', what:'oauth consent grant to unverified app', clock:'15:12'},
+        {sev:'medium', id:'ALR-99133', what:'encoded powershell on teller workstation', clock:'20:04'}
       ];
     }
 
@@ -355,7 +352,7 @@ class Component extends DCLogic {
       wellEyebrow: ciso ? 'POSITION AT A GLANCE' : 'WHAT NEEDS A HUMAN RIGHT NOW',
       wellBody: ciso
         ? 'Same shell, shallower depth: outcomes, statutory position and value protected. Raw log lines stay one click away rather than on the surface. Every citation stays reachable.'
-        : (s.live === true ? (stateCounts.gated > 0 ? String(stateCounts.gated) + ' incident' + (stateCounts.gated === 1 ? '' : 's') + ' hold at the gate.' : 'No incidents at the gate.') : 'Two incidents hold at the gate. Every row below carries the log locator behind its verdict; the drawer opens the line verbatim without covering the clock or the annunciator.'),
+        : (s.live === true ? (stateCounts.gated > 0 ? String(stateCounts.gated) + ' incident' + (stateCounts.gated === 1 ? '' : 's') + ' hold at the gate.' : 'No incidents at the gate.') : 'Two incidents hold at the gate. Open a record to read the log line behind its verdict, verbatim, without covering the clock or the annunciator.'),
       wellCta: ciso ? 'OPEN BOARD COPY' : 'GO TO THE GATE',
       wellHref: ciso ? 'Executive.dc.html' : 'Approvals.dc.html',
       wellRows: rows,

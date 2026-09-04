@@ -678,7 +678,7 @@ def get_connectors() -> dict:
               bool(s.gemini_api_key), f"long-context read · {s.gemini_model}"),
             c("virustotal", "file and IP reputation for the Enrichment Squad", bool(s.virustotal_api_key), "reputation"),
             c("abuseipdb", "IP abuse reports for the Enrichment Squad", bool(s.abuseipdb_api_key), "reputation"),
-            c("lyzr", "PII second opinion, swarm observer, ledger witness", lyzr_ok,
+            c("lyzr", "PII second opinion and ledger witness", lyzr_ok,
               "key + guard url + agent id all required" if not lyzr_ok else "all three set"),
             c("lyzr-triage", "independent triage lane beside the Router's, on the ledger", bool(lyzr_ok and s.lyzr_triage_agent_id), "CITINEL_LYZR_TRIAGE_AGENT_ID"),
             c("lyzr-review", "drafted-field review before sign-off", bool(lyzr_ok and s.lyzr_review_agent_id), "CITINEL_LYZR_REVIEW_AGENT_ID"),
@@ -687,7 +687,7 @@ def get_connectors() -> dict:
             c("lyzr-response", "independent proportionality review of a proposed action, beside the OPA gate", bool(lyzr_ok and s.lyzr_response_agent_id), "CITINEL_LYZR_RESPONSE_AGENT_ID"),
             c("lyzr-corpus", "independent coverage advisory on the Sigma corpus", bool(lyzr_ok and s.lyzr_corpus_agent_id), "CITINEL_LYZR_CORPUS_AGENT_ID"),
             c("n8n", "post-sign-off automation (notify, export, ticket)", bool(s.n8n_webhook_url), "webhook"),
-            c("swytchcode", "ticketing + comms after an executed action", bool(s.swytchcode_api_key), "ecosystem apis"),
+            c("swytchcode", "ticketing + comms after an executed action", bool(s.swytchcode_api_key), "key set; no runtime transport wired in this build -- receipts say so"),
         ],
         "mock_endpoints": {
             "isolated_hosts": sorted(ENDPOINTS.isolated_hosts),

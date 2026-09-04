@@ -12,7 +12,6 @@ dependencies = [
     "pydantic-settings>=2.5",
     "typer>=0.12",
     "rich>=13.9",
-    "orjson>=3.10",
     "pyyaml>=6.0",
 ]
 
@@ -23,12 +22,10 @@ swarm = [
     # The Step 7 code uses 1.x call shapes, so the floor is not optional.
     "anthropic>=1,<2",
     "httpx>=0.27",
-    "tenacity>=9.0",
 ]
 api = [
     "fastapi>=0.115",
     "uvicorn[standard]>=0.32",
-    "jinja2>=3.1",
 ]
 detect = [
     "pysigma>=0.11",
