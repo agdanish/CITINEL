@@ -151,8 +151,25 @@ def _ledger() -> AuditLedger:
     return AuditLedger(_ledger_path(), sink=LyzrLedgerMirror())
 
 
+# Captured once, when the process starts. The demo-live incident's window is
+# measured from here, so it is fresh on every deploy and restart (see
+# settings.demo_live_incident). Nothing else reads it.
+_BOOT_TS = datetime.now(timezone.utc).isoformat()
+
+
 def _incidents() -> list:
-    return load_incidents(INCIDENTS_DIR / "incidents.jsonl")
+    incs = load_incidents(INCIDENTS_DIR / "incidents.jsonl")
+    live_id = (settings.demo_live_incident or "").strip()
+    if live_id:
+        # Reopen exactly one record for this live session: its six-hour clock
+        # starts at boot, so a redeploy on demo morning makes it count down on
+        # stage instead of showing a long-closed replay window. Honest, because
+        # the served open time IS this session's start; off unless the env names
+        # an id, so every other deployment keeps its real historical clock.
+        for inc in incs:
+            if inc.incident_id == live_id:
+                inc.opened_ts = _BOOT_TS
+    return incs
 
 
 def _incident(incident_id: str):

@@ -251,15 +251,19 @@
   <div data-on-navy style="display:flex;align-items:stretch;height:42px;flex:none;background:var(--ctn-color-surface-navy);border-top:1px solid var(--ctn-color-border-strong);min-width:0">
     <div style="display:flex;align-items:center;flex:1;min-width:0;overflow-x:auto;scrollbar-width:thin">
       <sc-for list="{{ strip }}" as="s" hint-placeholder-count="7">
-        <div style="display:flex;align-items:center;gap:9px;padding:0 16px;height:100%;border-right:1px solid var(--ctn-color-border-strong);flex:none">
+        <div style="display:flex;align-items:center;gap:9px;padding:0 13px;height:100%;border-right:1px solid var(--ctn-color-border-strong);flex:none">
           <span style="font-family:var(--ctn-font-display);font-size:8.5px;letter-spacing:0.12em;color:var(--ctn-color-text-on-navy);opacity:0.66;white-space:nowrap">{{ s.k }}</span>
           <span style="font-family:var(--ctn-font-display);font-size:16px;color:{{ s.color }};font-variant-numeric:tabular-nums slashed-zero;line-height:1">{{ s.v }}</span>
         </div>
       </sc-for>
     </div>
-    <div style="display:flex;align-items:center;gap:14px;padding:0 16px;border-left:1px solid var(--ctn-color-border-strong);flex:none">
-      <span data-motion-signal style="font-family:var(--ctn-font-mono);font-size:12px;color:var(--ctn-color-text-on-navy);white-space:nowrap">{{ ingestNote }}</span>
-      <span data-reveal style="font-family:var(--ctn-font-mono);font-size:12px;color:var(--ctn-color-text-on-navy);opacity:0.72;white-space:nowrap">{{ pinsNote }}</span>
+    <!-- The provenance block shrinks and ellipsizes so the stat chips to its left keep
+         their width; it used to be flex:none, so on a narrower pane it took its full
+         content width and pushed WITH VERDICT / LEDGER / WINDOWS BREACHED off into the
+         scroll. The full text stays on hover. -->
+    <div style="display:flex;align-items:center;gap:14px;padding:0 14px;border-left:1px solid var(--ctn-color-border-strong);flex:0 1 auto;min-width:0">
+      <span data-motion-signal style="font-family:var(--ctn-font-mono);font-size:12px;color:var(--ctn-color-text-on-navy);white-space:nowrap;flex:none">{{ ingestNote }}</span>
+      <span data-reveal title="{{ pinsNote }}" style="font-family:var(--ctn-font-mono);font-size:12px;color:var(--ctn-color-text-on-navy);opacity:0.72;white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis">{{ pinsNote }}</span>
     </div>
   </div>
 </div>
@@ -463,7 +467,13 @@ class Component extends DCLogic {
       const opened = Date.parse(r.opened_ts), rem = isFinite(opened) ? Math.round((opened + 6*3600*1000 - now)/1000) : 0;
       return {r, rem, opened};
     }).sort((a, b) => a.rem - b.rem);
-    const master = clocks[0] || null;
+    // The master dial shows the clock that still matters most: a window still
+    // running (nearest to its deadline) over one that closed long ago. Sorting by
+    // rem alone put the most-overdue record on the dial, so a live incident drafting
+    // inside its window was hidden behind a ten-day-old breach. Prefer a live window
+    // when one exists; fall back to the most-overdue when none is.
+    const liveClocks = clocks.filter(c => c.rem >= 0);
+    const master = liveClocks[0] || clocks[0] || null;
     const remainS = master ? master.rem : 0;
     const breached = master ? remainS < 0 : false;
     const ticks = [];
@@ -511,7 +521,13 @@ class Component extends DCLogic {
     const source = s.source || {};
     const withVerdict = rows.filter(r => r.swarm).length;
     const verify = s.verify;
-    const breachedCount = clocks.filter(c => c.rem < 0).length;
+    // The breach notice refers to a BREACHED record, which is no longer the same as
+    // the master dial: the dial now prefers a live window, so naming master here said
+    // "closed 05:58 ago on INC-0419" about an incident that is counting down. Name the
+    // most-recently-closed breached record instead, independent of the dial.
+    const breachedClocks = clocks.filter(c => c.rem < 0);
+    const breachedCount = breachedClocks.length;
+    const breachedMaster = breachedClocks[breachedClocks.length - 1] || null;
     return {
       orgNote: (source.description || 'corpus') + (source.source ? ' · ' + source.source + ' corpus' : ''),
       utc: new Date(now).toISOString().slice(11,19),
@@ -567,10 +583,10 @@ class Component extends DCLogic {
       noticeOn: breachedCount > 0 || degraded > 0,
       noticeKind: breachedCount > 0 ? 'breached' : 'degraded',
       noticeTitle: breachedCount > 0 ? 'CERT-IN WINDOW CLOSED · ' + breachedCount + ' OPEN RECORD' + (breachedCount===1?'':'S') + ' UNFILED' : 'A SWARM CALL ENDED BADLY',
-      noticeMeta: breachedCount > 0 && master ? 'closed ' + this.fmtAge(Math.abs(remainS)) + ' ago on ' + master.r.incident_id : 'see the fleet rows marked degraded',
+      noticeMeta: breachedCount > 0 && breachedMaster ? 'closed ' + this.fmtAge(Math.abs(breachedMaster.rem)) + ' ago on ' + breachedMaster.r.incident_id : 'see the fleet rows marked degraded',
       noticeBody: breachedCount > 0 ? 'The six-hour window is measured from the moment CITINEL opened each record. These records are a corpus replay reopened for re-investigation, so their windows closed long before this session; the clocks show that rather than restarting.' : 'The last frame for a role shows a refusal or a truncated call. The pipeline degrades to a partial run and says so; nothing is fabricated to fill the gap.',
       noticeConsequence: breachedCount > 0 ? 'A late filing is still the bank\'s to make; the compliance desk drafts it and a named human signs. Nothing here files anything.' : 'Re-run the swarm from the replay screen once the cause is understood; every attempt stays on the ledger.',
-      noticeAction: breachedCount > 0 ? 'OPEN THE DESK' : 'OPEN THE REPLAY', noticeHref: breachedCount > 0 && master ? 'Compliance.dc.html?id=' + master.r.incident_id : 'Replay.dc.html'
+      noticeAction: breachedCount > 0 ? 'OPEN THE DESK' : 'OPEN THE REPLAY', noticeHref: breachedCount > 0 && breachedMaster ? 'Compliance.dc.html?id=' + breachedMaster.r.incident_id : 'Replay.dc.html'
     };
   }
   loadingVals(){

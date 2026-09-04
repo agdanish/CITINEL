@@ -356,7 +356,10 @@ class Component extends DCLogic {
             return {id:i.incident_id, closed:/^closed/.test(String(i.state)), rem: isFinite(o) ? Math.round((o + 6*3600*1000 - s.now)/1000) : null}; })
           .filter(x => x.rem !== null);
         const openPool = pool.filter(x => !x.closed);
-        const pick = (openPool.length ? openPool : pool).sort((a,b) => a.rem - b.rem)[0];
+        // prefer a window still running over a long-closed one, same as the Overview dial
+        const base = openPool.length ? openPool : pool;
+        const liveBase = base.filter(x => x.rem >= 0).sort((a,b) => a.rem - b.rem);
+        const pick = liveBase[0] || base.sort((a,b) => a.rem - b.rem)[0];
         const on = s.live === true && pick;
         const id = on ? pick.id : 'INC-0417', rem = on ? pick.rem : remainS, brk = on ? rem < 0 : false;
         const fB = x => { const a = Math.abs(x); if (a < 6*3600) return f(a);

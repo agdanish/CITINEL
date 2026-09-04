@@ -165,6 +165,17 @@ class Settings(BaseSettings):
 
     ledger_path: Path | None = Field(default=None)
 
+    #: The one incident whose CERT-In clock is measured from this service's own
+    #: boot, not from a timestamp baked into the corpus. Unset (the default) means
+    #: every incident keeps its recorded open time, so a replayed record shows its
+    #: real, long-closed window -- the honest historical behaviour. Set to an id
+    #: (e.g. CITINEL_DEMO_LIVE_INCIDENT=INC-0419) to reopen that one record for a
+    #: live session: its six-hour window then starts when the container starts, so
+    #: a redeploy on demo morning gives a fresh clock that counts down on stage.
+    #: This is a real reopen, not a display trick -- the served open time is the
+    #: session's own start, and CITINEL's clock is defined detect-time to now.
+    demo_live_incident: str | None = Field(default=None)
+
     gemini_api_key: str | None = Field(default=None)
     #: Free tier is Flash-only since May 2026 (Pro moved behind billing).
     #: flash-lite carries the highest free rate limits, which is what a
