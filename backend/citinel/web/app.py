@@ -701,6 +701,32 @@ def _environment_report() -> dict[str, Any]:
     }
 
 
+def _swy_store_note() -> str:
+    """Which of the three files the Swytchcode kernel needs for Slack are actually
+    in the runtime's HOME, as presence and size only.
+
+    An executed action on 4 Sep answered `not_configured: missing credentials for
+    Slack` on Render while the ticketing leg beside it executed, which proved the
+    CLI, the bundles and GitHub's per-call auth were all fine and left exactly one
+    unknown: whether the three Secret Files reached `$HOME/.swytchcode` at boot.
+    Nothing outside the container could see that, so the answer took a deploy to
+    ask. Presence and byte count only -- never a path's contents, never a key.
+    `credentials.db` is an encrypted SQLite file and `credkey` is its key material;
+    both stay unread. The image decodes `/etc/secrets/swy-<name>.b64`, so a missing
+    file here means the Secret File is absent, misnamed, or HOME differed at boot.
+    """
+    try:
+        home = Path(os.path.expanduser("~"))
+        store = home / ".swytchcode"
+        parts = []
+        for name in ("credentials.db", "credkey", "auth.json"):
+            f = store / name
+            parts.append(f"{name} {f.stat().st_size}B" if f.is_file() else f"{name} MISSING")
+        return f" · slack store in {store}: " + ", ".join(parts)
+    except Exception as e:                       # a diagnostic must never take the route down
+        return f" · slack store unreadable: {type(e).__name__}"
+
+
 @app.get("/api/connectors")
 def get_connectors() -> dict:
     """Which external services this deployment is actually configured to
@@ -744,7 +770,9 @@ def get_connectors() -> dict:
             c("startuped", "aggregate product-usage signals to the GTM platform",
               bool(s.startuped_api_key),
               "counts only -- no incident content ever; see GET /api/startuped/signals"),
-            c("swytchcode", "ticketing + comms after an executed action", bool(s.swytchcode_api_key), "key set; the Python runtime is wired -- receipts say whether the CLI is scaffolded, a policy blocked the call, or it executed"),
+            c("swytchcode", "ticketing + comms after an executed action", bool(s.swytchcode_api_key),
+              "key set; the Python runtime is wired -- receipts say whether the CLI is scaffolded, a policy blocked the call, or it executed"
+              + _swy_store_note()),
         ],
         "mock_endpoints": {
             "isolated_hosts": sorted(ENDPOINTS.isolated_hosts),

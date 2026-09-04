@@ -44,6 +44,29 @@
   word-break: normal;
 }
 
+/* The rule above covers tokens the author MARKED as tokens. It does not cover an
+   unbreakable token sitting inside ordinary prose, and this product's prose is full
+   of them: policy flags, clause fields, hostnames, env var names. Measured on the
+   Approvals intent preview, whose "WILL NOT DO" column is a 141px grid track holding
+   the sentence "touch real infrastructure: simulated_endpoints_only is on" -- the
+   span defaulted to overflow-wrap:normal, refused to break the flag, and hung 19px
+   outside the panel, taking three ancestors with it.
+
+   So the default for every text-bearing element is now "break rather than escape".
+   overflow-wrap:anywhere breaks ONLY when the word genuinely cannot fit, so ordinary
+   prose is untouched; what changes is that a long token can no longer leave its box.
+   It also lets a flex or grid item's min-content shrink to a character, which is what
+   makes min-width:0 above actually bite on a long word.
+
+   :where() keeps specificity at zero, so any inline style still wins. Elements the
+   author marked nowrap are excluded for the reason stated above: they are sized by
+   their content on purpose. [data-reveal] is excluded because it truncates to an
+   ellipsis by design and reveals on focus. */
+:where(div, p, span, li, dd, dt, td, th, label, button, a, summary, figcaption,
+       h1, h2, h3, h4, h5, h6):not([style*="nowrap"]):not([data-reveal]) {
+  overflow-wrap: anywhere;
+}
+
 /* ============================================================
    3. TRUNCATION WITH REVEAL — the reveal fires on FOCUS, not hover alone.
    Whether hover-only satisfies "the value must remain reachable" is unresolved
