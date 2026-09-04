@@ -46,6 +46,9 @@ S = {
 
 def inline(t):
     t = (t.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;'))
+    # !!...!! marks one of the forty catalogued items. They are the reason this
+    # document exists, so they carry the only strong colour in the body text.
+    t = re.sub(r'!!(.+?)!!', r'<font color="#8B0000"><b>\1</b></font>', t)
     t = re.sub(r'\*\*(.+?)\*\*', r'<b>\1</b>', t)
     t = re.sub(r'(?<![*\w])\*(?![*\s])(.+?)(?<![\s*])\*(?![*\w])', r'<i>\1</i>', t, flags=re.S)
     t = re.sub(r'`(.+?)`', r'<font face="Courier" size="9.2">\1</font>', t)
@@ -135,7 +138,7 @@ def deco(canv, doc):
     canv.setFont('Times-Bold', 8.5); canv.setFillColor(NAVY)
     canv.drawString(20*mm, 288*mm, 'CITINEL')
     canv.setFont('Times-Roman', 8.5); canv.setFillColor(GREY)
-    canv.drawRightString(190*mm, 288*mm, 'The complete walkthrough  ·  Decode SIH 2026')
+    canv.drawRightString(190*mm, 288*mm, 'Operator walkthrough and differentiator map  ·  Decode SIH 2026')
     canv.line(20*mm, 15*mm, 190*mm, 15*mm)
     canv.setFont('Times-Roman', 8.5)
     canv.drawCentredString(105*mm, 10*mm, 'Page %d' % doc.page)
@@ -144,7 +147,7 @@ def deco(canv, doc):
 md = open(sys.argv[1]).read()
 out = sys.argv[2]
 doc = BaseDocTemplate(out, pagesize=A4, leftMargin=20*mm, rightMargin=20*mm,
-                      topMargin=22*mm, bottomMargin=20*mm, title='CITINEL: the complete walkthrough',
+                      topMargin=22*mm, bottomMargin=20*mm, title='CITINEL: operator walkthrough and differentiator map',
                       author='CITINEL')
 doc.addPageTemplates([PageTemplate(id='p', frames=[Frame(20*mm, 18*mm, 170*mm, 262*mm, id='f')],
                                    onPage=deco)])
