@@ -444,7 +444,11 @@ def test_triage_second_opinion_is_recorded_beside_the_router(sandbox, monkeypatc
 def test_lyzr_seams_report_not_configured_without_an_id(sandbox, monkeypatch):
     from citinel.connectors.lyzr_agents import triage_agent
     monkeypatch.setattr(settings, "lyzr_api_key", "k"); monkeypatch.setattr(settings, "lyzr_guard_url", "https://agent-prod.studio.lyzr.ai/v3/inference/chat/")
+    # Null every id the assertions below touch, not just triage: this test
+    # asserts on the REVIEW seam too, and once a real review id existed in the
+    # environment it went out to the network and came back "unavailable".
     monkeypatch.setattr(settings, "lyzr_triage_agent_id", None)
+    monkeypatch.setattr(settings, "lyzr_review_agent_id", None)
     assert triage_agent().ask({"x": 1})["status"] == "not_configured"
     d = client.get("/api/incidents/INC-T1/draft?kind=certin").json()
     assert d["review"]["status"] == "not_configured" and d["review"]["thin"] == []

@@ -1,0 +1,67 @@
+{
+  "defaults": {
+    "on_violation": "fail",
+    "evaluation": "pre_execution"
+  },
+  "policies": [
+    {
+      "id": "citinel-no-core-banking-in-ticket",
+      "target": [
+        "github.repo.issues.create"
+      ],
+      "when": {
+        "operator": "any",
+        "conditions": [
+          {
+            "field": "body",
+            "operator": "contains",
+            "value": "core-banking"
+          },
+          {
+            "field": "body",
+            "operator": "contains",
+            "value": "cbs-prod"
+          },
+          {
+            "field": "title",
+            "operator": "contains",
+            "value": "core-banking"
+          }
+        ]
+      },
+      "action": {
+        "type": "POLICY_BLOCKED",
+        "message": "CITINEL policy: a ticket naming core banking infrastructure is blocked before it leaves the process. The OPA gate approving an action is not sufficient authority to publish that target's name to an external system."
+      }
+    },
+    {
+      "id": "citinel-no-unaddressed-comms",
+      "target": [
+        "slack.chat.postmessage.create"
+      ],
+      "when": {
+        "field": "channel",
+        "operator": "empty"
+      },
+      "action": {
+        "type": "POLICY_BLOCKED",
+        "message": "CITINEL policy: refusing to post an incident notification with no channel set. A message with no destination is the shape of the repeated-send failure Swytchcode exists to prevent."
+      }
+    },
+    {
+      "id": "citinel-ticket-must-name-its-incident",
+      "target": [
+        "github.repo.issues.create"
+      ],
+      "when": {
+        "field": "title",
+        "operator": "not_contains",
+        "value": "CITINEL"
+      },
+      "action": {
+        "type": "POLICY_BLOCKED",
+        "message": "CITINEL policy: every ticket this system opens must be attributable to it. An unattributed ticket cannot be traced back to the incident and the gate decision that authorised it."
+      }
+    }
+  ]
+}

@@ -14,6 +14,9 @@ turning an invisible backend call into visible, judge-legible provenance.
 
 from __future__ import annotations
 
+import json
+from typing import Any
+
 from citinel.config import settings
 from citinel.connectors.base import Connector, EnrichmentResult
 
@@ -26,6 +29,7 @@ class TavilyConnector(Connector):
     extract_endpoint = "https://api.tavily.com/extract"
     crawl_endpoint = "https://api.tavily.com/crawl"
     map_endpoint = "https://api.tavily.com/map"
+    research_endpoint = "https://api.tavily.com/research"
 
     def search(self, query: str, max_results: int = 5) -> EnrichmentResult:
         cached = self.cache.get(self.provider, query)
@@ -66,6 +70,63 @@ class TavilyConnector(Connector):
         )
         self.cache.put(result)
         return result
+
+    def research_start(self, question: str) -> tuple[str, str]:
+        """Kick off a Tavily Research run: their agentic endpoint, which runs
+        several searches of its own, reasons across them and returns a cited
+        report. Search answers "what pages mention this"; Research answers a
+        question. Async by design -- returns (request_id, note).
+        """
+        if not settings.tavily_api_key:
+            return "", "Tavily key not set; no research was started"
+        try:
+            status, body = self._guarded_request(
+                "POST", self.research_endpoint,
+                headers={"Content-Type": "application/json",
+                         "Authorization": f"Bearer {settings.tavily_api_key}"},
+                json_body={"input": question, "model": "auto",
+                           "output_length": "short", "citation_format": "numbered"},
+            )
+        except Exception as e:
+            return "", f"Tavily research call failed: {e}"
+        if status // 100 != 2 or not isinstance(body, dict):
+            return "", f"Tavily research HTTP {status}"
+        rid = str(body.get("request_id") or "")
+        return (rid, "") if rid else ("", "Tavily returned no request id")
+
+    def research_poll(self, request_id: str) -> dict[str, Any]:
+        """One poll. 202 = still working, 200 = completed or failed.
+
+        Deliberately one poll per call rather than a blocking wait loop: a
+        research run takes as long as it takes, and holding an HTTP worker
+        open for it would put the console's own timeout in charge of whether
+        the answer is allowed to exist.
+        """
+        if not settings.tavily_api_key:
+            return {"status": "not_configured", "content": "", "sources": []}
+        try:
+            status, body = self._guarded_request(
+                "GET", f"{self.research_endpoint}/{request_id}",
+                headers={"Authorization": f"Bearer {settings.tavily_api_key}"},
+            )
+        except Exception as e:
+            return {"status": "error", "content": "", "sources": [],
+                    "detail": f"Tavily research poll failed: {e}"}
+        if status == 202:
+            return {"status": "pending", "content": "", "sources": []}
+        if status != 200 or not isinstance(body, dict):
+            return {"status": "error", "content": "", "sources": [],
+                    "detail": f"Tavily research poll HTTP {status}"}
+        state = str(body.get("status") or "")
+        content = body.get("content")
+        return {
+            "status": "completed" if state == "completed" else (state or "error"),
+            "content": content if isinstance(content, str) else json.dumps(content or "")[:6000],
+            "sources": [{"title": str(x.get("title") or "")[:160],
+                         "url": str(x.get("url") or "")[:400]}
+                        for x in (body.get("sources") or [])[:12] if isinstance(x, dict)],
+            "response_time": body.get("response_time"),
+        }
 
     def extract(self, url: str, max_chars: int = 4000) -> EnrichmentResult:
         """Full page content, not a search snippet -- Tavily's own retrieval

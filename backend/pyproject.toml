@@ -30,6 +30,13 @@ api = [
 detect = [
     "pysigma>=0.11",
 ]
+# The Swytchcode Python runtime. A subprocess wrapper around the `swy` binary,
+# not an HTTP client -- the binary must be installed and the project scaffolded
+# with `swy init` for it to reach anything. Optional: without it the seam
+# reports not_configured.
+swytchcode = [
+    "swytchcode-runtime>=1.1.5",
+]
 dev = [
     "pytest>=8.3",
     "ruff>=0.7",

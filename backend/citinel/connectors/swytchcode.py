@@ -33,6 +33,7 @@ from datetime import datetime, timezone
 from typing import Any
 
 from citinel.config import settings
+from citinel.connectors.swytchcode_runtime_transport import TransportUnavailable
 from citinel.policy.gate import Decision, Verdict
 
 
@@ -40,7 +41,7 @@ from citinel.policy.gate import Decision, Verdict
 class SwytchcodeReceipt:
     ecosystem_api: str           # "ticketing" | "comms"
     action: str
-    status: str                  # executed | not_configured | refused | error
+    status: str                  # executed | policy_blocked | refused | not_configured | error
     simulated: bool
     detail: str
     at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
@@ -56,7 +57,19 @@ class SwytchcodeExecutor:
 
     def __init__(self, sender=None) -> None:
         # sender(api, action, params) -> (status, body); injectable for tests.
-        self._sender = sender
+        # Default is the real `swy exec` transport, so a deployment that has
+        # the CLI scaffolded and a key set genuinely executes; one that does
+        # not says so rather than pretending either way.
+        self._sender = sender or self._default_sender()
+
+    @staticmethod
+    def _default_sender():
+        """The runtime transport, or None when this build cannot reach it."""
+        try:
+            from citinel.connectors.swytchcode_runtime_transport import runtime_sender
+        except Exception:
+            return None
+        return runtime_sender
 
     def _run(self, api: str, action: str, params: dict) -> SwytchcodeReceipt:
         if not settings.swytchcode_api_key:
@@ -64,20 +77,28 @@ class SwytchcodeExecutor:
                                      "Swytchcode key not set; execution skipped")
         try:
             if self._sender is None:
-                # No runtime transport is wired in this build. Returning an
-                # "error" receipt here made a configured key strictly worse
-                # than an unconfigured one: without a key every receipt was a
-                # clean not_configured, with one every receipt became an error
-                # on the audit ledger that read like a transient failure.
-                # not_configured is the honest status -- the runtime, not the
-                # key, is what is missing.
                 return SwytchcodeReceipt(
                     api, action, "not_configured", True,
-                    "Swytchcode key is set but no runtime transport is wired in "
+                    "Swytchcode key is set but the runtime is not reachable from "
                     "this build; nothing was executed and nothing is claimed")
             status, body = self._sender(api, action, params)
+        except TransportUnavailable as e:
+            # Scaffolding missing (no `swy` binary, project never `swy init`ed).
+            # That is a deployment fact, not a failed action.
+            return SwytchcodeReceipt(api, action, "not_configured", True, str(e))
         except Exception as e:
             return SwytchcodeReceipt(api, action, "error", True, str(e))
+
+        # A policy block is the guardrail working, not a failure. Swytchcode
+        # evaluates policies BEFORE the request leaves, so nothing happened --
+        # and the ledger should say a policy stopped this, not that a call
+        # errored. This is the mechanism the whole integration argues for.
+        if isinstance(body, dict) and body.get("policy_blocked"):
+            return SwytchcodeReceipt(
+                api, action, "policy_blocked", True,
+                f"Swytchcode policy stopped {action} before it left the process: "
+                f"{body.get('message', 'blocked by policy')}")
+
         ok = isinstance(status, int) and status // 100 == 2
         return SwytchcodeReceipt(
             api, action, "executed" if ok else "error", True,

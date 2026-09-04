@@ -34,6 +34,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from citinel.agents.context import gather_context, load_context
 from citinel.agents.pipeline import MAX_EVIDENCE_FINDINGS
+from citinel.agents.brief import load_brief, poll_brief, start_brief
 from citinel.agents.sweep import load_sweep, run_sweep
 from citinel.agents.store import annotate_result, load_result, load_runs, summaries, summary_of
 from citinel.connectors.lyzr_agents import (
@@ -854,6 +855,34 @@ def run_wide_sweep(incident_id: str, body: dict | None = None) -> dict:
     examined = int(result.get("findings_examined") or MAX_EVIDENCE_FINDINGS)
     return run_sweep(inc, examined, settings.data_dir / "cache" / "enrichment",
                      _artifacts_dir(), ledger=_ledger())
+
+
+@app.get("/api/incidents/{incident_id}/brief")
+def get_brief(incident_id: str) -> dict:
+    """The Tavily Research brief for this record. Polls once when the run is
+    still in flight, so the console advances it by asking. 404 until started.
+    Context, never evidence."""
+    _incident(incident_id)
+    d = poll_brief(incident_id, settings.data_dir / "cache" / "enrichment", _artifacts_dir())
+    if d is None:
+        raise HTTPException(404, f"no threat brief has been requested for {incident_id} yet")
+    return d
+
+
+@app.post("/api/incidents/{incident_id}/brief")
+def request_brief(incident_id: str, body: dict | None = None) -> dict:
+    """Ask Tavily Research what this incident's technique combination usually
+    means and what responders who have seen it recommend. Runs several
+    searches of its own and answers with citations; the body must confirm.
+    Advisory only -- it moves no verdict and reopens no lane."""
+    inc = _incident(incident_id)
+    if not settings.tavily_api_key:
+        raise HTTPException(503, "no Tavily key configured on this deployment")
+    if not (body or {}).get("confirm"):
+        raise HTTPException(400, 'a brief is a multi-search Tavily run; send {"confirm": true} to start it')
+    verdict = load_result(incident_id, _artifacts_dir())
+    return start_brief(inc, verdict, settings.data_dir / "cache" / "enrichment",
+                       _artifacts_dir())
 
 
 def _handover_path(incident_id: str) -> Path:

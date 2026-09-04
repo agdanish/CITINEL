@@ -42,3 +42,11 @@ data/incidents/
 data/cache/enrichment/
 !data/seed/
 backend/uv.lock
+
+# Swytchcode: commit the lightweight config so `swy bootstrap` reconstructs
+# everything on clone (tooling.json, policies.json, manifest.json). Ignore the
+# large regenerable integration bundles, and the lock.
+.swytchcode/integrations/*/
+.swytchcode/**/methods.json
+.swytchcode/**/wrekenfile.yaml
+.swytchcode/tooling.json.lock
