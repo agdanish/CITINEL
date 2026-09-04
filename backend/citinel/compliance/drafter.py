@@ -27,6 +27,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from citinel.agents.quarantine import Provenance, quarantine, render_untrusted_text
+from citinel.config import settings
 from citinel.compliance.fields import (
     CERTIN_FIELDS,
     DPDP_FIELDS,
@@ -119,12 +120,18 @@ def _value_for(spec: FieldSpec, inc: Incident, now: datetime,
     if spec.fill is Fill.HUMAN:
         return f"<{spec.note or 'human judgment required'}>"
 
+    # Operator-configured, never inferred. An unset value keeps the placeholder
+    # rather than guessing: a wrong legal name on a CERT-In form is worse than a
+    # visible blank, and the blank tells the signer exactly what to supply.
     if spec.key == "reporting_org":
-        return "<bank/NBFC legal name, address, sector registration -- standing org profile>"
+        return (settings.org_profile
+                or "<bank/NBFC legal name, address, sector registration -- standing org profile>")
     if spec.key == "contact_poc":
-        return "<designated CISO / incident PoC -- Annexure II record>"
+        return (settings.org_poc
+                or "<designated CISO / incident PoC -- Annexure II record>")
     if spec.key in ("dpo_contact",):
-        return "<Data Protection Officer name and contact -- standing profile>"
+        return (settings.org_dpo
+                or "<Data Protection Officer name and contact -- standing profile>")
     if spec.key == "incident_type":
         return _annexure_category(inc)
     if spec.key == "breach_nature":

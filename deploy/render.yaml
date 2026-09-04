@@ -61,6 +61,15 @@ envVarGroups:
         sync: false
       - key: CITINEL_ABUSEIPDB_API_KEY
         sync: false
+      # The filing entity, for CERT-In fields 01 and 02 and the DPDP DPO contact.
+      # No log contains a bank's legal name, so these are operator-supplied or they
+      # stay visible placeholders. CITINEL never invents them onto a regulator's form.
+      - key: CITINEL_ORG_PROFILE
+        sync: false
+      - key: CITINEL_ORG_POC
+        sync: false
+      - key: CITINEL_ORG_DPO
+        sync: false
       - key: CITINEL_N8N_WEBHOOK_URL
         sync: false
       # n8n's REST API is a different plane from the webhook: it reads back

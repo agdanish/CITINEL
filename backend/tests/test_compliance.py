@@ -90,3 +90,27 @@ def test_iocs_are_drawn_from_the_incident():
     d = draft_certin(_cerber())
     iocs = next(f for f in d.fields if f.key == "ip_iocs")
     assert "185.151.160.15" in iocs.value
+
+
+def test_filing_entity_is_operator_supplied_and_never_invented(monkeypatch):
+    """CERT-In fields 01 and 02 carry the bank's own identity, which no log holds.
+
+    Unset, they must stay visible placeholders: a wrong legal name on a regulator's
+    form is worse than a blank, and the blank tells the signer what to supply. Set,
+    they must carry the operator's exact string with nothing added.
+    """
+    from citinel.compliance.drafter import draft_certin
+    from citinel.config import settings
+
+    monkeypatch.setattr(settings, "org_profile", None)
+    monkeypatch.setattr(settings, "org_poc", None)
+    fields = {f.key: f.value for f in draft_certin(_cerber()).fields}
+    assert fields["reporting_org"].startswith("<") and fields["reporting_org"].endswith(">")
+    assert fields["contact_poc"].startswith("<") and fields["contact_poc"].endswith(">")
+
+    monkeypatch.setattr(settings, "org_profile", "Sahyadri District Co-op Bank Ltd., Pune")
+    monkeypatch.setattr(settings, "org_poc", "CISO, Sahyadri DCB")
+    fields = {f.key: f.value for f in draft_certin(_cerber()).fields}
+    assert fields["reporting_org"] == "Sahyadri District Co-op Bank Ltd., Pune"
+    assert fields["contact_poc"] == "CISO, Sahyadri DCB"
+    assert "<" not in fields["reporting_org"]

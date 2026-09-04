@@ -184,6 +184,18 @@ class Settings(BaseSettings):
     virustotal_api_key: str | None = Field(default=None)
     abuseipdb_api_key: str | None = Field(default=None)
 
+    # The filing entity's standing profile. CERT-In fields 01 and 02 and the DPDP
+    # DPO contact are NOT drafted from the incident: they are facts about the bank
+    # that no log contains, and CITINEL must never invent a legal name, a
+    # registration number or a named officer onto a regulator's form. Until now
+    # they were hardcoded angle-bracket placeholders with no way to set them, so
+    # every printed report opened with two blanks. Unset still yields the
+    # placeholder, which is the honest default for a deployment that has not been
+    # told who it files for; set them and the drafted form carries the real entity.
+    org_profile: str | None = Field(default=None)
+    org_poc: str | None = Field(default=None)
+    org_dpo: str | None = Field(default=None)
+
     # Model identifiers, resolved from env so the L9 live-check duty is not
     # silently baked into source. Unset until Step 7 verifies them live.
     triage_model: str | None = Field(default=None)
