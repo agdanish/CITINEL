@@ -111,6 +111,17 @@
     font-size:8pt;color:var(--ink-faint);display:flex;gap:6mm;flex-wrap:wrap}
   footer.foot b{color:var(--ink-soft);font-weight:600}
   .err{border:1px solid var(--stamp);color:var(--stamp);padding:5mm;font-family:var(--mono);font-size:9pt}
+  /* Loading is not an error and must not be dressed as one. The first cut painted
+     "Reading the record..." inside the red error box and left it there for the 17 to
+     49 seconds the drafter actually takes, so a correct page read as a broken one. */
+  .load{border:1px solid var(--rule);background:var(--wash);padding:6mm;border-radius:2mm}
+  .load h3{font-family:var(--disp);font-size:8.5pt;letter-spacing:0.12em;color:var(--navy);margin:0 0 3mm}
+  .load p{margin:0 0 3mm;font-size:9.5pt;color:var(--ink-soft);max-width:150mm}
+  .load .el{font-family:var(--mono);font-size:9pt;color:var(--ink-faint)}
+  .load .track{height:3px;background:var(--rule-soft);border-radius:2px;overflow:hidden;margin:4mm 0 3mm}
+  .load .track i{display:block;height:100%;background:var(--navy);width:0;transition:width .9s linear}
+  .load button{font-family:var(--disp);font-size:8pt;letter-spacing:0.1em;padding:3mm 5mm;margin-top:2mm;
+    border:1px solid var(--navy);border-radius:6px;background:none;color:var(--navy);cursor:pointer}
 
   @media print{
     @page{size:A4;margin:14mm 15mm 16mm}
@@ -135,7 +146,16 @@
   <a id="backlink" href="Compliance.dc.html">BACK TO THE DESK</a>
 </div>
 
-<div class="sheet" id="sheet"><p class="err" id="boot">Reading the record…</p></div>
+<div class="sheet" id="sheet">
+  <div class="load" id="boot">
+    <h3>ASSEMBLING THE REPORT</h3>
+    <p>The drafter fills every field from the incident record, runs both personal-data guards
+       over what the signer will read, and asks for an independent second opinion. Measured
+       against production: about 17 seconds on a warm service, up to 50 on a cold one.</p>
+    <div class="track"><i id="bootbar"></i></div>
+    <div class="el" id="bootel">elapsed 0s</div>
+  </div>
+</div>
 
 <script>
 (function () {
@@ -156,23 +176,46 @@
         timeZone: 'Asia/Kolkata' }).format(new Date(s)) + ' IST';
     } catch (e) { return String(s).slice(0, 19).replace('T', ' ') + 'Z'; }
   }
+  // Every fetch is bounded. Without this the page waited on the network forever and
+  // its only visible state was a line of text, which is what made a slow draft look
+  // like a blank document.
+  var TIMEOUT_MS = 150000;
   function get(path) {
-    return fetch(path, { headers: { 'Accept': 'application/json' } })
-      .then(function (r) { return r.ok ? r.json() : null; })
-      .catch(function () { return null; });
+    var ctl = window.AbortController ? new AbortController() : null;
+    var timer = setTimeout(function () { if (ctl) ctl.abort(); }, TIMEOUT_MS);
+    return fetch(path, { headers: { 'Accept': 'application/json' }, signal: ctl && ctl.signal })
+      .then(function (r) { clearTimeout(timer); return r.ok ? r.json() : null; })
+      .catch(function () { clearTimeout(timer); return null; });
   }
+
+  var t0 = Date.now(), tick = setInterval(function () {
+    var s = Math.round((Date.now() - t0) / 1000);
+    var el = document.getElementById('bootel'), bar = document.getElementById('bootbar');
+    var st = document.getElementById('barstate');
+    if (el) el.textContent = 'elapsed ' + s + 's';
+    // The bar tracks the measured worst case rather than pretending to know progress.
+    if (bar) bar.style.width = Math.min(97, (s / 50) * 100) + '%';
+    if (st) st.textContent = 'ASSEMBLING · ' + s + 's';
+  }, 1000);
 
   Promise.all([
     get('/api/incidents/' + encodeURIComponent(ID) + '/draft?kind=' + encodeURIComponent(KIND)),
     get('/api/incidents/' + encodeURIComponent(ID) + '/audit')
   ]).then(function (res) {
     var payload = res[0], chain = res[1] || [];
+    clearInterval(tick);
     if (!payload || !payload.draft) {
+      var waited = Math.round((Date.now() - t0) / 1000);
       document.getElementById('sheet').innerHTML =
         '<p class="err">No ' + esc(KIND.toUpperCase()) + ' draft could be read for ' + esc(ID) +
-        '. The record may not exist on this deployment, or the drafter did not answer. ' +
-        'Nothing is invented here: an unreadable draft prints as this notice, never as a blank form.</p>';
-      document.getElementById('barstate').textContent = 'NO DRAFT';
+        ' after ' + waited + ' seconds. Either the record does not exist on this deployment, or ' +
+        'the drafter did not answer in time. Nothing is invented here: an unreadable draft ' +
+        'prints as this notice, never as a blank form.</p>' +
+        '<div class="load" style="margin-top:5mm"><h3>WHAT TO TRY</h3>' +
+        '<p>A cold service is the usual cause and a second attempt is normally warm. ' +
+        'If it fails twice, open the desk and check the record exists.</p>' +
+        '<button onclick="location.reload()">TRY AGAIN</button></div>';
+      document.getElementById('barstate').textContent = 'NO DRAFT · ' + waited + 's';
       return;
     }
     render(payload, chain);
