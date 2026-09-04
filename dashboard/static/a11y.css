@@ -62,9 +62,17 @@
    author marked nowrap are excluded for the reason stated above: they are sized by
    their content on purpose. [data-reveal] is excluded because it truncates to an
    ellipsis by design and reveals on focus. */
+   break-word, NOT anywhere. The two break identically; they differ only in what
+   they contribute as min-content. `anywhere` lets a flex item shrink to one
+   CHARACTER, and the Approvals receipt column promptly did: it collapsed to about
+   90px and set the whole receipt one word per line. `break-word` keeps the longest
+   word as the floor, so a column can never collapse below a readable width while a
+   token that still cannot fit is broken rather than allowed to escape.
+   (This is overflow-wrap:break-word, which is standard. It is NOT word-break:
+   break-word, the deprecated alias warned about above.) */
 :where(div, p, span, li, dd, dt, td, th, label, button, a, summary, figcaption,
        h1, h2, h3, h4, h5, h6):not([style*="nowrap"]):not([data-reveal]) {
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }
 
 /* ============================================================
