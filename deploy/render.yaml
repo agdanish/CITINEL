@@ -77,6 +77,17 @@ envVarGroups:
         sync: false
       - key: CITINEL_SWYTCHCODE_API_KEY
         sync: false
+      # Deliberately NOT CITINEL_-prefixed: this name is the Swytchcode CLI's
+      # contract, not ours. bin/swytchcode.js checks, in order, the
+      # SWYTCHCODE_TOKEN process variable, a SWYTCHCODE_TOKEN line in ./.env,
+      # then an interactive session in ~/.swytchcode/auth.json -- and the first
+      # is the only one a container has. No .env ships in the image and there is
+      # no TTY to log in on, so without this every exec fails as unauthenticated
+      # and the transport reports the seam as unscaffolded. Distinct from
+      # CITINEL_SWYTCHCODE_API_KEY above, which only gates whether the connector
+      # considers itself configured.
+      - key: SWYTCHCODE_TOKEN
+        sync: false
       # Swytchcode's two ecosystem APIs. Credentials travel per call as
       # Authorization -- what Swytchcode's own multi-API example does -- so no
       # OAuth browser flow is needed for either service.

@@ -6,6 +6,16 @@ ENV PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1
 
 # One honest install from source -- see Dockerfile.web for why the previous
 # `|| true` caching layer was removed rather than kept.
+#
+# No Node.js and no [swytchcode] extra here, unlike Dockerfile.web, and that
+# is a decision rather than an oversight: the Swytchcode executor is reached
+# only from web/app.py and cli.py, never from worker/run.py, which imports the
+# pipeline, the store, the ledger and the Lyzr mirror and nothing else. Adding
+# a ~150MB Node runtime to a service that cannot call the seam would buy
+# nothing. If the worker ever grows a path that executes gate-approved actions,
+# the Node + `npm install -g swytchcode` layer and the `COPY .swytchcode` from
+# Dockerfile.web have to come with it -- pip alone is not enough, because the
+# Python runtime is a subprocess wrapper around that binary.
 COPY backend /app/backend
 RUN pip install --upgrade pip && pip install "/app/backend[swarm,detect]"
 

@@ -389,7 +389,10 @@ def get_draft(incident_id: str, kind: str = "certin") -> dict:
     # a second Lyzr agent reads the drafted fields and says which a human should
     # not sign as they stand; not_configured until its id is set
     review = review_draft(draft)
-    emit_quietly("citinel-reports-drafted", 1, f"{kind} artifact drafted for sign-off")
+    # the resolved kind, never the raw query string: `kind` is caller-supplied
+    # and this note crosses the boundary to a go-to-market platform
+    emit_quietly("citinel-reports-drafted", 1,
+                 f"{'certin' if kind == 'certin' else 'dpdp'} artifact drafted for sign-off")
     return {"draft": draft.as_dict(), "rendered": render_text(draft),
             "guard": guard.as_dict(), "review": review}
 

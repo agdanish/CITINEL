@@ -136,6 +136,14 @@
                     live: true,  note: 'Gemini wide-lens sweep: what the long context found past the swarm evidence window · 404 until swept · context, never evidence' },
     sweepRun:     { path: function (id) { return '/api/incidents/' + id + '/sweep'; },
                     live: true,  note: 'POST {confirm:true} · one Gemini call reading every finding, including the unexamined region', method: 'POST' },
+    brief:        { path: function (id) { return '/api/incidents/' + id + '/brief'; },
+                    live: true,  note: 'Tavily Research brief: {status, question, content, sources[]} · a pending run advances by being read · 404 until requested · context, never evidence' },
+    briefStart:   { path: function (id) { return '/api/incidents/' + id + '/brief'; },
+                    live: true,  note: 'POST {confirm:true} · starts a multi-search Tavily Research run · 503 without a Tavily key', method: 'POST' },
+    visual:       { path: function (id) { return '/api/incidents/' + id + '/visual'; },
+                    live: true,  note: '{readings[]} · per image: the model\'s reading, plus corroborated[]/unseen[] indicators checked against this record\'s own findings · 404 until one is read' },
+    visualRead:   { path: function (id) { return '/api/incidents/' + id + '/visual'; },
+                    live: true,  note: 'POST {image_base64, mime_type, note?} · one Gemini vision read, then in-code corroboration · 503 without a Gemini key', method: 'POST' },
     handover:     { path: function (id) { return '/api/incidents/' + id + '/handover'; },
                     live: true,  note: 'a Lyzr-written handover note from the ledger frames · 404 until written · not_configured without its agent id' },
     handoverWrite:{ path: function (id) { return '/api/incidents/' + id + '/handover'; },
@@ -148,6 +156,10 @@
                     live: true,  note: 'POST {confirm:true} · asks the Lyzr corpus advisor to review coverage; cached on disk', method: 'POST' },
     connectors:   { path: function () { return '/api/connectors'; },
                     live: true,  note: '{rails, connectors[] (presence only), mock_endpoints, policy}' },
+    n8nExecutions:{ path: function (limit, status) { return '/api/n8n/executions?limit=' + (limit || 20) + (status ? '&status=' + encodeURIComponent(status) : ''); },
+                    live: true,  note: '{status, fetched_at, executions[] (id, workflow_id, state, mode, started_at, waiting_until, finished)} · what the automation layer actually did, read back from n8n · status:not_configured without its API url + key' },
+    startupedSignals: { path: function () { return '/api/startuped/signals'; },
+                    live: true,  note: '{provider, configured, signals[], what_is_never_sent} · the whole of what CITINEL reports to its GTM platform: aggregate counters, no incident content' },
 
     /* The Response Marshal's proposals ride inside the persisted verdict; there is no separate
        route and none is planned. */
@@ -164,7 +176,7 @@
     shell:      { uses: ['incidentsSummary', 'policy', 'ledgerVerify'], scripted: [] },
     overview:   { uses: ['incidentsSummary', 'policy', 'connectors'], scripted: [] },
     queue:      { uses: ['incidents', 'audit'],               scripted: ['belt-dot decoration', '?state=quiet|firstrun demo panels'] },
-    replay:     { uses: ['incident', 'audit', 'verdict', 'context', 'sweep'], scripted: [] },
+    replay:     { uses: ['incident', 'audit', 'verdict', 'context', 'sweep', 'brief', 'visual'], scripted: [] },
     confidence: { uses: ['incident', 'verdict'],              scripted: [] },
     evidence:   { uses: ['incident', 'audit'],                scripted: [] },
     approvals:  { uses: ['policy', 'verdict', 'audit', 'execute'], scripted: [] },
@@ -172,10 +184,10 @@
     eval:       { uses: ['evalRuns'],                         scripted: [] },
     policy:     { uses: ['policy', 'connectors'],             scripted: [] },
     compliance: { uses: ['draft', 'incident', 'context'],      scripted: [] },
-    audit:      { uses: ['audit', 'ledgerVerify'],            scripted: [] },
+    audit:      { uses: ['audit', 'ledgerVerify', 'n8nExecutions'], scripted: [] },
     handover:   { uses: ['incidentsSummary', 'audit', 'handover'],        scripted: [] },
     executive:  { uses: ['incidentsSummary', 'policy', 'ledgerVerify'], scripted: [] },
-    settings:   { uses: ['connectors', 'source'],              scripted: [] },
+    settings:   { uses: ['connectors', 'source', 'startupedSignals'], scripted: [] },
     demo:       { uses: ['incidentsSummary'],                                   scripted: ['guided walkthrough of the live screens'] }
   };
 
@@ -341,12 +353,27 @@
   API.writeCorpusReview = function () { return API.post('corpusReviewWrite', undefined, { confirm: true }); };
   API.sweepFor = function (id) { return API.get('sweep', id || API.currentIncidentId()); };
   API.runSweep = function (id) { return API.post('sweepRun', id || API.currentIncidentId(), { confirm: true }, { timeoutMs: API.WRITE_TIMEOUT_MS }); };
+  // Reading a pending brief is what advances it: the route polls Tavily once per
+  // ask rather than holding a worker open, so this GET makes an outbound call and
+  // will not always answer inside the probe timeout.
+  API.briefFor = function (id) { return API.get('brief', id || API.currentIncidentId(), null, BULK); };
+  API.requestBrief = function (id) { return API.post('briefStart', id || API.currentIncidentId(), { confirm: true }, { timeoutMs: API.WRITE_TIMEOUT_MS }); };
+  API.visualsFor = function (id) { return API.get('visual', id || API.currentIncidentId()); };
+  API.readVisual = function (id, imageBase64, mimeType, note) {
+    return API.post('visualRead', id || API.currentIncidentId(),
+      { image_base64: imageBase64, mime_type: mimeType, note: note || '' },
+      { timeoutMs: API.WRITE_TIMEOUT_MS });
+  };
   API.contextFor = function (id) { return API.get('context', id || API.currentIncidentId()); };
   API.gatherContext = function (id) { return API.post('contextGather', id || API.currentIncidentId(), { confirm: true }); };
   API.handoverFor = function (id) { return API.get('handover', id || API.currentIncidentId()); };
   API.writeHandover = function (id) { return API.post('handoverWrite', id || API.currentIncidentId(), { confirm: true }); };
   API.connectors = function () { return API.get('connectors'); };
   API.source = function () { return API.get('source'); };
+  // n8n is asked over the network on every read (its own client waits up to 20s),
+  // so the probe timeout would abort a run list that was on its way.
+  API.n8nExecutions = function (limit, status) { return API.get('n8nExecutions', limit, status, BULK); };
+  API.startupedSignals = function () { return API.get('startupedSignals'); };
 
   /* ── Data-source badge ────────────────────────────────────────────────────────
      Once some pages are wired and others are not, an unmarked mix misrepresents which

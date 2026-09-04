@@ -51,7 +51,13 @@ def sandbox(tmp_path, monkeypatch):
     monkeypatch.setattr(app_mod, "INCIDENTS_DIR", tmp_path)
     monkeypatch.setattr(app_mod, "ENDPOINTS", MockEndpoints())
     monkeypatch.setattr(app_mod, "_SWARM_RUNS", {})
+    # "every external connector pinned off" was not true of all of them: the
+    # n8n REST plane, Gemini and Startuped were still reading whatever the
+    # developer's own .env held, so sandboxed route tests made live outbound
+    # calls -- the resume-route test really did POST to the open internet, and
+    # a background swarm run really did report to a marketing platform.
     for key in ("lyzr_api_key", "lyzr_guard_url", "lyzr_agent_id", "n8n_webhook_url",
+                "n8n_api_url", "n8n_api_key", "gemini_api_key", "startuped_api_key",
                 "swytchcode_api_key", "tavily_api_key", "virustotal_api_key", "abuseipdb_api_key"):
         monkeypatch.setattr(settings, key, None)
     monkeypatch.setattr(settings, "simulated_endpoints_only", True)

@@ -75,6 +75,7 @@ def test_an_unknown_status_filter_is_refused_before_the_call(monkeypatch):
 
 
 def test_resuming_a_paused_playbook_carries_the_humans_answer(monkeypatch):
+    _api_on(monkeypatch)          # a resume URL is pinned to the configured instance
     body = {}
 
     def sender(method, url, headers, params, payload):
@@ -93,7 +94,8 @@ def test_a_resume_url_must_be_https(monkeypatch):
 
 
 def test_an_expired_wait_is_reported_as_expired_not_as_an_error(monkeypatch):
-    out = resume("https://x/w/1", "approve", "a", sender=lambda *a: (404, {}))
+    _api_on(monkeypatch)
+    out = resume("https://x.app.n8n.cloud/w/1", "approve", "a", sender=lambda *a: (404, {}))
     assert out["status"] == "expired" and "moved on" in out["detail"]
 
 

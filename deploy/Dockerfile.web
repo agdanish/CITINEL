@@ -4,12 +4,85 @@ FROM python:3.11-slim
 WORKDIR /app
 ENV PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1
 
+# Node.js in a Python image, deliberately. Swytchcode has no HTTP SDK: it ships
+# a CLI as an npm package whose `swytchcode` bin is a small Node launcher that
+# resolves a per-platform native binary from its optionalDependencies, and
+# connectors/swytchcode_runtime_transport.py reaches that seam by SHELLING OUT
+# to it (swytchcode_runtime.exec -> subprocess.run). Nothing else in this image
+# runs JavaScript. Without this layer the service imports, boots and serves
+# every other route exactly as before, and every ticketing/comms receipt on the
+# ledger reads "the swytchcode binary is not on PATH" -- which is guaranteed,
+# not speculative: python:3.11-slim ships no Node and nothing named swytchcode.
+#
+# Debian's own nodejs/npm rather than NodeSource or a binary copied out of a
+# node image: apt resolves the shared libraries for whichever architecture the
+# build runs on, with no cross-image glibc assumption to get wrong. The
+# package declares engines node>=14 and the real work happens in the native
+# binary, so bookworm's 18.x is amply new and the Node version is not
+# load-bearing. Kept in one layer, ahead of the source COPY, so editing the
+# backend does not re-run apt.
+#
+# Version pinned: a redeploy on demo day should not silently pick up a new CLI.
+# Bump deliberately after checking the new version locally.
+#
+# The final `swytchcode --version` is the check that matters: the Python
+# runtime resolves the binary by that exact name (shutil.which("swytchcode"),
+# not "swy"), and it only exists once npm has pulled the platform-specific
+# optionalDependency. If that did not land, the build fails here rather than
+# at the first executed action.
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends nodejs npm \
+ && rm -rf /var/lib/apt/lists/* \
+ && npm install -g swytchcode@2.20.15 \
+ && npm cache clean --force \
+ && rm -rf /root/.npm \
+ && swytchcode --version
+
 # The package is installed from source, so pyproject.toml alone cannot resolve
 # it -- an earlier "deps first for layer caching" step tried that and needed
 # `|| true` to survive, which cached nothing and swallowed real failures. One
 # honest install, and a genuine build failure now fails the build.
+#
+# [swytchcode] pulls swytchcode-runtime, the Python side of the seam above. It
+# was missing here, so the extra was declared in pyproject.toml and installed
+# nowhere: the transport's `from swytchcode_runtime import exec` could not
+# resolve, and every call ended as TransportUnavailable before reaching a CLI.
 COPY backend /app/backend
-RUN pip install --upgrade pip && pip install "/app/backend[swarm,api,detect]"
+RUN pip install --upgrade pip && pip install "/app/backend[swarm,api,detect,swytchcode]"
+
+# The Swytchcode project scaffold. The CLI takes its project from the process
+# working directory (swytchcode_runtime.exec passes cwd=os.getcwd(), and this
+# image's WORKDIR is /app), so an unscaffolded /app makes the CLI answer from
+# simulated demo data -- which the runtime then rejects outright rather than
+# letting fake output reach the ledger.
+#
+# HONEST LIMITATION, do not read this COPY as "Swytchcode works end to end on
+# Render". Only the lightweight config is committed: tooling.json,
+# integrations/manifest.json, integrations/policies.json. The API bundles under
+# .swytchcode/integrations/<vendor>/<version>/wrekenfile.yaml are ~3.5MB of
+# generated output and are gitignored, so a Render build -- which builds from a
+# git clone -- ships WITHOUT them. Restoring them is `swy bootstrap`, which
+# makes an authenticated network call, and SWYTCHCODE_TOKEN is a runtime secret
+# we do not have during the build, so it is deliberately NOT run here. Whether
+# the CLI refetches what it needs on the first exec in a fresh container has
+# not been verified against the real binary. If it does not, the seam raises
+# TransportUnavailable and the receipt says the CLI is not scaffolded -- the
+# truthful outcome, never a silent success. A local `docker build` from a tree
+# that has already run `swy bootstrap` does include the bundles, and that image
+# is complete.
+COPY .swytchcode /app/.swytchcode
+
+# _auth_param() in the transport reads .swytchcode/tooling.json to learn which
+# parameter each tool wants its credential in -- Slack's chat.postMessage
+# declares `token`, GitHub's example takes `Authorization` -- and finds that
+# file by walking up from its own __file__. Here citinel is pip-installed into
+# site-packages, so the walk climbs /usr/local/lib/python3.11/... and never
+# reaches /app: it would fall back to "Authorization" and hand Slack its token
+# in a field the tool does not declare, failing for a reason that looks like
+# anything except the real one. One symlink puts the file back on the walk; the
+# check below fails the build if the layout is not what this assumes.
+RUN ln -s /app/.swytchcode "$(python -c 'import site; print(site.getsitepackages()[0])')/.swytchcode" \
+ && python -c "import pathlib, citinel.connectors.swytchcode_runtime_transport as t; p = pathlib.Path(t.__file__).resolve(); assert any((q / '.swytchcode' / 'tooling.json').exists() for q in p.parents), 'tooling.json is not on the transport module walk'"
 
 COPY policies /app/policies
 

@@ -143,8 +143,20 @@ def runtime_sender(api: str, action: str, params: dict[str, Any]) -> tuple[int, 
     try:
         result = swy_exec(canonical_id, args)
     except SwytchcodeError as e:
-        details = getattr(e, "details", None) or {}
-        message = getattr(e, "message", str(e))
+        # Both of these are shapes an SDK we do not own controls, and this
+        # handler is the only thing standing between them and a receipt on a
+        # permanent ledger. `details` non-dict raised AttributeError and an
+        # empty `message` raised IndexError out of splitlines()[0]; either one
+        # was swallowed by the executor's broad except and written down as a
+        # generic "error" -- so a real policy block would have been recorded as
+        # something going wrong, which is the exact confusion the classification
+        # below exists to prevent.
+        raw_details = getattr(e, "details", None)
+        details: dict[str, Any] = raw_details if isinstance(raw_details, dict) else {}
+        message = getattr(e, "message", None) or str(e)
+        if not isinstance(message, str):
+            message = str(message)
+        first = (message.splitlines() or [""])[0][:300]
         low = f"{message} {details.get('category', '')}".lower()
 
         # Order matters, and so does precision. The CLI writes its progress and
@@ -159,12 +171,12 @@ def runtime_sender(api: str, action: str, params: dict[str, Any]) -> tuple[int, 
         if any(t in low for t in ("swytchcode login", "swytchcode_token",
                                   "not authenticated", "authentication required",
                                   "not found in tooling", "tool not found")):
-            raise TransportUnavailable(message.splitlines()[0][:300]) from e
+            raise TransportUnavailable(first) from e
 
         # A policy block is the guardrail working. Matched on the documented
         # action type, not the bare word "policy".
         if "policy_blocked" in low or "blocked by policy" in low:
-            return 403, {"policy_blocked": True, "message": message.splitlines()[0][:300],
+            return 403, {"policy_blocked": True, "message": first,
                          "suggested_action": details.get("suggested_action", "")}
 
         return 502, {"policy_blocked": False, "message": message,

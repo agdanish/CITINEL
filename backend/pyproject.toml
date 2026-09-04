@@ -30,10 +30,17 @@ api = [
 detect = [
     "pysigma>=0.11",
 ]
-# The Swytchcode Python runtime. A subprocess wrapper around the `swy` binary,
+# The Swytchcode Python runtime. A subprocess wrapper around the CLI binary,
 # not an HTTP client -- the binary must be installed and the project scaffolded
 # with `swy init` for it to reach anything. Optional: without it the seam
 # reports not_configured.
+#
+# Installing this extra alone is never sufficient. It resolves the binary by
+# the name `swytchcode` on PATH (`swy` is only an alias the npm package also
+# creates), so a deployment needs Node, `npm install -g swytchcode`, a
+# .swytchcode/ scaffold in the process working directory, and SWYTCHCODE_TOKEN
+# in the environment. deploy/Dockerfile.web does all four and documents what
+# still does not survive a build from a clean clone.
 swytchcode = [
     "swytchcode-runtime>=1.1.5",
 ]

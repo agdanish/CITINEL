@@ -37,6 +37,7 @@ and every exception is swallowed at the boundary.
 
 from __future__ import annotations
 
+import re
 from datetime import datetime, timezone
 from typing import Any
 
@@ -97,16 +98,49 @@ def _headers() -> dict[str, str]:
             "Content-Type": "application/json"}
 
 
-def _clean(payload: dict[str, Any]) -> dict[str, Any] | str:
+#: The note is the one free-text field that actually crosses the boundary, and
+#: it is nested inside signalValue where the key screen below cannot see it.
+#: That gap was real: a caller-supplied query string reached this note verbatim
+#: through GET /api/incidents/{id}/draft?kind=..., so "no incident content ever
+#: leaves" was a claim the code did not keep. A note is a reason code, not prose
+#: -- lowercase words, spaces, hyphens and underscores, nothing else. No digits
+#: means no IP, port or incident id; no dots means no hostname or FQDN.
+_SAFE_NOTE = re.compile(r"^[a-z][a-z _-]{0,79}$")
+
+
+def _clean(payload: dict[str, Any], _path: str = "") -> dict[str, Any] | str:
     """Refuse anything forbidden rather than stripping it.
 
     Stripping would let a caller believe it sent something it did not. A
     refusal is loud, and a marketing signal is never worth guessing about.
+
+    Recurses, because the payload is not flat: a forbidden key nested one level
+    down under signalValue would otherwise be sent while this screen reported
+    the body clean.
     """
-    for k in payload:
+    for k, v in payload.items():
+        here = f"{_path}.{k}" if _path else k
         if k.lower() in _FORBIDDEN:
-            return f"refusing to send field {k!r} to a go-to-market platform"
+            return f"refusing to send field {here!r} to a go-to-market platform"
+        if isinstance(v, dict):
+            nested = _clean(v, here)
+            if isinstance(nested, str):
+                return nested
     return payload
+
+
+def _screen_note(note: str) -> str | None:
+    """None if this note may cross the boundary, else why it may not."""
+    if not note:
+        return None
+    if not _SAFE_NOTE.match(note):
+        return ("refusing a note that is not a plain lowercase reason code; "
+                "only aggregate counts and fixed reason codes may reach a "
+                "go-to-market platform")
+    for word in _FORBIDDEN:
+        if word in note:
+            return f"refusing a note containing {word!r} to a go-to-market platform"
+    return None
 
 
 def emit(signal_key: str, count: int, note: str = "", sender=None) -> dict[str, Any]:
@@ -125,6 +159,17 @@ def emit(signal_key: str, count: int, note: str = "", sender=None) -> dict[str, 
     if not check_egress(BASE, EGRESS_ALLOW).allowed:
         return {"status": "egress_refused", "detail": "startuped.ai is not on the egress allow-list"}
 
+    note = str(note)[:200]
+    if (bad_note := _screen_note(note)):
+        return {"status": "refused", "detail": bad_note}
+    try:
+        # Coerced here rather than inline in the body: an uncoercible count used
+        # to raise out of a function whose contract is "never raises", from a
+        # call site sitting inside the incident path.
+        value = int(count)
+    except (TypeError, ValueError):
+        return {"status": "error", "detail": f"a signal value must be a count, not {count!r}"}
+
     meta = SIGNALS[signal_key]
     body: dict[str, Any] = {
         # name/description/type/status are all required by the OpenAPI spec
@@ -134,8 +179,7 @@ def emit(signal_key: str, count: int, note: str = "", sender=None) -> dict[str, 
         "type": meta["type"], "status": "active",
         "signalKey": signal_key,
         "value": "Medium",
-        "signalValue": {"value": int(count), "timestamp": _now(),
-                        "note": str(note)[:200]},
+        "signalValue": {"value": value, "timestamp": _now(), "note": note},
     }
     checked = _clean(body)
     if isinstance(checked, str):
@@ -163,7 +207,7 @@ def emit(signal_key: str, count: int, note: str = "", sender=None) -> dict[str, 
                 "Startuped rejected the API key (401). Keys expire after 30 days by default."}
     if code // 100 != 2:
         return {"status": "error", "detail": f"startuped HTTP {code}"}
-    return {"status": "sent", "signal_key": signal_key, "count": int(count),
+    return {"status": "sent", "signal_key": signal_key, "count": value,
             "at": _now(), "detail": ""}
 
 

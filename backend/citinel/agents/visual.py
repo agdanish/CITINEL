@@ -60,24 +60,43 @@ def load_visuals(artifacts_dir: Path, incident_id: str) -> dict[str, Any] | None
         return None
 
 
+def _values(node: Any, out: list[str]) -> None:
+    """Every scalar VALUE reachable in a finding, ignoring the keys."""
+    if isinstance(node, dict):
+        for v in node.values():
+            _values(v, out)
+    elif isinstance(node, (list, tuple, set)):
+        for v in node:
+            _values(v, out)
+    elif node is not None and not isinstance(node, bool):
+        out.append(str(node))
+
+
 def _haystack(incident) -> list[tuple[int, str]]:
     """One lowercased searchable string per finding, with its index.
 
-    Serialises the WHOLE finding rather than a hand-listed set of fields. The
-    first version named `raw`, but the log line actually lives in
-    `evidence_raw` -- so an IP present in 43 findings was reported as "never
-    seen in this record". A miss here is not a blank space, it is a false
-    statement about the record, and naming fields by hand is how that happens.
+    Walks the WHOLE finding rather than a hand-listed set of fields. The first
+    version named `raw`, but the log line actually lives in `evidence_raw` --
+    so an IP present in 43 findings was reported as "never seen in this
+    record". A miss here is not a blank space, it is a false statement about
+    the record, and naming fields by hand is how that happens.
+
+    Values only, never keys. Fixing that miss by searching the finding's JSON
+    text introduced the mirror-image lie: the serialisation contains its own
+    field names, so an indicator reading "host" or "detail" matched every
+    finding on the record and came back corroborated with a list of indices a
+    reader could open and find nothing in. Corroboration is the half of this
+    feature that is supposed to be checkable; a hit has to be a hit on content.
     """
     out: list[tuple[int, str]] = []
     for i, f in enumerate(incident.findings[:MAX_SCAN_FINDINGS]):
+        vals: list[str] = []
         try:
-            blob = json.dumps(f.as_dict() if hasattr(f, "as_dict") else vars(f),
-                              default=str)
+            _values(f.as_dict() if hasattr(f, "as_dict") else vars(f), vals)
         except Exception:
-            blob = " ".join(str(getattr(f, k, "")) for k in
-                            ("title", "host", "evidence_raw", "detail", "techniques"))
-        out.append((i, blob.lower()))
+            vals = [str(getattr(f, k, "")) for k in
+                    ("title", "host", "evidence_raw", "detail", "techniques")]
+        out.append((i, "\n".join(vals).lower()))
     return out
 
 

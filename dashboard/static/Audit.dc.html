@@ -152,6 +152,41 @@
 
       <button onClick="{{ clearAll }}" style="font-family:var(--ctn-font-display);font-size:8.5px;letter-spacing:0.1em;padding:8px 11px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;background:none;color:var(--ctn-color-text-primary);cursor:pointer">CLEAR THE QUERY</button>
 
+      <!-- An automated action a reviewer can only inspect inside n8n is not auditable, and it
+           does not stop being a blind spot because the tool happens to be ours. So n8n's own
+           runs are read back over its REST API and stand here, beside the reel, in the rail
+           this page already uses to say what is and is not on the record. It is deliberately
+           NOT in the reel column: that column is flex:1 against a ribbon that grows with the
+           case, and a fixed band there took the ledger down to ten pixels on a 900px viewport
+           (measured, 4 Sep 2026). The rail scrolls, so the frames lose nothing to it. Nothing
+           here is ever authored -- there is no demo run list, and the fallback reel shows the
+           automation plane's real answer beside its synthetic frames rather than invent one. -->
+      <div style="min-width:0">
+        <div style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.14em;color:var(--ctn-color-text-muted)">AUTOMATION RUNS · n8n</div>
+        <div style="display:flex;align-items:baseline;gap:4px 8px;flex-wrap:wrap;margin-top:7px;min-width:0">
+          <span data-token style="font-family:var(--ctn-font-mono);font-size:11px;color:{{ n8nStatusFg }};min-width:0;line-height:1.4">{{ n8nStatusMsg }}</span>
+          <span data-token style="font-family:var(--ctn-font-mono);font-size:10px;color:var(--ctn-color-text-muted);flex:none;white-space:nowrap">{{ n8nStamp }}</span>
+        </div>
+        <div style="font-size:11.5px;color:var(--ctn-color-text-secondary);margin-top:7px;line-height:1.5;text-wrap:pretty">{{ n8nNote }}</div>
+        <sc-if value="{{ n8nHasRuns }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;flex-direction:column;gap:2px;margin-top:9px;min-width:0">
+            <sc-for list="{{ n8nRuns }}" as="r" hint-placeholder-count="4">
+              <div title="{{ r.title }}" style="padding:6px 8px;background:{{ r.bg }};border-left:2px solid {{ r.edge }};min-width:0">
+                <div style="display:flex;align-items:baseline;gap:8px;min-width:0">
+                  <span style="font-family:var(--ctn-font-display);font-size:8px;letter-spacing:0.09em;color:{{ r.stateFg }};flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.state }}</span>
+                  <span data-token style="font-family:var(--ctn-font-mono);font-size:10.5px;color:var(--ctn-color-text-primary);font-variant-numeric:tabular-nums;flex:none">{{ r.id }}</span>
+                </div>
+                <div data-reveal style="font-family:var(--ctn-font-mono);font-size:10.5px;color:var(--ctn-color-text-muted);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.line2 }}</div>
+                <div style="font-size:11px;color:{{ r.detailFg }};margin-top:3px;line-height:1.4;text-wrap:pretty">{{ r.detail }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+        <sc-if value="{{ n8nEmpty }}" hint-placeholder-val="{{ false }}">
+          <div style="font-size:11px;color:var(--ctn-color-text-muted);margin-top:8px;line-height:1.45;text-wrap:pretty">{{ n8nEmptyNote }}</div>
+        </sc-if>
+      </div>
+
       <div style="margin-top:auto;border-top:1px solid var(--ctn-color-border-hairline);padding-top:12px;min-width:0">
         <div style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.14em;color:var(--ctn-color-text-primary)">THE LEDGER IS NOT THE MODEL</div>
         <div style="font-size:11.5px;color:var(--ctn-color-text-secondary);margin-top:7px;line-height:1.5;text-wrap:pretty">{{ separationBody }}</div>
@@ -278,6 +313,10 @@ class Component extends DCLogic {
       // live: null = reading this case's chain from citinel-web · true = real frames on the reel ·
       // false = service not reached, authored fallback. The three never blend.
       live: null, liveError: null, chain: [], verifyResult: null, verifyError: null,
+      // n8n's own execution history, on its own plane: null = not answered yet, object = the
+      // route's answer (ok | not_configured | error). n8nError is a failure to reach
+      // citinel-web at all, which is a different fact from n8n having nothing to report.
+      n8n: null, n8nError: null,
       // MAT-F04: text of the throttled live region announcing filter/count changes on the reel.
       liveRegionText: ''};
     // MAT-F03: the ledger reel is virtualized through the shared dashboard/static/virtualize.js
@@ -320,11 +359,20 @@ class Component extends DCLogic {
     // (/api/ledger/verify) runs once on load and again on the button; it waits on the external
     // witness, so it can take several seconds and the badge reads MIXED until it answers.
     const API = window.CITINEL_API;
-    if (!API) { this.setState({live:false, liveError:'api.js not loaded'}); return; }
+    if (!API) { this.setState({live:false, liveError:'api.js not loaded', n8nError:'api.js not loaded'}); return; }
     API.auditFor(this.incId).then(r => {
       if (!r.ok) { this.setState({live:false, liveError:r.error}); return; }
       this.setState({live:true, chain: Array.isArray(r.data) ? r.data : []});
       this.walk();
+    });
+
+    // Deliberately independent of the ledger read above: the automation band answers for
+    // n8n and the reel answers for the chain, and a failure on either plane must not blank
+    // or misreport the other.
+    API.n8nExecutions(20).then(r => {
+      if (!r.ok) { this.setState({n8nError: r.error}); return; }
+      this.setState({n8n: (r.data && typeof r.data === 'object') ? r.data
+        : {status:'error', detail:'the route answered without an object; nothing can be claimed', executions:[]}});
     });
   }
   componentDidUpdate(){
@@ -535,6 +583,102 @@ class Component extends DCLogic {
         'record a model\'s reasoning · prose is a summary, not evidence',
         'show a verdict\'s text · the swarm prints it, the ledger records only that it was produced and verified'
       ]
+    };
+  }
+
+  /* ── AUTOMATION RUNS · n8n ────────────────────────────────────────────────
+     Folded into every branch by renderVals, because the argument does not change
+     with the reel's mode: an action inspectable only inside another tool is not
+     auditable. The band therefore never carries an authored run — it reports what
+     the automation plane actually said, including when that is nothing. */
+  n8nStateFg(state){
+    if(state==='success') return 'var(--ctn-color-ok)';
+    if(state==='waiting') return 'var(--ctn-color-clock)';
+    if(state==='error'||state==='crashed') return 'var(--ctn-color-severity-critical-text)';
+    if(state==='running'||state==='new') return 'var(--ctn-color-text-primary)';
+    return 'var(--ctn-color-text-muted)';
+  }
+  // n8n emits ISO-8601 in UTC and the route truncates each stamp to 19 characters, which
+  // drops the zone marker -- Date.parse would then read it as browser-local and quietly
+  // shift every run by the reader's own offset. Pin a bare stamp back to UTC before the
+  // IST shift, and keep the raw string in the row's title so the conversion is checkable.
+  n8nTime(ts){
+    const raw = String(ts || '');
+    if(!raw) return {short:'—', full:'not given by n8n'};
+    const ms = Date.parse(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/.test(raw) ? raw+'Z' : raw);
+    if(isNaN(ms)) return {short: raw, full: 'unparseable stamp from n8n · '+raw};
+    const i = new Date(ms + 330*60000).toISOString();
+    return {short: i.slice(8,10)+'/'+i.slice(5,7)+' '+i.slice(11,16),
+            full: i.slice(0,19).replace('T',' ')+' IST · n8n gave '+raw};
+  }
+  n8nVals(){
+    const s = this.state, d = s.n8n;
+    const ENVS = 'CITINEL_N8N_API_URL and CITINEL_N8N_API_KEY';
+    const SHOWN = 6;
+    const runs = (d && Array.isArray(d.executions)) ? d.executions : [];
+    const rows = runs.slice(0, SHOWN).map(r=>{
+      const st = String(r.state || 'unknown'), waiting = st === 'waiting';
+      const started = this.n8nTime(r.started_at), stopped = this.n8nTime(r.stopped_at), until = this.n8nTime(r.waiting_until);
+      const wf = String(r.workflow_id || '—');
+      return {
+        id: String(r.id || '—'),
+        state: st.toUpperCase(),
+        stateFg: this.n8nStateFg(st),
+        line2: started.short + ' · ' + wf,
+        // A waiting run is a playbook that parked itself on a Wait node: the automation
+        // stopped and is holding for a human, which is the one row here a reviewer must see,
+        // so it takes the rail's own selected-row treatment rather than a colour alone.
+        detail: waiting
+          ? 'parked on a Wait node until ' + until.short + ' · holding for a human answer'
+          : (r.finished ? 'finished ' + stopped.short : 'not finished') + ' · mode=' + String(r.mode || '—'),
+        detailFg: waiting ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-text-muted)',
+        bg: waiting ? 'var(--ctn-color-surface-raised)' : 'transparent',
+        edge: waiting ? 'var(--ctn-color-clock)' : 'transparent',
+        title: 'run ' + String(r.id || '—') + ' · workflow ' + wf +
+          '\nstate ' + st + ' · mode ' + String(r.mode || '—') + ' · finished=' + (r.finished ? 'true' : 'false') +
+          '\nstarted ' + started.full + '\nstopped ' + stopped.full + (waiting ? '\nwaiting until ' + until.full : '')
+      };
+    });
+    let msg, fg, empty;
+    if(s.n8nError){
+      msg = 'not read · ' + s.n8nError;
+      fg = 'var(--ctn-color-severity-critical-text)';
+      empty = 'The console could not reach citinel-web to ask n8n: ' + s.n8nError + '. That is a failure to read, not an empty history, and nothing about what the automation layer did can be claimed from it.';
+    } else if(!d){
+      msg = 'asking n8n…';
+      fg = 'var(--ctn-color-text-muted)';
+      empty = 'Asking the automation plane for its execution history. Nothing is drawn until it answers, so an authored run is never mistaken for one that happened.';
+    } else if(d.status === 'not_configured'){
+      msg = 'API plane not configured';
+      fg = 'var(--ctn-color-text-muted)';
+      empty = 'The n8n API plane is not configured on this deployment: ' + ENVS + ' must both be set before any run can be read back. Until they are, this band claims nothing — the webhook that fires playbooks is a separate setting and says nothing about what ran.';
+    } else if(d.status === 'error'){
+      msg = 'read failed';
+      fg = 'var(--ctn-color-severity-critical-text)';
+      empty = 'The read failed, so nothing can be claimed about what ran: ' + String(d.detail || 'n8n gave no detail') + ' A refused call is not an empty history — the two look identical on a screen that does not say which it is.';
+    } else if(!rows.length){
+      msg = 'answered · history empty';
+      fg = 'var(--ctn-color-text-secondary)';
+      empty = 'n8n answered, and its execution history is empty: no playbook has run yet. That is a true zero read back from the automation plane itself, not a failed call and not a missing setting.';
+    } else {
+      // The denominator is the count n8n actually returned, never the count drawn: the rail
+      // shows the six most recent so it stays a rail, and says so rather than implying six.
+      const waits = runs.filter(r=>String(r.state) === 'waiting').length;
+      msg = (rows.length < runs.length ? rows.length + ' of ' + this.fmtN(runs.length) + ' runs read'
+                                       : this.fmtN(runs.length) + ' run' + (runs.length===1?'':'s') + ' read')
+            + (waits ? ' · ' + waits + ' of them parked for a human' : '');
+      fg = waits ? 'var(--ctn-color-clock)' : 'var(--ctn-color-ok)';
+      empty = '';
+    }
+    return {
+      n8nRuns: rows,
+      n8nHasRuns: rows.length > 0,
+      n8nEmpty: rows.length === 0,
+      n8nEmptyNote: empty,
+      n8nStatusMsg: msg,
+      n8nStatusFg: fg,
+      n8nStamp: (d && d.fetched_at) ? 'read ' + this.n8nTime(d.fetched_at).short : '—',
+      n8nNote: 'An automated action a reviewer can only inspect inside n8n is not auditable, so these runs are read back from n8n over its own API and printed beside the frames. They are not ledger frames and are not hash-chained: n8n holds the workflow state, this reel holds the record. A playbook that parks itself on a Wait node is waiting on a human, and that wait is answered on the approval card, not inside n8n.'
     };
   }
 
@@ -865,7 +1009,10 @@ class Component extends DCLogic {
       const b = Object.assign({}, b0, this.sessionVals(b0));   // session rows join the reel first...
       out = Object.assign({}, b, this.roleVals(), this.depthVals(b));   // ...so CISO depth filters them too
     }
-    out = Object.assign({}, out, this.navVals());
+    // The automation band is folded in here, once, for the same reason the two fields below
+    // are: it reports on n8n's plane and not on the reel's, so it must read identically
+    // whichever branch drew the reel -- including the authored-fallback one.
+    out = Object.assign({}, out, this.navVals(), this.n8nVals());
     // MAT-F03/F04: captured once here regardless of which branch produced `out`, so the
     // virtualized pool and the throttled live region both always see this render's real rows,
     // without repeating the same three fields inside loadingVals/liveVals/baseVals.

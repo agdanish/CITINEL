@@ -339,6 +339,105 @@
           </div>
         </sc-if>
       </div>
+      <div style="padding:10px 20px 4px;flex:none;border-top:1px solid var(--ctn-color-border-hairline)">
+        <div style="display:flex;align-items:baseline;gap:10px;min-width:0;flex-wrap:wrap">
+          <span style="font-family:var(--ctn-font-display);font-size:10px;letter-spacing:0.14em;color:var(--ctn-color-text-muted);flex:none">THREAT BRIEF · TAVILY RESEARCH</span>
+          <sc-if value="{{ hasBrief }}" hint-placeholder-val="{{ false }}">
+            <span data-token style="font-family:var(--ctn-font-display);font-size:8px;letter-spacing:0.1em;color:var(--ctn-color-text-muted);border:1px {{ briefStateStyle }} var(--ctn-color-border-strong);padding:2px 6px;border-radius:3px;flex:none;margin-right:auto">{{ briefState }}</span>
+          </sc-if>
+          <span style="font-size:11px;color:var(--ctn-color-text-muted);flex:1 1 100%;min-width:0;line-height:1.4;max-width:110ch">{{ briefNote }}</span>
+        </div>
+
+        <sc-if value="{{ hasBrief }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:9px;padding:9px 11px;border:1px dashed var(--ctn-color-border-strong);border-radius:6px;min-width:0">
+            <div style="font-family:var(--ctn-font-display);font-size:8px;letter-spacing:0.1em;color:var(--ctn-color-text-muted)">THE QUESTION PUT TO THE OPEN WEB</div>
+            <div style="font-size:11.5px;color:var(--ctn-color-text-secondary);margin-top:5px;line-height:1.5;text-wrap:pretty;max-width:110ch">{{ briefQuestion }}</div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ briefPending }}" hint-placeholder-val="{{ false }}">
+          <div style="font-size:12px;color:var(--ctn-color-text-muted);margin-top:8px;line-height:1.5;text-wrap:pretty;max-width:110ch">{{ briefPendingNote }}</div>
+        </sc-if>
+
+        <sc-if value="{{ briefReady }}" hint-placeholder-val="{{ false }}">
+          <div style="font-size:12px;color:var(--ctn-color-text-secondary);margin-top:9px;line-height:1.55;text-wrap:pretty;max-width:110ch;white-space:pre-wrap;overflow-wrap:anywhere">{{ briefContent }}</div>
+          <div style="font-family:var(--ctn-font-display);font-size:8.5px;letter-spacing:0.1em;color:var(--ctn-color-text-muted);margin-top:11px">{{ briefSourcesHead }}</div>
+          <div style="display:flex;flex-direction:column;margin-top:4px">
+            <sc-for list="{{ briefSources }}" as="b" hint-placeholder-count="3">
+              <a href="{{ b.url }}" style="display:flex;align-items:baseline;gap:9px;padding:6px 0;border-bottom:1px solid var(--ctn-color-border-hairline);min-width:0;text-decoration:none">
+                <span data-token style="font-family:var(--ctn-font-mono);font-size:10.5px;color:var(--ctn-color-text-muted);flex:none;font-variant-numeric:tabular-nums">{{ b.n }}</span>
+                <span style="font-size:11.5px;color:var(--ctn-color-text-primary);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ b.title }}</span>
+                <span data-token style="font-family:var(--ctn-font-mono);font-size:10.5px;color:var(--ctn-color-text-muted);flex:none;max-width:24ch;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ b.host }}</span>
+              </a>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ briefRequestable }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;align-items:center;gap:10px;margin-top:8px;flex-wrap:wrap">
+            <button onClick="{{ requestBrief }}" style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:8px 12px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;background:none;color:var(--ctn-color-text-primary);cursor:pointer">{{ briefLabel }}</button>
+            <span data-token style="font-family:var(--ctn-font-mono);font-size:10.5px;color:var(--ctn-color-text-muted);flex:1;min-width:0">{{ briefStatus }}</span>
+          </div>
+        </sc-if>
+      </div>
+      <div style="padding:10px 20px 4px;flex:none;border-top:1px solid var(--ctn-color-border-hairline)">
+        <div style="display:flex;align-items:baseline;gap:10px;min-width:0;flex-wrap:wrap">
+          <span style="font-family:var(--ctn-font-display);font-size:10px;letter-spacing:0.14em;color:var(--ctn-color-text-muted);flex:none">ANALYST IMAGE · GEMINI VISION</span>
+          <sc-if value="{{ hasVisual }}" hint-placeholder-val="{{ false }}">
+            <span data-token style="font-family:var(--ctn-font-display);font-size:8px;letter-spacing:0.1em;color:var(--ctn-color-text-muted);border:1px dashed var(--ctn-color-border-strong);padding:2px 6px;border-radius:3px;flex:none;margin-right:auto">{{ visualKind }}</span>
+          </sc-if>
+          <span style="font-size:11px;color:var(--ctn-color-text-muted);flex:1 1 100%;min-width:0;line-height:1.4;max-width:110ch">{{ visualNote }}</span>
+        </div>
+
+        <sc-if value="{{ hasVisual }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:9px;padding:10px 11px;border:1px dashed var(--ctn-color-border-strong);border-radius:6px;min-width:0">
+            <div style="display:flex;align-items:baseline;gap:9px;min-width:0;flex-wrap:wrap">
+              <span style="font-family:var(--ctn-font-display);font-size:8px;letter-spacing:0.1em;color:var(--ctn-color-text-muted);flex:1;min-width:0">WHAT THE MODEL SAW · OBSERVATION, CARRIES NOTHING</span>
+              <span data-token style="font-family:var(--ctn-font-mono);font-size:10px;color:var(--ctn-color-text-muted);flex:none">{{ visualReadAt }}</span>
+            </div>
+            <div style="font-size:12px;color:var(--ctn-color-text-secondary);margin-top:6px;line-height:1.5;text-wrap:pretty;max-width:110ch">{{ visualSummary }}</div>
+            <div style="font-size:11.5px;color:var(--ctn-color-text-muted);margin-top:5px;line-height:1.45;text-wrap:pretty;max-width:110ch">{{ visualWhy }}</div>
+          </div>
+          <div style="font-size:11.5px;color:var(--ctn-color-text-muted);margin-top:8px;line-height:1.45;text-wrap:pretty;max-width:110ch">{{ visualNotEvidence }}</div>
+
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:9px;min-width:0">
+            <div style="flex:1 1 220px;min-width:0;border:1px solid var(--ctn-color-border-strong);border-radius:6px;padding:9px 11px">
+              <div style="font-family:var(--ctn-font-display);font-size:8px;letter-spacing:0.1em;color:var(--ctn-color-text-primary)">{{ visualCorrHead }}</div>
+              <sc-if value="{{ visualCorrNone }}" hint-placeholder-val="{{ false }}">
+                <div style="font-size:11px;color:var(--ctn-color-text-muted);margin-top:6px;line-height:1.45">nothing the image named appears anywhere in this record's findings</div>
+              </sc-if>
+              <sc-for list="{{ visualCorroborated }}" as="c" hint-placeholder-count="2">
+                <div style="display:flex;flex-direction:column;gap:3px;padding:7px 0;border-bottom:1px solid var(--ctn-color-border-hairline);min-width:0">
+                  <div style="display:flex;align-items:baseline;gap:8px;min-width:0">
+                    <span data-token style="font-family:var(--ctn-font-mono);font-size:11px;color:var(--ctn-color-text-primary);flex:1;min-width:0;overflow-wrap:anywhere">{{ c.value }}</span>
+                    <span data-token style="font-family:var(--ctn-font-mono);font-size:9.5px;color:var(--ctn-color-text-muted);flex:none">{{ c.type }}</span>
+                  </div>
+                  <a href="{{ c.href }}" style="font-family:var(--ctn-font-mono);font-size:10.5px;color:var(--ctn-color-text-secondary);text-decoration:none;line-height:1.4;overflow-wrap:anywhere">{{ c.where }}</a>
+                </div>
+              </sc-for>
+            </div>
+            <div style="flex:1 1 220px;min-width:0;border:1px dashed var(--ctn-color-border-strong);border-radius:6px;padding:9px 11px">
+              <div style="font-family:var(--ctn-font-display);font-size:8px;letter-spacing:0.1em;color:var(--ctn-color-text-muted)">{{ visualUnseenHead }}</div>
+              <sc-if value="{{ visualUnseenNone }}" hint-placeholder-val="{{ false }}">
+                <div style="font-size:11px;color:var(--ctn-color-text-muted);margin-top:6px;line-height:1.45">every indicator the image named is already somewhere on this record</div>
+              </sc-if>
+              <sc-for list="{{ visualUnseen }}" as="u" hint-placeholder-count="2">
+                <div style="display:flex;flex-direction:column;gap:3px;padding:7px 0;border-bottom:1px solid var(--ctn-color-border-hairline);min-width:0">
+                  <div style="display:flex;align-items:baseline;gap:8px;min-width:0">
+                    <span data-token style="font-family:var(--ctn-font-mono);font-size:11px;color:var(--ctn-color-text-primary);flex:1;min-width:0;overflow-wrap:anywhere">{{ u.value }}</span>
+                    <span data-token style="font-family:var(--ctn-font-mono);font-size:9.5px;color:var(--ctn-color-text-muted);flex:none">{{ u.type }}</span>
+                  </div>
+                  <div style="font-family:var(--ctn-font-mono);font-size:10.5px;color:var(--ctn-color-text-muted);line-height:1.4">{{ u.where }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ noVisual }}" hint-placeholder-val="{{ true }}">
+          <div style="font-size:12px;color:var(--ctn-color-text-muted);margin-top:8px;line-height:1.5;text-wrap:pretty;max-width:110ch">{{ visualEmptyNote }}</div>
+        </sc-if>
+      </div>
       <div style="padding:8px 20px 0;flex:none;border-top:1px solid var(--ctn-color-border-hairline)">
         <div style="border:1px solid var(--ctn-color-border-strong);border-radius:14px;padding:14px;margin-top:8px;display:flex;flex-direction:column;gap:9px;min-width:0">
           <div style="display:flex;align-items:baseline;gap:10px;min-width:0">
@@ -553,7 +652,8 @@ class Component extends DCLogic {
       // flight AFTER something has already loaded once; the old record/chain/verdict stay on screen
       // the whole time so the strip never blanks back to the reading skeleton for a background refresh.
       live:null, liveError:null, refreshing:false, ids:[], rows:[], incident:null, chain:null, verdict:null, verdictMissing:false,
-      running:false, runStatus:null, context:null, gathering:false, gatherStatus:''};
+      running:false, runStatus:null, context:null, gathering:false, gatherStatus:'',
+      brief:null, requestingBrief:false, briefStatus:'', visual:null};
   }
   componentDidMount(){ this.roleMount();
     this.base = Date.now();
@@ -592,12 +692,51 @@ class Component extends DCLogic {
     this.setState(firstLoad
       ? {live:null, incident:null, chain:null, verdict:null, verdictMissing:false, refreshing:false, pos:0, playing:true, openClaim:null}
       : {refreshing:true, pos:0, playing:true, openClaim:null});
-    Promise.all([API.incident(id), API.auditFor(id), API.verdictFor(id), API.contextFor(id), API.sweepFor(id)]).then(([inc, ch, vd, cx, sw]) => {
+    // The brief and image seams landed after this screen did; a deployment still
+    // serving an older api.js must lose those two panels, not the whole record --
+    // an undefined helper inside Promise.all would take the page down with it.
+    const seam = n => (typeof API[n] === 'function' ? API[n](id) : Promise.resolve({ok:false, error:'api.js on this deployment has no ' + n}));
+    Promise.all([API.incident(id), API.auditFor(id), API.verdictFor(id), API.contextFor(id), API.sweepFor(id),
+                 seam('briefFor'), seam('visualsFor')]).then(([inc, ch, vd, cx, sw, br, vi]) => {
       if (!inc.ok) { this.setState({live:false, liveError:inc.error, refreshing:false}); return; }
       this._d = null;
       this.setState({live:true, incident:inc.data, chain: ch.ok ? ch.data : [], verdict: vd.ok ? vd.data : null,
                      verdictMissing: !vd.ok, context: cx.ok ? cx.data : null, sweep: sw.ok ? sw.data : null,
+                     brief: br.ok ? br.data : null, visual: vi.ok ? vi.data : null, briefStatus:'',
                      refreshing:false, pos:0, playing:true, openClaim:null});
+      if (br.ok && br.data && br.data.status === 'pending') this.pollBrief();
+    });
+  }
+  /* A research run is asynchronous and one GET advances it exactly one step, so
+     something has to keep asking. This screen does it while it is open; the panel
+     also says the run survives a close, because the next reader's first GET
+     advances it too and nothing is lost by walking away. */
+  pollBrief(){
+    const API = window.CITINEL_API, id = this.incId;
+    if (!API || typeof API.briefFor !== 'function' || this.briefTimer) return;
+    this.briefTimer = setTimeout(()=>{
+      this.briefTimer = null;
+      if (this.incId !== id) return;
+      API.briefFor(id).then(r => {
+        if (!r.ok || this.incId !== id) return;
+        this.setState({brief: r.data});
+        if (r.data && r.data.status === 'pending') this.pollBrief();
+      });
+    }, 8000);
+  }
+  requestBrief(){
+    const API = window.CITINEL_API, id = this.incId;
+    if (!API || this.state.requestingBrief) return;
+    if (typeof API.requestBrief !== 'function') { this.setState({briefStatus:'api.js on this deployment has no requestBrief helper'}); return; }
+    this.setState({requestingBrief:true, briefStatus:'asking Tavily Research · it runs several searches of its own before it answers'});
+    API.requestBrief(id).then(r => {
+      if (!r.ok) { this.setState({requestingBrief:false, briefStatus:'could not start: ' + (r.error || 'unknown')}); return; }
+      const d = r.data || {};
+      this.setState({requestingBrief:false, brief:d,
+        briefStatus: d.status === 'pending' ? 'research run started · advancing it every few seconds while this screen is open'
+                   : d.status === 'not_configured' ? 'no Tavily key on this deployment'
+                   : d.note || 'the research run did not start'});
+      if (d.status === 'pending') this.pollBrief();
     });
   }
   gatherContext(){
@@ -657,6 +796,112 @@ class Component extends DCLogic {
       sweepStatus: s.sweepStatus || ''
     };
   }
+  briefVals(liveMode){
+    const s = this.state, br = liveMode ? s.brief : null;
+    if (!liveMode) return { hasBrief:false, briefState:'', briefStateStyle:'solid', briefQuestion:'',
+      briefNote:'authored demo · no threat brief was requested for this walkthrough',
+      briefPending:false, briefPendingNote:'', briefReady:false, briefContent:'',
+      briefSourcesHead:'', briefSources:[], briefRequestable:false, requestBrief:()=>{}, briefLabel:'', briefStatus:'' };
+    // Tavily's own status string is passed straight through, so the set is open:
+    // a live run came back "in_progress", which is neither pending nor an answer.
+    // Anything that is not one of the four settled states is treated as in flight
+    // rather than reported as a failure. Only "pending" is advanced by a GET,
+    // so only that one gets the "reopen to advance it" promise.
+    const st = br ? String(br.status || '') : '';
+    const settled = st === 'completed' || st === 'failed' || st === 'error' || st === 'not_configured';
+    const pending = !!br && !settled;
+    const advancing = st === 'pending';
+    const done = st === 'completed' && !!String(br.content || '').trim();
+    const secs = br && br.response_time != null ? Number(br.response_time) : null;
+    const srcs = (br && br.sources || []).map((x, i) => ({
+      n: String(i+1).padStart(2,'0'),
+      title: String(x.title || '').slice(0, 140) || 'untitled',
+      url: x.url || '#',
+      host: String(x.url || '').replace(/^https?:\/\//, '').split('/')[0]
+    }));
+    return {
+      hasBrief: !!br,
+      briefState: br ? st.toUpperCase().replace(/_/g, ' ') : '',
+      briefStateStyle: done ? 'solid' : 'dashed',
+      briefQuestion: br ? String(br.question || '') : '',
+      briefNote: done
+        ? 'tavily research · ' + srcs.length + ' source' + (srcs.length===1?'':'s') + ' cited'
+          + (secs != null && isFinite(secs) ? ' · answered in ' + secs.toFixed(1) + 's' : '')
+          + ' · context only, never evidence: no claim, verdict or lane moves because of it'
+        : pending ? 'a research run is in flight · context only, never evidence: nothing it returns can support a claim'
+        : (st === 'not_configured') ? 'no Tavily key on this deployment · the brief reports that rather than inventing one'
+        : (br && st) ? 'the last research run did not return an answer' + (br.note ? ' · ' + br.note : '') + ' · nothing was recorded'
+        : 'not requested · the open web has not been asked what this combination of techniques usually means, or what responders who have seen it recommend. context only, never evidence.',
+      briefPending: pending,
+      briefPendingNote: advancing
+        ? 'still researching — Tavily is running several searches of its own before it answers. This screen advances the run every few seconds while it stays open, and one step more each time the page is reopened; leaving loses nothing.'
+        : 'still researching — Tavily reports this run as "' + st.replace(/_/g, ' ') + '" and has not returned the report yet. Reopening advances a run only while it is still pending, so if this state holds, ASK AGAIN starts a fresh one.',
+      briefReady: done,
+      briefContent: done ? String(br.content || '') : '',
+      briefSourcesHead: 'SOURCES CITED BY THE BRIEF · ' + srcs.length,
+      briefSources: done ? srcs : [],
+      briefRequestable: true,
+      requestBrief: ()=>this.requestBrief(),
+      briefLabel: (s.requestingBrief || pending) ? 'RESEARCHING…' : (br ? 'ASK AGAIN' : 'REQUEST THREAT BRIEF'),
+      briefStatus: s.briefStatus || ''
+    };
+  }
+  /* The split this panel exists to show: the model's reading is an observation
+     and carries nothing, while the corroboration beside it is a deterministic
+     fact -- string matching over this record's own findings, no model involved.
+     So the reading sits in a dashed frame and every corroborated row states its
+     finding count against the record's own denominator and links to the exhibit. */
+  visualVals(liveMode){
+    const s = this.state, vs = liveMode ? s.visual : null;
+    const r = vs && Array.isArray(vs.readings) && vs.readings.length ? vs.readings[0] : null;
+    if (!r) return { hasVisual:false, noVisual:true, visualKind:'', visualReadAt:'', visualSummary:'', visualWhy:'',
+      visualCorrHead:'', visualUnseenHead:'', visualCorroborated:[], visualUnseen:[],
+      visualCorrNone:false, visualUnseenNone:false, visualNotEvidence:'',
+      visualNote: liveMode ? 'nothing read yet · the only place a model here looks at something that is not text'
+                           : 'authored demo · no analyst image was read onto this walkthrough',
+      visualEmptyNote: liveMode
+        ? 'No image has been read onto this record. An analyst pastes a screenshot — a forwarded phishing mail, a ransom note, an alert from a tool nobody integrated — and Gemini names what it sees; every indicator it names is then checked against this record\'s own findings in code. Until that has happened there is nothing to show, so nothing is shown.'
+        : 'The demo walkthrough carries no analyst image. Switch to a live record to see a reading and the corroboration beside it.'
+    };
+    const total = ((s.incident || {}).findings || []).length;
+    const at = String(r.at || '').slice(0, 16).replace('T', ' ') + (r.at ? 'Z' : '');
+    const ok = r.status === 'ok';
+    const id = this.incId || '';
+    const corr = (r.corroborated || []).map(c => {
+      const idx = c.finding_indices || [], n = Number(c.finding_count || 0);
+      return { value: String(c.value || ''), type: String(c.type || 'other'),
+        where: 'in ' + this.fmtN(n) + ' of ' + this.fmtN(total) + ' findings on this record'
+             + (idx.length ? ' · #' + idx.slice(0, 6).join(', #') + (n > idx.length ? ' …' : '') : ''),
+        href: 'Evidence.dc.html?id=' + id + (idx.length ? '&exhibit=' + idx[0] : '') };
+    });
+    const uns = (r.unseen || []).map(u => ({ value: String(u.value || ''), type: String(u.type || 'other'),
+      where: 'no match in any of ' + this.fmtN(total) + ' findings' }));
+    const named = corr.length + uns.length;
+    const judged = r.looks_malicious === true ? 'the model reads this as malicious'
+                 : r.looks_malicious === false ? 'the model does not read this as malicious'
+                 : 'the model did not say whether it reads as malicious';
+    return {
+      hasVisual: true, noVisual: false,
+      visualKind: ok ? (String(r.kind || 'unclassified').toUpperCase().slice(0, 40)) : 'READING FAILED',
+      visualReadAt: at,
+      visualNote: ok
+        ? 'gemini vision · ' + named + ' indicator' + (named===1?'':'s') + ' named by the model · '
+          + corr.length + ' corroborated by this record, ' + uns.length + ' unseen in it'
+          + ' · the reading is an observation, the corroboration is checked in code with no model involved'
+        : 'gemini vision · the last read returned no usable reading (' + String(r.status || 'error').replace(/_/g,' ') + ')'
+          + (r.note ? ' · ' + r.note : '') + ' · nothing is filled in for it',
+      visualSummary: ok ? (String(r.summary || '') || 'the model returned no description of the image')
+                        : 'no reading was returned, so nothing is claimed about the image',
+      visualWhy: ok ? judged + (r.why ? ' — ' + r.why : '') + (r.analyst_note ? ' · analyst note: ' + r.analyst_note : '')
+                    : (r.analyst_note ? 'analyst note: ' + r.analyst_note : ''),
+      visualCorrHead: 'CORROBORATED BY THIS RECORD · ' + corr.length + ' · FACT',
+      visualUnseenHead: 'UNSEEN IN THIS RECORD · ' + uns.length + ' · FACT',
+      visualCorroborated: corr, visualUnseen: uns,
+      visualCorrNone: corr.length === 0, visualUnseenNone: uns.length === 0,
+      visualNotEvidence: String(r.not_evidence || 'A model reading a picture is an observation, never evidence. What is checkable is the corroboration: those finding counts come from this record\'s own logs.'),
+      visualEmptyNote: ''
+    };
+  }
   contextVals(liveMode){
     const s = this.state, cx = liveMode ? s.context : null;
     if (!liveMode) return { contextNote: 'authored demo · no public context gathered', contextRows: [], contextGatherable: false, gatherContext: ()=>{}, gatherLabel: '', gatherStatus: '' };
@@ -701,7 +946,7 @@ class Component extends DCLogic {
       setTimeout(poll, 3000);
     });
   }
-  componentWillUnmount(){ clearInterval(this.t); window.removeEventListener('mouseup', this.up); window.removeEventListener('mousemove', this.move); if(this.unsubRole) this.unsubRole(); }
+  componentWillUnmount(){ clearInterval(this.t); clearTimeout(this.briefTimer); window.removeEventListener('mouseup', this.up); window.removeEventListener('mousemove', this.move); if(this.unsubRole) this.unsubRole(); }
   seekFromEvent(e){
     const el = this.trackRef.current; if(!el) return;
     const r = el.getBoundingClientRect();
@@ -991,7 +1236,7 @@ class Component extends DCLogic {
       approvalsHref: liveMode ? 'Approvals.dc.html?id=' + d.id : 'Approvals.dc.html',
       deskHref: liveMode ? 'Compliance.dc.html?id=' + d.id : 'Compliance.dc.html',
       auditHref: liveMode ? 'Audit.dc.html?id=' + d.id : 'Audit.dc.html'
-    }, this.contextVals(liveMode), this.sweepVals(liveMode));
+    }, this.contextVals(liveMode), this.sweepVals(liveMode), this.briefVals(liveMode), this.visualVals(liveMode));
   }
 
   /* MAT-F01: the top nav bar's own outgoing links must carry the incident this
@@ -1079,7 +1324,17 @@ class Component extends DCLogic {
       chainSourceCount: 0, chainSourceNote: 'reading…', killChain: [], rail: [], proposalReady: false, proposalPending: true, proposalAt: '—', proposals: [], proposalNote: '',
       approvalsHref: 'Approvals.dc.html', deskHref: 'Compliance.dc.html', auditHref: 'Audit.dc.html',
       harvest: [], harvestHref: '#', exportLabel: 'READING', modeChip: '—', harvestNote: '', closeNote: '', closeLabel: 'READING', closeBg: 'transparent', closeFg: 'var(--ctn-color-text-muted)', closeIncident: ()=>{},
-      authority: [], wouldNotSign: '', contextNote: 'reading…', contextRows: [], contextGatherable: false, gatherContext: ()=>{}, gatherLabel: '', gatherStatus: ''
+      authority: [], wouldNotSign: '', contextNote: 'reading…', contextRows: [], contextGatherable: false, gatherContext: ()=>{}, gatherLabel: '', gatherStatus: '',
+      // the three external-seam panels are silent while the record loads, but every
+      // hole they own still needs a key here or the resolver renders it as nothing
+      hasSweep: false, sweepNote: 'reading…', sweepRisk: '', sweepRiskStyle: 'solid', sweepBarExamined: '0%', sweepBarSwept: '0%',
+      sweepScale: '', sweepSummary: '', sweepRows: [], sweepGatherable: false, runSweep: ()=>{}, sweepLabel: '', sweepStatus: '',
+      hasBrief: false, briefState: '', briefStateStyle: 'solid', briefQuestion: '', briefNote: 'reading…', briefPending: false,
+      briefPendingNote: '', briefReady: false, briefContent: '', briefSourcesHead: '', briefSources: [], briefRequestable: false,
+      requestBrief: ()=>{}, briefLabel: '', briefStatus: '',
+      hasVisual: false, noVisual: false, visualKind: '', visualReadAt: '', visualNote: 'reading…', visualSummary: '', visualWhy: '',
+      visualCorrHead: '', visualUnseenHead: '', visualCorroborated: [], visualUnseen: [], visualCorrNone: false, visualUnseenNone: false,
+      visualNotEvidence: '', visualEmptyNote: ''
     };
   }
   liveStateVals(b){

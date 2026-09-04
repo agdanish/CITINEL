@@ -7,7 +7,7 @@
     {
       "id": "citinel-no-core-banking-in-ticket",
       "target": [
-        "github.repo.issues.create"
+        "github.issue.create"
       ],
       "when": {
         "operator": "any",
@@ -51,7 +51,7 @@
     {
       "id": "citinel-ticket-must-name-its-incident",
       "target": [
-        "github.repo.issues.create"
+        "github.issue.create"
       ],
       "when": {
         "field": "title",

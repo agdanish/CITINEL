@@ -30,6 +30,14 @@ from citinel.connectors.enrichment import TavilyConnector
 
 MAX_TECHNIQUES = 6
 
+#: The only two answers that mean the run is over. Everything else -- a network
+#: blip, a 5xx, a key that went missing for one request -- is the poll failing,
+#: not the run failing, and must leave the brief pending.
+TERMINAL_STATES = ("completed", "failed")
+#: After this many consecutive failed polls the run is given up on, so a
+#: request id that will never resolve does not stay pending forever.
+MAX_POLL_ERRORS = 12
+
 
 def brief_path(artifacts_dir: Path, incident_id: str) -> Path:
     return artifacts_dir / "brief" / f"{incident_id}.json"
@@ -105,7 +113,14 @@ def start_brief(incident, verdict: dict[str, Any] | None, cache_dir: Path,
 
 def poll_brief(incident_id: str, cache_dir: Path, artifacts_dir: Path,
                connector: TavilyConnector | None = None) -> dict[str, Any] | None:
-    """Advance a pending brief by one step. Returns None if none was started."""
+    """Advance a pending brief by one step. Returns None if none was started.
+
+    A failed poll is not a failed run. This used to write whatever status came
+    back -- including the "error" a single dropped connection produces -- and
+    the guard above then short-circuited every later call, so one blip on the
+    GET the console polls with killed a research run that was still executing
+    at Tavily and whose request id was still perfectly good.
+    """
     stored = load_brief(artifacts_dir, incident_id)
     if stored is None:
         return None
@@ -116,9 +131,20 @@ def poll_brief(incident_id: str, cache_dir: Path, artifacts_dir: Path,
     state = r.get("status")
     if state == "pending":
         return stored
-    stored["status"] = state or "error"
+    if state not in TERMINAL_STATES:
+        errors = int(stored.get("poll_errors") or 0) + 1
+        stored["poll_errors"] = errors
+        stored["note"] = str(r.get("detail") or f"poll returned {state!r}")[:300]
+        if errors >= MAX_POLL_ERRORS:
+            stored["status"] = "error"
+            stored["note"] = (f"gave up after {errors} failed polls; last was "
+                              f"{stored['note']}")
+        return _save(artifacts_dir, incident_id, stored)
+    stored["status"] = state
+    stored["poll_errors"] = 0
     stored["content"] = str(r.get("content") or "")[:6000]
-    stored["sources"] = r.get("sources") or []
+    srcs = r.get("sources")
+    stored["sources"] = srcs if isinstance(srcs, list) else []
     stored["response_time"] = r.get("response_time")
     if r.get("detail"):
         stored["note"] = r["detail"]
