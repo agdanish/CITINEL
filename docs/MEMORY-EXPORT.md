@@ -967,6 +967,42 @@ the copy that survives a new machine.
 8. **After the event:** Settings CLEAR, or rotate `CITINEL_WRITE_TOKEN` in Render
    which disarms every laptop at once, then rotate the keys in findings section 9.
 
+## Optional: renew the Slack connection (about 20 minutes, morning only)
+
+**Do this in the MORNING, not the night before.** The connection lapses in under
+a day: it was made on 4 Sep, posted a real message, and by 22:45 the same evening
+BOTH stores on the Mac reported "No connected accounts". Renewing it at night is
+likely wasted by stage time. If the morning is tight, skip it. Nothing depends on
+it, and the ledger reports the gap honestly, which is the product's own argument.
+
+What is already known, so no time is spent rediscovering it:
+- The **ticketing leg works on Render**, proven 4 Sep by a real GitHub issue body
+  on ledger frame 5795. Only the Slack leg is missing.
+- The **three files reached the container correctly**. `/api/connectors` reports
+  the store: credentials.db 20480B, credkey 64B, auth.json 4551B in
+  `/root/.swytchcode`. Delivery was never the problem, so do not re-upload the
+  old files; they are a faithful copy of a store with no account in it.
+- Node 20 only. nvm's default is v24, where `swy` does not exist.
+
+Steps, one line at a time in Terminal:
+
+1. `export NVM_DIR="$HOME/.nvm"; . "$NVM_DIR/nvm.sh"; nvm use 20`
+2. `mkdir -p ~/citinel-swyhome`
+3. `export HOME=~/citinel-swyhome`
+4. `cd /tmp`
+5. `swy login` then approve in the browser
+6. `swy auth status`. If Slack is listed, go to step 9.
+7. `swy auth connect Slack`, approve for the **xzashr** workspace
+8. **If macOS offers the Keychain, click Cancel.** Cancel is what forces the key
+   into a `credkey` file; the Linux container cannot read a Keychain key. This one
+   click is the whole reason the procedure is shaped this way.
+9. `swy auth status` must now list Slack
+10. Ask Claude to base64 the three files; it never reads their contents
+11. Upload to Render as Secret Files on citinel-web, named exactly
+    `swy-credentials.db.b64`, `swy-credkey.b64`, `swy-auth.json.b64`
+12. Wait for the restart, then approve one action on Approvals and read the
+    receipt. `comms executed` with a `ts` is the proof.
+
 **Why:** every one of these exists because something went wrong on 4 Sep. The
 false NO-GO, the authored-demo fallback and the closed incident were all found
 the hard way that evening; see [[project-citinel-state-4sep-evening]] and

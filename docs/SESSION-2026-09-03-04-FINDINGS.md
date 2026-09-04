@@ -244,3 +244,41 @@ to work, check which of the two screens you are looking at before anything else.
 
 State at the end of the evening: origin at `42ad01c` plus `be4361f`, ledger intact at
 5,791 entries, INC-0417 back to `caught`, 419 tests passing, pre-flight GO.
+
+## 18. The Swytchcode Slack leg, closed out as a known gap (4 Sep, 22:45)
+
+Section 6 left this as the one integration never proven end to end. It was tested
+that night and the answer is negative, which is worth more than leaving it open.
+
+An approved `notify` on INC-0416 produced four frames. The gate allowed it under
+clause 2.1, the marshal executed it, and then the two Swytchcode legs split:
+**ticketing executed** (frame 5795 carries a real GitHub issue body), **comms did
+not** (frame 5796, `not_configured`, "missing credentials for Slack"). That split
+is itself informative: the CLI, the 3.5 MB bundles and GitHub's per-call auth all
+work inside the Render container. Only the Slack credential store does not.
+
+Nothing outside the container could see whether the three Secret Files had landed,
+so `/api/connectors` now reports the store as presence and byte count, never
+contents. It answered: `credentials.db 20480B, credkey 64B, auth.json 4551B` in
+`/root/.swytchcode`. **Delivery was never the problem.** The files are there and
+they match the Mac's copies byte for byte in size.
+
+The cause is upstream of Render entirely. `swy auth status` on the Mac, against
+both `/tmp/swyhome` and `~/.swytchcode`, reports **"No connected accounts"**. The
+connection made on 4 Sep, which posted a real message that afternoon, had lapsed
+by the same evening. Render holds a faithful copy of a store with nothing in it.
+
+Two consequences worth carrying forward:
+
+1. **Re-uploading the existing files cannot help.** Only a fresh `swy login` plus
+   `swy auth connect Slack` can, and the Keychain prompt must be cancelled so the
+   key is written as a file the Linux container can read.
+2. **The connection lasts under a day**, so renewing it the night before a demo is
+   likely wasted by stage time. It is a morning task or not one at all. The steps
+   are in `RUNBOOK-NEW-LAPTOP.md` section C and in Claude's demo-morning memory.
+
+The honest framing for the stage, and it is a strong one: the receipt does not
+claim a message was sent. It records `not_configured` and names the provider's own
+reason, beside a ticketing leg that did execute. Bug 12 in section 4 was a refused
+Slack message recorded as sent; this is that bug's fix doing its job in public.
+
