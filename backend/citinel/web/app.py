@@ -440,18 +440,32 @@ def get_eval() -> dict:
             harness = importlib.util.module_from_spec(spec)
             _sys.modules[spec.name] = harness          # @dataclass needs this, see cli.py
             spec.loader.exec_module(harness)
-            report = harness.build_report().as_dict()
-            report["served_from"] = "harness"
-            return report
+            # the deployment's own saved runs where it keeps them (the Render disk, or
+            # data/incidents locally); the committed seed runs when it has none
+            swarm_dir = _artifacts_dir() / "swarm"
+            if not (swarm_dir.is_dir() and any(swarm_dir.glob("*.json"))):
+                swarm_dir = SEED_DIR / "swarm"
+            report = harness.build_report(swarm_dir=swarm_dir).as_dict()
+            if report.get("measured"):
+                report["served_from"] = "harness"
+                return report
+            # The harness ran and, finding no detection or anomaly output on this
+            # host, honestly measured nothing. That is a fact about this host, not
+            # about the product: the committed report below is a real run whose
+            # input hashes it names. Serve that, labelled, instead of an empty
+            # table under a heading that says "measured". (Confirmed on Render,
+            # 4 Sep 2026: the image carries no data/cache, so Eval sat empty.)
+            last_error = ("harness ran here and found no detection or anomaly output on "
+                          "this host; serving the committed run instead")
         except Exception as e:  # inputs missing, most likely
-            last_error = str(e)
+            last_error = "harness could not run here: " + str(e)
     else:
         last_error = "eval harness not available in this deployment"
     cached = SEED_DIR / "eval-report.json"
     if cached.exists():
         import json as _json
         report = _json.loads(cached.read_text(encoding="utf-8"))
-        report["served_from"] = "seed cache (harness could not run here: " + last_error + ")"
+        report["served_from"] = "seed cache (" + last_error + ")"
         return report
     raise HTTPException(503, last_error)
 

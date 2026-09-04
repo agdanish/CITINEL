@@ -112,12 +112,13 @@
           <circle cx="110" cy="110" r="86" fill="none" stroke="var(--ctn-color-border-hairline)" stroke-width="1"></circle>
           <path sc-camel-d="{{ ringArc }}" fill="none" stroke="var(--ctn-color-state-cited)" stroke-width="{{ ringWeight }}" stroke-linecap="butt"></path>
           <g>{{ ringNodes }}</g>
+          <!-- The dial's own figures live in the drawing, in its user units, so they scale
+               with the ring instead of sitting on top of it at a fixed 30px: on a narrow rail
+               the ring shrank and the timecode did not, and painted across the CITED and
+               ACTIONED nodes. Built in the script like the nodes, because a template hole
+               inside an SVG <text> renders as an HTML span, which SVG does not paint. -->
+          <g>{{ ringCentre }}</g>
         </svg>
-      <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;gap:2px">
-        <div style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.16em;color:var(--ctn-color-text-muted);text-align:center">{{ ringStateLabel }}</div>
-        <div style="font-family:var(--ctn-font-display);font-size:30px;line-height:1;color:var(--ctn-color-text-primary);font-variant-numeric:tabular-nums slashed-zero">{{ timecode }}</div>
-        <div style="font-family:var(--ctn-font-mono);font-size:9px;color:var(--ctn-color-text-muted);text-align:center">{{ ringSub }}</div>
-      </div>
       </div>
       <div style="flex:none;min-width:0">
         <div style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.14em;color:var(--ctn-color-text-muted)">FRAME {{ markIdx }}/{{ markTotal }} · {{ markAgent }}</div>
@@ -1306,10 +1307,33 @@ class Component extends DCLogic {
   }
   renderVals(){
     const s = this.state;
-    if (s.live === null) return Object.assign({}, this.loadingVals(), this.roleVals(), this.navVals());
-    const b = this.baseVals();
-    if (s.live === true) return Object.assign({}, b, this.roleVals(), this.navVals(), this.harvestVals(), this.liveDepthVals(b), this.liveStateVals(b), this.liveCloseVals());
-    return Object.assign({}, b, this.roleVals(), this.navVals(), this.harvestVals(), this.depthVals(b), this.stateVals(b), this.closeVals());
+    let v;
+    if (s.live === null) v = Object.assign({}, this.loadingVals(), this.roleVals(), this.navVals());
+    else {
+      const b = this.baseVals();
+      v = s.live === true
+        ? Object.assign({}, b, this.roleVals(), this.navVals(), this.harvestVals(), this.liveDepthVals(b), this.liveStateVals(b), this.liveCloseVals())
+        : Object.assign({}, b, this.roleVals(), this.navVals(), this.harvestVals(), this.depthVals(b), this.stateVals(b), this.closeVals());
+    }
+    v.ringCentre = this.ringCentre(v.ringStateLabel, v.timecode, v.ringSub);
+    return v;
+  }
+  // The dial's centre, drawn in the ring's own user units (viewBox 220) so it scales with
+  // the ring. 22 units for eight tabular digits keeps the timecode inside the ring's inner
+  // radius of 86 on every rail width; the HTML overlay it replaces was a fixed 30px that
+  // painted across the CITED and ACTIONED nodes whenever the rail was narrow.
+  ringCentre(label, time, sub){
+    const R = React;
+    // the sub-line breaks at its own separator so no part is wider than the inner ring:
+    // 'arc advances with the shuttle · real frames' is 43 mono characters, 194 units on
+    // one line against an inner diameter of 172
+    const parts = String(sub || '').split(' · ').filter(Boolean).slice(0, 2);
+    const subs = parts.map((p, i) => R.createElement('text', {key:'s' + i, x:110, y:132 + i * 9, textAnchor:'middle',
+      style:{fontFamily:'var(--ctn-font-mono)', fontSize:'7px', fill:'var(--ctn-color-text-muted)'}}, p));
+    return [
+      R.createElement('text', {key:'l', x:110, y:93, textAnchor:'middle', style:{fontFamily:'var(--ctn-font-display)', fontSize:'7.5px', letterSpacing:'0.16em', fill:'var(--ctn-color-text-muted)'}}, String(label || '')),
+      R.createElement('text', {key:'t', x:110, y:117, textAnchor:'middle', style:{fontFamily:'var(--ctn-font-display)', fontSize:'22px', fill:'var(--ctn-color-text-primary)', fontVariantNumeric:'tabular-nums slashed-zero'}}, String(time || ''))
+    ].concat(subs);
   }
   loadingVals(){
     const id = this.incId || 'the record';

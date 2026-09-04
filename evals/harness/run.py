@@ -47,6 +47,7 @@ CACHE = REPO_ROOT / "data" / "cache"
 DETECTIONS = CACHE / "detections.jsonl"
 ANOMALIES = CACHE / "anomalies.jsonl"
 LABELED = REPO_ROOT / "evals" / "labeled"
+SEED_SWARM = REPO_ROOT / "data" / "seed" / "swarm"
 
 #: MITRE ATT&CK Enterprise technique count for the version the corpus is
 #: tagged against. Used ONLY as a coverage denominator, and reported with the
@@ -123,9 +124,19 @@ class EvalReport:
     swarm_evaluated: bool = False
 
     def as_dict(self) -> dict[str, Any]:
+        runs = [m for m in self.measured if m.name == "incidents with a saved swarm run"]
+        scope = "deterministic layers (Sigma + anomaly scoring)"
+        if runs:
+            scope += (f", plus token and citation counts read from {runs[0].value} "
+                      f"saved swarm run{'s' if runs[0].value != 1 else ''}; verdict "
+                      "quality is not evaluated")
+        else:
+            scope += " only"
         return {
             "generated_at": self.generated_at,
-            "scope": "deterministic layers only (Sigma + anomaly scoring)",
+            "scope": scope,
+            # False means the swarm's verdicts have not been evaluated against ground
+            # truth. Counting its tokens and citations (above) does not change that.
             "swarm_evaluated": self.swarm_evaluated,
             "provenance": self.provenance,
             "measured": [m.as_dict() for m in self.measured],
@@ -133,7 +144,7 @@ class EvalReport:
         }
 
 
-def build_report() -> EvalReport:
+def build_report(swarm_dir: Path | None = None) -> EvalReport:
     detections = _read_jsonl(DETECTIONS)
     anomalies = _read_jsonl(ANOMALIES)
 
@@ -144,9 +155,9 @@ def build_report() -> EvalReport:
     # two runs quoting different numbers can be told apart from two runs of
     # different data.
     report.provenance = {
-        "detections_file": str(DETECTIONS.relative_to(REPO_ROOT)),
+        "detections_file": _rel(DETECTIONS),
         "detections_sha256": _sha256(DETECTIONS),
-        "anomalies_file": str(ANOMALIES.relative_to(REPO_ROOT)),
+        "anomalies_file": _rel(ANOMALIES),
         "anomalies_sha256": _sha256(ANOMALIES),
         "attack_version": ATTACK_VERSION,
     }
@@ -227,21 +238,93 @@ def build_report() -> EvalReport:
             "that could seed this).",
         ))
 
+    # -- the swarm, from what it recorded ------------------------------------
+    # The two entries below used to say the swarm was "not running" and "blocked
+    # on an API key". Both were true when written and false since 1 Sep 2026;
+    # the Overview beside this screen counts ten swarm runs on the ledger. What
+    # a saved run records is countable and is counted here: tokens, calls, and
+    # how many claims survived the citation gate. What it does NOT record is
+    # whether the verdict was right, and that stays unmeasured, said so below.
+    swarm = _swarm_results(swarm_dir)
+    if swarm:
+        n = len(swarm)
+        tok_in = sum(int((r.get("usage") or {}).get("input_tokens") or 0) for r in swarm)
+        tok_out = sum(int((r.get("usage") or {}).get("output_tokens") or 0) for r in swarm)
+        calls = sum(int(r.get("call_count") or 0) for r in swarm)
+        kept = sum(len(((r.get("verdict") or {}).get("claims") or [])) for r in swarm)
+        dropped = sum(len(r.get("dropped_claims") or []) for r in swarm)
+        ids = ", ".join(sorted(str(r.get("incident_id") or "?") for r in swarm))
+        report.measured.append(Measured(
+            "incidents with a saved swarm run", n, None, "incidents", note=ids))
+        report.measured.append(Measured(
+            "model calls across those runs", calls, None, "calls",
+            note=f"{calls / n:.1f} per incident" if n else ""))
+        report.measured.append(Measured(
+            "model tokens in (prompt)", tok_in, None, "tokens",
+            note=f"{tok_in / n:,.0f} per incident" if n else ""))
+        report.measured.append(Measured(
+            "model tokens out (completion)", tok_out, None, "tokens",
+            note=f"{tok_out / n:,.0f} per incident" if n else ""))
+        report.measured.append(Measured(
+            "claims that survived citation verification", kept, kept + dropped,
+            note="mechanical: every quoted span was found in the finding it cites; "
+                 "this is not a judgement of whether the verdict is right"))
+        report.unmeasured.append(Unmeasured(
+            "cost per incident in rupees",
+            "tokens per incident are measured above; turning them into money needs "
+            "the per-token price for the two model ids in use, which the harness "
+            "does not know and will not guess.",
+            "a price per million tokens for each model id, then tokens x price.",
+        ))
+    else:
+        report.unmeasured.append(Unmeasured(
+            "cost per incident",
+            "no saved swarm run was found on this host, so there are no recorded "
+            "token counts to sum.",
+            "a completed swarm run: its result file records input and output "
+            "tokens per call.",
+        ))
     report.unmeasured.append(Unmeasured(
-        "cost per incident",
-        "the agent swarm (Step 7) is not running, so no model tokens have been "
-        "spent and there is no per-incident cost to measure.",
-        "a completed swarm run; AgentCall already records input/output tokens "
-        "per call, so this becomes measurable the moment Step 7 executes.",
-    ))
-    report.unmeasured.append(Unmeasured(
-        "verdict quality / citation accuracy",
-        "requires the agent swarm (Step 7), which is blocked on an API key.",
-        "Step 7 running; the citation gate in agents/pipeline.py already "
-        "records verified-vs-dropped claims, which is the natural input.",
+        "verdict quality",
+        "no human-adjudicated verdicts exist to compare against. The citation "
+        "count above proves every surviving claim quotes its finding; it does "
+        "not prove the verdict drawn from those claims is correct.",
+        "an analyst-adjudicated verdict per investigated incident (correct, "
+        "partial, wrong) in evals/labeled/verdicts.jsonl, decided from the raw "
+        "evidence, not from the swarm's own narrative.",
     ))
 
     return report
+
+
+def _swarm_results(swarm_dir: Path | None) -> list[dict[str, Any]]:
+    """Every saved swarm result under `swarm_dir` (<INC>.json), or none.
+
+    The web route passes the deployment's artifacts directory; the CLI run
+    reads the committed seed so a regenerated seed report covers the same
+    runs a judge can open on the Replay screen.
+    """
+    root = swarm_dir if swarm_dir is not None else SEED_SWARM
+    if not root.is_dir():
+        return []
+    out = []
+    for p in sorted(root.glob("*.json")):
+        try:
+            d = json.loads(p.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        if isinstance(d, dict) and d.get("incident_id") and isinstance(d.get("usage"), dict):
+            out.append(d)
+    return out
+
+
+def _rel(path: Path) -> str:
+    """Repo-relative when the file is under the repo; the path itself otherwise,
+    so a deployment that keeps its inputs elsewhere still gets a report."""
+    try:
+        return str(path.relative_to(REPO_ROOT))
+    except ValueError:
+        return str(path)
 
 
 def _sha256(path: Path) -> str:

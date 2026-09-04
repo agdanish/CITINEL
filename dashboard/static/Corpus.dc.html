@@ -234,7 +234,7 @@
             </div>
           </sc-for>
           <sc-if value="{{ noCorpus }}" hint-placeholder-val="{{ false }}">
-            <div style="padding:18px 0;font-size:12px;color:var(--ctn-color-text-muted);line-height:1.5">Nothing in the collection matches. {{ corpusTotal }} accessioned artefacts are still there · clear the search.</div>
+            <div style="padding:18px 0;font-size:12px;color:var(--ctn-color-text-muted);line-height:1.5;text-wrap:pretty">{{ corpusEmptyNote }}</div>
           </sc-if>
         </div>
       </div>
@@ -394,6 +394,32 @@ level: medium`,
       this.setState({generatingAdvisory:false, advisoryStatus:'', advisory:r.data});
     });
   }
+  exportLive(){
+    const s = this.state, d = s.corpusData || {};
+    const rules = (d.fired || []).filter(f => s.sel[f.rule_id || f.id]);
+    if (!rules.length) return;
+    const now = new Date();
+    const manifest = {kind: 'manifest', product: 'CITINEL', corpus_release: d.release || null,
+      rules_shipped: !!d.rules_shipped, rules_in_packet: rules.length, distinct_rules_fired: d.distinct_rules_fired || null,
+      detections_total: d.detections_total || null, exported_at: now.toISOString(),
+      deployment: (function(){ try { return window.location.origin; } catch(e) { return ''; } })(),
+      note: 'one line per fired rule; counts are what fired on this deployment, not a claim about the rule'};
+    const lines = [JSON.stringify(manifest)].concat(rules.map(f => JSON.stringify({
+      kind: 'fired_rule', rule_id: f.rule_id || f.id || null, title: f.title || null, level: f.level || null,
+      techniques: f.techniques || [], count: f.count || 0, first_seen: f.first_seen || null, last_seen: f.last_seen || null,
+      hosts: f.hosts || [], incidents: f.incidents || [], example: f.example || null})));
+    const name = 'citinel-fired-rules-' + now.toISOString().slice(0, 10) + '-' + String(rules.length).padStart(2, '0') + '.jsonl';
+    try {
+      const blob = new Blob([lines.join('\n') + '\n'], {type: 'application/x-ndjson'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = name; a.rel = 'noopener';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 4000);
+      this.setState({exported: true, exportFile: name});
+    } catch (e) {
+      this.setState({exported: true, exportFile: 'could not write the packet: ' + (e && e.message ? e.message : e)});
+    }
+  }
   roleInit(){ try{ return (window.CitinelRole && window.CitinelRole.get()) || 'analyst'; }catch(e){ return 'analyst'; } }
   roleMount(){ if(window.CitinelRole) this.unsubRole = window.CitinelRole.subscribe(r=>{ if(r !== this.state.role) this.setState({role:r}); }); }
   componentWillUnmount(){ if(this.unsubRole) this.unsubRole(); }
@@ -433,7 +459,7 @@ level: medium`,
     const q = s.q.trim().toLowerCase();
 
     // Transform fired rules into corpus display items
-    const fired = (d.fired || []).map(f => {
+    const firedAll = (d.fired || []).map(f => {
       const techniques = (f.techniques || []).join(' ') || 'no technique ids';
       const hosts = (f.hosts || []).filter(h => h).join(', ') || 'no hosts';
       return {
@@ -450,9 +476,18 @@ level: medium`,
         selStyle: s.sel[f.rule_id||f.id] ? 'solid' : 'dashed',
         selBg: s.sel[f.rule_id||f.id] ? 'var(--ctn-color-surface-raised)' : 'transparent'
       };
-    }).filter(c => !q || (c.id+' '+c.name+' '+c.behaviour+' '+c.from).toLowerCase().includes(q));
+    });
+    // The ALL / RULES / PLAYBOOKS control filters the collection. Live, the
+    // collection is Sigma rules that fired (tag SIG); playbooks are accessioned
+    // only in demo mode, so PLAYBOOKS honestly shows nothing and says why. The
+    // buttons used to paint ALL as selected whatever the state held, so they
+    // looked dead.
+    const kindFilter = s.filter || 'ALL';
+    const inFilter = c => kindFilter === 'ALL' || (kindFilter === 'RULES' && c.tag === 'SIG') || (kindFilter === 'PLAYBOOKS' && c.tag === 'PB');
+    const fired = firedAll.filter(c => inFilter(c) && (!q || (c.id+' '+c.name+' '+c.behaviour+' '+c.from).toLowerCase().includes(q)));
 
     const selIds = Object.keys(s.sel).filter(k => s.sel[k]);
+    const selRules = (d.fired || []).filter(f => s.sel[f.rule_id || f.id]);
     return {
       ciso, analyst: !ciso,
       headNote: 'live corpus from ' + (d.release || 'release unknown') + ' · ' + this.fmtN(d.detections_total) + ' detections · ' + this.fmtN(d.distinct_rules_fired) + ' distinct rules fired',
@@ -460,9 +495,9 @@ level: medium`,
       // Accession bench is NOT LIVE (no swarm draft endpoint)
       pendingCount: '00',
       benchNote: 'The accession bench relies on incident-driven swarm drafts which are not persisted. This section is available in demo mode only.',
-      typeFilters: [{label:'ALL', pick:()=>this.setState({filter:'ALL'}), bg:'var(--ctn-color-surface-navy)', fg:'var(--ctn-color-text-on-navy)'},
-                    {label:'RULES', pick:()=>this.setState({filter:'RULES'}), bg:'transparent', fg:'var(--ctn-color-text-muted)'},
-                    {label:'PLAYBOOKS', pick:()=>this.setState({filter:'PLAYBOOKS'}), bg:'transparent', fg:'var(--ctn-color-text-muted)'}],
+      typeFilters: ['ALL','RULES','PLAYBOOKS'].map(f=>({label:f, pick: ()=>this.setState({filter:f}),
+        bg: kindFilter === f ? 'var(--ctn-color-surface-navy)' : 'transparent',
+        fg: kindFilter === f ? 'var(--ctn-color-text-on-navy)' : 'var(--ctn-color-text-muted)'})),
       pendingTabs: [],
       pending: [],
       benchEmpty: true,
@@ -482,21 +517,31 @@ level: medium`,
       ],
       corpus: fired,
       noCorpus: fired.length === 0,
+      corpusEmptyNote: kindFilter === 'PLAYBOOKS'
+        ? 'No playbooks are accessioned on the live corpus: the live collection is the ' + this.fmtN(firedAll.length) + ' Sigma rules that fired. Playbooks appear in demo mode (?state=normal).'
+        : 'Nothing in the collection matches. ' + this.fmtN(firedAll.length) + ' fired rules are still there · clear the search.',
 
-      // Export is DISABLED (no backend endpoint for bulk export)
+      // The packet is written by the browser from what this screen already holds:
+      // one JSON line per selected fired rule (id, title, level, techniques, fire
+      // count, first and last seen, hosts, incidents) after a manifest line naming
+      // the corpus release and the deployment. Rule bodies travel only where the
+      // Sigma tree is shipped (rules_shipped), which this deployment may not be;
+      // the manifest says which. No route is involved and nothing is uploaded.
       selCount: this.fmtN(selIds.length),
-      selBreak: selIds.length ? '(demo feature only)' : 'not available live',
-      hasSel: false,
-      packFill: '0%',
-      manifest: '',
-      packNote: 'Bulk export of rules is not available live. Individual rules can be cited via their incident link.',
-      exportDisabled: true,
-      exportLabel: 'LIVE EXPORT NOT AVAILABLE',
-      doExport: ()=>{},
+      selBreak: selIds.length ? 'of ' + this.fmtN(firedAll.length) + ' fired rules · JSON Lines' : 'select rules with ADD',
+      hasSel: selIds.length > 0,
+      packFill: firedAll.length ? Math.round(selIds.length / firedAll.length * 100) + '%' : '0%',
+      manifest: selRules.map(f => (f.rule_id || f.id) + '  ' + (f.title || 'untitled') + '  ' + this.fmtN(f.count) + ' fires').join('\n'),
+      packNote: d.rules_shipped
+        ? 'The packet is JSON Lines: a manifest line, then one line per selected rule with its id, title, level, techniques, fire count, first and last seen, hosts and incidents. It carries what fired, not the rule YAML; the Sigma tree is shipped on this deployment, so the id resolves to it. CITINEL writes the file; it does not upload it anywhere.'
+        : 'The packet is JSON Lines: a manifest line, then one line per selected rule with its id, title, level, techniques, fire count, first and last seen, hosts and incidents. Rule bodies are not shipped on this deployment (rules_shipped: no), so the packet carries what fired, not the YAML. CITINEL writes the file; it does not upload it anywhere.',
+      exportDisabled: selIds.length === 0,
+      exportLabel: selIds.length ? 'WRITE THE PACKET · JSONL' : 'SELECT RULES',
+      doExport: ()=>this.exportLive(),
       clearSel: ()=>this.setState({sel:{}, exported:false}),
-      exported: false,
-      exportFile: '',
-      exportNote: 'Export endpoint not implemented.',
+      exported: !!s.exported,
+      exportFile: s.exportFile || '',
+      exportNote: 'written by your browser to its downloads folder · ' + this.fmtN(selIds.length) + ' rule' + (selIds.length === 1 ? '' : 's') + ' plus a manifest · nothing was sent anywhere.',
 
       setAnalyst: ()=>{ this.setState({role:'analyst'}); if(window.CitinelRole) window.CitinelRole.set('analyst'); },
       setCiso: ()=>{ this.setState({role:'ciso'}); if(window.CitinelRole) window.CitinelRole.set('ciso'); },
@@ -509,6 +554,7 @@ level: medium`,
   }
   advisoryVals(){
     const s = this.state, a = s.advisory;
+    const armed = (function(){ try { const A = window.CITINEL_API; return !(A && A.armState) || !!A.armState().armed; } catch(e) { return true; } })();
     return {
       advisoryNote: !a ? 'not generated yet · a standing review of the corpus, not per-incident'
         : a.status === 'ok' ? (a.summary || 'reviewed · nothing further to add')
@@ -518,8 +564,11 @@ level: medium`,
       // one hole, one value: the {{ a || b }} form the markup used before is not
       // something the DC resolver implements, so it rendered as literal text
       advisoryLine: s.advisoryStatus || (a ? 'last reviewed ' + String(a.written_at || '').slice(0, 16).replace('T', ' ') + 'Z' : ''),
-      genAdvisory: () => this.genAdvisory(),
-      advisoryBtnLabel: s.generatingAdvisory ? 'ASKING…' : (a ? 'REVIEW AGAIN' : 'REVIEW CORPUS COVERAGE'),
+      // A read-only device cannot ask the advisor (the route needs the operator token),
+      // so the button says what to do instead of failing after the click: it opens
+      // Settings, where the device is armed. The 401 sentence stays as the backstop.
+      genAdvisory: () => armed ? this.genAdvisory() : (window.location.href = 'Settings.dc.html'),
+      advisoryBtnLabel: s.generatingAdvisory ? 'ASKING…' : !armed ? 'ARM THIS DEVICE TO REVIEW' : (a ? 'REVIEW AGAIN' : 'REVIEW CORPUS COVERAGE'),
       advisoryStatus: s.advisoryStatus || '',
     };
   }
@@ -527,7 +576,7 @@ level: medium`,
     return {
       pendingCount: '··', benchNote: 'Reading from citinel-web.', typeFilters: [], pendingTabs: [], pending: [],
       benchEmpty: true, emptyTitle: 'READING THE CORPUS FROM CITINEL-WEB', emptyBody: 'Nothing authored is shown while loading, so a scripted card is never mistaken for a real one.',
-      corpusNote: '· of · rules', corpusTally: [], corpus: [], noCorpus: false, corpusTotal: 0,
+      corpusNote: '· of · rules', corpusTally: [], corpus: [], noCorpus: false, corpusTotal: 0, corpusEmptyNote: '',
       selCount: '··', packNote: 'Reading', exportDisabled: true, exportLabel: 'READING', exported: false,
       advisoryNote: 'reading…', advisoryGaps: [], advisoryWrittenNote: '', genAdvisory: ()=>{}, advisoryBtnLabel: '', advisoryStatus: ''
     };
@@ -642,6 +691,7 @@ level: medium`,
         selBg: s.sel[c.id] ? 'var(--ctn-color-surface-raised)' : 'transparent'
       })),
       noCorpus: corpus.length === 0,
+      corpusEmptyNote: 'Nothing in the collection matches. ' + this.corpusDefs.length + ' accessioned artefacts are still there · clear the search.',
 
       selCount: String(selIds.length).padStart(2,'0'),
       selBreak: selIds.length ? nRules+' rule'+(nRules===1?'':'s')+' · '+nPlay+' playbook'+(nPlay===1?'':'s') : 'nothing selected',
@@ -665,7 +715,7 @@ level: medium`,
     let m = 'normal';
     try{ m = new URLSearchParams(window.location.search).get('state') || 'normal'; }catch(e){}
     if(m === 'firstrun') return {
-      benchEmpty:true, pending:[], pendingTabs:[], pendingCount:'00', corpus:[], noCorpus:true, corpusTotal:0,
+      benchEmpty:true, pending:[], pendingTabs:[], pendingCount:'00', corpus:[], noCorpus:true, corpusTotal:0, corpusEmptyNote:'Nothing in the collection yet.',
       corpusNote:'0 accessioned on this install',
       corpusTally:[{k:'sigma rules',v:'3,302'},{k:'playbooks',v:'44'},{k:'from our own incidents',v:'0'},{k:'att&ck techniques',v:'29 techniques observed'}],
       emptyTitle:'NOTHING COLLECTED YET · THE FLYWHEEL HAS NOT TURNED',

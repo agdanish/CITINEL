@@ -131,17 +131,21 @@
       </div>
       <div style="flex:1;min-height:0;overflow-y:auto;padding:0 22px 14px;display:flex;flex-direction:column;gap:8px">
         <sc-for list="{{ agents }}" as="a" hint-placeholder-count="7">
-          <div data-row style="display:flex;align-items:center;gap:14px;padding:10px 14px;background:var(--ctn-color-surface-panel);border:1px solid var(--ctn-color-border-hairline);border-left:2px solid {{ a.edge }};border-radius:6px;min-width:0">
+          <div data-row style="display:flex;align-items:center;gap:14px;padding:10px 14px;background:var(--ctn-color-surface-panel);border:1px solid var(--ctn-color-border-hairline);border-left:2px solid {{ a.edge }};border-radius:6px;min-width:0;overflow:hidden">
             <div style="width:26px;flex:none;display:flex;align-items:center;justify-content:center">{{ a.lamp }}</div>
-            <div style="width:150px;flex:none;min-width:0">
+            <div style="width:150px;flex:0 1 auto;min-width:110px">
               <div style="font-size:13.5px;color:var(--ctn-color-text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ a.name }}</div>
               <div style="font-family:var(--ctn-font-display);font-size:8.5px;letter-spacing:0.08em;color:{{ a.stateFg }};margin-top:2px">{{ a.state }}</div>
             </div>
-            <svg viewBox="0 0 300 40" preserveAspectRatio="none" style="flex:1;min-width:0;height:40px;display:block">
+            <svg viewBox="0 0 300 40" preserveAspectRatio="none" style="flex:1 1 80px;min-width:40px;height:40px;display:block">
               <line x1="0" y1="20" x2="300" y2="20" stroke="var(--ctn-color-border-hairline)" stroke-width="1"></line>
               <polyline data-trace sc-camel-points="{{ a.trace }}" fill="none" stroke="{{ a.traceColor }}" stroke-width="1.4"></polyline>
             </svg>
-            <div style="width:clamp(189px, 8.44rem + 9.38vw, 270px);flex:none;min-width:0">
+            <!-- flex:0 1 auto, not none: the fixed columns summed to more than the middle
+                 panel holds below ~1500px, the trace collapsed to nothing, and the RUNS /
+                 CALLS column at the end painted over the panel's own border. This column
+                 yields first and ellipsizes; the trace keeps 56px; the count stays inside. -->
+            <div style="width:clamp(189px, 8.44rem + 9.38vw, 270px);flex:0 1 auto;min-width:120px">
               <div style="font-family:var(--ctn-font-mono);font-size:11.5px;color:var(--ctn-color-text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ a.doing }}</div>
               <div style="font-size:11px;color:var(--ctn-color-text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ a.detail }}</div>
             </div>

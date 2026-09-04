@@ -121,7 +121,7 @@
     <aside data-reflow-rail style="width:clamp(176px, 7.90rem + 8.72vw, 252px);flex:none;box-sizing:border-box;border-right:1px solid var(--ctn-color-border-hairline);background:var(--ctn-color-surface-panel);display:flex;flex-direction:column;min-height:0;overflow-y:auto;padding:13px 16px 16px;gap:14px">
       <div style="min-width:0">
         <div style="font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.14em;color:var(--ctn-color-text-muted)">QUERY THE REEL</div>
-        <input value="{{ q }}" onChange="{{ onQ }}" placeholder="actor, object, locator, hash…" style="width:100%;box-sizing:border-box;font-family:var(--ctn-font-mono);font-size:12px;letter-spacing:0;padding:9px 11px;margin-top:7px;background:var(--ctn-color-surface-well);border:1px solid var(--ctn-color-border-strong);border-radius:6px;color:var(--ctn-color-text-primary)">
+        <input value="{{ q }}" onChange="{{ onQ }}" placeholder="frame number, actor, object, locator, hash…" style="width:100%;box-sizing:border-box;font-family:var(--ctn-font-mono);font-size:12px;letter-spacing:0;padding:9px 11px;margin-top:7px;background:var(--ctn-color-surface-well);border:1px solid var(--ctn-color-border-strong);border-radius:6px;color:var(--ctn-color-text-primary)">
         <div style="font-family:var(--ctn-font-mono);font-size:11px;color:var(--ctn-color-text-muted);margin-top:6px">{{ resultNote }}</div>
       </div>
 
@@ -261,7 +261,8 @@
           <span data-token style="font-family:var(--ctn-font-mono);font-size:11px;color:{{ verifyFg }}">{{ verifyMsg }}</span>
           <div style="width:96px;height:3px;background:var(--ctn-color-surface-well);border-radius:2px;overflow:hidden"><div style="height:100%;width:{{ verifyPct }};background:var(--ctn-color-text-secondary);transition:width 0.12s linear"></div></div>
           <x-import component-from-global-scope="CITINELDesignSystem_fdfd66.Button" variant="secondary" size="sm" on-click="{{ verify }}" hint-size="130px,30px">WALK THE CHAIN</x-import>
-          <x-import component-from-global-scope="CITINELDesignSystem_fdfd66.Button" variant="ghost" size="sm" hint-size="140px,30px">EXPORT REEL · JSONL</x-import>
+          <x-import component-from-global-scope="CITINELDesignSystem_fdfd66.Button" variant="ghost" size="sm" on-click="{{ exportReel }}" hint-size="140px,30px">EXPORT REEL · JSONL</x-import>
+          <span data-token style="font-family:var(--ctn-font-mono);font-size:10.5px;color:var(--ctn-color-text-muted);white-space:nowrap">{{ exportMsg }}</span>
         </div>
       </div>
     </section>
@@ -409,6 +410,10 @@ class Component extends DCLogic {
       role:'row', 'aria-rowindex': idx + 1,
       style:{display:'grid', gridTemplateColumns:'64px 84px 106px 128px 1fr', gap:'0 14px', alignItems:'start',
         padding:'9px 0', borderBottom:'1px solid var(--ctn-color-border-hairline)', background:r.bg, minWidth:0,
+        // the frame the ribbon parked on: the table's own ground plus the reel's amber
+        // edge, the mark a milestone carries on the ribbon. A filled row in a lighter
+        // grey read as a different table, not a selected frame.
+        boxShadow: r.focus ? 'inset 3px 0 0 var(--ctn-color-state-cited)' : 'none',
         height:'100%', boxSizing:'border-box', overflow:'hidden'}
     }, [
       R.createElement('span', {key:'seq', role:'cell', 'data-token':'', style:{fontFamily:'var(--ctn-font-mono)', fontSize:'11.5px', color:r.seqFg, fontVariantNumeric:'tabular-nums'}}, r.seq),
@@ -764,13 +769,53 @@ class Component extends DCLogic {
                 kindsAll, actorsAll, kindCounts, actorCounts, recorded };
     return this._d;
   }
+  /* The query, read the way a reader means it. One substring test over record, actor,
+     kind, sequence AND the hash strings meant "339" matched frame 339, frame 1339, and
+     every frame whose sha-256 happened to contain those digits: 32 of 5,051, which is
+     not a search result, it is noise wearing a count. A bare number is a frame number,
+     matched exactly, or that number as a whole token in the record (count=339, a port,
+     a line number). Six or more hex characters is a hash fragment and matches only the
+     hashes. Anything else is text and matches record, actor and kind, never the hashes. */
+  frameMatches(e, q){
+    if (!q) return true;
+    if (/^\d+$/.test(q)) {
+      if (String(e.seq) === q) return true;
+      return new RegExp('(^|[^0-9a-z])' + q + '(?![0-9a-z])', 'i').test(String(e.record || ''));
+    }
+    if (/^[0-9a-f]{6,}$/.test(q)) {
+      return String(e.hashFull || ((e.prev || '') + ' ' + (e.hash || ''))).toLowerCase().includes(q);
+    }
+    return (String(e.record || '') + ' ' + String(e.actor || '') + ' ' + String(e.kind || '')).toLowerCase().includes(q);
+  }
+  /* EXPORT REEL · JSONL: the reel as served, one frame per line, written by the browser.
+     The button had no handler at all. Live, the lines are the service's own entries
+     (seq, ts, actor, kind, case_id, payload, prev_hash, entry_hash) so the chain can be
+     re-walked offline; the authored fallback reel is exported with scripted: true on
+     every line, because a synthetic hash must never leave this screen looking real. */
+  exportReel(){
+    const live = this.state.live === true && Array.isArray(this.state.chain) && this.state.chain.length > 0;
+    const lines = live
+      ? this.state.chain.map(e => JSON.stringify(e))
+      : this.entries.map(e => JSON.stringify({seq: e.seq, t: e.t, kind: e.kind, actor: e.actor, record: e.record,
+          prev_hash: e.prev, entry_hash: e.hash, scripted: true}));
+    const name = this.incId + '-reel-' + lines.length + '-frames' + (live ? '' : '-scripted') + '.jsonl';
+    try {
+      const blob = new Blob([lines.join('\n') + '\n'], {type: 'application/x-ndjson'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = name; a.rel = 'noopener';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 4000);
+      this.setState({exportMsg: 'written ' + name + ' · ' + this.fmtN(lines.length) + ' frames' + (live ? ' as served' : ' · scripted')});
+    } catch (e) {
+      this.setState({exportMsg: 'could not write the reel: ' + (e && e.message ? e.message : e)});
+    }
+  }
   liveVals(){
     const st = this.state, d = this.liveDerived(), entries = d.entries;
     const anyKind = Object.values(st.kinds).some(Boolean);
     const anyActor = Object.values(st.actors).some(Boolean);
     const q = st.q.trim().toLowerCase();
-    const match = e => (!anyKind || st.kinds[e.kind]) && (!anyActor || st.actors[e.actor]) &&
-      (!q || (e.record+' '+e.actor+' '+e.kind+' '+e.seq+' '+e.hash).toLowerCase().includes(q));
+    const match = e => (!anyKind || st.kinds[e.kind]) && (!anyActor || st.actors[e.actor]) && this.frameMatches(e, q);
     const rows = entries.filter(match);
     const rv = this.ribbonVals(entries.filter(e=>e.link), e => e.ms);
     const firstSeq = entries.length ? String(Math.min(...entries.map(e=>e.seqN))) : '—';
@@ -818,7 +863,7 @@ class Component extends DCLogic {
         seq:e.seq, t:e.t, tFull:e.tFull, kind:e.kind, actor:e.actor, record:e.record, payloadFull:e.payloadFull,
         hash:e.hash, prev:e.prev, hashFull:e.hashFull,
         glyph:this.glyph(e.kind, false),
-        bg: st.focus === e.seq ? 'var(--ctn-color-surface-raised)' : 'transparent',
+        bg: 'transparent', focus: st.focus === e.seq,
         seqFg: e.link ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-text-muted)'
       })),
       noRows: rows.length === 0,
@@ -826,6 +871,7 @@ class Component extends DCLogic {
 
       verify: ()=>this.walk(),
       verifyPct: st.verifying ? '50%' : (vr || st.verifyError) ? '100%' : '0%',
+      exportReel: ()=>this.exportReel(), exportMsg: st.exportMsg || '',
       verifyMsg: st.verifying ? 'walking the chain on the service…'
         : vr ? String(vr.message || (vr.intact ? 'chain intact' : 'chain broken')) + witnessNote
         : st.verifyError ? 'chain walk failed · ' + st.verifyError
@@ -866,7 +912,8 @@ class Component extends DCLogic {
       q: this.state.q, onQ: e=>this.setState({q:e.target.value}), resultNote: 'reading…',
       kindFilters: [], actorFilters: [], clearAll: ()=>this.setState({q:'', kinds:{}, actors:{}, focus:null}),
       rows: [], noRows: false, noRowsNote: '', exceptions: [], exceptionNote: '',
-      verify: ()=>{}, verifyPct: '0%', verifyMsg: 'waiting for the reel', verifyFg: 'var(--ctn-color-text-muted)'
+      verify: ()=>{}, verifyPct: '0%', verifyMsg: 'waiting for the reel', verifyFg: 'var(--ctn-color-text-muted)',
+      exportReel: ()=>{}, exportMsg: ''
     }, this.asideVals());
   }
 
@@ -878,8 +925,7 @@ class Component extends DCLogic {
     const anyKind = Object.values(st.kinds).some(Boolean);
     const anyActor = Object.values(st.actors).some(Boolean);
     const q = st.q.trim().toLowerCase();
-    const match = e => (!anyKind || st.kinds[e.kind]) && (!anyActor || st.actors[e.actor]) &&
-      (!q || (e.record+' '+e.actor+' '+e.kind+' '+e.seq+' '+e.hash).toLowerCase().includes(q));
+    const match = e => (!anyKind || st.kinds[e.kind]) && (!anyActor || st.actors[e.actor]) && this.frameMatches(e, q);
     const rows = this.entries.filter(match);
     const rv = this.ribbonVals(this.entries.filter(e=>e.link), e => this.mins(e.t)*1000);
 
@@ -919,7 +965,7 @@ class Component extends DCLogic {
         seq:e.seq, t:e.t, tFull:e.t+' IST', kind:e.kind, actor:e.actor, record:e.record, payloadFull:e.record,
         hash:e.hash, prev:e.prev, hashFull:e.prev+' → '+e.hash,
         glyph:this.glyph(e.kind, false),
-        bg: st.focus === e.seq ? 'var(--ctn-color-surface-raised)' : 'transparent',
+        bg: 'transparent', focus: st.focus === e.seq,
         seqFg: e.link ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-text-muted)'
       })),
       noRows: rows.length === 0,
@@ -937,6 +983,7 @@ class Component extends DCLogic {
         }, 90);
       },
       verifyPct: st.vpos+'%',
+      exportReel: ()=>this.exportReel(), exportMsg: st.exportMsg || '',
       verifyMsg: st.verifying ? 'walking '+Math.round(st.vpos/100*this.entries.length)+'/'+this.entries.length+' links…'
         : st.verified ? 'chain intact · 27 links, no gap, no re-write' : 'last walked 23:15 IST',
       verifyFg: st.verified ? 'var(--ctn-color-ok)' : 'var(--ctn-color-text-muted)'

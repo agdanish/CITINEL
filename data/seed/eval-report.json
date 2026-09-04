@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-08-31T10:43:12.965546+00:00",
-  "scope": "deterministic layers only (Sigma + anomaly scoring)",
+  "generated_at": "2026-09-04T14:36:08.563688+00:00",
+  "scope": "deterministic layers (Sigma + anomaly scoring), plus token and citation counts read from 2 saved swarm runs; verdict quality is not evaluated",
   "swarm_evaluated": false,
   "provenance": {
     "detections_file": "data/cache/detections.jsonl",
@@ -65,6 +65,38 @@
       "value": 0,
       "unit": "sha256",
       "note": "a47b8da3ac267809e1610d706c3f9b1a...  (re-running on the same corpus must reproduce this exactly)"
+    },
+    {
+      "name": "incidents with a saved swarm run",
+      "value": 2,
+      "unit": "incidents",
+      "note": "INC-0416, INC-0417"
+    },
+    {
+      "name": "model calls across those runs",
+      "value": 12,
+      "unit": "calls",
+      "note": "6.0 per incident"
+    },
+    {
+      "name": "model tokens in (prompt)",
+      "value": 212586,
+      "unit": "tokens",
+      "note": "106,293 per incident"
+    },
+    {
+      "name": "model tokens out (completion)",
+      "value": 57462,
+      "unit": "tokens",
+      "note": "28,731 per incident"
+    },
+    {
+      "name": "claims that survived citation verification",
+      "value": 14,
+      "unit": "",
+      "denominator": 14,
+      "rate": 1.0,
+      "note": "mechanical: every quoted span was found in the finding it cites; this is not a judgement of whether the verdict is right"
     }
   ],
   "unmeasured": [
@@ -81,16 +113,16 @@
       "required_to_measure": "the labeled set above, plus an independently-sourced list of the attacks present in the corpus (BOTS v1 has published solutions that could seed this)."
     },
     {
-      "name": "cost per incident",
+      "name": "cost per incident in rupees",
       "status": "UNMEASURED",
-      "reason": "the agent swarm (Step 7) is not running, so no model tokens have been spent and there is no per-incident cost to measure.",
-      "required_to_measure": "a completed swarm run; AgentCall already records input/output tokens per call, so this becomes measurable the moment Step 7 executes."
+      "reason": "tokens per incident are measured above; turning them into money needs the per-token price for the two model ids in use, which the harness does not know and will not guess.",
+      "required_to_measure": "a price per million tokens for each model id, then tokens x price."
     },
     {
-      "name": "verdict quality / citation accuracy",
+      "name": "verdict quality",
       "status": "UNMEASURED",
-      "reason": "requires the agent swarm (Step 7), which is blocked on an API key.",
-      "required_to_measure": "Step 7 running; the citation gate in agents/pipeline.py already records verified-vs-dropped claims, which is the natural input."
+      "reason": "no human-adjudicated verdicts exist to compare against. The citation count above proves every surviving claim quotes its finding; it does not prove the verdict drawn from those claims is correct.",
+      "required_to_measure": "an analyst-adjudicated verdict per investigated incident (correct, partial, wrong) in evals/labeled/verdicts.jsonl, decided from the raw evidence, not from the swarm's own narrative."
     }
   ]
 }

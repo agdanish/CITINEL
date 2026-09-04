@@ -14,6 +14,20 @@
         "8000"
       ],
       "port": 8000
+    },
+    {
+      "name": "citinel-dashboard-8099",
+      "runtimeExecutable": "backend/.venv/bin/python",
+      "runtimeArgs": [
+        "-m",
+        "uvicorn",
+        "citinel.web.app:app",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "8099"
+      ],
+      "port": 8099
     }
   ]
 }

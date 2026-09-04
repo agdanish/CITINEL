@@ -521,11 +521,23 @@ class Component extends DCLogic {
       signFg: s.signed ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-text-muted)',
       signNote: s.signed
         ? 'This sign-off is NOT recorded on the ledger; it is local to this session.'
-        : allRead ? 'all open incidents sighted' : 'sight the ' + (inSection.length-Object.keys(s.read).filter(k=>s.read[k]).length) + ' remaining',
+        : allRead ? 'all open incidents sighted · signing is local to this session, not a ledger frame'
+        : 'sight the ' + (inSection.length-Object.keys(s.read).filter(k=>s.read[k]).length) + ' remaining · local to this session',
       notSigned: !s.signed, signed: s.signed, signSeq: '—',
-      signDisabled: !allRead,
-      signLabel: allRead ? 'NOT PERSISTED · NO HANDOVER ROUTE' : 'SIGHT ALL ' + inSection.length,
-      sign: ()=>{ if(allRead) this.setState({signed:true, signedAt:new Date(s.now).toISOString().slice(11,16)}); }
+      // Two steps, one button, both local to this session. SIGHT ALL marks every
+      // transferring incident as seen by the incoming analyst (each card's own SIGHT
+      // does one at a time); once all are sighted the same button signs the register.
+      // It used to be disabled while labelled SIGHT ALL, so it read as a control and
+      // did nothing. Neither step writes a ledger frame: there is no register route
+      // yet, and the note beside the button says so instead of the label pretending.
+      signDisabled: inSection.length === 0,
+      signLabel: allRead ? 'SIGN THE REGISTER · THIS SESSION' : 'SIGHT ALL ' + inSection.length,
+      sign: ()=>{
+        if (allRead) { this.setState({signed:true, signedAt:new Date(s.now).toISOString().slice(11,16)}); return; }
+        const all = {};
+        inSection.forEach(i => { all[i.id] = true; });
+        this.setState(x => ({read: Object.assign({}, x.read, all)}));
+      }
     };
   }
   loadingVals(){

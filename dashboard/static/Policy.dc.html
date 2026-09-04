@@ -115,8 +115,9 @@
         </div>
       </sc-if>
       <div style="flex:none;display:grid;grid-template-columns:120px 180px 1fr 120px 100px;gap:0 16px;padding:11px 22px 7px;border-bottom:1px solid var(--ctn-color-border-strong);font-family:var(--ctn-font-display);font-size:8px;letter-spacing:0.12em;color:var(--ctn-color-text-muted);min-width:0">
-        <span>CLAUSE</span><span>ACTION CLASS</span><span>DESCRIPTION</span><span>TIER</span><span>DETAILS</span>
+        <span>CLAUSE</span><span>ACTION CLASS</span><span>DESCRIPTION</span><span>TIER</span><span>{{ detailsHead }}</span>
       </div>
+      <div style="flex:none;padding:6px 22px 0;font-size:11px;color:var(--ctn-color-text-muted);line-height:1.4">{{ depthNote }}</div>
       <div style="flex:1;min-height:0;overflow-y:auto;padding:0 22px 18px">
         <sc-if value="{{ isLoading }}" hint-placeholder-val="{{ true }}">
           <div style="padding:20px;text-align:center;color:var(--ctn-color-text-muted);font-size:13px">Reading policy from the backend...</div>
@@ -128,10 +129,10 @@
               <div style="font-size:12px;color:var(--ctn-color-text-primary)">{{ c.action_class }}</div>
               <div style="font-size:13px;color:var(--ctn-color-text-primary);line-height:1.5;text-wrap:pretty">{{ c.description }}</div>
               <div style="font-size:11px;color:var(--ctn-color-text-muted);text-transform:uppercase;letter-spacing:0.05em">{{ c.tier }}</div>
-              <div style="font-size:10px;color:var(--ctn-color-text-muted);line-height:1.4">
-                <div>{{ c.approvalLabel }}</div>
-                <div style="margin-top:3px">{{ c.maxAssetsLabel }}</div>
-                <div style="margin-top:3px">{{ c.reversibleLabel }}</div>
+              <div style="font-size:10px;color:var(--ctn-color-text-muted);line-height:1.4;text-wrap:pretty">
+                <div>{{ c.detailA }}</div>
+                <div style="margin-top:3px">{{ c.detailB }}</div>
+                <div style="margin-top:3px">{{ c.detailC }}</div>
               </div>
             </div>
           </sc-for>
@@ -154,6 +155,7 @@ class Component extends DCLogic {
   constructor(p){
     super(p);
     this.state = {
+      role: this.roleInit(),
       live: null,
       liveError: null,
       policy: null,
@@ -161,8 +163,15 @@ class Component extends DCLogic {
       rev: 1
     };
   }
+  // The ANALYST / CISO control wrote the role to localStorage and nothing on this
+  // screen read it back, so the buttons never changed and neither did the page.
+  // Same three hooks every other screen uses (role.js): read once, subscribe, unsubscribe.
+  roleInit(){ try{ return (window.CitinelRole && window.CitinelRole.get()) || 'analyst'; }catch(e){ return 'analyst'; } }
+  roleMount(){ if(window.CitinelRole) this.unsubRole = window.CitinelRole.subscribe(r=>{ if(r !== this.state.role) this.setState({role:r}); }); }
+  componentWillUnmount(){ if(this.unsubRole) this.unsubRole(); }
 
   componentDidMount(){
+    this.roleMount();
     const API = window.CITINEL_API;
     if (!API) {
       this.setState({live:false, liveError:'API not loaded'});
@@ -199,20 +208,34 @@ class Component extends DCLogic {
       {tier: 'AUTONOMOUS', n: String(tierCounts.autonomous).padStart(2, '0'), style: 'solid', border: 'var(--ctn-color-text-primary)'}
     ];
 
+    const ciso = s.role === 'ciso';
+    // Two depths of the same rulebook. Analyst depth keeps the three technical lines
+    // per clause. CISO depth answers the one question that seat asks of a clause:
+    // who decides, in a sentence, derived from the same fields, never authored.
+    const whoDecides = c => {
+      const tier = String(c.tier || 'shadow').toLowerCase();
+      const cap = Number(c.max_assets_auto || 0);
+      if (c.approval === 'always' || tier === 'shadow') return 'A named human, every time. The system proposes; it never acts here on its own.';
+      if (tier === 'assist') return cap > 0
+        ? 'Runs itself on up to ' + cap + ' asset' + (cap === 1 ? '' : 's') + '; beyond that a named human decides.' + (c.reversible ? ' Reversible with a rollback token.' : ' Not reversible.')
+        : 'Every asset escalates to a named human.' + (c.reversible ? ' Reversible with a rollback token.' : ' Not reversible.');
+      return 'Runs without approval.' + (c.reversible ? ' Reversible with a rollback token.' : ' Not reversible: the ledger frame is the only record.');
+    };
     const clauseItems = clauses.map(c => ({
       clause: c.clause || '',
       action_class: c.action_class || '',
       description: c.description || '',
       tier: String(c.tier || 'shadow').toUpperCase(),
-      approvalLabel: (c.approval === 'always') ? 'Approval: always required' : 'Approval: never required',
+      detailA: ciso ? whoDecides(c) : ((c.approval === 'always') ? 'Approval: always required' : 'Approval: never required'),
       // 0 is a cap of ZERO, not the absence of a cap: gate.py escalates when
       // assets_affected > max_assets_auto, so 0 means any asset needs a human.
       // 'No auto-limit' said the exact opposite on a screen a CISO reads.
-      maxAssetsLabel: (c.max_assets_auto > 0) ? 'Max assets auto: ' + c.max_assets_auto : 'Automatic cap: 0 · any asset escalates',
-      reversibleLabel: c.reversible ? 'Reversible: yes' : 'Reversible: no'
+      detailB: ciso ? '' : ((c.max_assets_auto > 0) ? 'Max assets auto: ' + c.max_assets_auto : 'Automatic cap: 0 · any asset escalates'),
+      detailC: ciso ? '' : (c.reversible ? 'Reversible: yes' : 'Reversible: no')
     }));
 
-    let summary = 'CITINEL response policy version ' + (policy.version || '?') + '.';
+    const sha = String(policy.policy_sha256 || '');
+    let summary = 'CITINEL response policy version ' + (policy.version || '?') + (sha ? ' · sha256 ' + sha.slice(0, 12) + '…' : '') + '.';
     if (clauseItems.length > 0) {
       summary += ' ' + tierCounts.autonomous + ' action classes autonomous, ' + tierCounts.assist + ' assist, ' + tierCounts.shadow + ' shadow.';
     }
@@ -231,15 +254,20 @@ class Component extends DCLogic {
       fallbackConsequence: 'The Policy page will show an error message instead of the live rulebook. Check the backend service status.',
       summary: summary,
       tierTally: tierTally,
-      policyNote: 'This rulebook is served by the backend and controls all automated and gated actions. Changes are deployed via the backend, not this console.',
+      policyNote: ciso
+        ? 'Every automated or gated action is checked against this rulebook, and the ledger records the policy hash that gated it. Nothing on this screen can change it: a change is a signed file, a commit and a deploy, so the rulebook a judge reads is the one the gate ran.'
+        : 'This rulebook is served by the backend and controls all automated and gated actions. Changes are deployed via the backend, not this console.',
       clauses: clauseItems,
-      footerNote: 'The live policy is read-only in this view. To change a clause, tier, or approval rule, deploy a new policy configuration to the backend.',
-      setAnalyst: ()=>{ if(window.CitinelRole) window.CitinelRole.set('analyst'); },
-      setCiso: ()=>{ if(window.CitinelRole) window.CitinelRole.set('ciso'); },
-      analystBg: 'var(--ctn-color-surface-navy)',
-      analystFg: 'var(--ctn-color-text-on-navy)',
-      cisoBg: 'transparent',
-      cisoFg: 'var(--ctn-color-text-muted)'
+      detailsHead: ciso ? 'WHO DECIDES' : 'DETAILS',
+      depthNote: ciso ? 'CISO depth · who decides, per clause · switch to ANALYST for the caps and flags' : 'ANALYST depth · approval, automatic cap and reversibility per clause',
+      footerNote: 'The live policy is read-only in this view, on purpose: there is no editor and no write route. To add or change a clause, edit policies/citinel-policy.yaml in the repository, commit, and deploy; the service reads the file at start and every gate decision cites its sha256 on the ledger.',
+      ciso, analyst: !ciso,
+      setAnalyst: ()=>{ this.setState({role:'analyst'}); if(window.CitinelRole) window.CitinelRole.set('analyst'); },
+      setCiso: ()=>{ this.setState({role:'ciso'}); if(window.CitinelRole) window.CitinelRole.set('ciso'); },
+      analystBg: ciso ? 'transparent' : 'var(--ctn-color-surface-navy)',
+      analystFg: ciso ? 'var(--ctn-color-text-muted)' : 'var(--ctn-color-text-on-navy)',
+      cisoBg: ciso ? 'var(--ctn-color-surface-navy)' : 'transparent',
+      cisoFg: ciso ? 'var(--ctn-color-text-on-navy)' : 'var(--ctn-color-text-muted)'
     };
   }
 }
