@@ -927,7 +927,10 @@ class Component extends DCLogic {
         + ((cx.primitives_used||[]).length > 1 ? ' · tavily ' + cx.primitives_used.join(' + ') : '')
         + ' · gathered ' + String(cx.gathered_at||'').slice(0,16).replace('T',' ') + 'Z · context only, never evidence: claims cite the record\'s own findings' : 'nothing gathered yet · the open web has not been asked about these techniques',
       contextGatherable: !!s.verdict, gatherContext: ()=>this.gatherContext(),
-      gatherLabel: s.gathering ? 'SEARCHING…' : (cx ? 'GATHER AGAIN' : 'GATHER PUBLIC CONTEXT'), gatherStatus: s.gatherStatus || (cx ? cx.credits_used + ' credit' + (cx.credits_used===1?'':'s') + ' spent last time' : '')
+      // the button keeps one name in every state so it can be found by name; whether a
+      // gather already exists, and what it cost, is said beside it, not by renaming it
+      gatherLabel: s.gathering ? 'SEARCHING…' : 'GATHER PUBLIC CONTEXT',
+      gatherStatus: s.gatherStatus || (cx ? 'last gathered ' + String(cx.gathered_at||'').slice(0,10) + ' · ' + cx.credits_used + ' credit' + (cx.credits_used===1?'':'s') + ' spent · gathering again replaces it and spends more' : '')
     };
   }
   runSwarm(){

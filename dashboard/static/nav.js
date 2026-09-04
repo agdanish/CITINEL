@@ -90,8 +90,15 @@
       '#citinel-rail a i svg{display:block}',
       '#citinel-rail[data-state=closed] a span{display:none}',
       '#citinel-rail[data-state=closed] a{padding:0 12px}',
-      '#citinel-rail a.arm{margin-top:auto;border-left:0;border-top:1px solid var(--ctn-color-border-strong);height:40px;flex:none}',
+      // the footer: state word on one line, the operator's name on the next. Michroma is
+      // wide; 'ARMED · DANISH' on one line needs ~200px in a 168px rail and was clipped
+      // mid-glyph, so the two parts stack and a long name gets an ellipsis, never a cut.
+      '#citinel-rail a.arm{margin-top:auto;border-left:0;border-top:1px solid var(--ctn-color-border-strong);height:auto;min-height:40px;padding:9px 14px;flex:none}',
       '#citinel-rail a.arm i{font-size:12px;line-height:1}',
+      '#citinel-rail a.arm span{display:flex;flex-direction:column;gap:3px;min-width:0;overflow:hidden}',
+      '#citinel-rail a.arm span b{font-weight:normal;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2}',
+      '#citinel-rail a.arm span b+b{font-size:8.5px;letter-spacing:0.1em;color:var(--ctn-color-text-muted)}',
+      '#citinel-rail a.arm[data-armed=true] span b+b{color:var(--ctn-color-text-secondary)}',
       '#citinel-rail a.arm[data-armed=true]{color:var(--ctn-color-text-primary)}',
       '#citinel-rail a.arm[data-armed=true] i{color:var(--ctn-color-ok)}',
       '#citinel-rail a.arm[data-armed=false] i{color:var(--ctn-color-text-muted)}',
@@ -138,8 +145,10 @@
     tip.id = 'citinel-rail-tip'; tip.setAttribute('role', 'tooltip');
     document.body.appendChild(tip);
     var tipTimer = null;
-    function showTip(anchor, text, immediate) {
-      if (rail.getAttribute('data-state') === 'open') return;      // labels are already visible
+    function showTip(anchor, text, immediate, always) {
+      // labels are already visible when the rail is open, except the footer's: its
+      // flyout carries the expiry time, which the two-line label does not
+      if (!always && rail.getAttribute('data-state') === 'open') return;
       clearTimeout(tipTimer);
       tipTimer = setTimeout(function () {
         tip.textContent = text;
@@ -150,9 +159,9 @@
       }, immediate ? 0 : 120);                                       // a short intent delay, no flicker
     }
     function hideTip() { clearTimeout(tipTimer); tip.removeAttribute('data-show'); }
-    function labelled(el, text) {
-      el.addEventListener('mouseenter', function () { showTip(el, typeof text === 'function' ? text() : text, false); });
-      el.addEventListener('focus',      function () { showTip(el, typeof text === 'function' ? text() : text, true); });
+    function labelled(el, text, always) {
+      el.addEventListener('mouseenter', function () { showTip(el, typeof text === 'function' ? text() : text, false, always); });
+      el.addEventListener('focus',      function () { showTip(el, typeof text === 'function' ? text() : text, true, always); });
       el.addEventListener('mouseleave', hideTip);
       el.addEventListener('blur', hideTip);
     }
@@ -213,10 +222,13 @@
       var st = (API && API.armState) ? API.armState() : { armed: false };
       arm.setAttribute('data-armed', st.armed ? 'true' : 'false');
       dot.textContent = st.armed ? '●' : '○';
-      lab.textContent = st.armed ? ('ARMED · ' + (st.name || 'UNNAMED').toUpperCase()) : 'READ-ONLY';
+      var line1 = document.createElement('b'), line2 = document.createElement('b');
+      line1.textContent = st.armed ? 'ARMED' : 'READ-ONLY';
+      line2.textContent = st.armed ? (st.name || 'UNNAMED').toUpperCase() : 'TAP TO ARM';
+      lab.textContent = ''; lab.appendChild(line1); lab.appendChild(line2);
       arm.setAttribute('aria-label', armText());
     }
-    labelled(arm, armText);
+    labelled(arm, armText, true);
     paintArm();
     window.addEventListener('citinel:arm', paintArm);
     window.addEventListener('storage', function (e) { if (e.key === 'citinel.operator') paintArm(); });
