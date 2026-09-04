@@ -65,6 +65,25 @@ envVarGroups:
         sync: false
       - key: CITINEL_SWYTCHCODE_API_KEY
         sync: false
+      # Swytchcode's two ecosystem APIs. Credentials travel per call as
+      # Authorization -- what Swytchcode's own multi-API example does -- so no
+      # OAuth browser flow is needed for either service.
+      - key: CITINEL_SWY_GITHUB_TOKEN
+        sync: false
+      - key: CITINEL_SWY_GITHUB_OWNER
+        value: agdanish
+      - key: CITINEL_SWY_GITHUB_REPO
+        value: CITINEL
+      - key: CITINEL_SWY_SLACK_TOKEN
+        sync: false
+      - key: CITINEL_SWY_SLACK_CHANNEL
+        sync: false
+      # Swytchcode's docs and their own examples disagree about canonical ids.
+      # `swy list tooling --json` is the authority; override here if they differ.
+      - key: CITINEL_SWY_TICKET_METHOD
+        value: github.repo.issues.create
+      - key: CITINEL_SWY_COMMS_METHOD
+        value: slack.chat.postmessage.create
       # --- gemini: the wide-lens sweep over findings nobody read -----------
       - key: CITINEL_GEMINI_API_KEY
         sync: false
