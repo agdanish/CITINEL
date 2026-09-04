@@ -183,3 +183,46 @@ def test_narrator_is_told_the_true_block_count_when_a_correlation_exists():
     with_corr = _narrator_instruction(INC, NS(summary="a chain"))
     assert "Below are 13 fenced" in with_corr
     assert "never cite it" in with_corr
+
+
+# -- 8. a witness that is merely behind is not a tamper alarm ----------------
+
+def _mirror(monkeypatch, reply):
+    monkeypatch.setattr(settings, "lyzr_api_key", "k")
+    monkeypatch.setattr(settings, "lyzr_guard_url",
+                        "https://agent-prod.studio.lyzr.ai/v3/inference/chat/")
+    return LyzrLedgerMirror(sender=_witness(reply))
+
+
+BIG = NS(head="localhead", entries=lambda: iter(range(5825)))
+
+
+def test_a_witness_holding_fewer_entries_is_lag_not_tampering(monkeypatch):
+    """Found by probing the live deployment: the witness was configured after
+    the chain already existed, so it had seen 18 of 5,778 entries and reported
+    `diverged` with tamper_suspected true. Executive.dc.html leads with that
+    word. Crying wolf on the one screen a CISO reads is worse than silence,
+    because the next real alarm is the one they discount."""
+    r = _mirror(monkeypatch, {"head": "remotehead", "count": 18}).compare(BIG)
+    assert r.status == "lagging"
+    assert r.tamper_suspected is False
+    assert "5807 entries behind" in r.detail
+
+
+def test_a_witness_at_equal_length_with_a_different_head_still_alarms(monkeypatch):
+    """The suspicious direction. Wholesale replacement leaves a chain that
+    verifies perfectly against itself, so this is precisely what verify_chain
+    structurally cannot see."""
+    r = _mirror(monkeypatch, {"head": "otherhead", "count": 5825}).compare(BIG)
+    assert r.status == "diverged" and r.tamper_suspected is True
+
+
+def test_a_truncated_local_chain_still_alarms(monkeypatch):
+    """Local shorter than the witness means entries went missing locally."""
+    r = _mirror(monkeypatch, {"head": "otherhead", "count": 9000}).compare(BIG)
+    assert r.status == "diverged" and r.tamper_suspected is True
+
+
+def test_agreement_is_unchanged(monkeypatch):
+    r = _mirror(monkeypatch, {"head": "localhead", "count": 5825}).compare(BIG)
+    assert r.status == "agreed" and r.tamper_suspected is False

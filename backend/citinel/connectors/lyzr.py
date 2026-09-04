@@ -250,7 +250,7 @@ class LyzrObserver(AgentObserver):
 class MirrorComparison:
     """The result of asking the witness whether it still agrees with us."""
 
-    status: str          # agreed | diverged | unavailable | not_configured
+    status: str          # agreed | lagging | diverged | unavailable | not_configured
     local_head: str
     remote_head: str = ""
     local_count: int = 0
@@ -259,6 +259,15 @@ class MirrorComparison:
 
     @property
     def tamper_suspected(self) -> bool:
+        """Only a real divergence, never a mirror that is merely behind.
+
+        This used to be `status != "agreed"`-shaped: any head mismatch was
+        tamper. A witness configured after the chain already existed has seen
+        none of the earlier entries, so it disagrees on day one and the
+        Executive screen led with the word "diverged" on a perfectly intact
+        ledger. Crying wolf on the one screen a CISO reads is worse than
+        saying nothing, because the next real alarm is the one they discount.
+        """
         return self.status == "diverged"
 
     def as_dict(self) -> dict[str, Any]:
@@ -415,11 +424,31 @@ class LyzrLedgerMirror(LedgerSink):
             return MirrorComparison(
                 "agreed", local_head, remote_head, local_count, remote_count,
                 detail=f"witness agrees at {local_count} entries")
+
+        # A mirror holding FEWER entries than the local chain has not seen a
+        # different history, it has seen less of the same one -- it was
+        # configured after the chain already existed, or a mirrored append is
+        # still in flight. That is lag, and calling it divergence is a false
+        # alarm on the most senior screen in the product.
+        #
+        # The suspicious direction is the other one. Wholesale replacement
+        # leaves a plausible-looking chain, so remote_count >= local_count with
+        # a different head is exactly the shape verify_chain cannot see: a
+        # rewritten local file verifies perfectly against itself, and only the
+        # witness knows the history used to be longer or different.
+        if remote_count < local_count:
+            behind = local_count - remote_count
+            return MirrorComparison(
+                "lagging", local_head, remote_head, local_count, remote_count,
+                detail=(f"witness is {behind} entries behind ({remote_count} of "
+                        f"{local_count}); it has seen less of this chain, not a "
+                        "different one. Nothing here indicates tampering."))
         return MirrorComparison(
             "diverged", local_head, remote_head, local_count, remote_count,
-            detail=("local and witness chain heads differ -- investigate: "
-                    "wholesale local replacement, a rollback, or mirror lag. "
-                    "Not proof of tampering on its own."))
+            detail=("local and witness chain heads differ at the same or greater "
+                    "length -- investigate: wholesale local replacement, a "
+                    "truncation, or a rollback. Not proof of tampering on its "
+                    "own, but verify_chain structurally cannot see this."))
 
     def _head_request(self) -> tuple[int, Any]:
         headers = {"x-api-key": settings.lyzr_api_key, "Content-Type": "application/json"}
