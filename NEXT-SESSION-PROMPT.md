@@ -21,9 +21,14 @@ cd backend && .venv/bin/python -m pytest -q | tail -1      # 414 passing at hand
 ```
 
 ## First tasks
-1. Ask Danish whether Part 3 of the runbook finished on 4 Sep evening and what the Approvals receipt line said. If it said `comms executed` with a `ts`, Slack on Render is proven; if it named a reason, fix that first.
-2. Push the two unpushed commits (`9152bd5`, `5f687ba`) once nothing is running in production: `git push origin build/stage-1`. Every push deploys and restarts the service.
-3. Verify production from outside: `python3 scripts/preflight.py` (read-only, prints GO or the exact problems), then the probes in the findings doc §2 and §10.
+
+**Updated at the end of 4 Sep. Read `docs/SESSION-2026-09-03-04-FINDINGS.md` section 17
+first: it supersedes the pending list, and the branch and test counts quoted elsewhere
+in these documents are stale.**
+
+1. Push whatever is unpushed only when Danish confirms nothing is running in production. Every push deploys and restarts.
+2. Run `python3 scripts/preflight.py`. It must print GO.
+3. The one unproven leg is Swytchcode Slack on Render: an approved action on the live Approvals screen whose receipt reads `comms executed` with a `ts`. Everything else was proven by real calls.
 4. Make sure Auto-Deploy is OFF on the four Render services before the demo (Danish's step; ask).
 5. Demo morning: Danish arms the demo laptop (runbook part A). Check the green dot in the rail. Do not run the swarm on stage unless scripted.
 

@@ -11,8 +11,8 @@ sections 21 and 22, `../NEXT-SESSION-PROMPT.md`, `../RUNBOOK-NEW-LAPTOP.md`.*
 | | |
 |---|---|
 | Live console | https://citinel-web.onrender.com (Render, branch `build/stage-1`, Docker) |
-| Branch head | `5f687ba` locally; `47e7235` on origin. **Two commits unpushed**: `9152bd5` (icon-only rail) and `5f687ba` (runbook). Push was held because a deploy restarts the service and Danish may have been mid-way through a swarm run. |
-| Tests | 414 passing: `cd backend && .venv/bin/python -m pytest -q`. The system `python3` is 3.9 and cannot import the package; always use the venv. |
+| Branch head | **Superseded, see section 17.** As written: `5f687ba` locally, `47e7235` on origin, two commits unpushed. By 19:00 IST on 4 Sep both were already on origin at `3abfb30`; the unpushed claim was stale within the hour. |
+| Tests | **419** passing at the end of 4 Sep: `cd backend && .venv/bin/python -m pytest -q`. It was 414 until a forked session added `test_rail_assets.py`. The system `python3` is 3.9 and cannot import the package; always use the venv. |
 | Bugs found by running things, 4 Sep | 18, all fixed, all pushed except the rail commit above |
 | External services proven live | 11 of 11 (see section 5) |
 | Finale | Decode SIH 2026 grand finale, 5 Sep 2026 |
@@ -114,12 +114,13 @@ Screenshots shared in chat showed Render secrets in plain text, and one Gemini k
 
 ## 10. Pending, in priority order
 
-1. Confirm Part 3 finished (Danish's report of the Approvals receipt line), then `git push origin build/stage-1` for `9152bd5` and `5f687ba`.
-2. Verify production from outside after Part 3: sweep 200, context fresh, verdict updated, handover 200, `/api/n8n/executions` grew, Startuped signals carry values, the new enricher frame shows VirusTotal `ok`.
-3. Auto-Deploy off on the four Render services before the demo; on again after.
-4. Demo day: arm the demo laptop (runbook part A); never re-run the swarm on stage unless scripted.
-5. After the event: CLEAR or rotate the write token; rotate the keys in section 9.
-6. Later: the three missing console controls in section 7; the time-zone formatter in section 8; real per-person login to replace the shared operator token.
+**Rewritten at the end of 4 Sep. Items 1 and 2 of the original list are done; see section 17.**
+
+1. **Swytchcode Slack on Render is still the one unproven leg.** An approved action on the live Approvals screen whose receipt reads `comms executed` with a `ts`. Everything around it is proven; this exact click is not.
+2. Auto-Deploy off on the four Render services before the demo; on again after.
+3. Demo day: arm the demo laptop (runbook part A); never re-run the swarm on stage unless scripted.
+4. After the event: CLEAR or rotate the write token; rotate the keys in section 9.
+5. Later: the three missing console controls in section 7; the time-zone formatter in section 8; real per-person login to replace the shared operator token.
 
 ## 11. Danish's standing preferences (from Claude's memory, verbatim in `MEMORY-EXPORT.md`)
 
@@ -178,4 +179,68 @@ Then POST with `X-Citinel-Write-Token: local-verify-token`. Every write route wa
 
 `python3 scripts/preflight.py` (GETs only, no token, no spend) checks every read route, the ledger, the witness, all connectors, n8n executions, the incident's artifacts, every console page, that the deployed api.js and nav.js are the current builds, and that every console endpoint has a backend route. It prints GO or the exact problems. **Run it on the demo morning before arming the laptop.**
 
-At 22:20 IST on 4 Sep it reported NO-GO on one item, `INC-0417 sweep artifact present: 404`, with the ledger still at 5,778 entries and n8n at the two executions from testing. That means Part 3 of the runbook had not been run at that time.
+On the evening of 4 Sep it reported NO-GO on one item, `INC-0417 sweep artifact present: 404`, with the ledger at 5,778
+entries and n8n at the two executions from testing, which meant Part 3 had not yet been run. (The "22:20 IST" in the
+original text was wrong: the commit that added this file is stamped 18:48 IST.) It printed **GO** on every later run
+that evening, including after the three deploys in section 17.
+
+
+## 17. 4 September, evening: a new account, six deploys, and the n8n leg finally proven
+
+Picked up at about 19:00 IST by a new Claude Code account, from this file and
+`NEXT-SESSION-PROMPT.md`. First act was to distrust both: `git log` showed origin
+already in sync at `3abfb30`, so section 1's "two commits unpushed" was stale, and
+Auto-Deploy had therefore been on. Pre-flight printed GO, 414 tests passed.
+
+**The n8n 404, root cause and proof.** A sign-off at 19:05 IST recorded `n8n HTTP 404`
+on the live ledger. n8n was cleared first, read-only through its own REST API: workflow
+`CITINEL Beat 5b` active, webhook node POST at path `citinel-signoff`, Respond node
+returning the required `channels` plus `{{ $execution.id }}`, untouched since 11:09 IST.
+Danish then read `CITINEL_N8N_WEBHOOK_URL` in the Render dashboard and reported it
+matched. Both facts were true and the call still 404ed, because a bare `n8n HTTP 404`
+says nothing about what was asked for. The dispatcher was changed (`654c3a6`) to carry
+n8n's own sentence, capped, whitespace-collapsed, host omitted because the console is
+public. The next sign-off said it outright:
+
+```
+n8n HTTP 404: The requested webhook "POST d214f09a-dde1-44a6-ab2a-b92d89502284" is not registered.
+```
+
+Render was still holding the stale UUID path from the deleted workflow, the same value
+bug 17 fixed in the local `.env` that morning. Two definitions of the key existed and the
+wrong one won. Danish corrected it; the sign-off at 20:45 IST produced ledger frame 5790
+`{status: dispatched, channels: [ciso, ticket], execution_id: 5}`, and n8n's REST plane
+independently lists execution 5, success, mode webhook, at the same second. **The n8n leg
+is proven both ways.** Same lesson as bug 13: an error that does not quote the provider
+costs hours.
+
+**Console fixes, each measured in a browser rather than reasoned about.** `13b083b` the
+rail footer, which clipped `ARMED · DANISH` mid-glyph because Michroma needs about 200px
+in a 168px rail; it is two lines now and the hover flyout, which alone carries the expiry,
+shows in both rail states. The same commit stopped Replay and Compliance renaming the
+context button to GATHER AGAIN, which had made the control the runbook names by
+"GATHER PUBLIC CONTEXT" impossible to find. `654c3a6` the export row, whose ribbon button
+hung 120px outside its panel. `42ad01c` the incident dial: CAUGHT and CLOSED are the same
+point on the ring and their names were painted on top of each other, ACTIONED was centred
+on x=24 and SVG clipped its A away leaving "CTIONED", and GATED sat 4 units below the
+viewBox.
+
+**A forked session** was working the same repo in parallel and produced `802bc04` (the
+mark in the rail, plus `test_rail_assets.py`, which is why the suite went 414 to 419),
+`3ca6a8e` (thirteen console defects across eight screens) and `be4361f` (n8n's client
+timeout cut from 15s to 8s so a hung instance can never hold a sign-off response open
+long enough for the browser to abort it). `802bc04` was reviewed by three lenses with
+adversarial verification before it went out; the one finding, `:scope` support, was
+refuted twice over, since that selector has shipped in `api.js` since the console first
+deployed and does not throw on the live page.
+
+**A trap worth naming.** The Compliance screen falls back to its authored demo whenever
+`API.incident` or the CERT-In draft does not return, and the fallback is convincing: it
+shows a counting CERT-In clock and an ACTIONED arc on a record that is really CAUGHT with
+its window closed ten days ago. The tells are the words "authored demo" in the left column
+and the absence of the `LIVE` chip. In demo mode the signature box demands the literal
+string `a. deshmukh` and the seal writes nothing to the ledger. If a sign-off appears not
+to work, check which of the two screens you are looking at before anything else.
+
+State at the end of the evening: origin at `42ad01c` plus `be4361f`, ledger intact at
+5,791 entries, INC-0417 back to `caught`, 419 tests passing, pre-flight GO.
