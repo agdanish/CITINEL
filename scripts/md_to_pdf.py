@@ -145,6 +145,8 @@ def build(md, out):
     flush()
     return flow
 
+RUNNING_HEAD = 'CITINEL'
+
 def deco(canv, doc):
     canv.saveState()
     canv.setStrokeColor(RULE); canv.setLineWidth(0.5)
@@ -152,7 +154,7 @@ def deco(canv, doc):
     canv.setFont('Times-Bold', 8.5); canv.setFillColor(NAVY)
     canv.drawString(20*mm, 288*mm, 'CITINEL')
     canv.setFont('Times-Roman', 8.5); canv.setFillColor(GREY)
-    canv.drawRightString(190*mm, 288*mm, 'Operator walkthrough and differentiator map  ·  Decode SIH 2026')
+    canv.drawRightString(190*mm, 288*mm, RUNNING_HEAD + '  ·  Decode SIH 2026')
     canv.line(20*mm, 15*mm, 190*mm, 15*mm)
     canv.setFont('Times-Roman', 8.5)
     canv.drawCentredString(105*mm, 10*mm, 'Page %d' % doc.page)
@@ -160,6 +162,10 @@ def deco(canv, doc):
 
 md = open(sys.argv[1]).read()
 out = sys.argv[2]
+# The running head defaults to the document's own subtitle, so a second document
+# rendered by this script never inherits the first one's title.
+_sub = re.search(r'^##\s+(.+)$', md, re.M)
+globals()['RUNNING_HEAD'] = sys.argv[3] if len(sys.argv) > 3 else (_sub.group(1).strip() if _sub else 'CITINEL')
 doc = BaseDocTemplate(out, pagesize=A4, leftMargin=20*mm, rightMargin=20*mm,
                       topMargin=22*mm, bottomMargin=20*mm, title='CITINEL: operator walkthrough and differentiator map',
                       author='CITINEL')
