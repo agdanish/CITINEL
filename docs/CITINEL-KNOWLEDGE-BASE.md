@@ -93,8 +93,10 @@ Section 70B, Rule 7
 
 ## Stage 6 · Investigate with agents
 
-- Seven roles now run in sequence.
-- Five of them call a model. Two are plain code.
+- Twelve AI agents now engage.
+- Five Claude agents run the chain in sequence.
+- Seven Lyzr agents check them from outside.
+- Two more roles are plain code.
 - Section 4 explains each one.
 
 ## Stage 7 · Verify citations
@@ -163,79 +165,170 @@ rollback token, hash-chained ledger, simulated endpoint
 
 ---
 
-# 4 · The seven agents
+# 4 · The twelve AI agents
+
+*Two vendors. Two separate sets of seven. Count carefully.*
+
+## The headline number
+
+- Twelve AI agents run across two vendors.
+- Five Claude agents do the investigation.
+- Seven Lyzr agents check that work independently.
+- Two more roles are deterministic code, not AI.
+- Fourteen roles in total. Twelve of them AI.
+
+---
+
+## Set A · The CITINEL swarm · seven roles
 
 *Source: `agents/pipeline.py`, line 3.*
 
-**Full chain** Sentinel to Router to Enricher to Correlator to Narrator to Marshal
-to Scribe.
+**Chain** Sentinel to Router to Enricher to Correlator to Narrator to Marshal to
+Scribe.
 
-## Important honesty point
-
-- Seven roles exist. Only five call a model.
+- Five of these seven call a Claude model.
 - Sentinel and Scribe are deterministic code.
-- The docstring says why. A model would reduce reliability.
-- Say "seven roles, five thinking agents". Never "seven AI agents".
+- The docstring says why plainly.
+- A model there would only reduce reliability.
 
-## 1 · Sentinel · orchestrator · code only
+### 1 · Sentinel · orchestrator · code only
 
 - Owns the case from start to finish.
 - Sequences the five thinking agents in order.
 - Records every stage to the ledger.
 - Never calls a model.
 
-## 2 · Router · triage · model
+### 2 · Router · triage · Claude
 
 - Reads the incident summary.
 - Decides which lane it belongs in.
 - Escalates only what needs deeper work.
-- Cheap model. Saves cost on easy cases.
+- Uses the cheap model. Saves cost.
 
-## 3 · Enricher · context · model with tools
+### 3 · Enricher · context · Claude with tools
 
 - The only multi-turn agent.
 - Calls external threat-intelligence services.
 - Uses Tavily, VirusTotal and AbuseIPDB.
-- Asks, reads the answer, then asks again.
+- Asks, reads the answer, asks again.
 - Records what each provider actually answered.
 
-## 4 · Correlator · kill chain · model
+### 4 · Correlator · kill chain · Claude
 
 - Joins scattered findings into one attack story.
 - Maps each step to MITRE ATT&CK.
-- Output is fenced before the Narrator sees it.
+- Output is fenced before the Narrator reads it.
 - That fence blocks agent-to-agent laundering.
 
-## 5 · Narrator · verdict · model
+### 5 · Narrator · verdict · Claude
 
 - Writes the human-readable verdict.
 - Every claim must quote its evidence.
-- Also states counter-evidence explicitly.
+- States counter-evidence explicitly.
 - Its output faces the citation gate.
 
-## 6 · Marshal · response · model
+### 6 · Marshal · response · Claude
 
 - Proposes actions the incident justifies.
 - Names target, action class and blast radius.
 - Proposes only. It never executes.
 
-## 7 · Scribe · recording · code only
+### 7 · Scribe · recording · code only
 
 - Writes the compliance artefacts.
-- Assembles the drafted forms from the record.
+- Assembles drafted forms from the record.
 - Never calls a model.
 
-## How they interconnect
+---
 
-- Sentinel calls each agent in strict order.
+## Set B · The Lyzr agents · seven, all AI
+
+*Source: `config.py`, seven separate agent ids.*
+
+- These are a different vendor entirely.
+- Every one of the seven is a model call.
+- They check our own agents from outside.
+- All seven show configured on the live deployment.
+
+### Why a second vendor at all
+
+- A checker inside the system proves nothing.
+- Same model, same blind spots, same failure.
+- Independence is the whole point.
+
+### 1 · Lyzr base · guard and witness
+
+- Gives a second opinion on personal data.
+- Also acts as the ledger witness.
+- Keeps its own count of ledger entries.
+- Catches wholesale file replacement.
+- Our own chain check cannot see that.
+
+### 2 · Lyzr triage
+
+- Runs an independent triage lane.
+- Sits beside our Router's decision.
+- Both opinions go on the ledger.
+
+### 3 · Lyzr review
+
+- Reviews the drafted compliance fields.
+- Runs before a human signs.
+- Flags fields that are thin or unsupported.
+
+### 4 · Lyzr handover
+
+- Writes the shift-handover note.
+- Draws only from the ledger.
+- Not from anyone's memory.
+
+### 5 · Lyzr verdict
+
+- Audits our citation support independently.
+- Sits beside the Narrator's own estimate.
+- Can be stricter than our pipeline.
+- On 4 September it was stricter five times.
+
+### 6 · Lyzr response
+
+- Reviews whether an action is proportionate.
+- Sits beside the policy gate decision.
+- Advisory only. It never gates.
+
+### 7 · Lyzr corpus
+
+- Advises on Sigma rule coverage.
+- Independent view of detection gaps.
+
+---
+
+## How everything interconnects
+
+- Sentinel calls each swarm agent in order.
 - Output of one becomes fenced input to the next.
-- No agent talks to another directly.
+- No swarm agent talks to another directly.
 - Every handoff is recorded in the ledger.
+- Lyzr agents run beside, never inside, the chain.
+- They observe and record. They never gate.
 - Any agent can fail without stopping the chain.
-- A failed stage is recorded as degraded, not hidden.
+- A failed stage records as degraded, not hidden.
 
-**Keywords** orchestrator, triage lane, multi-turn tool use, kill chain, MITRE
-ATT&CK, citation gate, provenance fence, degradation
+## What to say on stage
+
+- 🟢 "Twelve AI agents across two vendors."
+- 🟢 "Five Claude agents investigate the incident."
+- 🟢 "Seven Lyzr agents check that work independently."
+- 🟢 "Orchestration and recording are deliberately plain code."
+- 🟢 "A model there would only reduce reliability."
+
+## What not to say
+
+- 🔴 Never say "seven AI agents" alone. It is ambiguous.
+- 🔴 Never imply Lyzr agents can block an action.
+- 🔴 They advise and record. The gate is code.
+
+**Keywords** orchestrator, thinking agent, second opinion, vendor independence,
+ledger witness, advisory not gating, provenance fence, degradation
 
 ---
 
@@ -527,7 +620,7 @@ policy-gated transport, aggregate-only telemetry
 - PS4 names five terms. All five are built.
 - Autonomous: the per-class autonomy dial.
 - Cyber SOC: sixteen operational screens.
-- AI-powered: five thinking agents on live models.
+- AI-powered: twelve agents across two vendors.
 - Threat detection: 3,302 Sigma rules plus anomaly scoring.
 - Automated response: policy gate with rollback tokens.
 - **Show** QUEUE, then REPLAY, then APPROVALS.
@@ -606,7 +699,8 @@ concession
 - Sigma rules and an anomaly scorer detect threats deterministically.
 - Findings group into an incident with a legal clock.
 - All content is quarantined as untrusted.
-- Five model agents investigate under one code orchestrator.
+- Five Claude agents investigate under one code orchestrator.
+- Seven Lyzr agents audit that work independently.
 - Every claim must quote its evidence or be deleted.
 - Proposed actions pass a readable policy gate.
 - A human approves. Simulated endpoints execute.
