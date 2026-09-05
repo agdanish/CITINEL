@@ -60,6 +60,7 @@
 <style>html,body{height:100%;overflow-y:hidden;overflow-x:auto}</style>
 <script src="api.js"></script>
 <script src="nav.js"></script>
+<script src="incident-switch.js"></script>
 </helmet>
 <div data-screen-label="Confidence panel" data-citinel-page="confidence" style="display:flex;flex-direction:column;height:100vh;min-width:1280px;background:var(--ctn-color-surface-shell)">
 
@@ -215,7 +216,11 @@
       <span style="font-family:var(--ctn-font-display);font-size:11.5px;letter-spacing:0.14em;color:var(--ctn-color-text-primary);flex:none">DISCARD TRAY · EVIDENCE CHECKED, THEN CUT</span>
       <span style="font-family:var(--ctn-font-display);font-size:26px;color:var(--ctn-color-text-primary);font-variant-numeric:tabular-nums slashed-zero;flex:none;margin-right:auto">{{ retiredCount }}</span>
       <span style="flex:1 1 100%;order:2;font-size:12.5px;color:var(--ctn-color-text-secondary);min-width:0;max-width:110ch;line-height:1.5;text-wrap:pretty">{{ trayNote }}</span>
+      <!-- With nothing cut, this control is a status, not an action: the tray count and
+           note already say so. Rendered only in its two live states. -->
+      <sc-if value="{{ hasCuts }}" hint-placeholder-val="{{ true }}">
       <button onClick="{{ toggleAll }}" style="flex:none;font-family:var(--ctn-font-display);font-size:9px;letter-spacing:0.1em;padding:8px 13px;border:1px solid var(--ctn-color-border-strong);border-radius:6px;background:none;color:var(--ctn-color-text-primary);cursor:pointer">{{ toggleAllLabel }}</button>
+      </sc-if>
     </div>
 
     <div style="flex:none;display:grid;grid-template-columns:34px 92px 1fr 300px 128px 108px;gap:0 14px;padding:0 24px 6px;border-bottom:1px solid var(--ctn-color-border-strong);font-family:var(--ctn-font-display);font-size:8px;letter-spacing:0.12em;color:var(--ctn-color-text-muted);min-width:0">
@@ -257,7 +262,9 @@
             <div style="font-size:12px;color:var(--ctn-color-text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.by }}</div>
             <div style="font-family:var(--ctn-font-mono);font-size:10.5px;color:var(--ctn-color-text-muted);margin-top:2px">#{{ r.seq }}</div>
           </div>
+          <sc-if value="{{ r.hasToggle }}" hint-placeholder-val="{{ true }}">
           <button onClick="{{ r.toggle }}" style="justify-self:end;font-family:var(--ctn-font-display);font-size:8.5px;letter-spacing:0.1em;padding:7px 10px;border:1px {{ r.btnBorder }} var(--ctn-color-border-strong);border-radius:6px;background:none;color:var(--ctn-color-text-primary);cursor:pointer;white-space:nowrap">{{ r.btn }}</button>
+          </sc-if>
         </div>
       </sc-for>
       <div style="display:flex;align-items:center;gap:12px;padding:12px 0 0;min-width:0">
@@ -449,18 +456,19 @@ class Component extends DCLogic {
         const m = {}; retiredDefs.forEach(r=>{ m[r.id]=true; });
         return {restored:m};
       }),
-      toggleAllLabel: retiredDefs.length === 0 ? 'NOTHING CUT' : restoredCount === retiredDefs.length ? 'CUT ALL AGAIN' : 'WHAT IF · RESTORE ALL',
+      toggleAllLabel: restoredCount === retiredDefs.length ? 'CUT ALL AGAIN' : 'WHAT IF · RESTORE ALL',
+      hasCuts: retiredDefs.length > 0,
       retired: retiredDefs.length ? retiredDefs.map(r=>{
         const on = !!s.restored[r.id];
         return {...this.dress(r), glyph: this.ringGlyph(on ? 'back' : 'cut'), opacity: on ? 1 : 0.62,
           lineFg: on ? 'var(--ctn-color-text-primary)' : 'var(--ctn-color-text-muted)', strike: on ? 'none' : 'line-through',
-          btn: on ? 'CUT AGAIN' : 'WHAT IF · RESTORE', btnBorder: on ? 'solid' : 'dashed',
+          btn: on ? 'CUT AGAIN' : 'WHAT IF · RESTORE', btnBorder: on ? 'solid' : 'dashed', hasToggle: true,
           toggle: ()=>this.setState(x=>({restored:{...x.restored, [r.id]: !x.restored[r.id]}}))};
       }) : [this.dress({id:'none', cutAt: lastGate ? this.ist(lastGate.ts) : '—', by:'citation gate · sentinel', seq: lastGate ? String(lastGate.seq) : '—',
           line: noVerdict ? 'no run saved for this record' : 'no claim was cut · ' + claims.length + ' of ' + claims.length + ' survived the citation gate',
           locator: 'every claim above carries its verified span', reasonTag: noVerdict ? '—' : 'ALL CITATIONS VERIFIED',
           reason: lastGate ? String((lastGate.payload||{}).reason || 'every quoted span was found verbatim in its cited log line') : 'every quoted span was found verbatim in its cited log line',
-          glyph: this.ringGlyph('back'), opacity: 0.8, lineFg: 'var(--ctn-color-text-secondary)', strike: 'none', btn: '—', btnBorder: 'dashed', toggle: ()=>{}})],
+          glyph: this.ringGlyph('back'), opacity: 0.8, lineFg: 'var(--ctn-color-text-secondary)', strike: 'none', btn: '', btnBorder: 'dashed', hasToggle: false, toggle: ()=>{}})],
       trayFooter: 'restoring a struck claim here is a what-if on this screen only: it puts the claim back on its pan so you can see what the cut cost the beam. it writes nothing to the ledger; the gate\'s cut stands there.',
       ledgerHref: this.navHref('Audit.dc.html') + '&q=citation_verification',
       cutTally: Object.keys(tally).length ? Object.keys(tally).map(k=>({k, n:String(tally[k]).padStart(2,'0')})) : [{k:'CLAIMS CUT', n:'00'}],
@@ -474,7 +482,7 @@ class Component extends DCLogic {
       incId: this.incId, replayHref: this.navHref('Replay.dc.html'), beamAngle: '0', supWeight: '', cntWeight: '', bandTicks: [], bandLabels: [], riderLeft: '50%',
       bandName: 'READING THE VERDICT', bandStatement: 'the record, its persisted verdict and its chain are being read from the service; nothing authored is drawn while they load', bandCaveat: '',
       supNote: 'reading…', supCount: '··', cntNote: 'reading…', cntCount: '··', cntEmpty: false, cntPresent: true, cntEmptyBody: '', supporting: [], countering: [],
-      retiredCount: '··', trayNote: 'reading…', toggleAll: ()=>{}, toggleAllLabel: 'READING', retired: [], trayFooter: '', ledgerHref: this.navHref('Audit.dc.html'), cutTally: [], cutNote: ''
+      retiredCount: '··', trayNote: 'reading…', toggleAll: ()=>{}, toggleAllLabel: 'READING', hasCuts: false, retired: [], trayFooter: '', ledgerHref: this.navHref('Audit.dc.html'), cutTally: [], cutNote: ''
     };
   }
 
