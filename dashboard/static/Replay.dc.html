@@ -666,7 +666,7 @@ class Component extends DCLogic {
       // refreshing: MAT-F02 -- true only while a re-load (switch incident, post-action reload) is in
       // flight AFTER something has already loaded once; the old record/chain/verdict stay on screen
       // the whole time so the strip never blanks back to the reading skeleton for a background refresh.
-      live:null, liveError:null, refreshing:false, ids:[], rows:[], incident:null, chain:null, verdict:null, verdictMissing:false,
+      live:null, liveError:null, refreshing:false, ids:[], rows:[], incident:null, chain:null, chainRead:null, verdict:null, verdictMissing:false,
       running:false, runStatus:null, context:null, gathering:false, gatherStatus:'',
       brief:null, requestingBrief:false, briefStatus:'', visual:null};
   }
@@ -675,7 +675,11 @@ class Component extends DCLogic {
     this.t = setInterval(()=>{
       this.setState(s=>{
         const st = {now: Date.now()};
-        if(s.playing){
+        // nothing to shuttle through when the ledger holds no run frames: park the
+        // head and stop, rather than sweeping a one-second window on a loop
+        const noRun = s.live === true && this._d && this._d.frames && !this._d.frames.length;
+        if(s.playing && noRun){ st.pos = 100; st.playing = false; }
+        else if(s.playing){
           const p = s.pos + (this.props.sweepSpeed ?? 0.4);
           if(p >= 100){ st.pos = 100; st.playing = false; } else st.pos = p;
         }
@@ -705,7 +709,7 @@ class Component extends DCLogic {
     // screen exactly as it is and just marks it "refreshing" for a small, subtle indicator.
     const firstLoad = this.state.live === null;
     this.setState(firstLoad
-      ? {live:null, incident:null, chain:null, verdict:null, verdictMissing:false, refreshing:false, pos:0, playing:true, openClaim:null}
+      ? {live:null, incident:null, chain:null, chainRead:null, verdict:null, verdictMissing:false, refreshing:false, pos:0, playing:true, openClaim:null}
       : {refreshing:true, pos:0, playing:true, openClaim:null});
     // The brief and image seams landed after this screen did; a deployment still
     // serving an older api.js must lose those two panels, not the whole record --
@@ -715,7 +719,11 @@ class Component extends DCLogic {
                  seam('briefFor'), seam('visualsFor')]).then(([inc, ch, vd, cx, sw, br, vi]) => {
       if (!inc.ok) { this.setState({live:false, liveError:inc.error, refreshing:false}); return; }
       this._d = null;
-      this.setState({live:true, incident:inc.data, chain: ch.ok ? ch.data : [], verdict: vd.ok ? vd.data : null,
+      // chainRead separates two states that used to collapse into one empty array:
+      // a ledger with no chain for this case (404, honest and true) and a read that
+      // failed or timed out (anything else). Only the first may be described as
+      // 'no run frames on this ledger'; the second is a failed read and must say so.
+      this.setState({live:true, incident:inc.data, chain: ch.ok ? ch.data : [], chainRead: !!(ch.ok || ch.status === 404), verdict: vd.ok ? vd.data : null,
                      verdictMissing: !vd.ok, context: cx.ok ? cx.data : null, sweep: sw.ok ? sw.data : null,
                      brief: br.ok ? br.data : null, visual: vi.ok ? vi.data : null, briefStatus:'',
                      refreshing:false, pos:0, playing:true, openClaim:null});
@@ -1024,8 +1032,20 @@ class Component extends DCLogic {
     const run = start >= 0 ? chain.slice(start) : [];
     const swarmActors = {'router':1,'triage-router':1,'enricher':1,'correlator':1,'narrator':1,'marshal':1,'sentinel':1,'policy-gate':1,'response-marshal':1};
     const frames = run.filter(e => swarmActors[e.actor] || e.kind === 'human_signoff');
+    // The window is the RUN, sentinel note to last model call, which is what the
+    // comment above promises. It used to end at the latest frame of ANY kind, so
+    // every later human event stretched it: four sign-offs three days after a
+    // five-minute run made a 68-hour strip with the run squashed into its first
+    // 0.1%, every model lane a hairline, and the dial crawling through three empty
+    // days. Measured on INC-0417 across one evening: 95m 20s, then 3810m 13s after
+    // one sign-off, then 3857m 04s after the next. Frames after the run now clamp
+    // to 100%, which is the truth: the gate ruled and a human signed AFTER it.
+    const modelActors = {'router':1,'triage-router':1,'enricher':1,'correlator':1,'narrator':1,'marshal':1,'sentinel':1};
+    const modelFrames = frames.filter(e => modelActors[e.actor]);
     const t0 = frames.length ? ms(frames[0]) : 0;
-    const t1 = frames.length ? Math.max(t0 + 1000, Math.max.apply(null, frames.map(ms))) : t0 + 1000;
+    const endSrc = modelFrames.length ? modelFrames : frames;
+    const t1 = frames.length ? Math.max(t0 + 1000, Math.max.apply(null, endSrc.map(ms))) : t0 + 1000;
+    const laterFrames = frames.filter(e => ms(e) > t1).length;
     const spanS = Math.max(1, Math.round((t1 - t0) / 1000));
     const pctOf = e => Math.max(0, Math.min(100, ((ms(e) - t0) / (t1 - t0)) * 100));
     const laneOf = e => e.actor === 'sentinel' && e.kind === 'note' ? 0
@@ -1109,7 +1129,7 @@ class Component extends DCLogic {
       edge: vd ? 'run ' + ((vd.runs||[]).length || 1) + ' · saved ' + String(vd.saved_at||'').slice(0,16).replace('T',' ') + 'Z' : 'no run saved',
       lanes, claims, chainSourceCount: hostsInvolved.length, hostsInvolved,
       killChain, proposalPct: marshalF ? pctOf(marshalF) : 101, proposals,
-      frames, citedPct: citedF ? pctOf(citedF) : 101, firstPct: frames.length ? 0 : 101,
+      frames, laterFrames, citedPct: citedF ? pctOf(citedF) : 101, firstPct: frames.length ? 0 : 101,
       gatedPct: at(e => e.kind === 'policy_check'), actionedPct: at(e => e.kind === 'action_executed'),
       closedPct: at(e => e.kind === 'human_signoff' && !(e.payload||{}).approved),
       verdict: vd, derived: inc.state || 'caught', inc, findingsExamined: vd ? vd.findings_examined : null, findingsTotal: fs.length
@@ -1195,7 +1215,7 @@ class Component extends DCLogic {
     });
     const idx = marks.findIndex(m=>m.pct === (cur?cur.pct:-1));
     const stateLabel = liveMode
-      ? (s.pos>=d.closedPct ? 'CLOSED' : s.pos>=d.actionedPct ? 'ACTIONED' : s.pos>=gatedAt ? 'GATED · HELD' : s.pos>=lastCite ? 'CITED' : s.pos>=first ? 'CAUGHT' : 'READING')
+      ? (!d.frames.length ? String(d.derived || 'caught').replace('_',' ').toUpperCase() : s.pos>=d.closedPct ? 'CLOSED' : s.pos>=d.actionedPct ? 'ACTIONED' : s.pos>=gatedAt ? 'GATED · HELD' : s.pos>=lastCite ? 'CITED' : s.pos>=first ? 'CAUGHT' : 'READING')
       : (s.pos>=gatedAt ? 'GATED · HELD' : s.pos>=lastCite ? 'CITED' : s.pos>=first ? 'CAUGHT' : 'INGESTING');
     let clockDigits = '03:45:00';
     if (liveMode) {
@@ -1221,18 +1241,20 @@ class Component extends DCLogic {
       incId: d.id, sev: d.sev, incTitle: d.title, clockDigits,
       ringArc, ringNodes, ringWeight: s.pos>=gatedAt ? 7 : s.pos>=lastCite ? 6 : 5,
       ringStateLabel: stateLabel,
-      ringSub: liveMode ? (s.pos>=gatedAt ? 'the gate has ruled on this run' : 'arc advances with the shuttle · real frames') : (s.pos>=gatedAt ? 'ring stops here until a human decides' : 'arc advances with the shuttle'),
-      timecode: this.tc(d, s.pos),
+      ringSub: liveMode ? (!d.frames.length ? (s.chainRead === false ? 'the ledger could not be read in time · reload to try again' : 'no run frames on this ledger · verdict loaded from a saved artifact') : s.pos>=gatedAt ? 'the gate has ruled on this run' : 'arc advances with the shuttle · real frames') : (s.pos>=gatedAt ? 'ring stops here until a human decides' : 'arc advances with the shuttle'),
+      // '--:--:--', not 00:00:00: a zeroed clock reads as stuck. There is no run on
+      // this ledger to shuttle through, and the dial should say that, not tick.
+      timecode: (liveMode && !d.frames.length) ? '--:--:--' : this.tc(d, s.pos),
       togglePlay: ()=>this.setState(x=>({playing:!x.playing, pos: x.pos>=100?0:x.pos, openClaim:null})),
       playLabel: s.playing ? 'PAUSE' : (s.pos>=100 ? 'REWIND' : 'RUN'),
       stepBack: ()=>{ const prev = marks.filter(m=>m.pct < s.pos - 0.5).pop(); if(prev) this.setState({pos:prev.pct, playing:false, openClaim:prev.pct}); },
       stepFwd: ()=>{ const nx = marks.find(m=>m.pct > s.pos + 0.5); if(nx) this.setState({pos:nx.pct, playing:false, openClaim:nx.pct}); },
       markIdx: String(Math.max(0, liveMode ? passed.length : idx+1)).padStart(2,'0'), markTotal: String(marks.length).padStart(2,'0'),
       markAgent: cur ? d.lanes[cur.lane].agent : (liveMode ? (d.frames.length ? 'swarm run · ' + d.frames.length + ' ledger frames' : 'no run on this record') : 'Sentinel'),
-      markLabel: cur ? cur.text : (liveMode ? (vdl ? 'the narrator\'s claims land at ' + this.tc(d, marks.length ? marks[0].pct : 100) + ' IST · shuttle forward' : 'no swarm verdict is saved for this record · run the swarm below') : 'ingest running · no rule has fired yet on this window'),
+      markLabel: cur ? cur.text : (liveMode ? (vdl ? (d.frames.length ? 'the narrator\'s claims land at ' + this.tc(d, marks.length ? marks[0].pct : 100) + ' IST · shuttle forward' : 'verdict on record · the run that produced it left no frames on this ledger, so there is nothing to shuttle') : 'no swarm verdict is saved for this record · run the swarm below') : 'ingest running · no rule has fired yet on this window'),
       citedCount: String(passed.length).padStart(2,'0'),
       elapsedReal: Math.floor(s.pos/100*d.spanS/60)+'m '+String(Math.floor(s.pos/100*d.spanS)%60).padStart(2,'0')+'s',
-      filmstripNote: liveMode ? 'one run, ' + d.frames.length + ' ledger frames, ' + Math.floor(d.spanS/60) + 'm ' + String(d.spanS%60).padStart(2,'0') + 's of wall clock · a bar is a model call, from the frame before it to its own · gold marks are where claims land'
+      filmstripNote: liveMode ? (s.chainRead === false ? 'the ledger did not answer in time · nothing is drawn from a failed read · reload to try again' : !d.frames.length ? 'no run frames on this ledger · the verdict was loaded from a saved artifact, so there is nothing to shuttle · a live swarm run would write frames here' : 'one run, ' + (d.frames.length - d.laterFrames) + ' ledger frames, ' + Math.floor(d.spanS/60) + 'm ' + String(d.spanS%60).padStart(2,'0') + 's of wall clock' + (d.laterFrames ? ' · ' + d.laterFrames + ' later frame' + (d.laterFrames===1?'':'s') + ' (gate, sign-offs) sit at the end' : '') + ' · a bar is a model call, from the frame before it to its own · gold marks are where claims land')
                               : 'seven stages, one incident, ' + Math.floor(s.pos/100*d.spanS/60)+'m '+String(Math.floor(s.pos/100*d.spanS)%60).padStart(2,'0')+'s of wall clock. solid stock is work performed, gold arcs are cited frames',
       lanes,
       perfs: Array.from({length:26},(_,i)=>({left:((i+0.5)/26*100)+'%'})),
