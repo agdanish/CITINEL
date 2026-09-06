@@ -71,7 +71,7 @@ def inline(t):
     # it, which several do. "NEVER: NEVER SAY" reads like a stutter on paper.
     t = t.replace('\U0001F7E2', 'SAY: ')
     t = t.replace('\U0001F7E1', 'CAUTION: ')
-    t = re.sub(r'\U0001F534\s*(?=(<b>)?NEVER)', '', t)
+    t = re.sub(r'\U0001F534\s*(?=(<b>)?never)', '', t, flags=re.I)
     t = t.replace('\U0001F534', 'NEVER: ')
     return t
 
