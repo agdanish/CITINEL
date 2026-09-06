@@ -1,229 +1,426 @@
 # CITINEL
-## Partner track videos: Tavily, Lyzr, Swytchcode
+## Partner track videos, baby steps: Tavily, Lyzr, Swytchcode
 
-*Three two-minute recordings. One person records the screen. One person records
-the voice. Every word in **BOLD CAPITALS** is printed on the screen, so the
-camera person can find it by eye. Every voice line is under twelve words, so the
-audio stays crisp at ElevenLabs pace. Each script is written to the track's own
-published criteria, and claims nothing the live app cannot show.*
+*Three videos. Two minutes each. Two people. One person clicks. One person
+speaks. Every **BOLD CAPITAL** word is printed on the screen. Every SAY line is
+short. Do the steps in order. Do not skip.*
 
 ---
 
-# Before any recording
+# How to use this page
 
-## The screen setup, once
+- Camera person reads the numbered lines. One click each.
+- Voice person reads only the **SAY** lines.
+- **[pause]** means stop talking for one second.
+- The time on the left is a guide, not a rule.
+- If a step fails, read the "If it goes wrong" box.
 
-1. Use a laptop window at least 1500 pixels wide.
-2. Switch the role toggle to **ANALYST**. CISO hides detail.
-3. Arm the laptop: **CONNECTORS**, **ARM THIS DEVICE**, name, token, **SAVE**.
-4. Confirm the green dot and **ARMED** at the foot of the rail.
-5. Open **REPLAY** for **INC-0417**. Confirm the chip reads **STATE CAUGHT**.
-6. If it reads CLOSED, click **REOPEN FOR RE-INVESTIGATION**, OK, OK.
-7. Open **COMPLIANCE** once and wait 20 seconds. This warms the drafter.
-8. Close every other tab. Hide bookmarks. Full screen the browser.
+---
 
-## The voice setup, once
+# Part A · Set up once, before all three
 
-- Record each script as one file. Do not stitch.
-- Speak at a steady pace. About 140 words a minute.
-- Pause one full second at every line marked **[beat]**.
-- ElevenLabs: stability 55, similarity 75, style 20. Pick a calm voice.
-- Export as WAV. Name it `tavily.wav`, `lyzr.wav`, `swytchcode.wav`.
+## The laptop
 
-## The rule that protects every video
+1. Make the browser window wide. At least 1500 pixels.
+2. Click **ANALYST** at the top left. Not CISO.
+3. Click **CONNECTORS** in the top bar.
+4. Find **ARM THIS DEVICE**.
+5. Type your name in the first box.
+6. Paste the token in the second box.
+7. Click **SAVE**.
+8. Look at the bottom of the left rail.
+9. It must show a green dot and **ARMED**.
+10. Click **REPLAY** in the top bar.
+11. Look at the chip near the top. It must read **STATE CAUGHT**.
+12. If it reads CLOSED, click **REOPEN FOR RE-INVESTIGATION**. Click OK. Click OK.
+13. Click **COMPLIANCE**. Wait 20 seconds. Do nothing. This warms it.
+14. Close every other tab. Hide bookmarks. Go full screen.
 
-- 🔴 Never say a prize is certain. Say "built to the track's criteria".
-- 🔴 Never say a false-positive rate. It is unmeasured.
+## The voice
+
+1. Record each video as one file.
+2. Speak slowly. About 140 words per minute.
+3. Pause one second at every **[pause]**.
+4. ElevenLabs settings: stability 55, similarity 75, style 20.
+5. Save as `tavily.wav`, `lyzr.wav`, `swytchcode.wav`.
+
+## The four rules
+
+- 🔴 Never say a prize is certain.
+- 🔴 Never say a false-positive number. It is unmeasured.
 - 🔴 Never say an action touched a real system. All simulated.
-- 🔴 Never say the Slack leg works unless it executed on screen that day.
+- 🔴 Never say Slack works unless it worked on screen today.
 
 ---
 
-# VIDEO 1 · TAVILY · Best Use of Tavily track
+# VIDEO 1 · TAVILY
 
-## The one sentence
-
-*Tavily is the only thing in CITINEL allowed to read the open web, and nothing it
-returns is ever allowed to become evidence.*
+**Track:** Best Use of Tavily.
+**The idea in one line:** Tavily is the only door to the internet. Nothing it brings back can ever become evidence.
 
 ## Before this take
 
-1. On **REPLAY** for INC-0417, scroll the right column to **THREAT BRIEF · TAVILY RESEARCH**.
-2. Click **REQUEST THREAT BRIEF** now, before recording. Research is asynchronous.
-3. Wait until the button reads **ASK AGAIN** and a brief with sources is shown.
-4. Scroll up to **PUBLIC CONTEXT · TAVILY**. Confirm it reads *last gathered* with a date.
-5. Scroll back to the top of the page. Start recording.
+1. Click **REPLAY**. Make sure it shows **INC-0417**.
+2. Scroll the right column down.
+3. Find **THREAT BRIEF · TAVILY RESEARCH**.
+4. Click **REQUEST THREAT BRIEF**.
+5. The button changes to **RESEARCHING…**
+6. Wait. It can take a minute.
+7. The button changes to **ASK AGAIN**. A brief appears.
+8. Scroll up. Find **PUBLIC CONTEXT · TAVILY**.
+9. Check it says **last gathered** with a date.
+10. Scroll to the very top.
+11. Start recording.
 
 ## The take
 
-| Time | CAMERA does | VOICE says |
-|---|---|---|
-| 0:00 | Show **REPLAY** for INC-0417. Hover the header. | This is CITINEL. An AI security operations centre for Indian cooperative banks. |
-| 0:06 | Point at the **ENRICH** lane, labelled **Enrichment Squad**. | Its investigation runs in stages. One stage reads the open web. |
-| 0:12 | Hold on the lane. | That stage is Tavily. Nothing else in this system may touch the internet. |
-| 0:18 | Scroll the right column to **PUBLIC CONTEXT · TAVILY**. | Here is what Tavily gathered for this incident. |
-| 0:24 | Point at the note: **18 sources for 6 queries**. | Eighteen sources. Six queries. Six credits. Every number carries its denominator. |
-| 0:31 | Point at one query row, then its citation chips. | Each row is one attack technique the correlator named. |
-| 0:37 | Point at a chip marked **EXTRACTED ·** | Tavily Search found the page. Tavily Extract read the full text. |
-| 0:43 | Point at a chip marked **CRAWLED ·** | Tavily Crawl followed the site. That is a page read, not a link found. |
-| 0:49 | Point at the words **mapped live from ATT&CK**. | Tavily Map pulled sub-technique pages live from the MITRE site. |
-| 0:55 | Click **GATHER PUBLIC CONTEXT**. Show **SEARCHING…** | Watch it run live. One credit per uncached query. **[beat]** |
-| 1:03 | Scroll down to **THREAT BRIEF · TAVILY RESEARCH**. | And this is the fifth primitive. Research. |
-| 1:09 | Point at **THE QUESTION PUT TO THE OPEN WEB**. | Search finds documents. Research answers a question. |
-| 1:15 | Point at the brief and its sources list. | It ran several searches on its own and wrote this brief, with sources. |
-| 1:22 | Point at the words **context only, never evidence**. | Now the line we never cross. **[beat]** |
-| 1:28 | Hold. | Everything Tavily returns is labelled context. Never evidence. |
-| 1:34 | Click any claim in **NARRATOR · EVERY CLAIM CARRIES ITS LINE**. Show the yellow chip. | A verdict claim must quote the bank's own log line. Not a web page. |
-| 1:41 | Click **COMPLIANCE**. Wait. Scroll left column to **REGULATORY GUIDANCE · TAVILY**. | Same discipline on the regulator's form. Tavily fetches CERT-In and DPDP guidance. |
-| 1:49 | Click **READ FULL TEXT · TAVILY EXTRACT**. | Extract brings the full guidance text to the signer. |
-| 1:55 | Click **CONNECTORS**. Point at the **tavily** row and **web search**. | Five Tavily primitives. One egress door. Zero evidence laundering. That is best use. |
+**0:00**
+1. Show the **REPLAY** screen. Hold still.
+   SAY: "This is CITINEL. An AI security centre for Indian cooperative banks."
 
-**Voice word count: about 265.**
+**0:06**
+2. Move the mouse to the **ENRICH** lane. It says **Enrichment Squad**.
+   SAY: "The investigation runs in stages. One stage reads the open web."
 
-## Why this meets the track, criterion by criterion
+**0:12**
+3. Keep the mouse there.
+   SAY: "That stage is Tavily. Nothing else here may touch the internet."
 
-| Tavily asks for | CITINEL shows |
-|---|---|
-| Integrate Tavily APIs | All five primitives: Search with `include_answer`, Extract, Map, Crawl, Research with async polling. `primitives_used` is recorded per gather from what actually ran. |
-| Real-time search, AI retrieval, knowledge augmentation | Live gather on camera. Research brief answering a question. ATT&CK sub-techniques mapped live. Regulatory guidance fetched for the signer. |
-| Creative and impactful | Tavily output is tagged `not_evidence` in the payload. No verdict, lane or gate decision can bind to it. Web context informs the analyst but can never forge a citation. |
+**0:18**
+4. Scroll the right column to **PUBLIC CONTEXT · TAVILY**.
+   SAY: "Here is what Tavily gathered for this incident."
 
-## If something goes wrong
+**0:24**
+5. Point at the line **18 sources for 6 queries**.
+   SAY: "Eighteen sources. Six queries. Six credits. Every number shows its total."
 
-- **REQUEST THREAT BRIEF** still reads **RESEARCHING…**: skip to 1:22. Say "the brief is still running; Research is asynchronous by design."
-- **GATHER** returns an error: say "the gather degraded to not configured and the screen says so." Continue.
+**0:31**
+6. Point at one query row. Then at its chips.
+   SAY: "Each row is one attack technique the system found."
+
+**0:37**
+7. Point at a chip that starts with **EXTRACTED ·**
+   SAY: "Tavily Search found the page. Tavily Extract read the full text."
+
+**0:43**
+8. Point at a chip that starts with **CRAWLED ·**
+   SAY: "Tavily Crawl followed the site. A page read, not a link found."
+
+**0:49**
+9. Point at the words **mapped live from ATT&CK**.
+   SAY: "Tavily Map pulled attack pages live from the MITRE site."
+
+**0:55**
+10. Click **GATHER PUBLIC CONTEXT**.
+11. Show the button turn to **SEARCHING…**
+    SAY: "Watch it run live. One credit per new query. **[pause]**"
+
+**1:03**
+12. Scroll down to **THREAT BRIEF · TAVILY RESEARCH**.
+    SAY: "This is the fifth Tavily tool. Research."
+
+**1:09**
+13. Point at **THE QUESTION PUT TO THE OPEN WEB**.
+    SAY: "Search finds documents. Research answers a question."
+
+**1:15**
+14. Point at the brief text. Then at its sources.
+    SAY: "It ran many searches alone. It wrote this brief. With sources."
+
+**1:22**
+15. Point at the words **context only, never evidence**.
+    SAY: "Now the line we never cross. **[pause]**"
+
+**1:28**
+16. Hold still.
+    SAY: "Everything Tavily returns is context. Never evidence."
+
+**1:34**
+17. Scroll to **NARRATOR · EVERY CLAIM CARRIES ITS LINE**.
+18. Click any claim. A yellow chip opens.
+    SAY: "A verdict must quote the bank's own log. Not a web page."
+
+**1:41**
+19. Click **COMPLIANCE** in the top bar. Wait.
+20. Scroll the left column to **REGULATORY GUIDANCE · TAVILY**.
+    SAY: "Same rule on the regulator's form. Tavily fetches the guidance."
+
+**1:49**
+21. Click **READ FULL TEXT · TAVILY EXTRACT**.
+    SAY: "Extract brings the full text to the person who signs."
+
+**1:55**
+22. Click **CONNECTORS** in the top bar.
+23. Point at the row named **tavily**. It says **web search**.
+    SAY: "Five Tavily tools. One door. Zero evidence laundering. That is best use."
+
+**2:00 · Stop recording.**
+
+## Why this meets the track
+
+- **Integrate Tavily APIs.** All five tools. Search. Extract. Map. Crawl. Research.
+- **Real-time search.** The gather runs live on camera.
+- **Knowledge augmentation.** Attack pages mapped live. Regulator guidance fetched.
+- **Creative and impactful.** Tavily output is marked not_evidence in the data. It can inform. It can never be cited.
+
+## If it goes wrong
+
+- Button still says **RESEARCHING…**: jump to step 15. Say "the brief is still running. Research is asynchronous."
+- Gather shows an error: say "the gather degraded and the screen says so." Keep going.
 
 ---
 
-# VIDEO 2 · LYZR · Best Use of Lyzr AI Award
+# VIDEO 2 · LYZR
 
-## The one sentence
-
-*Seven Lyzr agents check CITINEL's own agents from outside, and one of them
-guards the ledger against an attack the ledger cannot see.*
+**Track:** Best Use of Lyzr AI Award.
+**The idea in one line:** Seven Lyzr agents check our agents from outside. One of them guards the ledger.
 
 ## Before this take
 
-1. Open Lyzr Studio in a second browser tab. Sign in.
-2. On the Studio **Home**, confirm all seven agents are listed by name.
-3. Confirm credits are not near zero. Top up if under two.
-4. In CITINEL, open **AUDIT** and scroll to the witness line. It should read **agreed** or **lagging**.
-5. Open **COMPLIANCE** for INC-0419 once. Wait 20 seconds. Warm.
-6. Return to **CONNECTORS**. Start recording there.
+1. Open Lyzr Studio in a second tab. Sign in.
+2. Go to **Home**. Check all seven agents are listed.
+3. Check your credits. If under two, top up now.
+4. In CITINEL, click **AUDIT**.
+5. Scroll to the line that says **witness**.
+6. It should read **agreed** or **lagging**. Not unavailable.
+7. Click **COMPLIANCE**. Wait 20 seconds. Warm.
+8. Click **CONNECTORS**.
+9. Start recording here.
 
 ## The take
 
-| Time | CAMERA does | VOICE says |
-|---|---|---|
-| 0:00 | Show **CONNECTORS**. Scroll to the seven rows starting **lyzr**. | CITINEL runs twelve AI agents across two vendors. |
-| 0:06 | Point at each: **lyzr**, **lyzr-triage**, **lyzr-review**, **lyzr-handover**, **lyzr-verdict**, **lyzr-response**, **lyzr-corpus**. | Seven are Lyzr. Each one has its own job. |
-| 0:14 | Hold on the rows. | Not seven prompts against one endpoint. Seven Studio agents. Seven ids. |
-| 0:20 | Switch to the Lyzr Studio tab. Show **Home** with the agent list. | Here they are in Lyzr Studio. |
-| 0:26 | Point at **CITINEL Triage Second Opinion**, then **CITINEL Verdict Auditor**. | Triage Second Opinion. Verdict Auditor. Draft Reviewer. Handover Writer. |
-| 0:33 | Point at **CITINEL Response Reviewer**, **CITINEL Corpus Advisor**, **CITINEL Compliance Monitor**. | Response Reviewer. Corpus Advisor. And the Compliance Monitor, which is also the witness. |
-| 0:40 | Click one agent. Click the **Deploy** tab. Show **Agent API**. | Each is called through the Agent API. Each id lives in one environment variable. |
-| 0:47 | Switch back to CITINEL. Click **REPLAY** for INC-0417. Scroll right column to the panel starting **LYZR**. | Why a second vendor at all. **[beat]** |
-| 0:54 | Point at **independent triage · lane escalate · confidence** and the **AGREES** tag. | A checker inside the system shares its blind spots. Independence is the point. |
-| 1:01 | Hold. | Here Lyzr triaged the incident beside our own router. Both go on the ledger. |
-| 1:07 | Click **COMPLIANCE**. Wait. Scroll to a field tagged **LYZR · THIN**. | On the regulator's form, the Lyzr Draft Reviewer reads every field before a human signs. |
-| 1:15 | Point at the text beginning **lyzr review:** | It flags a thin field. It never fills one in. |
-| 1:21 | Scroll to the guard box. Point at the sentence ending **the Lyzr second opinion.** | Personal data is checked twice. Our deterministic guard, and Lyzr, independently. |
-| 1:28 | Click **AUDIT**. Scroll to the witness line. | Now the part the ledger cannot do alone. **[beat]** |
-| 1:35 | Point at **witness** and its status, **agreed**. | Our hash chain catches edits. It cannot catch a whole file swapped out. |
-| 1:42 | Hold. | So the Lyzr Compliance Monitor holds the head hash remotely. Substitution shows as diverged. |
-| 1:49 | Click **CORPUS**. Point at **COVERAGE ADVISORY · LYZR**. | And the Corpus Advisor reviews detection coverage. One call. Advisory only. |
-| 1:55 | Click **CONNECTORS** again. Hold on the seven rows. | Seven agents. Seven jobs. They advise and witness. They never gate. That is best use. |
+**0:00**
+1. Show **CONNECTORS**. Scroll to the rows starting with **lyzr**.
+   SAY: "CITINEL runs twelve AI agents across two vendors."
 
-**Voice word count: about 275.**
+**0:06**
+2. Point at each row slowly: **lyzr**, **lyzr-triage**, **lyzr-review**, **lyzr-handover**, **lyzr-verdict**, **lyzr-response**, **lyzr-corpus**.
+   SAY: "Seven are Lyzr. Each one has its own job."
+
+**0:14**
+3. Hold on the rows.
+   SAY: "Not seven prompts on one endpoint. Seven Studio agents. Seven ids."
+
+**0:20**
+4. Switch to the Lyzr Studio tab. Show **Home**.
+   SAY: "Here they are in Lyzr Studio."
+
+**0:26**
+5. Point at **CITINEL Triage Second Opinion**. Then **CITINEL Verdict Auditor**.
+   SAY: "Triage Second Opinion. Verdict Auditor. Draft Reviewer. Handover Writer."
+
+**0:33**
+6. Point at **CITINEL Response Reviewer**. Then **CITINEL Corpus Advisor**. Then **CITINEL Compliance Monitor**.
+   SAY: "Response Reviewer. Corpus Advisor. And the Compliance Monitor. Also our witness."
+
+**0:40**
+7. Click any one agent.
+8. Click the **Deploy** tab at the top.
+9. Show the **Agent API** tab.
+   SAY: "Each is called through the Agent API. One id per agent."
+
+**0:47**
+10. Switch back to CITINEL. Click **REPLAY**. Make sure it is **INC-0417**.
+11. Scroll the right column to the box starting **LYZR**.
+    SAY: "Why a second vendor at all? **[pause]**"
+
+**0:54**
+12. Point at **independent triage**. Then at the tag **AGREES**.
+    SAY: "A checker inside the system shares its blind spots. Outside is the point."
+
+**1:01**
+13. Hold.
+    SAY: "Lyzr triaged this incident beside our own router. Both are on the ledger."
+
+**1:07**
+14. Click **COMPLIANCE**. Wait for it to load.
+15. Scroll to a field with the tag **LYZR · THIN**.
+    SAY: "On the regulator's form, Lyzr reads every field before a human signs."
+
+**1:15**
+16. Point at the words starting **lyzr review:**
+    SAY: "It flags a thin field. It never fills one in."
+
+**1:21**
+17. Scroll to the guard box near the top.
+18. Point at the sentence ending **the Lyzr second opinion.**
+    SAY: "Personal data is checked twice. Our own guard. Then Lyzr. Independently."
+
+**1:28**
+19. Click **AUDIT** in the top bar.
+20. Scroll to the line that says **witness**.
+    SAY: "Now the part the ledger cannot do alone. **[pause]**"
+
+**1:35**
+21. Point at the word **agreed**.
+    SAY: "Our chain catches edits. It cannot catch a whole file swapped."
+
+**1:42**
+22. Hold.
+    SAY: "So the Lyzr Compliance Monitor holds the head hash remotely. A swap shows as diverged."
+
+**1:49**
+23. Click **CORPUS** in the top bar.
+24. Point at **COVERAGE ADVISORY · LYZR**.
+    SAY: "And the Corpus Advisor reviews detection coverage. One call. Advice only."
+
+**1:55**
+25. Click **CONNECTORS**. Hold on the seven **lyzr** rows.
+    SAY: "Seven agents. Seven jobs. They advise and witness. They never gate. That is best use."
+
+**2:00 · Stop recording.**
 
 ## Why this meets the award
 
-| Lyzr asks for | CITINEL shows |
-|---|---|
-| Build AI agents on the Lyzr platform | Seven Studio agents, each with its own Role, Goal and hardened Instructions. Recipes in `LYZR-AGENT-CONFIG.md`. |
-| Deploy and integrate into the project | Each called via the Agent API through `connectors/lyzr_agents.py`, host added to the egress allow-list only when configured. All seven `configured=true` on the live deployment. |
-| Innovative solution | The ledger witness: an external agent holding the chain head so wholesale replacement is detectable, which `verify_chain` structurally cannot do. And adversarial second opinions that were stricter than the pipeline five times on 4 September. |
-| Production readiness | Every seam degrades to `not_configured` or `unavailable` honestly. No agent can block an action. The gate is code. |
+- **Built on Lyzr.** Seven Studio agents. Each has a Role, a Goal, hardened Instructions.
+- **Deployed and integrated.** Each called through the Agent API. All seven show configured live.
+- **Innovative.** The ledger witness catches an attack our own chain cannot see.
+- **Production ready.** Every agent degrades honestly. No agent can block an action.
 
-## If something goes wrong
+## If it goes wrong
 
-- Witness reads **unavailable**: say "Lyzr Studio is not answering right now, and we report that rather than assume agreement." Continue.
-- A **LYZR · THIN** tag is absent: point at the top-left line beginning **Lyzr draft review:** instead.
-- Studio credits are exhausted: skip the Studio tab entirely. Everything else still shows.
+- Witness reads **unavailable**: say "Lyzr Studio is not answering. We report that, not assume it." Keep going.
+- No **LYZR · THIN** tag: point at the top-left line starting **Lyzr draft review:** instead.
+- Studio credits are gone: skip the Studio tab. Everything else still works.
 
 ---
 
-# VIDEO 3 · SWYTCHCODE · Best Use of Swytchcode track
+# VIDEO 3 · SWYTCHCODE
 
-## The one sentence
-
-*Swytchcode is the hand that carries out an approved action, under a policy
-that can stop it even after the AI gate said yes.*
+**Track:** Best Use of Swytchcode.
+**The idea in one line:** Swytchcode is the hand that carries out an approved action. Its policy can still stop it.
 
 ## Before this take
 
-1. Optional but strongly recommended: renew the Slack session **within four hours** of recording. Steps are in `RUNBOOK-NEW-LAPTOP.md` section 2c. Without it, the comms leg reads `not_configured` and the script has a line for that.
-2. Open a terminal in the repo. Run `nvm use 20`. Run `swy --version`. It prints 2.20.15.
-3. Keep the terminal open in a second window, font size large.
-4. In CITINEL, open **APPROVALS**. Pick a card for **INC-0416** that reads **AUTONOMOUS**, for example **enrich_ioc**.
-5. Do not arm the key yet. Start recording on **CONNECTORS**.
+1. Best option: renew the Slack session within four hours of recording. Steps in `RUNBOOK-NEW-LAPTOP.md` section 2c.
+2. If you skip that, comms will read **not_configured**. The script has a line for it.
+3. Open a terminal in the repo folder.
+4. Type `nvm use 20`. Press Enter.
+5. Type `swy --version`. Press Enter. It prints 2.20.15.
+6. Make the terminal font big. Keep it in a second window.
+7. In CITINEL, click **APPROVALS**.
+8. In **SHOT QUEUE**, find a card that says **INC-0416** and **AUTONOMOUS**. For example **enrich_ioc**.
+9. Do not click the key yet.
+10. Click **CONNECTORS**. Start recording here.
 
-**This take creates a real GitHub issue in your repository. That is the proof.**
+**This take creates a real issue on GitHub. That is the proof.**
 
 ## The take
 
-| Time | CAMERA does | VOICE says |
-|---|---|---|
-| 0:00 | Show **CONNECTORS**. Point at **OUTLETS · WHAT CITINEL CAN ACTUALLY TOUCH**. | CITINEL proposes response actions. It never runs them by itself. |
-| 0:07 | Point at the badge **EVERY OUTLET IS BLANKED**. | Every endpoint here is simulated. The bank's systems are never touched. |
-| 0:13 | Switch to the terminal. Type `swy --version`. Press Enter. | This is the Swytchcode CLI. Version two point twenty. Built into our image. |
-| 0:20 | Type `swy policy list`. Press Enter. | Three Swytchcode policies. Written by us. Validated by the CLI. |
-| 0:27 | Open `.swytchcode/integrations/policies.json`. Point at the three ids. | No core banking name in a ticket. No message without a destination. No ticket without its incident. |
-| 0:35 | Open `.swytchcode/tooling.json`. Point at **GitHub.github** and **Slack.slack**. | Two ecosystem APIs. GitHub for tickets. Slack for comms. |
-| 0:42 | Switch to CITINEL. Click **APPROVALS**. Click the **INC-0416 · enrich_ioc** card. | Now the workflow. **[beat]** A Claude agent proposed this action. |
-| 0:49 | Point at **GOVERNING CLAUSE**. | The policy gate adjudicated it against a named clause. |
-| 0:55 | Click **EXPAND DECISION TRACE**. Scroll to **INTENT PREVIEW**. | Before firing, the intent is spelled out. |
-| 1:01 | Point at the line **hand the executed action to Swytchcode ticketing + comms**. | And the last line says who carries it out. Swytchcode. |
-| 1:07 | Point at **WILL NOT DO**. | And what it must never do. |
-| 1:12 | Click the key dial **KEY SAFE**. Show **KEY ARMED**. | Two steps to fire. Deliberately. |
-| 1:17 | Click **APPROVE AND FIRE**. Wait for the receipt. | Watch the chain. Gate, then Swytchcode policy, then the API. **[beat]** |
-| 1:25 | Point at the receipt line beginning **swytchcode:** | Ticketing executed. A real issue, through the Python runtime. |
-| 1:31 | If it reads **comms executed**, point at it. If it reads **not_configured**, point at it. | *(if executed)* Comms executed. Slack notified. *(if not)* Comms reports not configured. The ledger says so rather than claiming a send. |
-| 1:39 | Switch to a browser tab on `github.com/agdanish/CITINEL/issues`. Show the newest issue. | Here is the ticket. Title, incident id, the governing clause. Created by Swytchcode. |
-| 1:47 | Point at the title, **[CITINEL] enrich_ioc on** the target. | Swytchcode's own argument is that API success is not correct behaviour. |
-| 1:53 | Switch back. Click **FIND IT IN THE LEDGER**. Show the two **swytchcode** frames. | So its policy runs after our gate approves. A second guard, outside the agent's own reasoning. That is best use. |
+**0:00**
+1. Show **CONNECTORS**. Point at **OUTLETS · WHAT CITINEL CAN ACTUALLY TOUCH**.
+   SAY: "CITINEL proposes response actions. It never runs them alone."
 
-**Voice word count: about 280.**
+**0:07**
+2. Point at the badge **EVERY OUTLET IS BLANKED**.
+   SAY: "Every endpoint here is simulated. No bank system is touched."
 
-## Why this meets the track, requirement by requirement
+**0:13**
+3. Switch to the terminal.
+4. Type `swy --version`. Press Enter.
+   SAY: "This is the Swytchcode CLI. Version two point twenty. Built into our image."
 
-| Swytchcode requires | CITINEL shows |
-|---|---|
-| Build with the Swytchcode CLI | `swy` 2.20.15 installed in `deploy/Dockerfile.web`. Policies validated with `swy policy validate`. Bundles committed. |
-| Python or TypeScript runtime | `swytchcode-runtime` from PyPI, wired in `connectors/swytchcode_runtime_transport.py`. |
-| At least two external ecosystem APIs | `github.issue.create` and `slack.chat.postmessage.create`, both registered in `tooling.json`. GitHub proven live: issue `agdanish/CITINEL#1` on ledger frame 5795. |
-| An AI-powered workflow or agent | Claude Marshal proposes, OPA gate adjudicates, Swytchcode policy checks, API executes. Twelve AI agents upstream of the transport. |
-| Functional end-to-end | Approve on screen, receipt on screen, issue on GitHub, frames on the ledger. Reproducible on camera. |
+**0:20**
+5. Type `swy policy list`. Press Enter.
+   SAY: "Three Swytchcode policies. Written by us. Checked by the CLI."
+
+**0:27**
+6. Open the file `.swytchcode/integrations/policies.json`.
+7. Point at the three ids, one by one.
+   SAY: "No core banking name in a ticket. No message without a target. No ticket without its incident."
+
+**0:35**
+8. Open the file `.swytchcode/tooling.json`.
+9. Point at **GitHub.github**. Then at **Slack.slack**.
+   SAY: "Two ecosystem APIs. GitHub for tickets. Slack for messages."
+
+**0:42**
+10. Switch to CITINEL. Click **APPROVALS**.
+11. Click the card **INC-0416 · enrich_ioc**.
+    SAY: "Now the workflow. **[pause]** A Claude agent proposed this action."
+
+**0:49**
+12. Point at **GOVERNING CLAUSE** on the right.
+    SAY: "The policy gate judged it against a named clause."
+
+**0:55**
+13. Click **EXPAND DECISION TRACE**.
+14. Scroll to **INTENT PREVIEW**.
+    SAY: "Before firing, the intent is written out."
+
+**1:01**
+15. Point at the line **hand the executed action to Swytchcode ticketing + comms**.
+    SAY: "The last line says who carries it out. Swytchcode."
+
+**1:07**
+16. Point at the column **WILL NOT DO**.
+    SAY: "And what it must never do."
+
+**1:12**
+17. Click the round key dial marked **KEY SAFE**.
+18. It turns and reads **KEY ARMED**.
+    SAY: "Two steps to fire. On purpose."
+
+**1:17**
+19. Click **APPROVE AND FIRE**.
+20. Wait. The receipt appears.
+    SAY: "Watch the chain. Gate. Then Swytchcode policy. Then the API. **[pause]**"
+
+**1:25**
+21. Point at the line starting **swytchcode:**
+22. Point at the word **ticketing** and **executed**.
+    SAY: "Ticketing executed. A real issue. Through the Python runtime."
+
+**1:31**
+23. Point at the word **comms** and its status.
+    If it says **executed**, SAY: "Comms executed. Slack notified."
+    If it says **not_configured**, SAY: "Comms reports not configured. The ledger says so. It does not pretend."
+
+**1:39**
+24. Switch to a browser tab. Open `github.com/agdanish/CITINEL/issues`.
+25. Click the newest issue.
+    SAY: "Here is the ticket. Title. Incident id. The clause. Made by Swytchcode."
+
+**1:47**
+26. Point at the title. It starts with **[CITINEL]**.
+    SAY: "Swytchcode's own argument: an API success is not correct behaviour."
+
+**1:53**
+27. Switch back to CITINEL.
+28. Click **FIND IT IN THE LEDGER**.
+29. Show the two frames whose actor is **swytchcode**.
+    SAY: "So its policy runs after our gate approves. A second guard. That is best use."
+
+**2:00 · Stop recording.**
+
+## Why this meets the track
+
+- **Built with the CLI.** `swy` 2.20.15 is in the Docker image. Policies validated by `swy policy validate`.
+- **Python runtime.** `swytchcode-runtime` from PyPI is the transport.
+- **Two ecosystem APIs.** `github.issue.create` and `slack.chat.postmessage.create`. GitHub proven live: issue number 1, ledger frame 5795.
+- **AI workflow.** Claude proposes. Gate decides. Swytchcode policy checks. API executes.
+- **End to end.** Approve on screen. Receipt on screen. Issue on GitHub. Frames on the ledger.
 
 ## The honest line on Slack
 
-The Slack credential never expires. The login session that unlocks it lasts four
-hours and nothing renews it. If the session is fresh, comms executes on camera.
-If not, the receipt reads `not_configured` and the ledger refuses to claim a
-send. Both outcomes are the control working. Say whichever one is on screen.
+- The Slack credential never expires.
+- The login session does. After four hours. Nothing renews it.
+- Fresh session: comms executes on camera.
+- Stale session: receipt reads **not_configured**. The ledger refuses to claim a send.
+- Both are the control working. Say what is on screen.
 
-## If something goes wrong
+## If it goes wrong
 
-- **APPROVE AND FIRE** is greyed: the key is not armed. Click the dial again.
-- Receipt reads **policy_blocked**: that is a Swytchcode policy refusing after the gate approved. Say "a blocked action is the guardrail working." It is the strongest possible moment.
-- GitHub page shows no new issue: refresh once. The receipt carries the issue URL in the ledger frame.
+- **APPROVE AND FIRE** is grey: the key is not armed. Click the dial again.
+- Receipt reads **policy_blocked**: say "a blocked action is the guardrail working." That is the best moment possible.
+- No new issue on GitHub: refresh once. The URL is inside the ledger frame.
 
 ---
 
-# The three sentences that close each video
+# The last line of each video
 
-- **Tavily.** "Five primitives, one egress door, zero evidence laundering."
-- **Lyzr.** "Seven agents that advise and witness, and never gate."
-- **Swytchcode.** "A second guard that can stop an action after the AI said yes."
+- **Tavily:** "Five tools, one door, zero evidence laundering."
+- **Lyzr:** "Seven agents that advise and witness, and never gate."
+- **Swytchcode:** "A second guard that can stop an action after the AI said yes."
 
-Each is true, checkable on the live deployment, and phrased as what the system does, not what it hopes to win.
+All three are true today. All three can be checked on the live site while you speak.
