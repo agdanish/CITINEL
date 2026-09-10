@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="346" viewBox="0 0 1180 346" font-family="IBM Plex Sans, system-ui, sans-serif">
+<rect width="1180" height="346" fill="#0E1116"/>
+<text x="12" y="26" fill="#EDEDEF" font-size="13" letter-spacing="2">CITINEL DESIGN SYSTEM · PRIMITIVE PALETTE · 20 TOKENS · NAMESPACE --ctn-</text>
+<rect x="12.0" y="40" width="109.6" height="64" rx="4" fill="#0B1F3A" stroke="#2B2E33"/>
+<text x="18.0" y="96" fill="#EDEDEF" font-size="10" font-family="ui-monospace, Menlo, monospace">#0B1F3A</text>
+<text x="14.0" y="122" fill="#EDEDEF" font-size="11" font-family="ui-monospace, Menlo, monospace">navy-900</text>
+<text x="14.0" y="138" fill="#8A8F98" font-size="9.5">brand navy · the</text>
+<text x="14.0" y="151" fill="#8A8F98" font-size="9.5">mark and the on-</text>
+<text x="14.0" y="164" fill="#8A8F98" font-size="9.5">navy header</text>
+<rect x="127.6" y="40" width="109.6" height="64" rx="4" fill="#0E1116" stroke="#2B2E33"/>
+<text x="133.6" y="96" fill="#EDEDEF" font-size="10" font-family="ui-monospace, Menlo, monospace">#0E1116</text>
+<text x="129.6" y="122" fill="#EDEDEF" font-size="11" font-family="ui-monospace, Menlo, monospace">charcoal-950</text>
+<text x="129.6" y="138" fill="#8A8F98" font-size="9.5">shell background</text>
+<rect x="243.2" y="40" width="109.6" height="64" rx="4" fill="#FFFFFF" stroke="#2B2E33"/>
+<text x="249.2" y="96" fill="#0E1116" font-size="10" font-family="ui-monospace, Menlo, monospace">#FFFFFF</text>
+<text x="245.2" y="122" fill="#EDEDEF" font-size="11" font-family="ui-monospace, Menlo, monospace">white</text>
+<text x="245.2" y="138" fill="#8A8F98" font-size="9.5">text on navy</text>
+<rect x="358.8" y="40" width="109.6" height="64" rx="4" fill="#E7B10A" stroke="#2B2E33"/>
+<text x="364.8" y="96" fill="#0E1116" font-size="10" font-family="ui-monospace, Menlo, monospace">#E7B10A</text>
+<text x="360.8" y="122" fill="#EDEDEF" font-size="11" font-family="ui-monospace, Menlo, monospace">gold-500</text>
+<text x="360.8" y="138" fill="#8A8F98" font-size="9.5">the statutory clock</text>
+<text x="360.8" y="151" fill="#8A8F98" font-size="9.5">and citation chips</text>
+<text x="360.8" y="164" fill="#8A8F98" font-size="9.5">· flat gold only</text>
+<rect x="474.4" y="40" width="109.6" height="64" rx="4" fill="#D01F17" stroke="#2B2E33"/>
+<text x="480.4" y="96" fill="#EDEDEF" font-size="10" font-family="ui-monospace, Menlo, monospace">#D01F17</text>
+<text x="476.4" y="122" fill="#EDEDEF" font-size="11" font-family="ui-monospace, Menlo, monospace">red-600</text>
+<text x="476.4" y="138" fill="#8A8F98" font-size="9.5">critical fill ·</text>
+<text x="476.4" y="151" fill="#8A8F98" font-size="9.5">severity only</text>
+<rect x="590.0" y="40" width="109.6" height="64" rx="4" fill="#E8594A" stroke="#2B2E33"/>
+<text x="596.0" y="96" fill="#EDEDEF" font-size="10" font-family="ui-monospace, Menlo, monospace">#E8594A</text>
+<text x="592.0" y="122" fill="#EDEDEF" font-size="11" font-family="ui-monospace, Menlo, monospace">red-400</text>
+<text x="592.0" y="138" fill="#8A8F98" font-size="9.5">critical text and</text>
+<text x="592.0" y="151" fill="#8A8F98" font-size="9.5">borders</text>
+<rect x="705.6" y="40" width="109.6" height="64" rx="4" fill="#0A0A0A" stroke="#2B2E33"/>
+<text x="711.6" y="96" fill="#EDEDEF" font-size="10" font-family="ui-monospace, Menlo, monospace">#0A0A0A</text>
+<text x="707.6" y="122" fill="#EDEDEF" font-size="11" font-family="ui-monospace, Menlo, monospace">ink-980</text>
+<text x="707.6" y="138" fill="#8A8F98" font-size="9.5">inset wells and the</text>
+<text x="707.6" y="151" fill="#8A8F98" font-size="9.5">quarantine well</text>
+<rect x="821.2" y="40" width="109.6" height="64" rx="4" fill="#181819" stroke="#2B2E33"/>
+<text x="827.2" y="96" fill="#EDEDEF" font-size="10" font-family="ui-monospace, Menlo, monospace">#181819</text>
+<text x="823.2" y="122" fill="#EDEDEF" font-size="11" font-family="ui-monospace, Menlo, monospace">ink-900</text>
+<text x="823.2" y="138" fill="#8A8F98" font-size="9.5">panels and the rail</text>
+<rect x="936.8" y="40" width="109.6" height="64" rx="4" fill="#202021" stroke="#2B2E33"/>
+<text x="942.8" y="96" fill="#EDEDEF" font-size="10" font-family="ui-monospace, Menlo, monospace">#202021</text>
+<text x="938.8" y="122" fill="#EDEDEF" font-size="11" font-family="ui-monospace, Menlo, monospace">ink-850</text>
+<text x="938.8" y="138" fill="#8A8F98" font-size="9.5">raised cards</text>
+<rect x="1052.4" y="40" width="109.6" height="64" rx="4" fill="#323334" stroke="#2B2E33"/>
+<text x="1058.4" y="96" fill="#EDEDEF" font-size="10" font-family="ui-monospace, Menlo, monospace">#323334</text>
+<text x="1054.4" y="122" fill="#EDEDEF" font-size="11" font-family="ui-monospace, Menlo, monospace">ink-700</text>
+<text x="1054.4" y="138" fill="#8A8F98" font-size="9.5">hairline borders</text>
+<rect x="12.0" y="190" width="109.6" height="64" rx="4" fill="#4C4D4F" stroke="#2B2E33"/>
+<text x="18.0" y="246" fill="#EDEDEF" font-size="10" font-family="ui-monospace, Menlo, monospace">#4C4D4F</text>
+<text x="14.0" y="272" fill="#EDEDEF" font-size="11" font-family="ui-monospace, Menlo, monospace">ink-600</text>
+<text x="14.0" y="288" fill="#8A8F98" font-size="9.5">strong borders</text>
+<rect x="127.6" y="190" width="109.6" height="64" rx="4" fill="#626364" stroke="#2B2E33"/>
+<text x="133.6" y="246" fill="#EDEDEF" font-size="10" font-family="ui-monospace, Menlo, monospace">#626364</text>
+<text x="129.6" y="272" fill="#EDEDEF" font-size="11" font-family="ui-monospace, Menlo, monospace">ink-500</text>
+<text x="129.6" y="288" fill="#8A8F98" font-size="9.5">disabled</text>
+<rect x="243.2" y="190" width="109.6" height="64" rx="4" fill="#797A7B" stroke="#2B2E33"/>
+<text x="249.2" y="246" fill="#EDEDEF" font-size="10" font-family="ui-monospace, Menlo, monospace">#797A7B</text>
+<text x="245.2" y="272" fill="#EDEDEF" font-size="11" font-family="ui-monospace, Menlo, monospace">ink-400</text>
+<text x="245.2" y="288" fill="#8A8F98" font-size="9.5">muted text</text>
+<rect x="358.8" y="190" width="109.6" height="64" rx="4" fill="#A4A4A6" stroke="#2B2E33"/>
+<text x="364.8" y="246" fill="#0E1116" font-size="10" font-family="ui-monospace, Menlo, monospace">#A4A4A6</text>
+<text x="360.8" y="272" fill="#EDEDEF" font-size="11" font-family="ui-monospace, Menlo, monospace">ink-300</text>
+<text x="360.8" y="288" fill="#8A8F98" font-size="9.5">secondary text</text>
+<rect x="474.4" y="190" width="109.6" height="64" rx="4" fill="#E7E8E8" stroke="#2B2E33"/>
+<text x="480.4" y="246" fill="#0E1116" font-size="10" font-family="ui-monospace, Menlo, monospace">#E7E8E8</text>
+<text x="476.4" y="272" fill="#EDEDEF" font-size="11" font-family="ui-monospace, Menlo, monospace">ink-100</text>
+<text x="476.4" y="288" fill="#8A8F98" font-size="9.5">primary text</text>
+<rect x="590.0" y="190" width="109.6" height="64" rx="4" fill="#5A6472" stroke="#2B2E33"/>
+<text x="596.0" y="246" fill="#EDEDEF" font-size="10" font-family="ui-monospace, Menlo, monospace">#5A6472</text>
+<text x="592.0" y="272" fill="#EDEDEF" font-size="11" font-family="ui-monospace, Menlo, monospace">gray-500</text>
+<text x="592.0" y="288" fill="#8A8F98" font-size="9.5">quarantine neutral</text>
+<rect x="705.6" y="190" width="109.6" height="64" rx="4" fill="#E0843E" stroke="#2B2E33"/>
+<text x="711.6" y="246" fill="#0E1116" font-size="10" font-family="ui-monospace, Menlo, monospace">#E0843E</text>
+<text x="707.6" y="272" fill="#EDEDEF" font-size="11" font-family="ui-monospace, Menlo, monospace">orange-500</text>
+<text x="707.6" y="288" fill="#8A8F98" font-size="9.5">warning</text>
+<rect x="821.2" y="190" width="109.6" height="64" rx="4" fill="#88A8C9" stroke="#2B2E33"/>
+<text x="827.2" y="246" fill="#0E1116" font-size="10" font-family="ui-monospace, Menlo, monospace">#88A8C9</text>
+<text x="823.2" y="272" fill="#EDEDEF" font-size="11" font-family="ui-monospace, Menlo, monospace">steel-400</text>
+<text x="823.2" y="288" fill="#8A8F98" font-size="9.5">informational</text>
+<rect x="936.8" y="190" width="109.6" height="64" rx="4" fill="#73A9E1" stroke="#2B2E33"/>
+<text x="942.8" y="246" fill="#0E1116" font-size="10" font-family="ui-monospace, Menlo, monospace">#73A9E1</text>
+<text x="938.8" y="272" fill="#EDEDEF" font-size="11" font-family="ui-monospace, Menlo, monospace">steel-600</text>
+<text x="938.8" y="288" fill="#8A8F98" font-size="9.5">informational,</text>
+<text x="938.8" y="301" fill="#8A8F98" font-size="9.5">stronger</text>
+<rect x="1052.4" y="190" width="109.6" height="64" rx="4" fill="#5DAD70" stroke="#2B2E33"/>
+<text x="1058.4" y="246" fill="#0E1116" font-size="10" font-family="ui-monospace, Menlo, monospace">#5DAD70</text>
+<text x="1054.4" y="272" fill="#EDEDEF" font-size="11" font-family="ui-monospace, Menlo, monospace">green-500</text>
+<text x="1054.4" y="288" fill="#8A8F98" font-size="9.5">ok · the armed dot</text>
+</svg>

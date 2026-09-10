@@ -54,3 +54,23 @@ backend/uv.lock
 .swytchcode/**/*.lock
 
 .swytchcode/workspace.json
+
+# --- working materials, kept on the archive/working-materials branch, not on this one ---
+# Deck exports, brand source assets, organiser reference decks, session notes and
+# chat logs. Nothing here is needed to run or evaluate the application.
+slide-deck-images/
+webinar/
+ppt-template/
+citinel-brand/
+HANDOFF-MEMORY.md
+NEXT-SESSION-PROMPT.md
+PARTNER-SESSION-NOTES.md
+RUNBOOK-NEW-LAPTOP.md
+docs/SESSION-2026-09-03-04-CHAT-LOG.md
+docs/MEMORY-EXPORT.md
+docs/CITINEL-STATE.md
+docs/orchestrator-phase0-4.md
+docs/CITINEL-MASTER-KB.md
+docs/CITINEL-DEMO-SCRIPT-10MIN.md
+docs/CITINEL-PARTNER-VIDEO-SCRIPTS.md
+partners-logo/n8n-dark.png
